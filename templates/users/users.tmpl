@@ -1,0 +1,25 @@
+{{define "body"}}
+<div class="pure-u-1">
+	<section>
+		<h1>Users</h1>
+		<table  class="pure-table">
+			<thead>
+				<tr>
+					<td>Login</td>
+					<td>Name</td>
+					<td>Action</td>
+				</tr>
+			</thead>
+			<tbody>
+			{{range .Users}}
+				<tr>
+					<td>{{.Login}}</td>
+					<td>{{.Name}}</td>
+					<td><a href="{{.Id}}">Edit</a></td>
+				</tr>
+			{{end}}
+			</tbody>
+		</table>
+	</section>
+</div>
+{{end}}

@@ -1,0 +1,27 @@
+{{define "body"}}
+<div class="pure-u-1">
+	<section>
+		<h1>Login</h1>
+		{{if .Message}}
+			<div class="warnings">
+				<p>{{.Message}}</p>
+			</div>
+		{{end}}
+		<form class="pure-form pure-form-aligned" method="POST">
+			<fieldset>
+				<div class="pure-control-group">
+					<label for="login">Login</label>
+					<input name="Login" id="login" type="text" placeholder="User name" value="{{.Login}}"/>
+				</div>
+				<div class="pure-control-group">
+					<label for="pass">Password</label>
+					<input name="Password" id="pass" type="password" placeholder="Password">
+				</div>
+				<div class="pure-controls">
+					<button type="submit" class="pure-button pure-button-primary">Log in</button>
+				</div>
+			</fieldset>
+		</form>
+	</section>
+</div>
+{{end}}

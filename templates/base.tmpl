@@ -1,0 +1,30 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Lorem Ipsum</title>
+		<link rel="stylesheet" href="/static/css/pure-min.css" type="text/css" media="all" />
+		<link rel="stylesheet" href="/static/css/main.css" type="text/css" media="all" />
+	</head>
+	<body>
+		<div  class="pure-g-r" id="layout">
+			{{if .FlashMesssages}}
+			<div class="pure-u-1">
+				<div class="info">
+					<ul>
+					{{range .FlashMesssages}}
+						<li>{{.}}</li>
+					{{end}}
+					</ul>
+				</div>
+			</div>
+			{{end}}
+			<div class="pure-u-1">
+				<div class="container">
+					{{template "body" .}}
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
+{{end}}
