@@ -37,9 +37,11 @@ func GetLoggedUser(w http.ResponseWriter, r *http.Request, redirect bool) (crede
 	}
 	log.Print("Access denied")
 	if redirect {
-		var url *url.URL
-		url, _ = app.App.Router.Get("auth-login").URL("redirect", r.URL.String())
-		http.Redirect(w, r, url.String(), 302)
+		log.Print("back=", r.URL.Path)
+		login_url, _ := app.App.Router.Get("auth-login").URL()
+		durl := login_url.String() + "?back=" + url.QueryEscape(r.URL.String())
+		log.Print("red=", durl)
+		http.Redirect(w, r, durl, 302)
 	}
 	return
 }
@@ -63,6 +65,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		{
+			session, _ := app.App.CookieStore.Get(r, PROFILE_SESSION)
+			session.Values[USERID_SESSION] = nil
+			session.Values[USERLOGIN_SESSION] = nil
+			session.Save(r, w)
 			app.App.RenderTemplate(w, "base", loginPage, "base.tmpl", "login.tmpl")
 			return
 		}
@@ -105,4 +111,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
+}
+
+func LogoffHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := app.App.CookieStore.Get(r, PROFILE_SESSION)
+	session.Values[USERID_SESSION] = nil
+	session.Values[USERLOGIN_SESSION] = nil
+	session.Save(r, w)
+	http.Redirect(w, r, "/", http.StatusFound)
+
 }

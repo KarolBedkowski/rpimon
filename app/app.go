@@ -22,34 +22,27 @@ const APP_SECRET = "my_app-secret"
 const BASE_TEMPLATE = "base.tmpl"
 
 type WebApp struct {
-	Router      *mux.Router
-	StaticDir   string
-	TemplateDir string
-	CookieStore *sessions.CookieStore
-	Database    *gorp.DbMap
+	Configuration *AppConfiguration
+	Router        *mux.Router
+	CookieStore   *sessions.CookieStore
+	Database      *gorp.DbMap
 }
 
 var App *WebApp
 
-func Init(appRoot string) *WebApp {
-	staticDir := filepath.Join(appRoot, "static")
-	if staticDir == "" || !fileExists(staticDir) {
-		log.Fatal("Missing static dir")
-	}
-	templateDir := filepath.Join(appRoot, "templates")
-	if templateDir == "" || !fileExists(templateDir) {
-		log.Fatal("Missing templates dir")
-	}
+func Init(appConfFile string) *WebApp {
+
+	conf := new(AppConfiguration)
+	conf.LoadConfiguration(appConfFile)
 
 	app := &WebApp{
-		Router:      mux.NewRouter(),
-		StaticDir:   staticDir,
-		TemplateDir: templateDir,
-		CookieStore: sessions.NewCookieStore([]byte(COOKIE_SECRET)),
-		Database:    database.Init()}
+		Router:        mux.NewRouter(),
+		Configuration: conf,
+		CookieStore:   sessions.NewCookieStore([]byte(COOKIE_SECRET)),
+		Database:      database.Init(conf.Database)}
 
 	http.Handle("/static/", http.StripPrefix("/static",
-		http.FileServer(http.Dir(staticDir))))
+		http.FileServer(http.Dir(conf.StaticDir))))
 	http.Handle("/", context.ClearHandler(weblogs.Handler(app.Router)))
 
 	App = app
@@ -84,7 +77,7 @@ func (app *WebApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (app *WebApp) RenderTemplate(w http.ResponseWriter, name string, data interface{}, filenames ...string) {
 	templates := []string{}
 	for _, filename := range filenames {
-		fullPath := filepath.Join(app.TemplateDir, filename)
+		fullPath := filepath.Join(app.Configuration.TemplatesDir, filename)
 		if !fileExists(fullPath) {
 			log.Fatalf("RenderTemplate missing template: %s", fullPath)
 		}

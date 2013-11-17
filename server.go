@@ -9,11 +9,13 @@ import (
 )
 
 func main() {
-	wapp := app.Init(".")
+	configFilename := flag.String("conf", "./config.json", "Configuration filename")
+	wapp := app.Init(*configFilename)
 	defer wapp.Close()
 
 	app.App.Router.HandleFunc("/", handleHome)
 	app.App.Router.HandleFunc("/auth/login", users.LoginHandler).Name("auth-login")
+	app.App.Router.HandleFunc("/auth/logoff", users.LogoffHandler).Name("auth-logoff")
 	users.CreateRoutes(app.App.Router.PathPrefix("/users"))
 
 	httpAddr := flag.String("addr", ":8000", "HTTP server address")

@@ -1,0 +1,5 @@
+{"Root": "./",
+	"StaticDir": "./static",
+	"TemplatesDir": "./templates",
+	"Database": "./database.sqlite"
+}

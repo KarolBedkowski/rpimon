@@ -9,8 +9,8 @@ import (
 
 var Database *gorp.DbMap
 
-func Init() *gorp.DbMap {
-	db, err := sql.Open("sqlite3", "database.sqlite")
+func Init(dbFileName string) *gorp.DbMap {
+	db, err := sql.Open("sqlite3", dbFileName)
 	helpers.CheckErr(err, "sql.Open failed")
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 
