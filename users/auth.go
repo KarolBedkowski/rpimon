@@ -4,7 +4,7 @@ import (
 	"../app"
 	"../database"
 	"../helpers"
-	_ "github.com/gorilla/mux"
+	"github.com/gorilla/context"
 	"github.com/gorilla/schema"
 	"log"
 	"net/http"
@@ -24,11 +24,11 @@ type Credentials struct {
 
 func GetLoggedUser(w http.ResponseWriter, r *http.Request, redirect bool) (credentials *Credentials) {
 	credentials = nil
-	session, err := app.App.CookieStore.Get(r, PROFILE_SESSION)
-	helpers.CheckErr(err, "missing session")
-	userId, ok := session.Values[USERID_SESSION].(string)
-	if ok && userId != "" {
-		userIdI, _ := strconv.ParseInt(userId, 10, 64)
+	a := context.Get(r, "APP").(*app.WebApp)
+	session := app.NewSessionStore(w, r)
+	userId := session.Get(USERID_SESSION)
+	if userId != nil {
+		userIdI, _ := strconv.ParseInt(userId.(string), 10, 64)
 		user := database.GetUserById(userIdI)
 		if user != nil {
 			credentials = &Credentials{User: user}
@@ -37,10 +37,8 @@ func GetLoggedUser(w http.ResponseWriter, r *http.Request, redirect bool) (crede
 	}
 	log.Print("Access denied")
 	if redirect {
-		log.Print("back=", r.URL.Path)
-		login_url, _ := app.App.Router.Get("auth-login").URL()
+		login_url, _ := a.Router.Get("auth-login").URL()
 		durl := login_url.String() + "?back=" + url.QueryEscape(r.URL.String())
-		log.Print("red=", durl)
 		http.Redirect(w, r, durl, 302)
 	}
 	return
@@ -52,24 +50,24 @@ type LoginPage struct {
 	Password       string
 	Message        string
 	back           string
+	CsrfToken      string
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	//	vars := mux.Vars(r)
+	a := context.Get(r, "APP").(*app.WebApp)
 	loginPage := &LoginPage{
 		Message:        "",
-		FlashMesssages: app.GetFlashMessage(w, r),
+		FlashMesssages: a.GetFlashMessage(w, r),
 		Login:          "",
-		Password:       ""}
+		Password:       "",
+		CsrfToken:      context.Get(r, app.CONTEXT_CSRF_TOKEN).(string)}
+
+	session := app.NewSessionStore(w, r)
 
 	switch r.Method {
 	case "GET":
 		{
-			session, _ := app.App.CookieStore.Get(r, PROFILE_SESSION)
-			session.Values[USERID_SESSION] = nil
-			session.Values[USERLOGIN_SESSION] = nil
-			session.Save(r, w)
-			app.App.RenderTemplate(w, "base", loginPage, "base.tmpl", "login.tmpl")
+			a.RenderTemplate(w, "base", loginPage, "login.tmpl")
 			return
 		}
 	case "POST":
@@ -83,7 +81,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			password := loginPage.Password
 			if password == "" || loginPage.Login == "" {
 				loginPage.Message = "Missing login and/or password"
-				app.App.RenderTemplate(w, "base", loginPage, "base.tmpl", "login.tmpl")
+				a.RenderTemplate(w, "base", loginPage, "base.tmpl", "login.tmpl")
 				return
 			}
 			user := database.GetUserByLogin(loginPage.Login)
@@ -91,16 +89,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 				cp_err := helpers.ComparePassword(user.Password, password)
 				if cp_err != nil {
 					loginPage.Message = "Wrong user or password"
-					app.App.RenderTemplate(w, "base", loginPage, "base.tmpl", "login.tmpl")
+					a.RenderTemplate(w, "base", loginPage, "login.tmpl")
 					return
 				}
 				log.Printf("User %s log in", user.Login)
-				app.AddFlashMessage(w, r, "User Log in..")
 			}
-			session, _ := app.App.CookieStore.Get(r, PROFILE_SESSION)
-			session.Values[USERID_SESSION] = user.Id
-			session.Values[USERLOGIN_SESSION] = user.Login
-			session.Save(r, w)
+			session.Set(USERID_SESSION, user.Id)
+			session.Set(USERLOGIN_SESSION, user.Login)
+			session.Save()
 			log.Print("values", values, loginPage.back)
 			if values["back"] != nil && values["back"][0] != "" {
 				log.Print("Red", values["back"][0])
@@ -114,10 +110,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LogoffHandler(w http.ResponseWriter, r *http.Request) {
-	session, _ := app.App.CookieStore.Get(r, PROFILE_SESSION)
-	session.Values[USERID_SESSION] = nil
-	session.Values[USERLOGIN_SESSION] = nil
-	session.Save(r, w)
+	session := app.NewSessionStore(w, r)
+	session.Clear()
+	session.Save()
 	http.Redirect(w, r, "/", http.StatusFound)
 
 }

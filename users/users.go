@@ -4,6 +4,7 @@ import (
 	"../app"
 	"../database"
 	"../helpers"
+	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -27,16 +28,18 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 	if GetLoggedUser(w, r, true) == nil {
 		return
 	}
+	a := context.Get(r, "APP").(*app.WebApp)
 	data := &UsersPage{
 		Users:          database.UsersList(),
-		FlashMesssages: app.GetFlashMessage(w, r)}
-	app.App.RenderTemplate(w, "base", data, "base.tmpl", "users/users.tmpl")
+		FlashMesssages: a.GetFlashMessage(w, r)}
+	a.RenderTemplate(w, "base", data, "base.tmpl", "users/users.tmpl")
 }
 
 type UserForm struct {
 	database.User
 	Password1 string
 	Password2 string
+	CsrfToken string
 }
 
 type EditPage struct {
@@ -67,21 +70,23 @@ func editUserHandler(w http.ResponseWriter, r *http.Request) {
 	if GetLoggedUser(w, r, true) == nil {
 		return
 	}
+	a := context.Get(r, "APP").(*app.WebApp)
 	editPage := &EditPage{
-		Form:           new(UserForm),
+		Form: &UserForm{
+			CsrfToken: context.Get(r, app.CONTEXT_CSRF_TOKEN).(string)},
 		Message:        "",
-		FlashMesssages: app.GetFlashMessage(w, r)}
+		FlashMesssages: a.GetFlashMessage(w, r)}
 
 	switch r.Method {
 	case "GET":
 		{
 			vars := mux.Vars(r)
-			userId := vars["id"]
-			if userId != "" {
+			userId, ok := vars["id"]
+			if ok && userId != "" {
 				userIdI, _ := strconv.ParseInt(userId, 10, 64)
 				editPage.Form.User = *database.GetUserById(userIdI)
 			}
-			app.App.RenderTemplate(w, "base", editPage, "base.tmpl", "users/edit.tmpl")
+			a.RenderTemplate(w, "base", editPage, "base.tmpl", "users/edit.tmpl")
 			return
 		}
 	case "POST":
@@ -95,7 +100,7 @@ func editUserHandler(w http.ResponseWriter, r *http.Request) {
 			log.Print("Validate: ", msg)
 			if msg != "" {
 				editPage.Message = msg
-				app.App.RenderTemplate(w, "base", editPage, "base.tmpl", "users/edit.tmpl")
+				a.RenderTemplate(w, "base", editPage, "base.tmpl", "users/edit.tmpl")
 				return
 			}
 			var user *database.User
@@ -112,7 +117,7 @@ func editUserHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			user.Save()
 			url, _ := subRouter.Get("users-list").URL()
-			app.AddFlashMessage(w, r, "User Saved")
+			a.AddFlashMessage(w, r, "User Saved")
 			http.Redirect(w, r, url.String(), http.StatusFound)
 		}
 	default:

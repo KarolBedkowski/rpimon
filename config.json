@@ -1,5 +1,6 @@
-{"Root": "./",
-	"StaticDir": "./static",
+{"StaticDir": "./static",
 	"TemplatesDir": "./templates",
-	"Database": "./database.sqlite"
+	"Database": "./database.sqlite",
+	"CookieAuthKey": "1234567890123456789012345678901",
+	"CookieEncKey": "12345678901234567890012345678901"
 }

@@ -7,10 +7,12 @@ import (
 )
 
 type AppConfiguration struct {
-	Root         string
-	StaticDir    string
-	TemplatesDir string
-	Database     string
+	StaticDir     string
+	TemplatesDir  string
+	Database      string
+	Debug         bool
+	CookieAuthKey string
+	CookieEncKey  string
 }
 
 func (aconf *AppConfiguration) LoadConfiguration(filename string) {
