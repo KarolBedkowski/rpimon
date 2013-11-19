@@ -8,11 +8,12 @@
 	</head>
 	<body>
 		<div  class="pure-g-r" id="layout">
-			{{if .FlashMesssages}}
+			{{$flash := .GetFlashMessage}}
+			{{if $flash}}
 			<div class="pure-u-1">
 				<div class="info">
 					<ul>
-					{{range .FlashMesssages}}
+					{{range .flash}}
 						<li>{{.}}</li>
 					{{end}}
 					</ul>

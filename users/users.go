@@ -19,9 +19,13 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/{id:[0-9]+}", editUserHandler)
 }
 
-type UsersPage struct {
-	Users          []database.User
-	FlashMesssages []interface{}
+type UsersPageCtx struct {
+	*app.BasePageContext
+	Users []database.User
+}
+
+func newUsersPageCtx(w http.ResponseWriter, r *http.Request, users []database.User) *UsersPageCtx {
+	return &UsersPageCtx{app.NewBasePageContext("Users", w, r), users}
 }
 
 func usersHandler(w http.ResponseWriter, r *http.Request) {
@@ -29,9 +33,7 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	a := context.Get(r, "APP").(*app.WebApp)
-	data := &UsersPage{
-		Users:          database.UsersList(),
-		FlashMesssages: a.GetFlashMessage(w, r)}
+	data := newUsersPageCtx(w, r, database.UsersList())
 	a.RenderTemplate(w, "base", data, "base.tmpl", "users/users.tmpl")
 }
 
@@ -39,13 +41,18 @@ type UserForm struct {
 	database.User
 	Password1 string
 	Password2 string
+}
+
+type EditPageCtx struct {
+	*app.BasePageContext
+	*UserForm
+	Message   string
 	CsrfToken string
 }
 
-type EditPage struct {
-	Form           *UserForm
-	Message        string
-	FlashMesssages []interface{}
+func newEditPageCtx(w http.ResponseWriter, r *http.Request, msg string) *EditPageCtx {
+	return &EditPageCtx{app.NewBasePageContext("User", w, r),
+		&UserForm{}, msg, ""}
 }
 
 func (form *UserForm) validate() (err string) {
@@ -71,12 +78,8 @@ func editUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	a := context.Get(r, "APP").(*app.WebApp)
-	editPage := &EditPage{
-		Form: &UserForm{
-			CsrfToken: context.Get(r, app.CONTEXT_CSRF_TOKEN).(string)},
-		Message:        "",
-		FlashMesssages: a.GetFlashMessage(w, r)}
-
+	editPage := newEditPageCtx(w, r, "")
+	editPage.CsrfToken = context.Get(r, app.CONTEXT_CSRF_TOKEN).(string)
 	switch r.Method {
 	case "GET":
 		{
@@ -84,7 +87,7 @@ func editUserHandler(w http.ResponseWriter, r *http.Request) {
 			userId, ok := vars["id"]
 			if ok && userId != "" {
 				userIdI, _ := strconv.ParseInt(userId, 10, 64)
-				editPage.Form.User = *database.GetUserById(userIdI)
+				editPage.User = *database.GetUserById(userIdI)
 			}
 			a.RenderTemplate(w, "base", editPage, "base.tmpl", "users/edit.tmpl")
 			return
@@ -92,11 +95,11 @@ func editUserHandler(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		{
 			r.ParseForm()
-			err := decoder.Decode(editPage.Form, r.Form)
+			err := decoder.Decode(editPage, r.Form)
 			if err != nil {
 				log.Print("Decoding form error", err)
 			}
-			msg := editPage.Form.validate()
+			msg := editPage.validate()
 			log.Print("Validate: ", msg)
 			if msg != "" {
 				editPage.Message = msg
@@ -104,20 +107,20 @@ func editUserHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			var user *database.User
-			if editPage.Form.Id > 0 {
-				user = database.GetUserById(editPage.Form.Id)
+			if editPage.Id > 0 {
+				user = database.GetUserById(editPage.Id)
 			} else {
 				user = new(database.User)
 			}
 			// Copy
-			user.Login = editPage.Form.Login
-			user.Name = editPage.Form.Name
-			if editPage.Form.Password1 != "" {
-				user.Password = helpers.CreatePassword(editPage.Form.Password1)
+			user.Login = editPage.Login
+			user.Name = editPage.Name
+			if editPage.Password1 != "" {
+				user.Password = helpers.CreatePassword(editPage.Password1)
 			}
 			user.Save()
 			url, _ := subRouter.Get("users-list").URL()
-			a.AddFlashMessage(w, r, "User Saved")
+			editPage.AddFlashMessage("User Saved")
 			http.Redirect(w, r, url.String(), http.StatusFound)
 		}
 	default:

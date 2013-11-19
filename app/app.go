@@ -93,7 +93,8 @@ func (app *WebApp) RenderTemplate(w http.ResponseWriter, name string, data inter
 		for _, filename := range filenames {
 			fullPath := filepath.Join(app.Configuration.TemplatesDir, filename)
 			if !fileExists(fullPath) {
-				log.Fatalf("RenderTemplate missing template: %s", fullPath)
+				log.Printf("RenderTemplate missing template: %s", fullPath)
+				return
 			}
 			templates = append(templates, fullPath)
 		}
@@ -102,24 +103,9 @@ func (app *WebApp) RenderTemplate(w http.ResponseWriter, name string, data inter
 	}
 	err := ctemplate.ExecuteTemplate(w, name, data)
 	if err != nil {
-		log.Fatalf("RenderTemplate execution failed: %s", err)
+		log.Printf("RenderTemplate execution failed: %s", err)
 	}
 
-}
-
-func (app *WebApp) GetFlashMessage(w http.ResponseWriter, r *http.Request) []interface{} {
-	session, _ := App.store.Get(r, STORE_FLASH)
-	if flashes := session.Flashes(); len(flashes) > 0 {
-		session.Save(r, w)
-		return flashes
-	}
-	return nil
-}
-
-func (app *WebApp) AddFlashMessage(w http.ResponseWriter, r *http.Request, message string) {
-	session, _ := app.store.Get(r, STORE_FLASH)
-	session.AddFlash(message)
-	session.Save(r, w)
 }
 
 func fileExists(name string) bool {
@@ -133,29 +119,71 @@ func fileExists(name string) bool {
 }
 
 type SessionStore struct {
-	session        *sessions.Session
-	responseWriter http.ResponseWriter
-	request        *http.Request
+	Session *sessions.Session
 }
 
-func NewSessionStore(w http.ResponseWriter, r *http.Request) *SessionStore {
-	store, _ := App.store.Get(r, STORE_SESSION)
-	return &SessionStore{store, w, r}
+func GetSessionStore(w http.ResponseWriter, r *http.Request) *SessionStore {
+	session, _ := App.store.Get(r, STORE_SESSION)
+	return &SessionStore{session}
 }
 
-func (sessStore *SessionStore) Get(key string) interface{} {
-	return sessStore.session.Values[key]
+func (store *SessionStore) Get(key string) interface{} {
+	return store.Session.Values[key]
 }
 
-func (sessStore *SessionStore) Set(key string, value interface{}) {
-	sessStore.session.Values[key] = value
+func (store *SessionStore) Set(key string, value interface{}) {
+	store.Session.Values[key] = value
 }
 
-func (sessStore *SessionStore) Clear() {
-	sessStore.session.Values = nil
+func (store *SessionStore) Clear() {
+	store.Session.Values = nil
 }
-func (sessStore *SessionStore) Save() error {
-	err := sessStore.session.Save(sessStore.request, sessStore.responseWriter)
-	helpers.CheckErr(err, "SessionStore Save Error")
+
+func (store *SessionStore) Save(w http.ResponseWriter, r *http.Request) error {
+	err := store.Session.Save(r, w)
+	helpers.CheckErr(err, "BasePageContext Save Error")
+	return err
+}
+
+type BasePageContext struct {
+	Title          string
+	ResponseWriter http.ResponseWriter
+	Request        *http.Request
+	*SessionStore
+}
+
+func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *BasePageContext {
+	ctx := &BasePageContext{title, w, r, GetSessionStore(w, r)}
+	ctx.GetFlashMessage()
+	return ctx
+}
+
+func (ctx *BasePageContext) GetFlashMessage() []interface{} {
+	if flashes := ctx.Session.Flashes(); len(flashes) > 0 {
+		ctx.Session.Save(ctx.Request, ctx.ResponseWriter)
+		return flashes
+	}
+	return nil
+}
+
+func (ctx *BasePageContext) AddFlashMessage(msg interface{}) {
+	ctx.Session.AddFlash(msg)
+	ctx.Session.Save(ctx.Request, ctx.ResponseWriter)
+}
+
+func (ctx *BasePageContext) SessionGet(key string) interface{} {
+	return ctx.Session.Values[key]
+}
+
+func (ctx *BasePageContext) SessionSet(key string, value interface{}) {
+	ctx.Session.Values[key] = value
+}
+
+func (ctx *BasePageContext) SessionClear() {
+	ctx.Session.Values = nil
+}
+func (ctx *BasePageContext) SessionSave() error {
+	err := ctx.Session.Save(ctx.Request, ctx.ResponseWriter)
+	helpers.CheckErr(err, "BasePageContext Save Error")
 	return err
 }

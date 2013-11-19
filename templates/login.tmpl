@@ -8,11 +8,12 @@
 	</head>
 	<body>
 		<div  class="pure-g-r" id="layout">
-			{{if .FlashMesssages}}
+			{{$flash := .GetFlashMessage}}
+			{{if $flash}}
 			<div class="pure-u-1">
 				<div class="info">
 					<ul>
-					{{range .FlashMesssages}}
+					{{range $flash}}
 						<li>{{.}}</li>
 					{{end}}
 					</ul>
@@ -33,11 +34,11 @@
 								<fieldset>
 									<div class="pure-control-group">
 										<label for="login">Login</label>
-										<input name="Login" id="login" type="text" placeholder="User name" value="{{.Login}}"/>
+										<input name="LoginForm.Login" id="login" type="text" placeholder="User name" value="{{.Login}}"/>
 									</div>
 									<div class="pure-control-group">
 										<label for="pass">Password</label>
-										<input name="Password" id="pass" type="password" placeholder="Password">
+										<input name="LoginForm.Password" id="pass" type="password" placeholder="Password">
 									</div>
 									<div class="pure-controls">
 										<button type="submit" class="pure-button pure-button-primary">Log in</button>

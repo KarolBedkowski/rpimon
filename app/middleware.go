@@ -14,14 +14,14 @@ const FORM_CSRF_TOKEN = "CsrfToken"
 
 func csrfHandler(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session := NewSessionStore(w, r)
+		session := GetSessionStore(w, r)
 		csrf_token := session.Get(CONTEXT_CSRF_TOKEN)
 		if csrf_token == nil {
 			token := make([]byte, CSRF_TOKEN_LEN)
 			rand.Read(token)
 			csrf_token = base64.StdEncoding.EncodeToString(token)
 			session.Set(CONTEXT_CSRF_TOKEN, csrf_token)
-			session.Save()
+			session.Save(w, r)
 		}
 
 		context.Set(r, CONTEXT_CSRF_TOKEN, csrf_token)

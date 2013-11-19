@@ -16,7 +16,7 @@ func main() {
 
 	wapp := app.NewWebApp(*configFilename)
 	defer wapp.Close()
-	
+
 	wapp.Configuration.Debug = *debug
 	log.Print("Debug=", wapp.Configuration.Debug)
 
@@ -34,5 +34,3 @@ func main() {
 func handleHome(w http.ResponseWriter, r *http.Request) {
 	app.App.RenderTemplate(w, "base", nil, "base.tmpl", "index.tmpl")
 }
-
-

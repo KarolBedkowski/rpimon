@@ -25,7 +25,7 @@ type Credentials struct {
 func GetLoggedUser(w http.ResponseWriter, r *http.Request, redirect bool) (credentials *Credentials) {
 	credentials = nil
 	a := context.Get(r, "APP").(*app.WebApp)
-	session := app.NewSessionStore(w, r)
+	session := app.GetSessionStore(w, r)
 	userId := session.Get(USERID_SESSION)
 	if userId != nil {
 		userIdI, _ := strconv.ParseInt(userId.(string), 10, 64)
@@ -44,75 +44,72 @@ func GetLoggedUser(w http.ResponseWriter, r *http.Request, redirect bool) (crede
 	return
 }
 
-type LoginPage struct {
-	FlashMesssages []interface{}
-	Login          string
-	Password       string
-	Message        string
-	back           string
-	CsrfToken      string
+type LoginForm struct {
+	Login    string
+	Password string
+	Message  string
+}
+
+type LoginPageCtx struct {
+	*app.BasePageContext
+	*LoginForm
+	back      string
+	CsrfToken string
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	a := context.Get(r, "APP").(*app.WebApp)
-	loginPage := &LoginPage{
-		Message:        "",
-		FlashMesssages: a.GetFlashMessage(w, r),
-		Login:          "",
-		Password:       "",
-		CsrfToken:      context.Get(r, app.CONTEXT_CSRF_TOKEN).(string)}
-
-	session := app.NewSessionStore(w, r)
+	loginPageCtx := &LoginPageCtx{app.NewBasePageContext("Login", w, r),
+		new(LoginForm), "", ""}
+	loginPageCtx.CsrfToken = context.Get(r, app.CONTEXT_CSRF_TOKEN).(string)
 
 	switch r.Method {
 	case "GET":
 		{
-			a.RenderTemplate(w, "base", loginPage, "login.tmpl")
+			a.RenderTemplate(w, "base", loginPageCtx, "login.tmpl")
 			return
 		}
 	case "POST":
 		{
 			_ = r.ParseForm()
 			values := r.Form
-			err := decoder.Decode(loginPage, values)
+			err := decoder.Decode(loginPageCtx, values)
 			if err != nil {
 				log.Print("Decode form error", err, values)
 			}
-			password := loginPage.Password
-			if password == "" || loginPage.Login == "" {
-				loginPage.Message = "Missing login and/or password"
-				a.RenderTemplate(w, "base", loginPage, "base.tmpl", "login.tmpl")
+			password := loginPageCtx.Password
+			if password == "" || loginPageCtx.Login == "" {
+				loginPageCtx.Message = "Missing login and/or password"
+				a.RenderTemplate(w, "base", loginPageCtx, "base.tmpl", "login.tmpl")
 				return
 			}
-			user := database.GetUserByLogin(loginPage.Login)
+			user := database.GetUserByLogin(loginPageCtx.Login)
 			if user != nil {
 				cp_err := helpers.ComparePassword(user.Password, password)
 				if cp_err != nil {
-					loginPage.Message = "Wrong user or password"
-					a.RenderTemplate(w, "base", loginPage, "login.tmpl")
+					loginPageCtx.Message = "Wrong user or password"
+					a.RenderTemplate(w, "base", loginPageCtx, "login.tmpl")
 					return
 				}
 				log.Printf("User %s log in", user.Login)
 			}
-			session.Set(USERID_SESSION, user.Id)
-			session.Set(USERLOGIN_SESSION, user.Login)
-			session.Save()
-			log.Print("values", values, loginPage.back)
+			loginPageCtx.Set(USERID_SESSION, user.Id)
+			loginPageCtx.Set(USERLOGIN_SESSION, user.Login)
+			loginPageCtx.SessionSave()
 			if values["back"] != nil && values["back"][0] != "" {
-				log.Print("Red", values["back"][0])
+				log.Print("Redirect to ", values["back"][0])
 				http.Redirect(w, r, values["back"][0], http.StatusFound)
 			} else {
 				http.Redirect(w, r, "/", http.StatusFound)
 			}
 		}
-
 	}
 }
 
 func LogoffHandler(w http.ResponseWriter, r *http.Request) {
-	session := app.NewSessionStore(w, r)
+	session := app.GetSessionStore(w, r)
 	session.Clear()
-	session.Save()
+	session.Save(w, r)
 	http.Redirect(w, r, "/", http.StatusFound)
 
 }
