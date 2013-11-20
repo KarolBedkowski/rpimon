@@ -4,7 +4,6 @@ import (
 	"../app"
 	"../database"
 	"../helpers"
-	"github.com/gorilla/context"
 	"github.com/gorilla/schema"
 	"log"
 	"net/http"
@@ -36,7 +35,7 @@ func GetLoggedUser(w http.ResponseWriter, r *http.Request, redirect bool) (crede
 	}
 	log.Print("Access denied")
 	if redirect {
-		login_url, _ := app.App.Router.Get("auth-login").URL()
+		login_url, _ := app.Router.Get("auth-login").URL()
 		durl := login_url.String() + "?back=" + url.QueryEscape(r.URL.String())
 		http.Redirect(w, r, durl, 302)
 	}
@@ -58,8 +57,6 @@ type LoginPageCtx struct {
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	loginPageCtx := &LoginPageCtx{app.NewBasePageContext("Login", w, r),
 		new(LoginForm), ""}
-	loginPageCtx.CsrfToken = context.Get(r, app.CONTEXT_CSRF_TOKEN).(string)
-
 	switch r.Method {
 	case "GET":
 		{

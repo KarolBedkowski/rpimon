@@ -15,13 +15,13 @@ func main() {
 	httpAddr := flag.String("addr", ":8000", "HTTP server address")
 	flag.Parse()
 
-	wapp := app.NewWebApp(*configFilename, *debug)
-	defer wapp.Close()
+	app.Init(*configFilename, *debug)
+	defer app.Close()
 
-	wapp.Router.HandleFunc("/", handleHome)
-	wapp.Router.HandleFunc("/auth/login", users.LoginHandler).Name("auth-login")
-	wapp.Router.HandleFunc("/auth/logoff", users.LogoffHandler).Name("auth-logoff")
-	users.CreateRoutes(wapp.Router.PathPrefix("/users"))
+	app.Router.HandleFunc("/", handleHome)
+	app.Router.HandleFunc("/auth/login", users.LoginHandler).Name("auth-login")
+	app.Router.HandleFunc("/auth/logoff", users.LogoffHandler).Name("auth-logoff")
+	users.CreateRoutes(app.Router.PathPrefix("/users"))
 
 	log.Printf("Listen: %s", *httpAddr)
 	if err := http.ListenAndServe(*httpAddr, nil); err != nil {

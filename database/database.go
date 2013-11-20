@@ -7,22 +7,25 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var Database *gorp.DbMap
+var Database gorp.DbMap
 
-func Init(dbFileName string) *gorp.DbMap {
+func Init(dbFileName string) {
 	db, err := sql.Open("sqlite3", dbFileName)
 	helpers.CheckErr(err, "sql.Open failed")
-	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
+	Database.Db = db
+	Database.Dialect = gorp.SqliteDialect{}
 
-	dbmap.AddTableWithName(User{}, "users").SetKeys(true, "Id")
+	// Register objects
+	Database.AddTableWithName(User{}, "users").SetKeys(true, "Id")
 
 	// Create tables
-	err = dbmap.CreateTablesIfNotExists()
+	err = Database.CreateTablesIfNotExists()
 	helpers.CheckErr(err, "Create tables failed")
 
-	Database = dbmap
-
+	// Bootstrap
 	BootstrapUsers()
+}
 
-	return dbmap
+func Close() {
+	Database.Db.Close()
 }

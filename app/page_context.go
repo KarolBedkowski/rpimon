@@ -2,8 +2,8 @@ package app
 
 import (
 	"../helpers"
+	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
-	"log"
 	"net/http"
 )
 
@@ -14,7 +14,7 @@ type SessionStore struct {
 }
 
 func GetSessionStore(w http.ResponseWriter, r *http.Request) *SessionStore {
-	session, _ := App.store.Get(r, STORE_SESSION)
+	session, _ := store.Get(r, STORE_SESSION)
 	return &SessionStore{session}
 }
 
@@ -45,7 +45,8 @@ type BasePageContext struct {
 }
 
 func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *BasePageContext {
-	ctx := &BasePageContext{title, w, r, GetSessionStore(w, r), ""}
+	ctx := &BasePageContext{title, w, r, GetSessionStore(w, r),
+		context.Get(r, CONTEXT_CSRF_TOKEN).(string)}
 	return ctx
 }
 
@@ -53,7 +54,6 @@ func (ctx *BasePageContext) GetFlashMessage() []interface{} {
 	if flashes := ctx.Session.Flashes(); len(flashes) > 0 {
 		err := ctx.SessionSave()
 		helpers.CheckErr(err, "GetFlashMessage Save Error")
-		log.Print("GetFlashMessage ", flashes, ctx.Session.Flashes())
 		return flashes
 	}
 	return nil

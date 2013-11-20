@@ -4,7 +4,6 @@ import (
 	"../app"
 	"../database"
 	"../helpers"
-	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -76,7 +75,6 @@ func editUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	editPage := newEditPageCtx(w, r, "")
-	editPage.CsrfToken = context.Get(r, app.CONTEXT_CSRF_TOKEN).(string)
 	switch r.Method {
 	case "GET":
 		{

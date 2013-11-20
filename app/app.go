@@ -2,7 +2,6 @@ package app
 
 import (
 	"../database"
-	"github.com/coopernurse/gorp"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
@@ -12,16 +11,10 @@ import (
 	"net/http"
 )
 
-type webApp struct {
-	Router   *mux.Router
-	store    *sessions.FilesystemStore
-	Database *gorp.DbMap
-}
+var Router *mux.Router = mux.NewRouter()
+var store *sessions.FilesystemStore
 
-// Current Web application
-var App webApp
-
-func NewWebApp(appConfFile string, debug bool) *webApp {
+func Init(appConfFile string, debug bool) {
 
 	conf := LoadConfiguration(appConfFile)
 	if debug {
@@ -38,11 +31,11 @@ func NewWebApp(appConfFile string, debug bool) *webApp {
 		conf.CookieEncKey = string(securecookie.GenerateRandomKey(32))
 	}
 
-	App.Router = mux.NewRouter()
-	App.store = sessions.NewFilesystemStore(conf.SessionStoreDir,
+	store = sessions.NewFilesystemStore(conf.SessionStoreDir,
 		[]byte(conf.CookieAuthKey),
 		[]byte(conf.CookieEncKey))
-	App.Database = database.Init(conf.Database)
+
+	database.Init(conf.Database)
 
 	contextHandler := func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -53,12 +46,10 @@ func NewWebApp(appConfFile string, debug bool) *webApp {
 
 	http.Handle("/static/", http.StripPrefix("/static",
 		http.FileServer(http.Dir(conf.StaticDir))))
-	http.Handle("/", weblogs.Handler(contextHandler(csrfHandler(App.Router))))
-
-	return &App
+	http.Handle("/", weblogs.Handler(contextHandler(csrfHandler(Router))))
 }
 
-func (app *webApp) Close() {
+func Close() {
 	log.Print("Closing...")
-	app.Database.Db.Close()
+	database.Close()
 }
