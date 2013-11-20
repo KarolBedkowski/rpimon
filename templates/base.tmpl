@@ -2,26 +2,37 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
+		<meta charset="utf-8">
 		<title>Lorem Ipsum</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="stylesheet" href="/static/css/pure-min.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="/static/css/main.css" type="text/css" media="all" />
 	</head>
 	<body>
-		<div  class="pure-g-r" id="layout">
-			{{$flash := .GetFlashMessage}}
-			{{if $flash}}
-			<div class="pure-u-1">
-				<div class="info">
-					<ul>
-					{{range .flash}}
-						<li>{{.}}</li>
-					{{end}}
+		<div class="pure-g-r" id="layout">
+			<div class="sidebar pure-u">
+				<header class="header">
+					<hgroup class="hgroup">
+						<h1><a class="pure-menu-heading" href="#">Test</a></h1>
+						<h2></h2>
+					</hgroup>
+					<nav class="nav">
+					<ul  class="nav-list">
+						<li class="nav-item nav-item-selected">
+							<a class="" href="#">AA</a> 
+						</li>
+						<li class="nav-item">
+							<a class="" href="/users/">Users</a> 
+						</li>
+						<li class="nav-item"><a>&nbsp;</li>
+						<li class="nav-item"><a class="" href="/auth/logoff">Logout</a> </li>	
 					</ul>
-				</div>
-			</div>
-			{{end}}
+					</nav>
+				</header>
+			</div><!-- end sidebar -->
 			<div class="pure-u-1">
-				<div class="container">
+				<div class="content">
+					{{template "flash" .}}
 					{{template "body" .}}
 				</div>
 			</div>

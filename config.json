@@ -1,6 +1,9 @@
-{"StaticDir": "./static",
-	"TemplatesDir": "./templates",
-	"Database": "./database.sqlite",
-	"CookieAuthKey": "1234567890123456789012345678901",
-	"CookieEncKey": "12345678901234567890012345678901"
+{
+  "Debug": false,
+  "CookieEncKey": "12345678901234567890012345678901",
+  "CookieAuthKey": "12345678901234567890123456789012",
+  "Database": "./database.sqlite",
+  "TemplatesDir": "./templates",
+  "StaticDir": "./static",
+	"SessionStoreDir": ""
 }

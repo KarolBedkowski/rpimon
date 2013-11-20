@@ -6,6 +6,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	_ "net/http/pprof"
 )
 
 func main() {
@@ -14,11 +15,8 @@ func main() {
 	httpAddr := flag.String("addr", ":8000", "HTTP server address")
 	flag.Parse()
 
-	wapp := app.NewWebApp(*configFilename)
+	wapp := app.NewWebApp(*configFilename, *debug)
 	defer wapp.Close()
-
-	wapp.Configuration.Debug = *debug
-	log.Print("Debug=", wapp.Configuration.Debug)
 
 	wapp.Router.HandleFunc("/", handleHome)
 	wapp.Router.HandleFunc("/auth/login", users.LoginHandler).Name("auth-login")
@@ -32,5 +30,7 @@ func main() {
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
-	app.App.RenderTemplate(w, "base", nil, "base.tmpl", "index.tmpl")
+	ctx := app.NewBasePageContext("Home", w, r)
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "index.tmpl",
+		"flash.tmpl")
 }

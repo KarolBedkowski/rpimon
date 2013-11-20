@@ -32,9 +32,8 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 	if GetLoggedUser(w, r, true) == nil {
 		return
 	}
-	a := context.Get(r, "APP").(*app.WebApp)
 	data := newUsersPageCtx(w, r, database.UsersList())
-	a.RenderTemplate(w, "base", data, "base.tmpl", "users/users.tmpl")
+	app.RenderTemplate(w, data, "base", "base.tmpl", "users/users.tmpl", "flash.tmpl")
 }
 
 type UserForm struct {
@@ -46,13 +45,12 @@ type UserForm struct {
 type EditPageCtx struct {
 	*app.BasePageContext
 	*UserForm
-	Message   string
-	CsrfToken string
+	Message string
 }
 
 func newEditPageCtx(w http.ResponseWriter, r *http.Request, msg string) *EditPageCtx {
 	return &EditPageCtx{app.NewBasePageContext("User", w, r),
-		&UserForm{}, msg, ""}
+		&UserForm{}, msg}
 }
 
 func (form *UserForm) validate() (err string) {
@@ -77,7 +75,6 @@ func editUserHandler(w http.ResponseWriter, r *http.Request) {
 	if GetLoggedUser(w, r, true) == nil {
 		return
 	}
-	a := context.Get(r, "APP").(*app.WebApp)
 	editPage := newEditPageCtx(w, r, "")
 	editPage.CsrfToken = context.Get(r, app.CONTEXT_CSRF_TOKEN).(string)
 	switch r.Method {
@@ -89,7 +86,7 @@ func editUserHandler(w http.ResponseWriter, r *http.Request) {
 				userIdI, _ := strconv.ParseInt(userId, 10, 64)
 				editPage.User = *database.GetUserById(userIdI)
 			}
-			a.RenderTemplate(w, "base", editPage, "base.tmpl", "users/edit.tmpl")
+			app.RenderTemplate(w, editPage, "base", "base.tmpl", "users/edit.tmpl", "flash.tmpl")
 			return
 		}
 	case "POST":
@@ -103,7 +100,7 @@ func editUserHandler(w http.ResponseWriter, r *http.Request) {
 			log.Print("Validate: ", msg)
 			if msg != "" {
 				editPage.Message = msg
-				a.RenderTemplate(w, "base", editPage, "base.tmpl", "users/edit.tmpl")
+				app.RenderTemplate(w, editPage, "base", "base.tmpl", "users/edit.tmpl", "flash.tmpl")
 				return
 			}
 			var user *database.User
@@ -121,6 +118,7 @@ func editUserHandler(w http.ResponseWriter, r *http.Request) {
 			user.Save()
 			url, _ := subRouter.Get("users-list").URL()
 			editPage.AddFlashMessage("User Saved")
+			editPage.SessionSave()
 			http.Redirect(w, r, url.String(), http.StatusFound)
 		}
 	default:

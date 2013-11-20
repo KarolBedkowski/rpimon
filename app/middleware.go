@@ -10,7 +10,7 @@ import (
 // csrf tokens
 const CSRF_TOKEN_LEN = 64
 const CONTEXT_CSRF_TOKEN = "csrf_token"
-const FORM_CSRF_TOKEN = "CsrfToken"
+const FORM_CSRF_TOKEN = "BasePageContext.CsrfToken"
 
 func csrfHandler(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -1,0 +1,16 @@
+{{define "flash"}}
+
+{{$flash := .GetFlashMessage}}
+{{if $flash}}
+<div class="pure-u-1">
+	<div class="info">
+		<ul>
+		{{range $flash}}
+			<li>{{.}}</li>
+		{{end}}
+		</ul>
+	</div>
+</div>
+{{end}}
+
+{{end}}

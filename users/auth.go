@@ -24,7 +24,6 @@ type Credentials struct {
 
 func GetLoggedUser(w http.ResponseWriter, r *http.Request, redirect bool) (credentials *Credentials) {
 	credentials = nil
-	a := context.Get(r, "APP").(*app.WebApp)
 	session := app.GetSessionStore(w, r)
 	userId := session.Get(USERID_SESSION)
 	if userId != nil {
@@ -37,7 +36,7 @@ func GetLoggedUser(w http.ResponseWriter, r *http.Request, redirect bool) (crede
 	}
 	log.Print("Access denied")
 	if redirect {
-		login_url, _ := a.Router.Get("auth-login").URL()
+		login_url, _ := app.App.Router.Get("auth-login").URL()
 		durl := login_url.String() + "?back=" + url.QueryEscape(r.URL.String())
 		http.Redirect(w, r, durl, 302)
 	}
@@ -53,20 +52,18 @@ type LoginForm struct {
 type LoginPageCtx struct {
 	*app.BasePageContext
 	*LoginForm
-	back      string
-	CsrfToken string
+	back string
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	a := context.Get(r, "APP").(*app.WebApp)
 	loginPageCtx := &LoginPageCtx{app.NewBasePageContext("Login", w, r),
-		new(LoginForm), "", ""}
+		new(LoginForm), ""}
 	loginPageCtx.CsrfToken = context.Get(r, app.CONTEXT_CSRF_TOKEN).(string)
 
 	switch r.Method {
 	case "GET":
 		{
-			a.RenderTemplate(w, "base", loginPageCtx, "login.tmpl")
+			app.RenderTemplate(w, loginPageCtx, "base", "login.tmpl", "flash.tmpl")
 			return
 		}
 	case "POST":
@@ -80,7 +77,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			password := loginPageCtx.Password
 			if password == "" || loginPageCtx.Login == "" {
 				loginPageCtx.Message = "Missing login and/or password"
-				a.RenderTemplate(w, "base", loginPageCtx, "base.tmpl", "login.tmpl")
+				app.RenderTemplate(w, loginPageCtx, "base", "base.tmpl", "login.tmpl", "flash.tmpl")
 				return
 			}
 			user := database.GetUserByLogin(loginPageCtx.Login)
@@ -88,7 +85,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 				cp_err := helpers.ComparePassword(user.Password, password)
 				if cp_err != nil {
 					loginPageCtx.Message = "Wrong user or password"
-					a.RenderTemplate(w, "base", loginPageCtx, "login.tmpl")
+					app.RenderTemplate(w, loginPageCtx, "base", "login.tmpl", "flash.tmpl")
 					return
 				}
 				log.Printf("User %s log in", user.Login)
