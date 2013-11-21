@@ -1,45 +1,24 @@
-package users
+package auth
 
 import (
-	"../app"
-	"../database"
-	"../helpers"
+	"../../app"
+	"../../database"
+	"../../helpers"
+	"../../security"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"log"
 	"net/http"
-	"net/url"
-	"strconv"
 )
-
-const PROFILE_SESSION = "profile"
-const USERID_SESSION = "userid"
-const USERLOGIN_SESSION = "userid"
 
 var decoder = schema.NewDecoder()
 
-type Credentials struct {
-	User *database.User
-}
+var subRouter *mux.Router
 
-func GetLoggedUser(w http.ResponseWriter, r *http.Request, redirect bool) (credentials *Credentials) {
-	credentials = nil
-	session := app.GetSessionStore(w, r)
-	userId := session.Get(USERID_SESSION)
-	if userId != nil {
-		userIdI, _ := strconv.ParseInt(userId.(string), 10, 64)
-		user := database.GetUserById(userIdI)
-		if user != nil {
-			credentials = &Credentials{User: user}
-			return
-		}
-	}
-	log.Print("Access denied")
-	if redirect {
-		login_url, _ := app.Router.Get("auth-login").URL()
-		durl := login_url.String() + "?back=" + url.QueryEscape(r.URL.String())
-		http.Redirect(w, r, durl, 302)
-	}
-	return
+func CreateRoutes(parentRoute *mux.Route) {
+	subRouter = parentRoute.Subrouter()
+	subRouter.HandleFunc("/login", LoginHandler).Name("auth-login")
+	subRouter.HandleFunc("/logoff", LogoffHandler).Name("auth-logoff")
 }
 
 type LoginForm struct {
@@ -87,8 +66,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				log.Printf("User %s log in", user.Login)
 			}
-			loginPageCtx.Set(USERID_SESSION, user.Id)
-			loginPageCtx.Set(USERLOGIN_SESSION, user.Login)
+			loginPageCtx.Set(security.USERID_SESSION, user.Id)
+			loginPageCtx.Set(security.USERLOGIN_SESSION, user.Login)
 			loginPageCtx.SessionSave()
 			if values["back"] != nil && values["back"][0] != "" {
 				log.Print("Redirect to ", values["back"][0])

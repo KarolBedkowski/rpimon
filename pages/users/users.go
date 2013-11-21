@@ -1,16 +1,19 @@
 package users
 
 import (
-	"../app"
-	"../database"
-	"../helpers"
+	"../../app"
+	"../../database"
+	"../../helpers"
+	"../../security"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	"log"
 	"net/http"
 	"strconv"
 )
 
 var subRouter *mux.Router
+var decoder = schema.NewDecoder()
 
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
@@ -28,7 +31,7 @@ func newUsersPageCtx(w http.ResponseWriter, r *http.Request, users []database.Us
 }
 
 func usersHandler(w http.ResponseWriter, r *http.Request) {
-	if GetLoggedUser(w, r, true) == nil {
+	if security.GetLoggedUser(w, r, true) == nil {
 		return
 	}
 	data := newUsersPageCtx(w, r, database.UsersList())
@@ -71,7 +74,7 @@ func (form *UserForm) validate() (err string) {
 }
 
 func editUserHandler(w http.ResponseWriter, r *http.Request) {
-	if GetLoggedUser(w, r, true) == nil {
+	if security.GetLoggedUser(w, r, true) == nil {
 		return
 	}
 	editPage := newEditPageCtx(w, r, "")

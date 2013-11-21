@@ -2,6 +2,7 @@ package app
 
 import (
 	"../database"
+	"fmt"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
@@ -9,6 +10,7 @@ import (
 	"github.com/keep94/weblogs"
 	"log"
 	"net/http"
+	nurl "net/url"
 )
 
 var Router *mux.Router = mux.NewRouter()
@@ -52,4 +54,26 @@ func Init(appConfFile string, debug bool) {
 func Close() {
 	log.Print("Closing...")
 	database.Close()
+}
+
+func GetNamedUrl(name string, pairs ...string) (url string, err error) {
+	url = ""
+	rurl, err := Router.Get(name).URL()
+	if err != nil {
+		return
+	}
+	url = rurl.String()
+	pairs_len := len(pairs)
+	if pairs_len == 0 {
+		return
+	}
+	if pairs_len%2 != 0 {
+		err = fmt.Errorf("Requred pairs of arguments")
+		return
+	}
+	url += "?"
+	for idx := 0; idx < pairs_len; idx += 2 {
+		url += pairs[idx] + "=" + nurl.QueryEscape(pairs[idx+1])
+	}
+	return
 }

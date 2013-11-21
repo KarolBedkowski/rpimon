@@ -2,7 +2,8 @@ package main
 
 import (
 	"./app"
-	"./users"
+	"./pages/auth"
+	"./pages/users"
 	"flag"
 	"log"
 	"net/http"
@@ -19,9 +20,8 @@ func main() {
 	defer app.Close()
 
 	app.Router.HandleFunc("/", handleHome)
-	app.Router.HandleFunc("/auth/login", users.LoginHandler).Name("auth-login")
-	app.Router.HandleFunc("/auth/logoff", users.LogoffHandler).Name("auth-logoff")
 	users.CreateRoutes(app.Router.PathPrefix("/users"))
+	auth.CreateRoutes(app.Router.PathPrefix("/auth"))
 
 	log.Printf("Listen: %s", *httpAddr)
 	if err := http.ListenAndServe(*httpAddr, nil); err != nil {
