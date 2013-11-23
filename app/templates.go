@@ -1,7 +1,7 @@
 package app
 
 import (
-	"log"
+	l "../helpers/logging"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -25,7 +25,7 @@ func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenam
 		for _, filename := range filenames {
 			fullPath := filepath.Join(Configuration.TemplatesDir, filename)
 			if !fileExists(fullPath) {
-				log.Printf("RenderTemplate missing template: %s", fullPath)
+				l.Error("RenderTemplate missing template: %s", fullPath)
 				return
 			}
 			templates = append(templates, fullPath)
@@ -35,7 +35,7 @@ func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenam
 	}
 	err := ctemplate.ExecuteTemplate(w, name, ctx)
 	if err != nil {
-		log.Printf("RenderTemplate execution failed: %s on %s (%s)", err,
+		l.Error("RenderTemplate execution failed: %s on %s (%s)", err,
 			name, filenames)
 	}
 }
@@ -43,7 +43,7 @@ func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenam
 func fileExists(name string) bool {
 	if _, err := os.Stat(name); err != nil {
 		if os.IsNotExist(err) {
-			log.Fatal(name, " does not exist.")
+			l.Error(name, " does not exist.")
 		}
 		return false
 	}

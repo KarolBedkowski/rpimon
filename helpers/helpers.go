@@ -1,8 +1,9 @@
 package helpers
 
 import (
+	"./logging"
 	"code.google.com/p/go.crypto/bcrypt"
-	"log"
+	"os"
 )
 
 const BCRYPT_COST = 12
@@ -10,7 +11,14 @@ const MIN_PASSWORD_LENGTH = 8
 
 func CheckErr(err error, msg string) {
 	if err != nil {
-		log.Fatalln(msg, err)
+		logging.Error(msg)
+	}
+}
+
+func CheckErrAndDie(err error, msg string) {
+	if err != nil {
+		logging.Error(msg)
+		os.Exit(1)
 	}
 }
 

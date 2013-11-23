@@ -8,7 +8,8 @@ import (
 )
 
 type Credentials struct {
-	User *database.User
+	User       *database.User
+	Privilages []string
 }
 
 const USERID_SESSION = "userid"
@@ -19,9 +20,11 @@ func GetLoggedUser(w http.ResponseWriter, r *http.Request, redirect bool) (crede
 	session := app.GetSessionStore(w, r)
 	userId := session.Get(USERID_SESSION)
 	if userId != nil {
+		// TODO: nie czytać z bazy danych -> cachowanie
 		user := database.GetUserById(userId.(int64))
 		if user != nil {
-			credentials = &Credentials{User: user}
+			credentials = &Credentials{User: user,
+				Privilages: database.PrivilagesToStr(database.GetUserPrivilages(userId.(int64)))}
 			return
 		}
 	}

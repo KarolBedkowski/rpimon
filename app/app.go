@@ -2,13 +2,13 @@ package app
 
 import (
 	"../database"
+	l "../helpers/logging"
 	"fmt"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/keep94/weblogs"
-	"log"
 	"net/http"
 	nurl "net/url"
 )
@@ -22,14 +22,16 @@ func Init(appConfFile string, debug bool) {
 	if debug {
 		conf.Debug = true
 	}
-	log.Print("Debug=", conf.Debug)
+	l.Init(conf.LogFilename, conf.Debug)
+
+	l.Print("Debug=", conf.Debug)
 
 	if len(conf.CookieAuthKey) < 32 {
-		log.Print("Random CookieAuthKey")
+		l.Info("Random CookieAuthKey")
 		conf.CookieAuthKey = string(securecookie.GenerateRandomKey(32))
 	}
 	if len(conf.CookieEncKey) < 32 {
-		log.Print("Random CookieEncKey")
+		l.Info("Random CookieEncKey")
 		conf.CookieEncKey = string(securecookie.GenerateRandomKey(32))
 	}
 
@@ -37,7 +39,7 @@ func Init(appConfFile string, debug bool) {
 		[]byte(conf.CookieAuthKey),
 		[]byte(conf.CookieEncKey))
 
-	database.Init(conf.Database)
+	database.Init(conf.Database, conf.Debug)
 
 	contextHandler := func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +54,7 @@ func Init(appConfFile string, debug bool) {
 }
 
 func Close() {
-	log.Print("Closing...")
+	l.Info("Closing...")
 	database.Close()
 }
 

@@ -4,10 +4,10 @@ import (
 	"../../app"
 	"../../database"
 	"../../helpers"
+	l "../../helpers/logging"
 	"../../security"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
-	"log"
 	"net/http"
 )
 
@@ -48,7 +48,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			values := r.Form
 			err := decoder.Decode(loginPageCtx, values)
 			if err != nil {
-				log.Print("Decode form error", err, values)
+				l.Warn("Decode form error", err, values)
 			}
 			password := loginPageCtx.Password
 			if password == "" || loginPageCtx.Login == "" {
@@ -64,13 +64,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 					app.RenderTemplate(w, loginPageCtx, "base", "login.tmpl", "flash.tmpl")
 					return
 				}
-				log.Printf("User %s log in", user.Login)
+				l.Info("User %s log in", user.Login)
 			}
 			loginPageCtx.Set(security.USERID_SESSION, user.Id)
 			loginPageCtx.Set(security.USERLOGIN_SESSION, user.Login)
 			loginPageCtx.SessionSave()
 			if values["back"] != nil && values["back"][0] != "" {
-				log.Print("Redirect to ", values["back"][0])
+				l.Debug("Redirect to ", values["back"][0])
 				http.Redirect(w, r, values["back"][0], http.StatusFound)
 			} else {
 				http.Redirect(w, r, "/", http.StatusFound)

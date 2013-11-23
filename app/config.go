@@ -14,6 +14,7 @@ type AppConfiguration struct {
 	CookieAuthKey   string
 	CookieEncKey    string
 	SessionStoreDir string
+	LogFilename     string
 }
 
 var Configuration AppConfiguration
