@@ -4,10 +4,10 @@ import (
 	"../../app"
 	"../../database"
 	"../../helpers"
+	l "../../helpers/logging"
 	"../../security"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -19,6 +19,9 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", usersHandler).Name("users-list")
 	subRouter.HandleFunc("/{id:[0-9]+}", editUserHandler)
+	subRouter.HandleFunc("/privs/", getPrivsHandler).Name("privs-list")
+	subRouter.HandleFunc("/privs/{id:[0-9]+}", getEditPrivPageHandler).Methods("GET")
+	subRouter.HandleFunc("/privs/{id:[0-9]+}", saveEditPrivPageHangler).Methods("POST")
 }
 
 type UsersPageCtx struct {
@@ -85,7 +88,10 @@ func editUserHandler(w http.ResponseWriter, r *http.Request) {
 			userId, ok := vars["id"]
 			if ok && userId != "" {
 				userIdI, _ := strconv.ParseInt(userId, 10, 64)
-				editPage.User = *database.GetUserById(userIdI)
+				user := database.GetUserById(userIdI)
+				if user != nil {
+					editPage.User = *user
+				}
 			}
 			app.RenderTemplate(w, editPage, "base", "base.tmpl", "users/edit.tmpl", "flash.tmpl")
 			return
@@ -95,10 +101,9 @@ func editUserHandler(w http.ResponseWriter, r *http.Request) {
 			r.ParseForm()
 			err := decoder.Decode(editPage, r.Form)
 			if err != nil {
-				log.Print("Decoding form error", err)
+				l.Warn("Decoding form error", err)
 			}
 			msg := editPage.validate()
-			log.Print("Validate: ", msg)
 			if msg != "" {
 				editPage.Message = msg
 				app.RenderTemplate(w, editPage, "base", "base.tmpl", "users/edit.tmpl", "flash.tmpl")

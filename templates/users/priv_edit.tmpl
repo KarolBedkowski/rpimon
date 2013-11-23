@@ -1,0 +1,28 @@
+{{define "body"}}
+<div class="pure-u-1">
+	<section>
+		<h1>Privilage</h1>
+		{{if .Message}}
+			{{.Message}}
+		{{end}}
+		<form action="" method="post" accept-charset="utf-8" class="pure-form pure-form-aligned">
+			<fieldset>
+				<div class="pure-control-group">
+					<label for="code">Code</label>
+					<input type="text" name="PrivForm.Privilage.Code" id="code" value="{{.Code}}" />
+				</div>
+				<div class="pure-control-group">
+					<label for="name">Name</label>
+					<input type="text" name="PrivForm.Privilage.Name" id="name" value="{{.Name}}" />
+				</div>
+				<div class="pure-controls">
+					<input type="hidden" name="PrivForm.Privilage.Id" value="{{.Id}}" />
+					<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
+					<button type="submit" class="pure-button pure-button-primary">Save</button>
+					<a href="/users/privs/" class="pure-button">Back</a>
+				</div>
+			</fieldset>
+		</form>
+	</section>
+</div>
+{{end}}
