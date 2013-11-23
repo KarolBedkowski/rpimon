@@ -3,14 +3,27 @@
 {{$flash := .GetFlashMessage}}
 {{if $flash}}
 <div class="pure-u-1">
-	<div class="info">
+	<div class="info" id="flash-info"> 
+		<div class="infoheader">
+			<span id="closeinfo">X</span>
+		</div>
+		<div>
 		<ul>
 		{{range $flash}}
 			<li>{{.}}</li>
 		{{end}}
 		</ul>
+		</div>
 	</div>
 </div>
+<script >
+	$(function() {
+		$("#closeinfo").click(function() {
+			$("#flash-info").hide("fold", {}, 250, function(){});
+			return false;
+		});	
+	});
+</script>
 {{end}}
 
 {{end}}
