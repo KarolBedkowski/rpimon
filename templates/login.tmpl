@@ -5,6 +5,8 @@
 		<title>Lorem Ipsum</title>
 		<link rel="stylesheet" href="/static/css/pure-min.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="/static/css/main.css" type="text/css" media="all" />
+		<script src="/static/lib/jquery/jquery-1.10.2.min.js"></script>
+		<script src="/static/lib/jquery/jquery.validate.js"></script>
 	</head>
 	<body>
 		<div  class="pure-g-r" id="layout">
@@ -34,11 +36,11 @@
 								<fieldset>
 									<div class="pure-control-group">
 										<label for="login">Login</label>
-										<input name="LoginForm.Login" id="login" type="text" placeholder="User name" value="{{.Login}}"/>
+										<input name="LoginForm.Login" id="login" type="text" placeholder="User name" value="{{.Login}}" required/>
 									</div>
 									<div class="pure-control-group">
 										<label for="pass">Password</label>
-										<input name="LoginForm.Password" id="pass" type="password" placeholder="Password">
+										<input name="LoginForm.Password" id="pass" type="password" placeholder="Password" required>
 									</div>
 									<div class="pure-controls">
 										<button type="submit" class="pure-button pure-button-primary">Log in</button>
@@ -52,5 +54,10 @@
 			</div>
 		</div>
 	</body>
+	<script type="text/javascript" charset="utf-8">
+		$(function() {	
+			$("form").validate();
+		});
+	</script>
 </html>
 {{end}}
