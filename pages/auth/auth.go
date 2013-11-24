@@ -53,7 +53,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			password := loginPageCtx.Password
 			if password == "" || loginPageCtx.Login == "" {
 				loginPageCtx.Message = "Missing login and/or password"
-				app.RenderTemplate(w, loginPageCtx, "base", "base.tmpl", "login.tmpl", "flash.tmpl")
+				app.RenderTemplate(w, loginPageCtx, "base", "login.tmpl", "flash.tmpl")
 				return
 			}
 			user := database.GetUserByLogin(loginPageCtx.Login)
