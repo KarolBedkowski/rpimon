@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
-	"github.com/keep94/weblogs"
 	"net/http"
 	nurl "net/url"
 )
@@ -50,7 +49,7 @@ func Init(appConfFile string, debug bool) {
 
 	http.Handle("/static/", http.StripPrefix("/static",
 		http.FileServer(http.Dir(conf.StaticDir))))
-	http.Handle("/", weblogs.Handler(contextHandler(csrfHandler(Router))))
+	http.Handle("/", logHandler(contextHandler(csrfHandler(Router))))
 }
 
 func Close() {
