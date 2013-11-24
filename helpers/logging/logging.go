@@ -20,12 +20,7 @@ const (
 func Init(filename string, debug bool) {
 	debugLevel = debug
 	outFile, _ := os.Create(filename)
-
-	flags := log.LstdFlags
-	if debug {
-		flags |= log.Lshortfile
-	}
-	Logger = log.New(io.MultiWriter(os.Stderr, outFile), "", flags)
+	Logger = log.New(io.MultiWriter(os.Stderr, outFile), "", log.LstdFlags)
 }
 
 func Print(v ...interface{}) {
@@ -38,18 +33,18 @@ func Printf(v ...interface{}) {
 
 func Debug(v ...interface{}) {
 	if debugLevel {
-		Logger.Printf(DEBUG, v...)
+		Logger.Printf(DEBUG+" "+v[0].(string), v[1:]...)
 	}
 }
 
 func Info(v ...interface{}) {
-	Logger.Printf(INFO, v...)
+	Logger.Printf(INFO+" "+v[0].(string), v[1:]...)
 }
 
 func Warn(v ...interface{}) {
-	Logger.Printf(WARN, v...)
+	Logger.Printf(WARN+" "+v[0].(string), v[1:]...)
 }
 
 func Error(v ...interface{}) {
-	Logger.Printf(ERROR, v...)
+	Logger.Printf(ERROR+" "+v[0].(string), v[1:]...)
 }
