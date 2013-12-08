@@ -21,17 +21,17 @@
 					</hgroup>
 					<nav class="nav">
 					<ul  class="nav-list">
+						{{if .BasePageContext.CurrentUser}}
 						<li class="nav-item nav-item-selected">
-							<a class="" href="#">AA</a> 
+							<a class="" href="#">Home</a>
 						</li>
 						<li class="nav-item">
-							<a class="" href="/users/">Users</a> 
+							<a class="" href="/net/">Network</a>
 						</li>
 						<li class="nav-item"><a>&nbsp;</li>
-						{{if .BasePageContext.CurrentUser}}
-						<li class="nav-item"><a class="" href="/auth/logoff">Logout</a> </li>	
+						<li class="nav-item"><a class="" href="/auth/logoff">Logout</a> </li>
 						{{else}}
-						<li class="nav-item"><a class="" href="/auth/login">Login</a> </li>	
+						<li class="nav-item"><a class="" href="/auth/login">Login</a> </li>
 						{{end}}
 					</ul>
 					</nav>
@@ -39,6 +39,20 @@
 			</div><!-- end sidebar -->
 			<div class="pure-u-1">
 				<div class="content">
+					{{if .BasePageContext.LocalMenu}}
+					<div class="pure-u-1">
+						<div class="pure-menu pure-menu-open pure-menu-horizontal">
+							<ul>
+								{{$current := .BasePageContext.CurrentLocalMenuPos}}
+								{{range .BasePageContext.LocalMenu}}
+									<li class="{{if eq . $current}}pure-menu-selected {{end}}">
+										<a href="{{.}}" >{{.}}</a>
+									</li>
+								{{end}}
+							</ul>
+						</div>
+					</div>
+					{{end}}
 					{{template "flash" .}}
 					<div class="pure-g-r content-ribbon">
 					{{template "body" .}}

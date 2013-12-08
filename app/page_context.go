@@ -40,12 +40,14 @@ func (store *SessionStore) Save(w http.ResponseWriter, r *http.Request) error {
 
 type BasePageContext struct {
 	*SessionStore
-	Title          string
-	ResponseWriter http.ResponseWriter
-	Request        *http.Request
-	CsrfToken      string
-	Hostname       string
-	CurrentUser    string
+	Title               string
+	ResponseWriter      http.ResponseWriter
+	Request             *http.Request
+	CsrfToken           string
+	Hostname            string
+	CurrentUser         string
+	LocalMenu           []string
+	CurrentLocalMenuPos string
 }
 
 var hostname string
