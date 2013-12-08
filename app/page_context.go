@@ -1,10 +1,12 @@
 package app
 
 import (
-	"../helpers"
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
+	"io/ioutil"
+	"k.prv/rpimon/helpers"
 	"net/http"
+	"strings"
 )
 
 const STORE_SESSION = "SESSION"
@@ -37,16 +39,36 @@ func (store *SessionStore) Save(w http.ResponseWriter, r *http.Request) error {
 }
 
 type BasePageContext struct {
+	*SessionStore
 	Title          string
 	ResponseWriter http.ResponseWriter
 	Request        *http.Request
-	*SessionStore
-	CsrfToken string
+	CsrfToken      string
+	Hostname       string
+	CurrentUser    string
 }
 
+var hostname string
+
 func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *BasePageContext {
-	ctx := &BasePageContext{title, w, r, GetSessionStore(w, r),
-		context.Get(r, CONTEXT_CSRF_TOKEN).(string)}
+	ctx := &BasePageContext{Title: title,
+		ResponseWriter: w,
+		Request:        r,
+		SessionStore:   GetSessionStore(w, r),
+		CsrfToken:      context.Get(r, CONTEXT_CSRF_TOKEN).(string)}
+	if hostname == "" {
+		file, err := ioutil.ReadFile("/etc/hostname")
+		helpers.CheckErr(err, "Load hostname error")
+		hostname = strings.Trim(string(file), " \n")
+	}
+	ctx.Hostname = hostname
+	session := GetSessionStore(w, r)
+	if session != nil {
+		userid := session.Get("USERID")
+		if userid != nil {
+			ctx.CurrentUser = userid.(string)
+		}
+	}
 	return ctx
 }
 

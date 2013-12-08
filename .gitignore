@@ -1,3 +1,6 @@
 *.sqlite
 *.log
 webapp-test
+static
+tags
+

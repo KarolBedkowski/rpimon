@@ -9,7 +9,7 @@ import (
 type AppConfiguration struct {
 	StaticDir       string
 	TemplatesDir    string
-	Database        string
+	Users           string
 	Debug           bool
 	CookieAuthKey   string
 	CookieEncKey    string
@@ -23,12 +23,12 @@ func LoadConfiguration(filename string) *AppConfiguration {
 	log.Print("Loading configuration file ", filename)
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Fatal("Error: %s\n", err.Error())
+		log.Fatal("Error: ", err.Error())
 		return nil
 	}
 	err = json.Unmarshal(file, &Configuration)
 	if err != nil {
-		log.Fatal("Error: %s\n", err.Error())
+		log.Fatal("Error: ", err.Error())
 		return nil
 	}
 	err = json.Unmarshal(file, Configuration)

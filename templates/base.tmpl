@@ -16,7 +16,7 @@
 			<div class="sidebar pure-u">
 				<header class="header">
 					<hgroup class="hgroup">
-						<h1><a class="pure-menu-heading" href="#">Test</a></h1>
+						<h1><a class="pure-menu-heading" href="#">{{.BasePageContext.Hostname}}</a></h1>
 						<h2></h2>
 					</hgroup>
 					<nav class="nav">
@@ -28,7 +28,11 @@
 							<a class="" href="/users/">Users</a> 
 						</li>
 						<li class="nav-item"><a>&nbsp;</li>
+						{{if .BasePageContext.CurrentUser}}
 						<li class="nav-item"><a class="" href="/auth/logoff">Logout</a> </li>	
+						{{else}}
+						<li class="nav-item"><a class="" href="/auth/login">Login</a> </li>	
+						{{end}}
 					</ul>
 					</nav>
 				</header>
@@ -36,7 +40,9 @@
 			<div class="pure-u-1">
 				<div class="content">
 					{{template "flash" .}}
+					<div class="pure-g-r content-ribbon">
 					{{template "body" .}}
+					</div>
 				</div>
 			</div>
 		</div>

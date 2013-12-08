@@ -1,13 +1,12 @@
 package app
 
 import (
-	"../database"
-	l "../helpers/logging"
 	"fmt"
-	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
+	"k.prv/rpimon/database"
+	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	nurl "net/url"
 )
@@ -38,14 +37,7 @@ func Init(appConfFile string, debug bool) {
 		[]byte(conf.CookieAuthKey),
 		[]byte(conf.CookieEncKey))
 
-	database.Init(conf.Database, conf.Debug)
-
-	contextHandler := func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			defer context.Clear(r)
-			h.ServeHTTP(w, r)
-		})
-	}
+	database.Init(conf.Users, conf.Debug)
 
 	http.Handle("/static/", http.StripPrefix("/static",
 		http.FileServer(http.Dir(conf.StaticDir))))
@@ -54,7 +46,6 @@ func Init(appConfFile string, debug bool) {
 
 func Close() {
 	l.Info("Closing...")
-	database.Close()
 }
 
 func GetNamedUrl(name string, pairs ...string) (url string, err error) {

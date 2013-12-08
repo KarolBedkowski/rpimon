@@ -1,10 +1,10 @@
 package main
 
 import (
-	"./app"
-	"./pages/auth"
-	"./pages/users"
 	"flag"
+	"k.prv/rpimon/app"
+	"k.prv/rpimon/pages/auth"
+	pmain "k.prv/rpimon/pages/main"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -20,8 +20,8 @@ func main() {
 	defer app.Close()
 
 	app.Router.HandleFunc("/", handleHome)
-	users.CreateRoutes(app.Router.PathPrefix("/users"))
 	auth.CreateRoutes(app.Router.PathPrefix("/auth"))
+	pmain.CreateRoutes(app.Router.PathPrefix("/main"))
 
 	log.Printf("Listen: %s", *httpAddr)
 	if err := http.ListenAndServe(*httpAddr, nil); err != nil {
@@ -30,7 +30,5 @@ func main() {
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
-	ctx := app.NewBasePageContext("Home", w, r)
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "index.tmpl",
-		"flash.tmpl")
+	http.Redirect(w, r, "/main/", http.StatusFound)
 }

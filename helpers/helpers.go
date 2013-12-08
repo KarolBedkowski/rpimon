@@ -1,8 +1,8 @@
 package helpers
 
 import (
-	"./logging"
-	"code.google.com/p/go.crypto/bcrypt"
+	"errors"
+	"k.prv/rpimon/helpers/logging"
 	"os"
 )
 
@@ -23,14 +23,8 @@ func CheckErrAndDie(err error, msg string) {
 }
 
 func ComparePassword(user_password string, candidate_password string) (err error) {
-	err = bcrypt.CompareHashAndPassword([]byte(user_password), []byte(candidate_password))
-	return
-}
-
-func CreatePassword(password string) string {
-	password_hashed, err := bcrypt.GenerateFromPassword([]byte(password), BCRYPT_COST)
-	if err != nil {
-		panic(err)
+	if user_password == candidate_password {
+		return nil
 	}
-	return string(password_hashed)
+	return errors.New("Wrong password")
 }

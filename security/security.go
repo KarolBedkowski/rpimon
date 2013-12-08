@@ -1,33 +1,29 @@
 package security
 
 import (
-	"../app"
-	"../database"
+	"k.prv/rpimon/app"
+	"k.prv/rpimon/database"
 	"log"
 	"net/http"
 )
 
-type Credentials struct {
-	User       *database.User
-	Privilages []string
-}
+const USERID_SESSION = "USERID"
 
-const USERID_SESSION = "userid"
-const USERLOGIN_SESSION = "userlogin"
-
-func GetLoggedUser(w http.ResponseWriter, r *http.Request, redirect bool) (credentials *Credentials) {
-	credentials = nil
+func GetLoggedUser(w http.ResponseWriter, r *http.Request) (user *database.User) {
+	user = nil
 	session := app.GetSessionStore(w, r)
-	userId := session.Get(USERID_SESSION)
-	if userId != nil {
-		// TODO: nie czytać z bazy danych -> cachowanie
-		user := database.GetUserById(userId.(int64))
+	userLogin := session.Get(USERID_SESSION)
+	if userLogin != nil {
+		user := database.GetUserByLogin(userLogin.(string))
 		if user != nil {
-			credentials = &Credentials{User: user,
-				Privilages: database.PrivilagesToStr(database.GetUserPrivilages(userId.(int64)))}
-			return
+			return user
 		}
 	}
+	return
+}
+
+func CheckIsUserLogger(w http.ResponseWriter, r *http.Request, redirect bool) (user *database.User) {
+	user = GetLoggedUser(w, r)
 	log.Print("Access denied")
 	if redirect {
 		url, err := app.GetNamedUrl("auth-login", "back", r.URL.String())

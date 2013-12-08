@@ -7,9 +7,18 @@
 		<link rel="stylesheet" href="/static/css/main.css" type="text/css" media="all" />
 		<script src="/static/lib/jquery/jquery-1.10.2.min.js"></script>
 		<script src="/static/lib/jquery/jquery.validate.js"></script>
+		<style type="text/css" media="all">
+			.aligner {
+		 		display: flex;
+		  		align-items: center;
+		  		justify-content: center;
+				align-content: center;
+				min-height: 600px;
+			}
+		</style>
 	</head>
 	<body>
-		<div  class="pure-g-r" id="layout">
+		<div class="aligner">
 			{{$flash := .GetFlashMessage}}
 			{{if $flash}}
 			<div class="pure-u-1">
@@ -22,35 +31,31 @@
 				</div>
 			</div>
 			{{end}}
-			<div class="pure-u-1">
-				<div class="container">
-					<div class="pure-u-1">
-						<section>
-							<h1>Login</h1>
-							{{if .Message}}
-								<div class="warnings">
-									<p>{{.Message}}</p>
-								</div>
-							{{end}}
-							<form class="pure-form pure-form-aligned" method="POST">
-								<fieldset>
-									<div class="pure-control-group">
-										<label for="login">Login</label>
-										<input name="LoginForm.Login" id="login" type="text" placeholder="User name" value="{{.Login}}" required/>
-									</div>
-									<div class="pure-control-group">
-										<label for="pass">Password</label>
-										<input name="LoginForm.Password" id="pass" type="password" placeholder="Password" required>
-									</div>
-									<div class="pure-controls">
-										<button type="submit" class="pure-button pure-button-primary">Log in</button>
-										<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
-									</div>
-								</fieldset>
-							</form>
-						</section>
-					</div>
-				</div>
+			<div>
+				<section>
+					<h1>Login</h1>
+					{{if .Message}}
+						<div class="warnings">
+							<p>{{.Message}}</p>
+						</div>
+					{{end}}
+					<form class="pure-form pure-form-aligned" method="POST">
+						<fieldset>
+							<div class="pure-control-group">
+								<label for="login">Login</label>
+								<input name="LoginForm.Login" id="login" type="text" placeholder="User name" value="{{.Login}}" required/>
+							</div>
+							<div class="pure-control-group">
+								<label for="pass">Password</label>
+								<input name="LoginForm.Password" id="pass" type="password" placeholder="Password" required>
+							</div>
+							<div class="pure-controls">
+								<button type="submit" class="pure-button pure-button-primary">Log in</button>
+								<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
+							</div>
+						</fieldset>
+					</form>
+				</section>
 			</div>
 		</div>
 	</body>

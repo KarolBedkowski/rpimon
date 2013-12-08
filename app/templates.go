@@ -1,7 +1,7 @@
 package app
 
 import (
-	l "../helpers/logging"
+	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"os"
 	"path/filepath"

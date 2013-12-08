@@ -1,10 +1,10 @@
 package app
 
 import (
-	l "../helpers/logging"
 	"crypto/rand"
 	"encoding/base64"
 	"github.com/gorilla/context"
+	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"time"
 )
@@ -65,5 +65,12 @@ func logHandler(h http.Handler) http.HandlerFunc {
 			}
 		}()
 		h.ServeHTTP(writer, r)
+	})
+}
+
+func contextHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer context.Clear(r)
+		h.ServeHTTP(w, r)
 	})
 }

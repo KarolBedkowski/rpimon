@@ -1,0 +1,145 @@
+{{define "body"}}
+
+{{if .Warnings}}
+<div class="pure-u-1">
+	<div class="warnings">
+		<section>
+			<h1>Warning</h1>
+			<ul>
+			{{range .Warnings}}
+				<li>{{.}}</li>
+			{{end}}
+			</ul>
+		</section>
+	</div>
+</div>
+{{end}}
+
+<div class="pure-g-r content-ribbon">
+	<section>
+		<div class="pure-u-1">
+			<h1>{{.BasePageContext.Hostname}}</h1>
+		</div>
+		<div class="pure-u-1">
+				<p><label>Load:</label> {{.Load}}</p>
+		</div>
+		<div class="pure-u-1-2">
+			<p><label>Uptime:</label> {{.Uptime}}</p>
+		</div>
+		<div class="pure-u-1-2">
+			<p><label>Users:</label> {{.Users}}</p>
+		</div>
+		<div class="pure-u-1">
+			<p><label>Kernel:</label> {{.Uname}}</p>
+		</div>
+	</section>
+</div>
+
+<div class="pure-u-1-2">
+	<section>
+		<h1>CPU</h1>
+		<table class="pure-table table-centered">
+			<thead>
+				<tr>
+					<th>User</th>
+					<th>System</th>
+					<th>IO</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>{{.CpuUser}}%</td>
+					<td>{{.CpuSystem}}%</td>
+					<td>{{.CpuIowait}}%</td>
+				</tr>
+			</tbody>
+			<thead>
+				<tr>
+					<th>Freq</th>
+					<th>Temp</th>
+					<th>Governor<br/>Freq range</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>{{.CpuFreq}}</td>
+					<td>{{.CpuTemp}}°C</td>
+					<td><small>{{.CpuGovernor}}<br/>
+					{{.CpuMinFreq}}-{{.CpuMaxFreq}}</small></td>
+				</tr>
+			</tbody>
+		</table>
+	</section>
+</div>
+
+<div class="pure-u-1-2">
+	<section>
+		<h1>Memory</h1>
+		<table class="pure-table table-centered">
+			<thead>
+				<tr>
+					<th>Used</th>
+					<th>Buffers</th>
+					<th>Cache</th>
+					<th>Swap Used</th>
+				</tr>
+			</thead>
+			<tr>
+				<td>{{.MemUsedPerc}}%</td>
+				<td>{{.MemBuffersPerc}}%</td>
+				<td>{{.MemCachePerc}}%</td>
+				<td>{{.MemSwapUsedPerc}}%</td>
+			</tr>
+		</table>
+	</section>
+</div>
+
+<div class="pure-u-1-2">
+	<section>
+		<h1>Mount</h1>
+		<table class="pure-table">
+			<thead>
+				<tr>
+					<th>Filesystem</th>
+					<th>Used</th>
+				</tr>
+			</thead>
+			{{range .Filesystems}}
+			<tr>
+				<td>{{.MountPoint}}</td>
+				<td>{{.UserPerc}}</td>
+			</tr>
+			{{end}}
+		</table>
+	</section>
+</div>
+
+<div class="pure-u-1-2">
+	<section>
+		<h1>Network interfaces</h1>
+		<table class="pure-table">
+			<thead>
+				<tr>
+					<th>Interface</th>
+					<th>IP</th>
+				</tr>
+			</thead>
+			{{range .Interfaces}}
+			<tr>
+				<td>{{.Name}}</td>
+				<td>{{.Address}}</td>
+			</tr>
+			{{end}}
+		</table>
+	</section>
+</div>
+
+<script type="text/javascript">
+		 function refresh() {
+			window.location.reload(true);
+		 }
+
+		 setTimeout(refresh, 60000);
+</script>
+
+{{end}}

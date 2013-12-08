@@ -2,7 +2,7 @@
   "Debug": true,
   "CookieEncKey": "12345678901234567890012345678901",
   "CookieAuthKey": "12345678901234567890123456789012",
-  "Database": "./database.sqlite",
+  "Users": "./users.csv",
   "TemplatesDir": "./templates",
   "StaticDir": "./static",
 	"SessionStoreDir": "",
