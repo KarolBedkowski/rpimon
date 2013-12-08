@@ -1,0 +1,7 @@
+{
+	"Users": [{
+		"Login": "admin",
+		"Password": "q1w2e3",
+		"Privs": ["admin", "mpd", "files"]
+	}]
+}
