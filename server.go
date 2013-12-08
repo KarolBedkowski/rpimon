@@ -6,6 +6,7 @@ import (
 	"k.prv/rpimon/pages/auth"
 	pmain "k.prv/rpimon/pages/main"
 	pnet "k.prv/rpimon/pages/net"
+	pstorage "k.prv/rpimon/pages/storage"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -24,6 +25,7 @@ func main() {
 	auth.CreateRoutes(app.Router.PathPrefix("/auth"))
 	pmain.CreateRoutes(app.Router.PathPrefix("/main"))
 	pnet.CreateRoutes(app.Router.PathPrefix("/net"))
+	pstorage.CreateRoutes(app.Router.PathPrefix("/storage"))
 
 	log.Printf("Listen: %s", *httpAddr)
 	if err := http.ListenAndServe(*httpAddr, nil); err != nil {
