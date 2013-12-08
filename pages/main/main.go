@@ -252,7 +252,7 @@ func getIntValueFromKeyVal(line string) int {
 
 func checkIsServiceConnected(port string) (result bool) {
 	result = false
-	out, err := exec.Command("netstat", "-p", "--inet").Output()
+	out, err := exec.Command("netstat", "-pn", "--inet").Output()
 	if err != nil {
 		l.Warn("checkIsServiceConnected Error", err)
 		return

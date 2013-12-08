@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"k.prv/rpimon/database"
 	"log"
 	"net/http"
@@ -41,4 +42,11 @@ func CheckIsUserLogger(w http.ResponseWriter, r *http.Request, redirect bool) (u
 		http.Redirect(w, r, url, 302)
 	}
 	return
+}
+
+func ComparePassword(user_password string, candidate_password string) (err error) {
+	if user_password == candidate_password {
+		return nil
+	}
+	return errors.New("Wrong password")
 }

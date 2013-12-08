@@ -6,36 +6,23 @@ import (
 	l "k.prv/rpimon/helpers/logging"
 )
 
-type UsersConfig struct {
+type Database struct {
 	Users []User
 }
 
-var users UsersConfig
+var database Database
 
-func Init(usersFile string, debug bool) {
-	LoadUsers(usersFile)
-}
-
-func LoadUsers(filename string) error {
-	l.Info("LoadUsers from: %s", filename)
+func Init(filename string, debug bool) {
+	l.Info("Database.Init from: %s", filename)
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
-		l.Error("LoadUsers Error:", err)
-		return err
+		l.Error("Database.Init Error:", err)
+		return
 	}
-	err = json.Unmarshal(file, &users)
+	err = json.Unmarshal(file, &database)
 	if err != nil {
-		l.Error("LoadUsers Error:", err)
+		l.Error("Database.Init Error:", err)
 	}
-	l.Info("LoadUsers loaded: %d", len(users.Users))
-	return err
-}
-
-func SelectOneUser(login string) *User {
-	for _, user := range users.Users {
-		if user.Login == login {
-			return &user
-		}
-	}
-	return nil
+	l.Info("Database.Init loaded users: %d", len(database.Users))
+	return
 }
