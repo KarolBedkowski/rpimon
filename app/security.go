@@ -1,7 +1,6 @@
-package security
+package app
 
 import (
-	"k.prv/rpimon/app"
 	"k.prv/rpimon/database"
 	"log"
 	"net/http"
@@ -9,12 +8,20 @@ import (
 
 const USERID_SESSION = "USERID"
 
+func GetLoggedUserLogin(w http.ResponseWriter, r *http.Request) (login string) {
+	session := GetSessionStore(w, r)
+	sessLogin := session.Get(USERID_SESSION)
+	if sessLogin != nil {
+		login = sessLogin.(string)
+	}
+	return
+}
+
 func GetLoggedUser(w http.ResponseWriter, r *http.Request) (user *database.User) {
 	user = nil
-	session := app.GetSessionStore(w, r)
-	userLogin := session.Get(USERID_SESSION)
-	if userLogin != nil {
-		user := database.GetUserByLogin(userLogin.(string))
+	userLogin := GetLoggedUserLogin(w, r)
+	if userLogin != "" {
+		user := database.GetUserByLogin(userLogin)
 		if user != nil {
 			return user
 		}
@@ -26,7 +33,7 @@ func CheckIsUserLogger(w http.ResponseWriter, r *http.Request, redirect bool) (u
 	user = GetLoggedUser(w, r)
 	log.Print("Access denied")
 	if redirect {
-		url, err := app.GetNamedUrl("auth-login", "back", r.URL.String())
+		url, err := GetNamedUrl("auth-login", "back", r.URL.String())
 		if err != nil {
 			log.Print("GetNamedUrl error", err)
 			return

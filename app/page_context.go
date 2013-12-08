@@ -36,13 +36,7 @@ func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *B
 		hostname = strings.Trim(string(file), " \n")
 	}
 	ctx.Hostname = hostname
-	session := GetSessionStore(w, r)
-	if session != nil {
-		userid := session.Get("USERID")
-		if userid != nil {
-			ctx.CurrentUser = userid.(string)
-		}
-	}
+	ctx.CurrentUser = GetLoggedUserLogin(w, r)
 	SetMainMenu(ctx, ctx.CurrentUser != "")
 	return ctx
 }

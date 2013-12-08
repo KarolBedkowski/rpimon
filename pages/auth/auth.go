@@ -7,7 +7,6 @@ import (
 	"k.prv/rpimon/database"
 	"k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
-	"k.prv/rpimon/security"
 	"net/http"
 )
 
@@ -65,7 +64,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		l.Info("User %s log in", user.Login)
 	}
-	loginPageCtx.Set(security.USERID_SESSION, user.Login)
+	loginPageCtx.Set(app.USERID_SESSION, user.Login)
 	loginPageCtx.SessionSave()
 	if values["back"] != nil && values["back"][0] != "" {
 		l.Debug("Redirect to ", values["back"][0])
