@@ -46,7 +46,9 @@ type BasePageContext struct {
 	CsrfToken           string
 	Hostname            string
 	CurrentUser         string
-	LocalMenu           []string
+	MainMenu            []MenuItem
+	CurrentMainMenuPos  string
+	LocalMenu           []MenuItem
 	CurrentLocalMenuPos string
 }
 
@@ -71,6 +73,7 @@ func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *B
 			ctx.CurrentUser = userid.(string)
 		}
 	}
+	SetMainMenu(ctx, ctx.CurrentUser != "")
 	return ctx
 }
 

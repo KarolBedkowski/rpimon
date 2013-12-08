@@ -24,7 +24,11 @@ type NetPageCtx struct {
 
 func newNetPageCtx(w http.ResponseWriter, r *http.Request) *NetPageCtx {
 	ctx := &NetPageCtx{BasePageContext: app.NewBasePageContext("Network", w, r)}
-	ctx.LocalMenu = []string{"ifconfig", "iptables", "netstat-listen", "connenctions"}
+	ctx.LocalMenu = []app.MenuItem{app.NewMenuItem("IFConfig", "ifconfig"),
+		app.NewMenuItem("IPTables", "iptables"),
+		app.NewMenuItem("Netstat", "netstat-listen"),
+		app.NewMenuItem("Conenctions", "connenctions")}
+	ctx.CurrentMainMenuPos = "/net/"
 	return ctx
 }
 

@@ -24,7 +24,10 @@ type NetPageCtx struct {
 
 func newNetPageCtx(w http.ResponseWriter, r *http.Request) *NetPageCtx {
 	ctx := &NetPageCtx{BasePageContext: app.NewBasePageContext("Storage", w, r)}
-	ctx.LocalMenu = []string{"diskfree", "mount", "devices"}
+	ctx.LocalMenu = []app.MenuItem{app.NewMenuItem("Disk Free", "diskfree"),
+		app.NewMenuItem("Mount", "mount"),
+		app.NewMenuItem("Devices", "devices")}
+	ctx.CurrentMainMenuPos = "/storage/"
 	return ctx
 }
 
