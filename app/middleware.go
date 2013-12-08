@@ -14,6 +14,7 @@ const CSRF_TOKEN_LEN = 64
 const CONTEXT_CSRF_TOKEN = "csrf_token"
 const FORM_CSRF_TOKEN = "BasePageContext.CsrfToken"
 
+// CSRT Token middleware
 func csrfHandler(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session := GetSessionStore(w, r)
@@ -45,6 +46,7 @@ func (writer *EnhResponseWriter) WriteHeader(status int) {
 	writer.status = status
 }
 
+// Logging middleware
 func logHandler(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		url := r.URL.String()
@@ -68,6 +70,7 @@ func logHandler(h http.Handler) http.HandlerFunc {
 	})
 }
 
+// Context middleware
 func contextHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer context.Clear(r)
