@@ -16,25 +16,16 @@
 			<div class="sidebar pure-u">
 				<header class="header">
 					<hgroup class="hgroup">
-						<h1><a class="pure-menu-heading" href="#">{{.BasePageContext.Hostname}}</a></h1>
+						<h1><a class="pure-menu-heading" href="/">{{.BasePageContext.Hostname}}</a></h1>
 						<h2></h2>
 					</hgroup>
 					<nav class="nav">
 					<ul  class="nav-list">
-						{{if .BasePageContext.CurrentUser}}
-						<li class="nav-item nav-item-selected">
-							<a class="" href="#">Home</a>
+						{{$current := .BasePageContext.CurrentMainMenuPos}}
+						{{range .BasePageContext.MainMenu}}
+						<li class="nav-item{{if eq .Href $current}} nav-item-selected{{end}}">
+							<a class="" href="{{.Href}}">{{.Title}}</a>
 						</li>
-						<li class="nav-item">
-							<a class="" href="/net/">Network</a>
-						</li>
-						<li class="nav-item">
-							<a class="" href="/storage/">Storage</a>
-						</li>
-						<li class="nav-item"><a>&nbsp;</li>
-						<li class="nav-item"><a class="" href="/auth/logoff">Logout</a> </li>
-						{{else}}
-						<li class="nav-item"><a class="" href="/auth/login">Login</a> </li>
 						{{end}}
 					</ul>
 					</nav>
@@ -46,10 +37,10 @@
 					<div class="pure-u-1">
 						<div class="pure-menu pure-menu-open pure-menu-horizontal">
 							<ul>
-								{{$current := .BasePageContext.CurrentLocalMenuPos}}
+								{{$currentl := .BasePageContext.CurrentLocalMenuPos}}
 								{{range .BasePageContext.LocalMenu}}
-									<li class="{{if eq . $current}}pure-menu-selected {{end}}">
-										<a href="{{.}}" >{{.}}</a>
+									<li class="{{if eq .Href $currentl}}pure-menu-selected {{end}}">
+										<a href="{{.Href}}" >{{.Title}}</a>
 									</li>
 								{{end}}
 							</ul>
