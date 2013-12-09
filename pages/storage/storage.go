@@ -12,8 +12,8 @@ var subRouter *mux.Router
 
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/", mainPageHandler).Name("storage-index")
-	subRouter.HandleFunc("/{page}", mainPageHandler)
+	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("storage-index")
+	subRouter.HandleFunc("/{page}", app.VerifyLogged(mainPageHandler))
 }
 
 type NetPageCtx struct {

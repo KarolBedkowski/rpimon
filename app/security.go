@@ -32,6 +32,9 @@ func GetLoggedUser(w http.ResponseWriter, r *http.Request) (user *database.User)
 
 func CheckIsUserLogger(w http.ResponseWriter, r *http.Request, redirect bool) (user *database.User) {
 	user = GetLoggedUser(w, r)
+	if user != nil {
+		return
+	}
 	log.Print("Access denied")
 	if redirect {
 		url, err := GetNamedUrl("auth-login", "back", r.URL.String())
@@ -49,4 +52,26 @@ func ComparePassword(user_password string, candidate_password string) (err error
 		return nil
 	}
 	return errors.New("Wrong password")
+}
+
+func VerifyPermission(h http.HandlerFunc, permission string) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if user := CheckIsUserLogger(w, r, true); user != nil {
+			for _, perm := range user.Privs {
+				if perm == permission {
+					h(w, r)
+					return
+				}
+			}
+			http.Error(w, "Fobidden/Privilages", http.StatusForbidden)
+		}
+	})
+}
+
+func VerifyLogged(h http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if user := CheckIsUserLogger(w, r, true); user != nil {
+			h(w, r)
+		}
+	})
 }
