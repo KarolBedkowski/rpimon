@@ -5,6 +5,7 @@ import (
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/pages/auth"
 	pmain "k.prv/rpimon/pages/main"
+	pmpd "k.prv/rpimon/pages/mpd"
 	pnet "k.prv/rpimon/pages/net"
 	pstorage "k.prv/rpimon/pages/storage"
 	putils "k.prv/rpimon/pages/utils"
@@ -29,6 +30,8 @@ func main() {
 	pstorage.CreateRoutes(app.Router.PathPrefix("/storage"))
 	putils.Init(conf.UtilsFilename)
 	putils.CreateRoutes(app.Router.PathPrefix("/utils"))
+	pmpd.Init(conf.MpdHost)
+	pmpd.CreateRoutes(app.Router.PathPrefix("/mpd"))
 
 	log.Printf("Listen: %s", *httpAddr)
 	if err := http.ListenAndServe(*httpAddr, nil); err != nil {

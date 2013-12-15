@@ -7,5 +7,6 @@
   "TemplatesDir": "./templates",
   "StaticDir": "./static",
   "SessionStoreDir": "",
-  "LogFilename": "app.log"
+  "LogFilename": "app.log",
+	"MpdHost": "pi:6600"
 }

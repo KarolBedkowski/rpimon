@@ -16,6 +16,7 @@ type AppConfiguration struct {
 	SessionStoreDir string
 	LogFilename     string
 	UtilsFilename   string
+	MpdHost         string
 }
 
 var Configuration AppConfiguration
