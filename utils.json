@@ -1,0 +1,20 @@
+{
+  "utils": {
+    "Main": [
+      {
+        "name": "Halt",
+        "command": "dd shutdown -h now"
+      }
+    ],
+    "Misc": [
+      {
+        "name": "MPD reload",
+        "command": "sudo service mpd reload"
+      },
+      {
+        "name": "MiniDLN reload",
+        "command": "sudo service minidlna force-reload"
+      }
+    ]
+  }
+}

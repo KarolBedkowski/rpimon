@@ -12,8 +12,11 @@ func NewMenuItem(title, href string) MenuItem {
 
 func SetMainMenu(ctx *BasePageContext, loggedUser bool) {
 	if loggedUser {
-		ctx.MainMenu = []MenuItem{NewMenuItem("Network", "/net/"),
+		ctx.MainMenu = []MenuItem{NewMenuItem("Home", "/main/"),
+			NewMenuItem("Network", "/net/"),
 			NewMenuItem("Storage", "/storage/"),
+			NewMenuItem("&nbsp;", "#"),
+			NewMenuItem("Utilities", "/utils/"),
 			NewMenuItem("&nbsp;", "#"),
 			NewMenuItem("Logout", "/auth/logoff")}
 	} else {

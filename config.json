@@ -1,10 +1,11 @@
 {
+  "UtilsFilename": "./utils.json",
   "Debug": true,
   "CookieEncKey": "12345678901234567890012345678901",
   "CookieAuthKey": "12345678901234567890123456789012",
   "Users": "./users.json",
   "TemplatesDir": "./templates",
   "StaticDir": "./static",
-	"SessionStoreDir": "",
-	"LogFilename": "app.log"
+  "SessionStoreDir": "",
+  "LogFilename": "app.log"
 }

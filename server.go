@@ -7,6 +7,7 @@ import (
 	pmain "k.prv/rpimon/pages/main"
 	pnet "k.prv/rpimon/pages/net"
 	pstorage "k.prv/rpimon/pages/storage"
+	putils "k.prv/rpimon/pages/utils"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -18,7 +19,7 @@ func main() {
 	httpAddr := flag.String("addr", ":8000", "HTTP server address")
 	flag.Parse()
 
-	app.Init(*configFilename, *debug)
+	conf := app.Init(*configFilename, *debug)
 	defer app.Close()
 
 	app.Router.HandleFunc("/", handleHome)
@@ -26,6 +27,8 @@ func main() {
 	pmain.CreateRoutes(app.Router.PathPrefix("/main"))
 	pnet.CreateRoutes(app.Router.PathPrefix("/net"))
 	pstorage.CreateRoutes(app.Router.PathPrefix("/storage"))
+	putils.Init(conf.UtilsFilename)
+	putils.CreateRoutes(app.Router.PathPrefix("/utils"))
 
 	log.Printf("Listen: %s", *httpAddr)
 	if err := http.ListenAndServe(*httpAddr, nil); err != nil {
