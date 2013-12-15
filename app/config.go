@@ -15,6 +15,7 @@ type AppConfiguration struct {
 	CookieEncKey    string
 	SessionStoreDir string
 	LogFilename     string
+	UtilsFilename   string
 }
 
 var Configuration AppConfiguration
@@ -31,6 +32,5 @@ func LoadConfiguration(filename string) *AppConfiguration {
 		log.Fatal("Error: ", err.Error())
 		return nil
 	}
-	err = json.Unmarshal(file, Configuration)
 	return &Configuration
 }

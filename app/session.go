@@ -14,6 +14,10 @@ type SessionStore struct {
 
 func GetSessionStore(w http.ResponseWriter, r *http.Request) *SessionStore {
 	session, _ := store.Get(r, STORE_SESSION)
+	session.Options = &sessions.Options{
+		Path:   "/",
+		MaxAge: 86400 * 1,
+	}
 	return &SessionStore{session}
 }
 

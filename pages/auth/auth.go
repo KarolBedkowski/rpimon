@@ -48,17 +48,19 @@ func loginPageHandler(w http.ResponseWriter, r *http.Request) {
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	loginPageCtx := &LoginPageCtx{app.NewBasePageContext("Login", w, r),
 		new(LoginForm), ""}
-	_ = r.ParseForm()
+	r.ParseForm()
 	values := r.Form
 	if err := decoder.Decode(loginPageCtx, values); err != nil {
 		l.Warn("Decode form error", err, values)
+		handleLoginError("Form error", w, loginPageCtx)
+		return
 	}
 	if err := loginPageCtx.Validate(); err != "" {
 		handleLoginError(err, w, loginPageCtx)
 		return
 	}
 	user := database.GetUserByLogin(loginPageCtx.Login)
-	if user == nil || app.ComparePassword(user.Password, loginPageCtx.Password) != nil {
+	if user == nil || !app.ComparePassword(user.Password, loginPageCtx.Password) {
 		handleLoginError("Wrong user or password", w, loginPageCtx)
 		return
 	}

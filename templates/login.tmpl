@@ -18,10 +18,10 @@
 		</style>
 	</head>
 	<body>
+		{{$flash := .GetFlashMessage}}
+		{{if $flash}}
 		<div class="aligner">
-			{{$flash := .GetFlashMessage}}
-			{{if $flash}}
-			<div class="pure-u-1">
+			<div>
 				<div class="info">
 					<ul>
 					{{range $flash}}
@@ -30,7 +30,9 @@
 					</ul>
 				</div>
 			</div>
-			{{end}}
+		</div>
+		{{end}}
+		<div class="aligner">
 			<div>
 				<section>
 					<h1>Login</h1>

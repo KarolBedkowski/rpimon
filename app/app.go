@@ -14,7 +14,7 @@ import (
 var Router *mux.Router = mux.NewRouter()
 var store *sessions.FilesystemStore
 
-func Init(appConfFile string, debug bool) {
+func Init(appConfFile string, debug bool) *AppConfiguration {
 
 	conf := LoadConfiguration(appConfFile)
 	if debug {
@@ -42,6 +42,7 @@ func Init(appConfFile string, debug bool) {
 	http.Handle("/static/", http.StripPrefix("/static",
 		http.FileServer(http.Dir(conf.StaticDir))))
 	http.Handle("/", logHandler(contextHandler(csrfHandler(Router))))
+	return conf
 }
 
 func Close() {
