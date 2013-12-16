@@ -100,7 +100,7 @@ func mpdAction(action string) (status *mpdStatus) {
 	return
 }
 
-func mpdPlaylistInfo(action string) (playlist []mpd.Attrs, err error, currentSong string) {
+func mpdPlaylistInfo() (playlist []mpd.Attrs, err error, currentSong string) {
 	conn, err := mpd.Dial("tcp", host)
 	if err != nil {
 		return
@@ -117,4 +117,54 @@ func mpdPlaylistInfo(action string) (playlist []mpd.Attrs, err error, currentSon
 		currentSong = stat["songid"]
 	}
 	return
+}
+
+func mpdSongAction(songId int, action string) error {
+	conn, err := mpd.Dial("tcp", host)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	switch action {
+	case "play":
+		conn.PlayId(songId)
+
+	default:
+		l.Warn("page.mpd mpdAction: wrong action ", action)
+	}
+	return nil
+}
+
+func mpdGetPlaylists() (playlists []mpd.Attrs, err error) {
+	conn, err := mpd.Dial("tcp", host)
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+	playlists, err = conn.ListPlaylists()
+	if err != nil {
+		l.Error(err.Error())
+	}
+	return
+}
+
+func mpdPlaylistAction(playlist, action string) error {
+	conn, err := mpd.Dial("tcp", host)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	switch action {
+	case "play":
+		conn.Clear()
+		conn.PlaylistLoad(playlist, -1, -1)
+		conn.Play(-1)
+	case "add":
+		conn.PlaylistLoad(playlist, -1, -1)
+	default:
+		l.Warn("page.mpd mpdAction: wrong action ", action)
+	}
+	return nil
 }

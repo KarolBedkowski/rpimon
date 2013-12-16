@@ -1,0 +1,34 @@
+{{define "body"}}
+
+<div class="pure-u-1">
+	<section>
+		<h1>MPD Current Playlists</h1>
+
+		{{if .Error}}
+		<div class="warnings">
+			<p>Connection error:<br/>{{.Error}}</p>
+		</div>
+		{{else}}
+		<table class="pure-table">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{range .Playlists}}
+				<tr>
+					<td>{{.playlist}}</td>
+					<td><a href="/mpd/playlist/{{.playlist}}/play">Play</a> 
+					</td>
+				</tr>
+			{{end}}
+			</tbody>
+		</table>
+		{{end}}
+	</section>
+</div>
+
+
+{{end}}

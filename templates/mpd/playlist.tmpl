@@ -1,0 +1,47 @@
+{{define "body"}}
+
+<div class="pure-u-1">
+	<section>
+		<h1>MPD Current Playlists</h1>
+
+		{{if .Error}}
+		<div class="warnings">
+			<p>Connection error:<br/>{{.Error}}</p>
+		</div>
+		{{else}}
+		<table class="pure-table">
+			<thead>
+				<tr>
+					<th>Pos</th>
+					<th>Album</th>
+					<th>Artist</th>
+					<th>track</th>
+					<th>Title</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{$currentSongId := .CurrentSongId}}
+			{{range .Playlist}}
+				{{if eq .Id $currentSongId}}
+				<tr class="playlist-current-song">
+				{{else}}
+				<tr>
+				{{end}}
+					<td>{{.Pos}}</td>
+					<td>{{.Album}}</td>
+					<td>{{.Artist}}</td>
+					<td>{{.Track}}</td>
+					<td>{{.Title}}</td>
+					<td><a href="/mpd/song/{{.Id}}/play">Play</a>
+					</td>
+				</tr>
+			{{end}}
+			</tbody>
+		</table>
+		{{end}}
+	</section>
+</div>
+
+
+{{end}}
