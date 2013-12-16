@@ -41,3 +41,26 @@ func ReadIntFromFile(filename string) int {
 	}
 	return res
 }
+
+//TODO: poprawić
+func ReadFromFileLastLines(filename string, limit int) (string, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		l.Warn("ReadLineFromFile Error", filename, err)
+		return "", err
+	}
+	defer file.Close()
+	reader := bufio.NewReader(file)
+	buff := make([]string, limit)
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			break
+		}
+		if len(buff) == limit {
+			buff = buff[1:]
+		}
+		buff = append(buff, line)
+	}
+	return strings.Join(buff, ""), err
+}

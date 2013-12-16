@@ -15,6 +15,7 @@ func SetMainMenu(ctx *BasePageContext, loggedUser bool) {
 		ctx.MainMenu = []MenuItem{NewMenuItem("Home", "/main/"),
 			NewMenuItem("Network", "/net/"),
 			NewMenuItem("Storage", "/storage/"),
+			NewMenuItem("Logs", "/logs/"),
 			NewMenuItem("&nbsp;", "#"),
 			NewMenuItem("MPD", "/mpd/"),
 			NewMenuItem("&nbsp;", "#"),

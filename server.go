@@ -4,6 +4,7 @@ import (
 	"flag"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/pages/auth"
+	plogs "k.prv/rpimon/pages/logs"
 	pmain "k.prv/rpimon/pages/main"
 	pmpd "k.prv/rpimon/pages/mpd"
 	pnet "k.prv/rpimon/pages/net"
@@ -32,6 +33,7 @@ func main() {
 	putils.CreateRoutes(app.Router.PathPrefix("/utils"))
 	pmpd.Init(conf.MpdHost)
 	pmpd.CreateRoutes(app.Router.PathPrefix("/mpd"))
+	plogs.CreateRoutes(app.Router.PathPrefix("/logs"))
 
 	log.Printf("Listen: %s", *httpAddr)
 	if err := http.ListenAndServe(*httpAddr, nil); err != nil {
