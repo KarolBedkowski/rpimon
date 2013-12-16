@@ -9,6 +9,7 @@ import (
 	pmpd "k.prv/rpimon/pages/mpd"
 	pnet "k.prv/rpimon/pages/net"
 	pstorage "k.prv/rpimon/pages/storage"
+	pusers "k.prv/rpimon/pages/users"
 	putils "k.prv/rpimon/pages/utils"
 	"log"
 	"net/http"
@@ -34,6 +35,7 @@ func main() {
 	pmpd.Init(conf.MpdHost)
 	pmpd.CreateRoutes(app.Router.PathPrefix("/mpd"))
 	plogs.CreateRoutes(app.Router.PathPrefix("/logs"))
+	pusers.CreateRoutes(app.Router.PathPrefix("/users"))
 
 	log.Printf("Listen: %s", *httpAddr)
 	if err := http.ListenAndServe(*httpAddr, nil); err != nil {
