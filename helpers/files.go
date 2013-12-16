@@ -4,6 +4,7 @@ import (
 	"bufio"
 	l "k.prv/rpimon/helpers/logging"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 )
@@ -63,4 +64,13 @@ func ReadFromFileLastLines(filename string, limit int) (string, error) {
 		buff = append(buff, line)
 	}
 	return strings.Join(buff, ""), err
+}
+
+func ReadFromCommand(name string, arg ...string) string {
+	out, err := exec.Command(name, arg...).Output()
+	if err != nil {
+		l.Warn("readFromCommand Error", name, arg, err)
+		return err.Error()
+	}
+	return string(out)
 }
