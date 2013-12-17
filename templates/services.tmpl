@@ -1,0 +1,45 @@
+
+{{define "body"}}
+
+<div class="pure-u-1">
+	<section>
+		<h1>Services</h1>
+		<table class="pure-table">
+			<thead>
+				<tr>
+					<th>Service</th>
+					<th>Status</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{range $key, $val := .Services}}
+				<tr>
+					<td>{{$key}}</td>
+					<td>{{$val}}</td>
+					<td><a href="services/{{$key | urlquery}}/start" onclick="return lconfirm()">start</a> | 
+					<a href="services/{{$key | urlquery}}/stop" onclick="return lconfirm()">stop</a> | 
+					<a href="services/{{$key | urlquery}}/restart" onclick="return lconfirm()">restart</a> | 
+					<a href="services/{{$key | urlquery}}/reload" onclick="return lconfirm()">reload</a> | 
+					<a href="services/{{$key | urlquery}}/force-reload" onclick="return lconfirm()">force-reload</a> 
+					</td>
+				</tr>
+			{{end}}
+			</tbody>
+		</table>
+	</section>
+</div>
+
+
+<script src="/static/lib/jquery/jquery.tablesorter.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+	function lconfirm() {
+		return confirm('Are you sure?');
+	}
+	$(function() {
+		$('table').tablesorter({
+			ignoreCase: true,
+		});
+	});
+</script>
+{{end}}
