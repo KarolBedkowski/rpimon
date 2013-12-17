@@ -36,6 +36,11 @@ func Init(appConfFile string, debug bool) *AppConfiguration {
 		conf.CookieEncKey = string(securecookie.GenerateRandomKey(32))
 	}
 
+	err := os.MkdirAll(conf.SessionStoreDir, os.ModeDir)
+	if err != nil && !os.IsExist(err) {
+		l.Error("Createing dir for session store failed ", err)
+	}
+
 	store = sessions.NewFilesystemStore(conf.SessionStoreDir,
 		[]byte(conf.CookieAuthKey),
 		[]byte(conf.CookieEncKey))
