@@ -50,7 +50,7 @@ type MainPageCtx struct {
 	CpuMinFreq      int
 	CpuMaxFreq      int
 	CpuGovernor     string
-	CpuTemp         float64
+	CpuTemp         int
 	Filesystems     []FSInfo
 	MemTotal        int
 	MemFree         int
@@ -138,6 +138,8 @@ func fillCpuInfo(ctx *MainPageCtx) error {
 	ctx.CpuMinFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq") / 1000
 	ctx.CpuMaxFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq") / 1000
 	ctx.CpuGovernor, _ = helpers.ReadLineFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")
+
+	ctx.CpuTemp = helpers.ReadIntFromFile("/sys/class/thermal/thermal_zone0/temp") / 1000
 
 	return nil
 }
