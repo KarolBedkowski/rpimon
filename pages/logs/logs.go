@@ -4,9 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
-	l "k.prv/rpimon/helpers/logging"
 	"net/http"
-	"os/exec"
 )
 
 var subRouter *mux.Router
@@ -48,7 +46,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 			data.Data = lines
 		}
 	case "dmesg":
-		data.Data = readFromCommand("dmesg")
+		data.Data = h.ReadFromCommand("dmesg")
 	case "syslog":
 		lines, err := h.ReadFromFileLastLines("/var/log/syslog", 500)
 		if err != nil {
@@ -60,13 +58,4 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	data.CurrentLocalMenuPos = page
 	data.CurrentPage = page
 	app.RenderTemplate(w, data, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
-}
-
-func readFromCommand(name string, arg ...string) string {
-	out, err := exec.Command(name, arg...).Output()
-	if err != nil {
-		l.Warn("readFromCommand Error", name, arg, err)
-		return err.Error()
-	}
-	return string(out)
 }

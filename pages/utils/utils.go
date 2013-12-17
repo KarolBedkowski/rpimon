@@ -3,9 +3,9 @@ package utils
 import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
+	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
-	"os/exec"
 	"strconv"
 	"strings"
 )
@@ -72,16 +72,6 @@ func commandPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	data := newPageCtx(w, r)
 	data.CurrentPage = "Utils " + groupName + ": " + group[commandId].Name
-	data.Data = readFromCommand(command[0], command[1:]...)
+	data.Data = h.ReadFromCommand(command[0], command[1:]...)
 	app.RenderTemplate(w, data, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
-}
-
-func readFromCommand(name string, arg ...string) string {
-	l.Print("pages.utils readFromCommand ", name, arg)
-	out, err := exec.Command(name, arg...).Output()
-	if err != nil {
-		l.Warn("readFromCommand Error", name, arg, err)
-		return err.Error()
-	}
-	return string(out)
 }

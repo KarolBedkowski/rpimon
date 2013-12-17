@@ -3,9 +3,8 @@ package users
 import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	l "k.prv/rpimon/helpers/logging"
+	h "k.prv/rpimon/helpers"
 	"net/http"
-	"os/exec"
 )
 
 var subRouter *mux.Router
@@ -40,22 +39,13 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	switch page {
 	case "diskfree":
-		data.Data = readFromCommand("df", "-h")
+		data.Data = h.ReadFromCommand("df", "-h")
 	case "mount":
-		data.Data = readFromCommand("sudo", "mount")
+		data.Data = h.ReadFromCommand("sudo", "mount")
 	case "devices":
-		data.Data = readFromCommand("lsblk")
+		data.Data = h.ReadFromCommand("lsblk")
 	}
 	data.CurrentLocalMenuPos = page
 	data.CurrentPage = page
 	app.RenderTemplate(w, data, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
-}
-
-func readFromCommand(name string, arg ...string) string {
-	out, err := exec.Command(name, arg...).Output()
-	if err != nil {
-		l.Warn("readFromCommand Error", name, arg, err)
-		return err.Error()
-	}
-	return string(out)
 }

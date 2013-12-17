@@ -69,7 +69,7 @@ func ReadFromFileLastLines(filename string, limit int) (string, error) {
 func ReadFromCommand(name string, arg ...string) string {
 	out, err := exec.Command(name, arg...).Output()
 	if err != nil {
-		l.Warn("readFromCommand Error", name, arg, err)
+		l.Warn("helpers.ReadFromCommand Error", name, arg, err)
 		return err.Error()
 	}
 	return string(out)
