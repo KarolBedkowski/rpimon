@@ -10,8 +10,6 @@ import (
 	"net/http"
 	nurl "net/url"
 	"os"
-	"path/filepath"
-	"time"
 )
 
 var Router *mux.Router = mux.NewRouter()
@@ -77,18 +75,4 @@ func GetNamedUrl(name string, pairs ...string) (url string, err error) {
 		url += pairs[idx] + "=" + nurl.QueryEscape(pairs[idx+1])
 	}
 	return
-}
-
-func ClearSessionStore() error {
-	l.Info("Start ClearSessionStore")
-	now := time.Now()
-	now = now.Add(time.Duration(-24) * time.Hour)
-	filepath.Walk(Configuration.SessionStoreDir, func(path string, info os.FileInfo, err error) error {
-		if now.After(info.ModTime()) {
-			l.Info("Delete ", path)
-			os.Remove(path)
-		}
-		return nil
-	})
-	return nil
 }
