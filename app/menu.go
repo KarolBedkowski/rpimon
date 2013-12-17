@@ -16,6 +16,7 @@ func SetMainMenu(ctx *BasePageContext, loggedUser bool) {
 			NewMenuItem("Network", "/net/"),
 			NewMenuItem("Storage", "/storage/"),
 			NewMenuItem("Logs", "/logs/"),
+			NewMenuItem("Process", "/process/"),
 			NewMenuItem("Users", "/users/"),
 			NewMenuItem("&nbsp;", "#"),
 			NewMenuItem("MPD", "/mpd/"),
