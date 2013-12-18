@@ -11,6 +11,7 @@ import (
 
 var subRouter *mux.Router
 
+// CreateRoutes for /process
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("process-index")
@@ -19,14 +20,14 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/{page}", app.VerifyLogged(mainPageHandler))
 }
 
-type PageCtx struct {
+type pageCtx struct {
 	*app.BasePageContext
 	CurrentPage string
 	Data        string
 }
 
-func newNetPageCtx(w http.ResponseWriter, r *http.Request) *PageCtx {
-	ctx := &PageCtx{BasePageContext: app.NewBasePageContext("Process", w, r)}
+func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Process", w, r)}
 	ctx.LocalMenu = []app.MenuItem{app.NewMenuItem("PS AXL", "psaxl"),
 		app.NewMenuItem("TOP", "top"),
 		app.NewMenuItem("Services", "services")}
@@ -53,12 +54,12 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type sevicesPageCtx struct {
-	*PageCtx
+	*pageCtx
 	Services map[string]string
 }
 
 func servicesPageHangler(w http.ResponseWriter, r *http.Request) {
-	ctx := &sevicesPageCtx{PageCtx: newNetPageCtx(w, r)}
+	ctx := &sevicesPageCtx{pageCtx: newNetPageCtx(w, r)}
 	ctx.Services = make(map[string]string)
 	lines := strings.Split(h.ReadFromCommand("service", "--status-all"), "\n")
 	for _, line := range lines {

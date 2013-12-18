@@ -9,20 +9,21 @@ import (
 
 var subRouter *mux.Router
 
+// CreateRoutes for /logs
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("logs-index")
 	subRouter.HandleFunc("/{page}", app.VerifyLogged(mainPageHandler))
 }
 
-type PageCtx struct {
+type pageCtx struct {
 	*app.BasePageContext
 	CurrentPage string
 	Data        string
 }
 
-func newNetPageCtx(w http.ResponseWriter, r *http.Request) *PageCtx {
-	ctx := &PageCtx{BasePageContext: app.NewBasePageContext("logs", w, r)}
+func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("logs", w, r)}
 	ctx.LocalMenu = []app.MenuItem{app.NewMenuItem("Short", "short"),
 		app.NewMenuItem("DMESG", "dmesg"),
 		app.NewMenuItem("Syslog", "syslog")}

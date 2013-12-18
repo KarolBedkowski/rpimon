@@ -16,12 +16,13 @@ import (
 
 var subRouter *mux.Router
 
+// CreateRoutes for /main
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", mainPageHanler).Name("main-index")
 }
 
-type FSInfo struct {
+type fsInfo struct {
 	Name       string
 	Size       string
 	Used       string
@@ -30,28 +31,28 @@ type FSInfo struct {
 	MountPoint string
 }
 
-type InterfaceInfo struct {
+type interfaceInfo struct {
 	Name    string
 	Address string
 }
 
-type MainPageCtx struct {
+type pageCtx struct {
 	*app.BasePageContext
 	Hostname        string
 	Uname           string
 	Uptime          string
 	Users           string
 	Load            string
-	CpuSystem       int
-	CpuUser         int
-	CpuIdle         int
-	CpuIowait       int
-	CpuFreq         int
-	CpuMinFreq      int
-	CpuMaxFreq      int
-	CpuGovernor     string
-	CpuTemp         int
-	Filesystems     []FSInfo
+	CPUSystem       int
+	CPUUser         int
+	CPUIdle         int
+	CPUIowait       int
+	CPUFreq         int
+	CPUMinFreq      int
+	CPUMaxFreq      int
+	CPUGovernor     string
+	CPUTemp         int
+	Filesystems     []fsInfo
 	MemTotal        int
 	MemFree         int
 	MemBuffers      int
@@ -62,18 +63,18 @@ type MainPageCtx struct {
 	MemBuffersPerc  int
 	MemCachePerc    int
 	MemSwapUsedPerc int
-	Interfaces      []InterfaceInfo
+	Interfaces      []interfaceInfo
 	Warnings        []string
 }
 
-func newMainPageCtx(w http.ResponseWriter, r *http.Request) *MainPageCtx {
-	return &MainPageCtx{BasePageContext: app.NewBasePageContext("Main", w, r)}
+func newMainPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
+	return &pageCtx{BasePageContext: app.NewBasePageContext("Main", w, r)}
 }
 
 func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 	data := newMainPageCtx(w, r)
 	fillUptimeInfo(data)
-	fillCpuInfo(data)
+	fillCPUInfog(data)
 	fillFSInfo(data)
 	fillMemoryInfo(data)
 	fillIfaceInfo(data)
@@ -82,7 +83,7 @@ func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 	app.RenderTemplate(w, data, "base", "base.tmpl", "main/main.tmpl", "flash.tmpl")
 }
 
-func fillUptimeInfo(ctx *MainPageCtx) error {
+func fillUptimeInfo(ctx *pageCtx) error {
 	out, err := exec.Command("uptime").Output()
 	if err != nil {
 		l.Warn("fillUptimeInfo Error", err)
@@ -97,7 +98,7 @@ func fillUptimeInfo(ctx *MainPageCtx) error {
 
 var lastUname string
 
-func fillUnameInfo(ctx *MainPageCtx) error {
+func fillUnameInfo(ctx *pageCtx) error {
 	if lastUname == "" {
 		out, err := exec.Command("uname", "-mrsv").Output()
 		if err != nil {
@@ -110,10 +111,10 @@ func fillUnameInfo(ctx *MainPageCtx) error {
 	return nil
 }
 
-func fillCpuInfo(ctx *MainPageCtx) error {
+func fillCPUInfog(ctx *pageCtx) error {
 	file, err := os.Open("/proc/stat")
 	if err != nil {
-		l.Warn("fillCpuInfo Error", err)
+		l.Warn("fillCPUInfog Error", err)
 		return err
 	}
 	defer file.Close()
@@ -129,22 +130,22 @@ func fillCpuInfo(ctx *MainPageCtx) error {
 	iowait, _ := strconv.Atoi(fields[5])
 	usage := user + system + idle + iowait
 
-	ctx.CpuSystem = int(100 * system / usage)
-	ctx.CpuUser = int(100 * user / usage)
-	ctx.CpuIdle = int(100 * idle / usage)
-	ctx.CpuIowait = int(100 * iowait / usage)
+	ctx.CPUSystem = int(100 * system / usage)
+	ctx.CPUUser = int(100 * user / usage)
+	ctx.CPUIdle = int(100 * idle / usage)
+	ctx.CPUIowait = int(100 * iowait / usage)
 
-	ctx.CpuFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq") / 1000
-	ctx.CpuMinFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq") / 1000
-	ctx.CpuMaxFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq") / 1000
-	ctx.CpuGovernor, _ = helpers.ReadLineFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")
+	ctx.CPUFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq") / 1000
+	ctx.CPUMinFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq") / 1000
+	ctx.CPUMaxFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq") / 1000
+	ctx.CPUGovernor, _ = helpers.ReadLineFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")
 
-	ctx.CpuTemp = helpers.ReadIntFromFile("/sys/class/thermal/thermal_zone0/temp") / 1000
+	ctx.CPUTemp = helpers.ReadIntFromFile("/sys/class/thermal/thermal_zone0/temp") / 1000
 
 	return nil
 }
 
-func fillFSInfo(ctx *MainPageCtx) error {
+func fillFSInfo(ctx *pageCtx) error {
 	out, err := exec.Command("df", "-h", "-l", "-x", "tmpfs", "-x", "devtmpfs", "-x", "rootfs").Output()
 	if err != nil {
 		l.Warn("fillFSInfo Error", err)
@@ -156,16 +157,16 @@ func fillFSInfo(ctx *MainPageCtx) error {
 			break
 		}
 		fields := strings.Fields(line)
-		fsinfo := FSInfo{fields[0], fields[1], fields[2], fields[3], fields[4], fields[5]}
+		fsinfo := fsInfo{fields[0], fields[1], fields[2], fields[3], fields[4], fields[5]}
 		ctx.Filesystems = append(ctx.Filesystems, fsinfo)
 	}
 	return nil
 }
 
-func fillMemoryInfo(ctx *MainPageCtx) error {
+func fillMemoryInfo(ctx *pageCtx) error {
 	file, err := os.Open("/proc/meminfo")
 	if err != nil {
-		l.Warn("fillCpuInfo Error", err)
+		l.Warn("fillCPUInfog Error", err)
 		return err
 	}
 	defer file.Close()
@@ -201,7 +202,7 @@ func fillMemoryInfo(ctx *MainPageCtx) error {
 	return nil
 }
 
-func fillIfaceInfo(ctx *MainPageCtx) error {
+func fillIfaceInfo(ctx *pageCtx) error {
 	out, err := exec.Command("/sbin/ip", "addr").Output()
 	if err != nil {
 		l.Warn("fillFSInfo Error", err)
@@ -215,14 +216,14 @@ func fillIfaceInfo(ctx *MainPageCtx) error {
 		}
 		if line[0] != ' ' {
 			if iface != "" && iface != "lo" {
-				ctx.Interfaces = append(ctx.Interfaces, InterfaceInfo{iface, "-"})
+				ctx.Interfaces = append(ctx.Interfaces, interfaceInfo{iface, "-"})
 			}
 			iface = strings.Trim(strings.Fields(line)[1], " :")
 		} else if strings.HasPrefix(line, "    inet") {
 			if iface != "lo" {
 				fields := strings.Fields(line)
 				ctx.Interfaces = append(ctx.Interfaces,
-					InterfaceInfo{iface, fields[1]})
+					interfaceInfo{iface, fields[1]})
 			}
 			iface = ""
 		}
@@ -230,7 +231,7 @@ func fillIfaceInfo(ctx *MainPageCtx) error {
 	return nil
 }
 
-func fillWarnings(ctx *MainPageCtx) error {
+func fillWarnings(ctx *pageCtx) error {
 	if checkIsServiceConnected("8200") {
 		ctx.Warnings = append(ctx.Warnings, "MiniDLNA Connected")
 	}

@@ -1,4 +1,6 @@
 {
+  "MpdHost": "pi:6600",
+  "LogFilename": "app.log",
   "UtilsFilename": "./utils.json",
   "Debug": true,
   "CookieEncKey": "12345678901234567890012345678901",
@@ -6,7 +8,5 @@
   "Users": "./users.json",
   "TemplatesDir": "./templates",
   "StaticDir": "./static",
-  "SessionStoreDir": "",
-  "LogFilename": "app.log",
-	"MpdHost": "pi:6600"
+  "SessionStoreDir": "./temp"
 }

@@ -6,6 +6,7 @@ import (
 	"log"
 )
 
+// AppConfiguration Main app configuration.
 type AppConfiguration struct {
 	StaticDir       string
 	TemplatesDir    string
@@ -19,8 +20,10 @@ type AppConfiguration struct {
 	MpdHost         string
 }
 
+// Configuration - main app configuration instance
 var Configuration AppConfiguration
 
+// LoadConfiguration from given file
 func LoadConfiguration(filename string) *AppConfiguration {
 	log.Print("Loading configuration file ", filename)
 	file, err := ioutil.ReadFile(filename)

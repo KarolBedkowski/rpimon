@@ -9,20 +9,21 @@ import (
 
 var subRouter *mux.Router
 
+// CreateRoutes for /storage
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("storage-index")
 	subRouter.HandleFunc("/{page}", app.VerifyLogged(mainPageHandler))
 }
 
-type NetPageCtx struct {
+type pageCtx struct {
 	*app.BasePageContext
 	CurrentPage string
 	Data        string
 }
 
-func newNetPageCtx(w http.ResponseWriter, r *http.Request) *NetPageCtx {
-	ctx := &NetPageCtx{BasePageContext: app.NewBasePageContext("Storage", w, r)}
+func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Storage", w, r)}
 	ctx.LocalMenu = []app.MenuItem{app.NewMenuItem("Disk Free", "diskfree"),
 		app.NewMenuItem("Mount", "mount"),
 		app.NewMenuItem("Devices", "devices")}

@@ -21,7 +21,7 @@
 				</tr>
 			</thead>
 			<tbody>
-			{{$currentSongId := .CurrentSongId}}
+			{{$currentSongId := .CurrentSongID}}
 			{{range .Playlist}}
 				{{if eq .Id $currentSongId}}
 				<tr class="playlist-current-song">

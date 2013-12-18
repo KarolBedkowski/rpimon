@@ -13,26 +13,27 @@ var decoder = schema.NewDecoder()
 
 var subRouter *mux.Router
 
+// CreateRoutes for /auth
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/login", loginPageHandler).Name("auth-login").Methods("GET")
 	subRouter.HandleFunc("/login", loginHandler).Methods("POST")
-	subRouter.HandleFunc("/logoff", LogoffHandler).Name("auth-logoff")
+	subRouter.HandleFunc("/logoff", logoffHandler).Name("auth-logoff")
 }
 
-type LoginForm struct {
+type loginForm struct {
 	Login    string
 	Password string
 	Message  string
 }
 
-type LoginPageCtx struct {
+type loginPageCtx struct {
 	*app.BasePageContext
-	*LoginForm
+	*loginForm
 	back string
 }
 
-func (ctx LoginPageCtx) Validate() (err string) {
+func (ctx loginPageCtx) Validate() (err string) {
 	if ctx.Password == "" || ctx.Login == "" {
 		return "Missing login and/or password"
 	}
@@ -40,14 +41,14 @@ func (ctx LoginPageCtx) Validate() (err string) {
 }
 
 func loginPageHandler(w http.ResponseWriter, r *http.Request) {
-	loginPageCtx := &LoginPageCtx{app.NewBasePageContext("Login", w, r),
-		new(LoginForm), ""}
+	loginPageCtx := &loginPageCtx{app.NewBasePageContext("Login", w, r),
+		new(loginForm), ""}
 	app.RenderTemplate(w, loginPageCtx, "base", "login.tmpl", "flash.tmpl")
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	loginPageCtx := &LoginPageCtx{app.NewBasePageContext("Login", w, r),
-		new(LoginForm), ""}
+	loginPageCtx := &loginPageCtx{app.NewBasePageContext("Login", w, r),
+		new(loginForm), ""}
 	r.ParseForm()
 	values := r.Form
 	if err := decoder.Decode(loginPageCtx, values); err != nil {
@@ -65,7 +66,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	l.Info("User %s log in", user.Login)
-	loginPageCtx.Set(app.USERID_SESSION, user.Login)
+	loginPageCtx.Set(app.USERIDSESSION, user.Login)
 	loginPageCtx.AddFlashMessage("User log in")
 	loginPageCtx.SessionSave()
 	if values["back"] != nil && values["back"][0] != "" {
@@ -76,12 +77,12 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleLoginError(message string, w http.ResponseWriter, ctx *LoginPageCtx) {
+func handleLoginError(message string, w http.ResponseWriter, ctx *loginPageCtx) {
 	ctx.Message = message
 	app.RenderTemplate(w, ctx, "base", "login.tmpl", "flash.tmpl")
 }
 
-func LogoffHandler(w http.ResponseWriter, r *http.Request) {
+func logoffHandler(w http.ResponseWriter, r *http.Request) {
 	session := app.GetSessionStore(w, r)
 	session.Clear()
 	session.Save(w, r)

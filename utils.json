@@ -3,7 +3,7 @@
     "Main": [
       {
         "name": "Halt",
-        "command": "dd shutdown -h now"
+        "command": "sudo shutdown -h now"
       }
     ],
     "Misc": [

@@ -13,6 +13,7 @@ type mpdStatus struct {
 
 var host string
 
+// Init MPD configuration
 func Init(mpdHost string) {
 	host = mpdHost
 }
@@ -119,7 +120,7 @@ func mpdPlaylistInfo() (playlist []mpd.Attrs, err error, currentSong string) {
 	return
 }
 
-func mpdSongAction(songId int, action string) error {
+func mpdSongAction(songID int, action string) error {
 	conn, err := mpd.Dial("tcp", host)
 	if err != nil {
 		return err
@@ -128,7 +129,7 @@ func mpdSongAction(songId int, action string) error {
 
 	switch action {
 	case "play":
-		conn.PlayId(songId)
+		conn.PlayId(songID)
 
 	default:
 		l.Warn("page.mpd mpdAction: wrong action ", action)

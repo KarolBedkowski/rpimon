@@ -6,12 +6,14 @@ import (
 	l "k.prv/rpimon/helpers/logging"
 )
 
+// Database - virtual database
 type Database struct {
 	Users []User
 }
 
 var database Database
 
+// Init structures
 func Init(filename string, debug bool) {
 	l.Info("Database.Init from: %s", filename)
 	file, err := ioutil.ReadFile(filename)

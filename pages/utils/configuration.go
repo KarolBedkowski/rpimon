@@ -17,6 +17,7 @@ type configuration struct {
 
 var config configuration
 
+// Init utils pages
 func Init(filename string) error {
 	log.Print("pages.utils Loading configuration file ", filename)
 	file, err := ioutil.ReadFile(filename)

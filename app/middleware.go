@@ -9,26 +9,30 @@ import (
 	"time"
 )
 
-// csrf tokens
-const CSRF_TOKEN_LEN = 64
-const CONTEXT_CSRF_TOKEN = "csrf_token"
-const FORM_CSRF_TOKEN = "BasePageContext.CsrfToken"
+// csrf tokens len
+const CSRFTOKENLEN = 64
+
+// csrf tokens name in context
+const CONTEXTCSRFTOKEN = "csrf_token"
+
+// csrf tokens name formms
+const FORMCSRFTOKEN = "BasePageContext.CsrfToken"
 
 // CSRT Token middleware
 func csrfHandler(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session := GetSessionStore(w, r)
-		csrf_token := session.Get(CONTEXT_CSRF_TOKEN)
-		if csrf_token == nil {
-			token := make([]byte, CSRF_TOKEN_LEN)
+		csrfToken := session.Get(CONTEXTCSRFTOKEN)
+		if csrfToken == nil {
+			token := make([]byte, CSRFTOKENLEN)
 			rand.Read(token)
-			csrf_token = base64.StdEncoding.EncodeToString(token)
-			session.Set(CONTEXT_CSRF_TOKEN, csrf_token)
+			csrfToken = base64.StdEncoding.EncodeToString(token)
+			session.Set(CONTEXTCSRFTOKEN, csrfToken)
 			session.Save(w, r)
 		}
 
-		context.Set(r, CONTEXT_CSRF_TOKEN, csrf_token)
-		if r.Method == "POST" && r.FormValue(FORM_CSRF_TOKEN) != csrf_token {
+		context.Set(r, CONTEXTCSRFTOKEN, csrfToken)
+		if r.Method == "POST" && r.FormValue(FORMCSRFTOKEN) != csrfToken {
 			http.Error(w, "Fobidden/CSRF", http.StatusForbidden)
 		} else {
 			h.ServeHTTP(w, r)
@@ -36,11 +40,13 @@ func csrfHandler(h http.Handler) http.HandlerFunc {
 	})
 }
 
+// EnhResponseWriter response writer with status
 type EnhResponseWriter struct {
 	http.ResponseWriter
 	status int
 }
 
+// WriteHeader store status of request
 func (writer *EnhResponseWriter) WriteHeader(status int) {
 	writer.ResponseWriter.WriteHeader(status)
 	writer.status = status

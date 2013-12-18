@@ -6,45 +6,57 @@ import (
 	"os"
 )
 
-var Logger = log.New(os.Stderr, "", log.LstdFlags)
+var logger = log.New(os.Stderr, "", log.LstdFlags)
 var debugLevel = false
 
 const (
+	// DEBUG message prefix
 	DEBUG = "DEBUG"
-	INFO  = "INFO"
-	WARN  = "WARN"
+	// INFO message prefix
+	INFO = "INFO"
+	// WARN message  prefix
+	WARN = "WARN"
+	// ERROR message prefix
 	ERROR = "ERROR"
+	// FATAL level prefix
 	FATAL = "FATAL" // die
 )
 
+// Init logging
 func Init(filename string, debug bool) {
 	debugLevel = debug
 	outFile, _ := os.Create(filename)
-	Logger = log.New(io.MultiWriter(os.Stderr, outFile), "", log.LstdFlags)
+	logger = log.New(io.MultiWriter(os.Stderr, outFile), "", log.LstdFlags)
 }
 
+// Print - wrapper on logger.Print
 func Print(v ...interface{}) {
-	Logger.Print(v...)
+	logger.Print(v...)
 }
 
+// Printf - wrapper on logger.Print
 func Printf(v ...interface{}) {
-	Logger.Print(v...)
+	logger.Print(v...)
 }
 
+// Debug display message with "DEBUG" prefix when debug=true
 func Debug(v ...interface{}) {
 	if debugLevel {
-		Logger.Printf(DEBUG+" "+v[0].(string), v[1:]...)
+		logger.Printf(DEBUG+" "+v[0].(string), v[1:]...)
 	}
 }
 
+// Info display message with "INFO" prefix
 func Info(v ...interface{}) {
-	Logger.Printf(INFO+" "+v[0].(string), v[1:]...)
+	logger.Printf(INFO+" "+v[0].(string), v[1:]...)
 }
 
+// Warn display message with "WARN" prefix
 func Warn(v ...interface{}) {
-	Logger.Printf(WARN+" "+v[0].(string), v[1:]...)
+	logger.Printf(WARN+" "+v[0].(string), v[1:]...)
 }
 
+// Error display message with "ERROR" prefix
 func Error(v ...interface{}) {
-	Logger.Printf(ERROR+" "+v[0].(string), v[1:]...)
+	logger.Printf(ERROR+" "+v[0].(string), v[1:]...)
 }

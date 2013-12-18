@@ -8,8 +8,9 @@ import (
 	"strings"
 )
 
+// BasePageContext context for pages
 type BasePageContext struct {
-	*SessionStore
+	*sessionStore
 	Title               string
 	ResponseWriter      http.ResponseWriter
 	Request             *http.Request
@@ -24,12 +25,13 @@ type BasePageContext struct {
 
 var hostname string
 
+// NewBasePageContext create base page context for request
 func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *BasePageContext {
 	ctx := &BasePageContext{Title: title,
 		ResponseWriter: w,
 		Request:        r,
-		SessionStore:   GetSessionStore(w, r),
-		CsrfToken:      context.Get(r, CONTEXT_CSRF_TOKEN).(string)}
+		sessionStore:   GetSessionStore(w, r),
+		CsrfToken:      context.Get(r, CONTEXTCSRFTOKEN).(string)}
 	if hostname == "" {
 		file, err := ioutil.ReadFile("/etc/hostname")
 		helpers.CheckErr(err, "Load hostname error")
@@ -41,6 +43,7 @@ func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *B
 	return ctx
 }
 
+// GetFlashMessage for current context
 func (ctx *BasePageContext) GetFlashMessage() []interface{} {
 	if flashes := ctx.Session.Flashes(); len(flashes) > 0 {
 		err := ctx.SessionSave()
@@ -50,10 +53,12 @@ func (ctx *BasePageContext) GetFlashMessage() []interface{} {
 	return nil
 }
 
+// AddFlashMessage to context
 func (ctx *BasePageContext) AddFlashMessage(msg interface{}) {
 	ctx.Session.AddFlash(msg)
 }
 
+// SessionSave by page context
 func (ctx *BasePageContext) SessionSave() error {
 	err := ctx.Session.Save(ctx.Request, ctx.ResponseWriter)
 	helpers.CheckErr(err, "BasePageContext Save Error")

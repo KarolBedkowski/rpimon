@@ -9,11 +9,11 @@ import (
 	"strings"
 )
 
-// Read one line from given file
+// ReadLineFromFile - Read one line from given file
 func ReadLineFromFile(filename string) (string, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		l.Warn("ReadLineFromFile Error", filename, err)
+		l.Warn("ReadLineFromFile Error %s: %s", filename, err)
 		return "", err
 	}
 	defer file.Close()
@@ -25,11 +25,11 @@ func ReadLineFromFile(filename string) (string, error) {
 	return line, err
 }
 
-// Read first line from givern file and return value as int.
+// ReadIntFromFile Read first line from givern file and return value as int.
 func ReadIntFromFile(filename string) int {
 	line, err := ReadLineFromFile(filename)
 	if err != nil {
-		l.Warn("ReadIntFromFile Error", filename, err)
+		l.Warn("ReadIntFromFile Error %s: %s", filename, err)
 		return 0
 	}
 	if len(line) == 0 {
@@ -37,12 +37,13 @@ func ReadIntFromFile(filename string) int {
 	}
 	res, err := strconv.Atoi(line)
 	if err != nil {
-		l.Warn("ReadIntFromFile Error", filename, err)
+		l.Warn("ReadIntFromFile Error %s: %s", filename, err)
 		return 0
 	}
 	return res
 }
 
+// ReadFromFileLastLines read last n lines from file
 //TODO: poprawić
 func ReadFromFileLastLines(filename string, limit int) (string, error) {
 	file, err := os.Open(filename)
@@ -66,10 +67,11 @@ func ReadFromFileLastLines(filename string, limit int) (string, error) {
 	return strings.Join(buff, ""), err
 }
 
+// ReadFromCommand read result command
 func ReadFromCommand(name string, arg ...string) string {
 	out, err := exec.Command(name, arg...).Output()
 	if err != nil {
-		l.Warn("helpers.ReadFromCommand Error", name, arg, err)
+		l.Warn("helpers.ReadFromCommand Error %s, %s, %s", name, arg, err)
 		return err.Error()
 	}
 	return string(out)

@@ -13,13 +13,14 @@ import (
 var cacheLock sync.Mutex
 var cacheItems = map[string]*template.Template{}
 
+// RenderTemplate - render given template
 func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenames ...string) {
 
 	cacheLock.Lock()
 	defer cacheLock.Unlock()
 
-	template_path := strings.Join(filenames, "|")
-	ctemplate, ok := cacheItems[template_path]
+	templatePath := strings.Join(filenames, "|")
+	ctemplate, ok := cacheItems[templatePath]
 	if !ok || Configuration.Debug {
 		templates := []string{}
 		for _, filename := range filenames {
@@ -31,7 +32,7 @@ func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenam
 			templates = append(templates, fullPath)
 		}
 		ctemplate = template.Must(template.ParseFiles(templates...))
-		cacheItems[template_path] = ctemplate
+		cacheItems[templatePath] = ctemplate
 	}
 	err := ctemplate.ExecuteTemplate(w, name, ctx)
 	if err != nil {

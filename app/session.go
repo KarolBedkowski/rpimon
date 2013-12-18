@@ -10,39 +10,45 @@ import (
 	"time"
 )
 
-const STORE_SESSION = "SESSION"
+const storesession = "SESSION"
 
-type SessionStore struct {
+type sessionStore struct {
 	Session *sessions.Session
 }
 
-func GetSessionStore(w http.ResponseWriter, r *http.Request) *SessionStore {
-	session, _ := store.Get(r, STORE_SESSION)
+// GetSessionStore  for given request
+func GetSessionStore(w http.ResponseWriter, r *http.Request) *sessionStore {
+	session, _ := store.Get(r, storesession)
 	session.Options = &sessions.Options{
 		Path:   "/",
 		MaxAge: 86400 * 1,
 	}
-	return &SessionStore{session}
+	return &sessionStore{session}
 }
 
-func (store *SessionStore) Get(key string) interface{} {
+// Get value from session store
+func (store *sessionStore) Get(key string) interface{} {
 	return store.Session.Values[key]
 }
 
-func (store *SessionStore) Set(key string, value interface{}) {
+// Set value in session store
+func (store *sessionStore) Set(key string, value interface{}) {
 	store.Session.Values[key] = value
 }
 
-func (store *SessionStore) Clear() {
+// Clear session
+func (store *sessionStore) Clear() {
 	store.Session.Values = nil
 }
 
-func (store *SessionStore) Save(w http.ResponseWriter, r *http.Request) error {
+// Save session
+func (store *sessionStore) Save(w http.ResponseWriter, r *http.Request) error {
 	err := store.Session.Save(r, w)
 	helpers.CheckErr(err, "BasePageContext Save Error")
 	return err
 }
 
+// ClearSessionStore - remove old session files
 func ClearSessionStore() error {
 	l.Info("Start ClearSessionStore")
 	now := time.Now()

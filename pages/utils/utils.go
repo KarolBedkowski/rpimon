@@ -12,6 +12,7 @@ import (
 
 var subRouter *mux.Router
 
+// CreateRoutes for /pages
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("utils-index")
@@ -53,25 +54,25 @@ func commandPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	commandIdStr, ok := vars["command-id"]
-	if !ok || commandIdStr == "" {
-		l.Warn("page.utils commandPageHandler: wrong commandIdStr ", vars)
+	commandIDStr, ok := vars["command-id"]
+	if !ok || commandIDStr == "" {
+		l.Warn("page.utils commandPageHandler: wrong commandIDStr ", vars)
 		mainPageHandler(w, r)
 		return
 	}
 
-	commandId, err := strconv.Atoi(commandIdStr)
-	if err != nil || commandId < 0 || commandId >= len(group) {
-		l.Warn("page.utils commandPageHandler: wrong commandId ", vars)
+	commandID, err := strconv.Atoi(commandIDStr)
+	if err != nil || commandID < 0 || commandID >= len(group) {
+		l.Warn("page.utils commandPageHandler: wrong commandID ", vars)
 		mainPageHandler(w, r)
 		return
 	}
 
-	commandStr := group[commandId].Command
+	commandStr := group[commandID].Command
 	command := strings.Split(commandStr, " ")
 
 	data := newPageCtx(w, r)
-	data.CurrentPage = "Utils " + groupName + ": " + group[commandId].Name
+	data.CurrentPage = "Utils " + groupName + ": " + group[commandID].Name
 	data.Data = h.ReadFromCommand(command[0], command[1:]...)
 	app.RenderTemplate(w, data, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
 }

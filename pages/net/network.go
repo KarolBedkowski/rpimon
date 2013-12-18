@@ -9,20 +9,21 @@ import (
 
 var subRouter *mux.Router
 
+// CreateRoutes for /net
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("net-index")
 	subRouter.HandleFunc("/{page}", app.VerifyLogged(mainPageHandler))
 }
 
-type NetPageCtx struct {
+type pageCtx struct {
 	*app.BasePageContext
 	CurrentPage string
 	Data        string
 }
 
-func newNetPageCtx(w http.ResponseWriter, r *http.Request) *NetPageCtx {
-	ctx := &NetPageCtx{BasePageContext: app.NewBasePageContext("Network", w, r)}
+func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Network", w, r)}
 	ctx.LocalMenu = []app.MenuItem{app.NewMenuItem("IFConfig", "ifconfig"),
 		app.NewMenuItem("IPTables", "iptables"),
 		app.NewMenuItem("Netstat", "netstat-listen"),

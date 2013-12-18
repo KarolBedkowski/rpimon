@@ -12,9 +12,11 @@ import (
 	"os"
 )
 
-var Router *mux.Router = mux.NewRouter()
+// App main router
+var Router = mux.NewRouter()
 var store *sessions.FilesystemStore
 
+// Init - Initialize application
 func Init(appConfFile string, debug bool) *AppConfiguration {
 
 	conf := LoadConfiguration(appConfFile)
@@ -51,27 +53,29 @@ func Init(appConfFile string, debug bool) *AppConfiguration {
 	return conf
 }
 
+// Close application
 func Close() {
 	l.Info("Closing...")
 }
 
-func GetNamedUrl(name string, pairs ...string) (url string, err error) {
+// GetNamedURL - Return url for named route and parameters
+func GetNamedURL(name string, pairs ...string) (url string, err error) {
 	url = ""
 	rurl, err := Router.Get(name).URL()
 	if err != nil {
 		return
 	}
 	url = rurl.String()
-	pairs_len := len(pairs)
-	if pairs_len == 0 {
+	pairsLen := len(pairs)
+	if pairsLen == 0 {
 		return
 	}
-	if pairs_len%2 != 0 {
-		err = fmt.Errorf("Requred pairs of arguments")
+	if pairsLen%2 != 0 {
+		err = fmt.Errorf("requred pairs of arguments")
 		return
 	}
 	url += "?"
-	for idx := 0; idx < pairs_len; idx += 2 {
+	for idx := 0; idx < pairsLen; idx += 2 {
 		url += pairs[idx] + "=" + nurl.QueryEscape(pairs[idx+1])
 	}
 	return

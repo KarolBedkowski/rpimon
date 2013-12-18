@@ -9,19 +9,20 @@ import (
 
 var subRouter *mux.Router
 
+// CreateRoutes for /users
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("users-index")
 }
 
-type PageCtx struct {
+type pageCtx struct {
 	*app.BasePageContext
 	CurrentPage string
 	Data        string
 }
 
-func newNetPageCtx(w http.ResponseWriter, r *http.Request) *PageCtx {
-	ctx := &PageCtx{BasePageContext: app.NewBasePageContext("Users", w, r)}
+func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Users", w, r)}
 	ctx.CurrentMainMenuPos = "/users/"
 	return ctx
 }

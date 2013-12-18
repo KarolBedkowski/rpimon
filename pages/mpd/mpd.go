@@ -11,6 +11,7 @@ import (
 
 var subRouter *mux.Router
 
+// CreateRoutes for /mpd
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("mpd-index")
@@ -63,7 +64,7 @@ type playlistPageCtx struct {
 	*app.BasePageContext
 	CurrentPage   string
 	Playlist      []mpd.Attrs
-	CurrentSongId string
+	CurrentSongID string
 	Error         error
 }
 
@@ -82,7 +83,7 @@ func playlistPageHandler(w http.ResponseWriter, r *http.Request) {
 	playlist, err, current := mpdPlaylistInfo()
 	data.Playlist = playlist
 	data.Error = err
-	data.CurrentSongId = current
+	data.CurrentSongID = current
 	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlist.tmpl", "flash.tmpl")
 }
 
@@ -94,19 +95,19 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 		playlistPageHandler(w, r)
 		return
 	}
-	songIdStr, ok := vars["song-id"]
-	if !ok || songIdStr == "" {
-		l.Warn("page.mpd songActionPageHandler: missing songid ", vars)
+	songIDStr, ok := vars["song-id"]
+	if !ok || songIDStr == "" {
+		l.Warn("page.mpd songActionPageHandler: missing songID ", vars)
 		playlistPageHandler(w, r)
 		return
 	}
-	songId, err := strconv.Atoi(songIdStr)
-	if err != nil || songId < 0 {
-		l.Warn("page.mpd songActionPageHandler: wrong songid ", vars)
+	songID, err := strconv.Atoi(songIDStr)
+	if err != nil || songID < 0 {
+		l.Warn("page.mpd songActionPageHandler: wrong songID ", vars)
 		playlistPageHandler(w, r)
 		return
 	}
-	err = mpdSongAction(songId, action)
+	err = mpdSongAction(songID, action)
 	if err != nil {
 		session := app.GetSessionStore(w, r)
 		session.Session.AddFlash(err.Error())
@@ -149,7 +150,7 @@ func playlistActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	playlist, ok := vars["plist"]
 	if !ok || playlist == "" {
-		l.Warn("page.mpd playlistActionPageHandler: missing songid ", vars)
+		l.Warn("page.mpd playlistActionPageHandler: missing songID ", vars)
 		playlistPageHandler(w, r)
 		return
 	}
