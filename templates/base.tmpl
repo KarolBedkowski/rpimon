@@ -24,7 +24,7 @@
 					<ul  class="nav-list">
 						{{$current := .BasePageContext.CurrentMainMenuPos}}
 						{{range .BasePageContext.MainMenu}}
-						<li class="nav-item{{if eq .Href $current}} nav-item-selected{{end}}">
+						<li class="nav-item{{if eq .ID $current}} nav-item-selected{{end}}">
 							<a class="" href="{{.Href}}">{{.Title}}</a>
 						</li>
 						{{end}}
@@ -40,7 +40,7 @@
 							<ul>
 								{{$currentl := .BasePageContext.CurrentLocalMenuPos}}
 								{{range .BasePageContext.LocalMenu}}
-									<li class="{{if eq .Href $currentl}}pure-menu-selected {{end}}">
+									<li class="{{if eq .ID $currentl}}pure-menu-selected {{end}}">
 										<a href="{{.Href}}" >{{.Title}}</a>
 									</li>
 								{{end}}

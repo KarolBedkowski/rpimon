@@ -4,12 +4,17 @@ package app
 type MenuItem struct {
 	Title   string
 	Href    string
+	ID      string
 	Submenu []MenuItem
 }
 
 // NewMenuItem create new MenuItem structure
 func NewMenuItem(title, href string) MenuItem {
-	return MenuItem{Title: title, Href: href}
+	return MenuItem{Title: title, Href: href, ID: href}
+}
+func (item MenuItem) SetID(ID string) MenuItem {
+	item.ID = ID
+	return item
 }
 
 // SetMainMenu - fill MainMenu in BasePageContext
