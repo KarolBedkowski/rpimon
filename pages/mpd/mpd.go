@@ -14,7 +14,7 @@ var subRouter *mux.Router
 // CreateRoutes for /mpd
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("mpd-index")
+	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler))
 	subRouter.HandleFunc("/info", app.VerifyLogged(mainPageHandler)).Name("mpd-index")
 	subRouter.HandleFunc("/action/{action}", app.VerifyLogged(actionPageHandler))
 	subRouter.HandleFunc("/playlist", app.VerifyLogged(playlistPageHandler))
@@ -22,7 +22,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 		app.VerifyLogged(songActionPageHandler))
 	subRouter.HandleFunc("/playlists", app.VerifyLogged(playlistsPageHandler))
 	subRouter.HandleFunc("/playlist/{plist}/{action}",
-		app.VerifyLogged(playlistActionPageHandler))
+		app.VerifyLogged(playlistsActionPageHandler))
 }
 
 type pageCtx struct {
@@ -52,12 +52,10 @@ func actionPageHandler(w http.ResponseWriter, r *http.Request) {
 	action, ok := vars["action"]
 	if !ok || action == "" {
 		l.Warn("page.mpd actionPageHandler: missing action ", vars)
-		mainPageHandler(w, r)
 		return
 	}
-	data := newPageCtx(w, r)
-	data.Status = mpdAction(action)
-	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/index.tmpl", "flash.tmpl")
+	mpdAction(action)
+	http.Redirect(w, r, "/mpd/info", http.StatusFound)
 }
 
 type playlistPageCtx struct {
@@ -92,19 +90,19 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	action, ok := vars["action"]
 	if !ok || action == "" {
 		l.Warn("page.mpd songActionPageHandler: missing action ", vars)
-		playlistPageHandler(w, r)
+		http.Redirect(w, r, "/mpd/playlist", http.StatusFound)
 		return
 	}
 	songIDStr, ok := vars["song-id"]
 	if !ok || songIDStr == "" {
 		l.Warn("page.mpd songActionPageHandler: missing songID ", vars)
-		playlistPageHandler(w, r)
+		http.Redirect(w, r, "/mpd/playlist", http.StatusFound)
 		return
 	}
 	songID, err := strconv.Atoi(songIDStr)
 	if err != nil || songID < 0 {
 		l.Warn("page.mpd songActionPageHandler: wrong songID ", vars)
-		playlistPageHandler(w, r)
+		http.Redirect(w, r, "/mpd/playlist", http.StatusFound)
 		return
 	}
 	err = mpdSongAction(songID, action)
@@ -140,17 +138,17 @@ func playlistsPageHandler(w http.ResponseWriter, r *http.Request) {
 	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlists.tmpl", "flash.tmpl")
 }
 
-func playlistActionPageHandler(w http.ResponseWriter, r *http.Request) {
+func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	action, ok := vars["action"]
 	if !ok || action == "" {
-		l.Warn("page.mpd playlistActionPageHandler: missing action ", vars)
+		l.Warn("page.mpd playlistsActionPageHandler: missing action ", vars)
 		playlistPageHandler(w, r)
 		return
 	}
 	playlist, ok := vars["plist"]
 	if !ok || playlist == "" {
-		l.Warn("page.mpd playlistActionPageHandler: missing songID ", vars)
+		l.Warn("page.mpd playlistsActionPageHandler: missing songID ", vars)
 		playlistPageHandler(w, r)
 		return
 	}
