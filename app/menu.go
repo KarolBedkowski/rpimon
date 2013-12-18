@@ -12,6 +12,13 @@ type MenuItem struct {
 func NewMenuItem(title, href string) MenuItem {
 	return MenuItem{Title: title, Href: href, ID: href}
 }
+
+func NewMenuItemFromRoute(title, name, query string, pairs ...string) MenuItem {
+	url := GetNamedURL(name, pairs...)
+	url += query
+	return MenuItem{Title: title, Href: url, ID: name}
+}
+
 func (item MenuItem) SetID(ID string) MenuItem {
 	item.ID = ID
 	return item
