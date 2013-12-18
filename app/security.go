@@ -40,7 +40,8 @@ func CheckIsUserLogger(w http.ResponseWriter, r *http.Request, redirect bool) (u
 	}
 	log.Print("Access denied")
 	if redirect {
-		url := GetNamedURL("auth-login", "back", r.URL.String())
+		url := GetNamedURL("auth-login")
+		url += PairsToQuery("back", r.URL.String())
 		http.Redirect(w, r, url, 302)
 	}
 	return

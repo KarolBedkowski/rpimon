@@ -60,12 +60,17 @@ func Close() {
 // GetNamedURL - Return url for named route and parameters
 func GetNamedURL(name string, pairs ...string) (url string) {
 	url = ""
-	rurl, err := Router.Get(name).URL()
+	rurl, err := Router.Get(name).URL(pairs...)
 	if err != nil {
 		l.Warn("GetNamedURL error %s", err)
 		return
 	}
 	url = rurl.String()
+	return
+}
+
+func PairsToQuery(pairs ...string) (query string) {
+	query = ""
 	pairsLen := len(pairs)
 	if pairsLen == 0 {
 		return
@@ -74,9 +79,9 @@ func GetNamedURL(name string, pairs ...string) (url string) {
 		l.Warn("GetNamedURL error - wron number of argiments")
 		return
 	}
-	url += "?"
+	query += "?"
 	for idx := 0; idx < pairsLen; idx += 2 {
-		url += pairs[idx] + "=" + nurl.QueryEscape(pairs[idx+1])
+		query += pairs[idx] + "=" + nurl.QueryEscape(pairs[idx+1])
 	}
 	return
 }
