@@ -13,7 +13,7 @@ var subRouter *mux.Router
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("net-index")
-	subRouter.HandleFunc("/{page}", app.VerifyLogged(mainPageHandler))
+	subRouter.HandleFunc("/{page}", app.VerifyLogged(mainPageHandler)).Name("net-page")
 }
 
 type pageCtx struct {
@@ -22,14 +22,22 @@ type pageCtx struct {
 	Data        string
 }
 
-var localMenu = []app.MenuItem{app.NewMenuItem("IFConfig", "ifconfig"),
-	app.NewMenuItem("IPTables", "iptables"),
-	app.NewMenuItem("Netstat", "netstat-listen"),
-	app.NewMenuItem("Conenctions", "connenctions")}
+var localMenu []app.MenuItem
+
+func createLocalMenu() []app.MenuItem {
+	if localMenu == nil {
+
+		localMenu = []app.MenuItem{app.NewMenuItemFromRoute("IFConfig", "net-page", "", "page", "ifconfig").SetID("ifconfig"),
+			app.NewMenuItemFromRoute("IPTables", "net-page", "", "page", "iptables").SetID("iptables"),
+			app.NewMenuItemFromRoute("Netstat", "net-page", "", "page", "netstat").SetID("netstat"),
+			app.NewMenuItemFromRoute("Conenctions", "net-page", "", "page", "connenctions").SetID("connenctions")}
+	}
+	return localMenu
+}
 
 func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Network", w, r)}
-	ctx.LocalMenu = localMenu
+	ctx.LocalMenu = createLocalMenu()
 	ctx.CurrentMainMenuPos = "/net/"
 	return ctx
 }
@@ -46,7 +54,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 		data.Data = h.ReadFromCommand("ip", "addr")
 	case "iptables":
 		data.Data = h.ReadFromCommand("sudo", "iptables", "-L", "-vn")
-	case "netstat-listen":
+	case "netstat":
 		data.Data = h.ReadFromCommand("sudo", "netstat", "-lpn", "--inet")
 	case "connenctions":
 		data.Data = h.ReadFromCommand("sudo", "netstat", "-pn", "--inet")

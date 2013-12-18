@@ -13,7 +13,7 @@ var subRouter *mux.Router
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("storage-index")
-	subRouter.HandleFunc("/{page}", app.VerifyLogged(mainPageHandler))
+	subRouter.HandleFunc("/{page}", app.VerifyLogged(mainPageHandler)).Name("storage-page")
 }
 
 type pageCtx struct {
@@ -22,13 +22,20 @@ type pageCtx struct {
 	Data        string
 }
 
-var localMenu = []app.MenuItem{app.NewMenuItem("Disk Free", "diskfree"),
-	app.NewMenuItem("Mount", "mount"),
-	app.NewMenuItem("Devices", "devices")}
+var localMenu []app.MenuItem
+
+func createLocalMenu() []app.MenuItem {
+	if localMenu == nil {
+		localMenu = []app.MenuItem{app.NewMenuItemFromRoute("Disk Free", "storage-page", "", "page", "diskfree").SetID("diskfree"),
+			app.NewMenuItemFromRoute("Mount", "storage-page", "", "page", "mount").SetID("mount"),
+			app.NewMenuItemFromRoute("Devices", "storage-page", "", "page", "devices").SetID("devices")}
+	}
+	return localMenu
+}
 
 func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Storage", w, r)}
-	ctx.LocalMenu = localMenu
+	ctx.LocalMenu = createLocalMenu()
 	ctx.CurrentMainMenuPos = "/storage/"
 	return ctx
 }

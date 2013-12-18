@@ -31,15 +31,22 @@ type pageCtx struct {
 	Status      *mpdStatus
 }
 
-var localMenu = []app.MenuItem{app.NewMenuItem("Info", "info"),
-	app.NewMenuItem("Playlist", "playlist"),
-	app.NewMenuItem("Playlists", "playlists")}
+var localMenu []app.MenuItem
+
+func createLocalMenu() []app.MenuItem {
+	if localMenu == nil {
+		localMenu = []app.MenuItem{app.NewMenuItemFromRoute("Info", "mpd-index", ""),
+			app.NewMenuItemFromRoute("Playlist", "mpd-playlist", ""),
+			app.NewMenuItemFromRoute("Playlists", "mpd-playlists", "")}
+	}
+	return localMenu
+}
 
 func newPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Mpd", w, r)}
 	ctx.CurrentMainMenuPos = "/mpd/"
-	ctx.LocalMenu = localMenu
-	ctx.CurrentLocalMenuPos = "info"
+	ctx.LocalMenu = createLocalMenu()
+	ctx.CurrentLocalMenuPos = "mpd-index"
 	return ctx
 }
 
@@ -71,8 +78,8 @@ type playlistPageCtx struct {
 func newPlaylistPageCtx(w http.ResponseWriter, r *http.Request) *playlistPageCtx {
 	ctx := &playlistPageCtx{BasePageContext: app.NewBasePageContext("Mpd", w, r)}
 	ctx.CurrentMainMenuPos = "/mpd/"
-	ctx.LocalMenu = localMenu
-	ctx.CurrentLocalMenuPos = "playlist"
+	ctx.LocalMenu = createLocalMenu()
+	ctx.CurrentLocalMenuPos = "mpd-playlist"
 	return ctx
 }
 
@@ -124,8 +131,8 @@ type playlistsPageCtx struct {
 func newPlaylistsPageCtx(w http.ResponseWriter, r *http.Request) *playlistsPageCtx {
 	ctx := &playlistsPageCtx{BasePageContext: app.NewBasePageContext("Mpd", w, r)}
 	ctx.CurrentMainMenuPos = "/mpd/"
-	ctx.LocalMenu = localMenu
-	ctx.CurrentLocalMenuPos = "playlists"
+	ctx.LocalMenu = createLocalMenu()
+	ctx.CurrentLocalMenuPos = "mpd-playlists"
 	return ctx
 }
 func playlistsPageHandler(w http.ResponseWriter, r *http.Request) {
