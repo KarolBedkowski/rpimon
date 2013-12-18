@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
@@ -59,10 +58,11 @@ func Close() {
 }
 
 // GetNamedURL - Return url for named route and parameters
-func GetNamedURL(name string, pairs ...string) (url string, err error) {
+func GetNamedURL(name string, pairs ...string) (url string) {
 	url = ""
 	rurl, err := Router.Get(name).URL()
 	if err != nil {
+		l.Warn("GetNamedURL error %s", err)
 		return
 	}
 	url = rurl.String()
@@ -71,7 +71,7 @@ func GetNamedURL(name string, pairs ...string) (url string, err error) {
 		return
 	}
 	if pairsLen%2 != 0 {
-		err = fmt.Errorf("requred pairs of arguments")
+		l.Warn("GetNamedURL error - wron number of argiments")
 		return
 	}
 	url += "?"
