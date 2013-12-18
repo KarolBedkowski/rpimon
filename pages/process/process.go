@@ -26,11 +26,13 @@ type pageCtx struct {
 	Data        string
 }
 
+var localMenu = []app.MenuItem{app.NewMenuItem("PS AXL", "psaxl"),
+	app.NewMenuItem("TOP", "top"),
+	app.NewMenuItem("Services", "services")}
+
 func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Process", w, r)}
-	ctx.LocalMenu = []app.MenuItem{app.NewMenuItem("PS AXL", "psaxl"),
-		app.NewMenuItem("TOP", "top"),
-		app.NewMenuItem("Services", "services")}
+	ctx.LocalMenu = localMenu
 	ctx.CurrentMainMenuPos = "/process/"
 	return ctx
 }

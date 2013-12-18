@@ -22,12 +22,14 @@ type pageCtx struct {
 	Data        string
 }
 
+var localMenu = []app.MenuItem{app.NewMenuItem("IFConfig", "ifconfig"),
+	app.NewMenuItem("IPTables", "iptables"),
+	app.NewMenuItem("Netstat", "netstat-listen"),
+	app.NewMenuItem("Conenctions", "connenctions")}
+
 func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Network", w, r)}
-	ctx.LocalMenu = []app.MenuItem{app.NewMenuItem("IFConfig", "ifconfig"),
-		app.NewMenuItem("IPTables", "iptables"),
-		app.NewMenuItem("Netstat", "netstat-listen"),
-		app.NewMenuItem("Conenctions", "connenctions")}
+	ctx.LocalMenu = localMenu
 	ctx.CurrentMainMenuPos = "/net/"
 	return ctx
 }
