@@ -27,19 +27,19 @@ func (item MenuItem) SetID(ID string) MenuItem {
 // SetMainMenu - fill MainMenu in BasePageContext
 func SetMainMenu(ctx *BasePageContext, loggedUser bool) {
 	if loggedUser {
-		ctx.MainMenu = []MenuItem{NewMenuItem("Home", "/main/"),
-			NewMenuItem("Network", "/net/"),
-			NewMenuItem("Storage", "/storage/"),
-			NewMenuItem("Logs", "/logs/"),
-			NewMenuItem("Process", "/process/"),
-			NewMenuItem("Users", "/users/"),
+		ctx.MainMenu = []MenuItem{NewMenuItemFromRoute("Home", "main-index", "").SetID("/main/"),
+			NewMenuItemFromRoute("Network", "net-index", "").SetID("/net/"),
+			NewMenuItemFromRoute("Storage", "storage-index", "").SetID("/storage/"),
+			NewMenuItemFromRoute("Logs", "logs-index", "").SetID("/logs/"),
+			NewMenuItemFromRoute("Process", "process-index", "").SetID("/process/"),
+			NewMenuItemFromRoute("Users", "users-index", "").SetID("/users/"),
 			NewMenuItem("&nbsp;", "#"),
-			NewMenuItem("MPD", "/mpd/"),
+			NewMenuItemFromRoute("MPD", "mpd-index", "").SetID("/mpd/"),
 			NewMenuItem("&nbsp;", "#"),
-			NewMenuItem("Utilities", "/utils/"),
+			NewMenuItemFromRoute("Utilities", "utils-index", "").SetID("/utils/"),
 			NewMenuItem("&nbsp;", "#"),
-			NewMenuItem("Logout", "/auth/logoff")}
+			NewMenuItemFromRoute("Logout", "auth-logoff", "").SetID("/auth/logoff")}
 	} else {
-		ctx.MainMenu = []MenuItem{NewMenuItem("Login", "/auth/login")}
+		ctx.MainMenu = []MenuItem{NewMenuItemFromRoute("Login", "auth-login", "").SetID("/auth/login")}
 	}
 }
