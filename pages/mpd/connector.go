@@ -44,29 +44,17 @@ func getStatus() (status *mpdStatus) {
 	return
 }
 
-func mpdAction(action string) (status *mpdStatus) {
-	status = new(mpdStatus)
+func mpdAction(action string) error {
 	conn, err := mpd.Dial("tcp", host)
 	if err != nil {
-		status.Error = err.Error()
-		return status
+		return err
 	}
 	defer conn.Close()
 	stat, err := conn.Status()
 	if err != nil {
-		status.Error = err.Error()
 		l.Error(err.Error())
-		return
+		return err
 	}
-	song, err := conn.CurrentSong()
-	if err != nil {
-		status.Error = err.Error()
-		l.Error(err.Error())
-		return
-	}
-
-	status.Status = stat
-	status.Current = song
 
 	switch action {
 	case "play":
@@ -85,20 +73,10 @@ func mpdAction(action string) (status *mpdStatus) {
 		conn.Repeat(stat["repeat"] == "0")
 	case "update":
 		conn.Update("")
-	case "":
-		// no action
-		return
 	default:
 		l.Warn("page.mpd mpdAction: wrong action ", action)
-		return
 	}
-	stat, err = conn.Status()
-	if err != nil {
-		status.Error = err.Error()
-		l.Error(err.Error())
-	}
-	status.Status = stat
-	return
+	return nil
 }
 
 func mpdPlaylistInfo() (playlist []mpd.Attrs, err error, currentSong string) {
