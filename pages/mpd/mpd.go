@@ -17,10 +17,10 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler))
 	subRouter.HandleFunc("/info", app.VerifyLogged(mainPageHandler)).Name("mpd-index")
 	subRouter.HandleFunc("/action/{action}", app.VerifyLogged(actionPageHandler))
-	subRouter.HandleFunc("/playlist", app.VerifyLogged(playlistPageHandler))
+	subRouter.HandleFunc("/playlist", app.VerifyLogged(playlistPageHandler)).Name("mpd-playlist")
 	subRouter.HandleFunc("/song/{song-id:[0-9]+}/{action}",
 		app.VerifyLogged(songActionPageHandler))
-	subRouter.HandleFunc("/playlists", app.VerifyLogged(playlistsPageHandler))
+	subRouter.HandleFunc("/playlists", app.VerifyLogged(playlistsPageHandler)).Name("mpd-playlists")
 	subRouter.HandleFunc("/playlist/{plist}/{action}",
 		app.VerifyLogged(playlistsActionPageHandler))
 }
@@ -31,12 +31,14 @@ type pageCtx struct {
 	Status      *mpdStatus
 }
 
+var localMenu = []app.MenuItem{app.NewMenuItem("Info", "info"),
+	app.NewMenuItem("Playlist", "playlist"),
+	app.NewMenuItem("Playlists", "playlists")}
+
 func newPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Mpd", w, r)}
 	ctx.CurrentMainMenuPos = "/mpd/"
-	ctx.LocalMenu = []app.MenuItem{app.NewMenuItem("Info", "info"),
-		app.NewMenuItem("Playlist", "playlist"),
-		app.NewMenuItem("Playlists", "playlists")}
+	ctx.LocalMenu = localMenu
 	ctx.CurrentLocalMenuPos = "info"
 	return ctx
 }
@@ -55,7 +57,7 @@ func actionPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mpdAction(action)
-	http.Redirect(w, r, "/mpd/info", http.StatusFound)
+	http.Redirect(w, r, app.GetNamedURL("mpd-index"), http.StatusFound)
 }
 
 type playlistPageCtx struct {
@@ -69,9 +71,7 @@ type playlistPageCtx struct {
 func newPlaylistPageCtx(w http.ResponseWriter, r *http.Request) *playlistPageCtx {
 	ctx := &playlistPageCtx{BasePageContext: app.NewBasePageContext("Mpd", w, r)}
 	ctx.CurrentMainMenuPos = "/mpd/"
-	ctx.LocalMenu = []app.MenuItem{app.NewMenuItem("Info", "info"),
-		app.NewMenuItem("Playlist", "playlist"),
-		app.NewMenuItem("Playlists", "playlists")}
+	ctx.LocalMenu = localMenu
 	ctx.CurrentLocalMenuPos = "playlist"
 	return ctx
 }
@@ -90,19 +90,19 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	action, ok := vars["action"]
 	if !ok || action == "" {
 		l.Warn("page.mpd songActionPageHandler: missing action ", vars)
-		http.Redirect(w, r, "/mpd/playlist", http.StatusFound)
+		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 		return
 	}
 	songIDStr, ok := vars["song-id"]
 	if !ok || songIDStr == "" {
 		l.Warn("page.mpd songActionPageHandler: missing songID ", vars)
-		http.Redirect(w, r, "/mpd/playlist", http.StatusFound)
+		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 		return
 	}
 	songID, err := strconv.Atoi(songIDStr)
 	if err != nil || songID < 0 {
 		l.Warn("page.mpd songActionPageHandler: wrong songID ", vars)
-		http.Redirect(w, r, "/mpd/playlist", http.StatusFound)
+		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 		return
 	}
 	err = mpdSongAction(songID, action)
@@ -111,7 +111,7 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 		session.Session.AddFlash(err.Error())
 		session.Save(w, r)
 	}
-	http.Redirect(w, r, "/mpd/playlist", http.StatusFound)
+	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 }
 
 type playlistsPageCtx struct {
@@ -124,9 +124,7 @@ type playlistsPageCtx struct {
 func newPlaylistsPageCtx(w http.ResponseWriter, r *http.Request) *playlistsPageCtx {
 	ctx := &playlistsPageCtx{BasePageContext: app.NewBasePageContext("Mpd", w, r)}
 	ctx.CurrentMainMenuPos = "/mpd/"
-	ctx.LocalMenu = []app.MenuItem{app.NewMenuItem("Info", "info"),
-		app.NewMenuItem("Playlist", "playlist"),
-		app.NewMenuItem("Playlists", "playlists")}
+	ctx.LocalMenu = localMenu
 	ctx.CurrentLocalMenuPos = "playlists"
 	return ctx
 }
@@ -143,13 +141,13 @@ func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	action, ok := vars["action"]
 	if !ok || action == "" {
 		l.Warn("page.mpd playlistsActionPageHandler: missing action ", vars)
-		playlistPageHandler(w, r)
+		http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
 		return
 	}
 	playlist, ok := vars["plist"]
 	if !ok || playlist == "" {
 		l.Warn("page.mpd playlistsActionPageHandler: missing songID ", vars)
-		playlistPageHandler(w, r)
+		http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
 		return
 	}
 	err := mpdPlaylistAction(playlist, action)
@@ -158,5 +156,5 @@ func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
 		session.Session.AddFlash(err.Error())
 		session.Save(w, r)
 	}
-	http.Redirect(w, r, "/mpd/playlists", http.StatusFound)
+	http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
 }
