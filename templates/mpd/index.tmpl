@@ -64,6 +64,13 @@
 	function lconfirm() {
 		return confirm('Are you sure?');
 	}
+	function refresh() {
+		window.location.reload(true);
+	 }
+
+	$(function() {
+		setTimeout(refresh, 60000);
+	});
 </script>
 
 {{end}}
