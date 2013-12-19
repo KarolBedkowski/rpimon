@@ -115,8 +115,8 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	err = mpdSongAction(songID, action)
 	if err != nil {
 		session := app.GetSessionStore(w, r)
-		session.Session.AddFlash(err.Error())
-		session.Save(w, r)
+		session.AddFlash(err.Error())
+		session.Save(r, w)
 	}
 	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 }
@@ -160,8 +160,8 @@ func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	err := mpdPlaylistAction(playlist, action)
 	if err != nil {
 		session := app.GetSessionStore(w, r)
-		session.Session.AddFlash(err.Error())
-		session.Save(w, r)
+		session.AddFlash(err.Error())
+		session.Save(r, w)
 	}
 	http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
 }

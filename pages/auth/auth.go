@@ -68,7 +68,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	l.Info("User %s log in", user.Login)
 	loginPageCtx.Set(app.USERIDSESSION, user.Login)
 	loginPageCtx.AddFlashMessage("User log in")
-	loginPageCtx.SessionSave()
+	loginPageCtx.Save()
 	if values["back"] != nil && values["back"][0] != "" {
 		l.Debug("Redirect to ", values["back"][0])
 		http.Redirect(w, r, values["back"][0], http.StatusFound)
@@ -84,7 +84,7 @@ func handleLoginError(message string, w http.ResponseWriter, ctx *loginPageCtx) 
 
 func logoffHandler(w http.ResponseWriter, r *http.Request) {
 	session := app.GetSessionStore(w, r)
-	session.Clear()
-	session.Save(w, r)
+	session.Values = nil
+	session.Save(r, w)
 	http.Redirect(w, r, "/", http.StatusFound)
 }

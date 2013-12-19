@@ -13,7 +13,7 @@ import (
 
 // App main router
 var Router = mux.NewRouter()
-var store *sessions.FilesystemStore
+var store *sessions.CookieStore
 
 // Init - Initialize application
 func Init(appConfFile string, debug bool) *AppConfiguration {
@@ -40,8 +40,7 @@ func Init(appConfFile string, debug bool) *AppConfiguration {
 		l.Error("Createing dir for session store failed ", err)
 	}
 
-	store = sessions.NewFilesystemStore(conf.SessionStoreDir,
-		[]byte(conf.CookieAuthKey),
+	store = sessions.NewCookieStore([]byte(conf.CookieAuthKey),
 		[]byte(conf.CookieEncKey))
 
 	database.Init(conf.Users, conf.Debug)

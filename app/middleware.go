@@ -1,8 +1,6 @@
 package app
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"github.com/gorilla/context"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
@@ -23,16 +21,7 @@ const FORMCSRFTOKEN = "BasePageContext.CsrfToken"
 func csrfHandler(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session := GetSessionStore(w, r)
-		csrfToken := session.Get(CONTEXTCSRFTOKEN)
-		if csrfToken == nil {
-			token := make([]byte, CSRFTOKENLEN)
-			rand.Read(token)
-			csrfToken = base64.StdEncoding.EncodeToString(token)
-			session.Set(CONTEXTCSRFTOKEN, csrfToken)
-			session.Save(w, r)
-		}
-
-		context.Set(r, CONTEXTCSRFTOKEN, csrfToken)
+		csrfToken := session.Values[CONTEXTCSRFTOKEN]
 		if r.Method == "POST" && r.FormValue(FORMCSRFTOKEN) != csrfToken {
 			http.Error(w, "Fobidden/CSRF", http.StatusForbidden)
 		} else {

@@ -12,7 +12,7 @@ const USERIDSESSION = "USERID"
 // GetLoggedUserLogin for request
 func GetLoggedUserLogin(w http.ResponseWriter, r *http.Request) (login string) {
 	session := GetSessionStore(w, r)
-	sessLogin := session.Get(USERIDSESSION)
+	sessLogin := session.Values[USERIDSESSION]
 	if sessLogin != nil {
 		login = sessLogin.(string)
 	}
