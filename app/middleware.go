@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/context"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
+	"runtime/debug"
 	"time"
 )
 
@@ -63,13 +64,13 @@ func logHandler(h http.Handler) http.HandlerFunc {
 
 		defer func() {
 			end := time.Now()
-			err := recover()
 			status := writer.status
-			if err == nil {
+			if err := recover(); err == nil {
 				l.Info("%d %s %s %s %s", status, method, url, remote, end.Sub(start))
 			} else {
-				l.Error("%d %s %s %s %s err:'%s'", status, method, url, remote, end.Sub(start),
+				l.Error("%d %s %s %s %s err:'%#v'", status, method, url, remote, end.Sub(start),
 					err)
+				l.Error("%v", debug.Stack())
 			}
 		}()
 		h.ServeHTTP(writer, r)
