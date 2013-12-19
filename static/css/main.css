@@ -247,3 +247,7 @@ table tr:nth-of-type(even) {
     }
 }
 
+hr {
+	color: #eee;
+	margin: 1em 5em;
+}

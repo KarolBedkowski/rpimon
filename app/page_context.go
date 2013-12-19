@@ -6,6 +6,7 @@ import (
 	"k.prv/rpimon/helpers"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // BasePageContext context for pages
@@ -21,6 +22,7 @@ type BasePageContext struct {
 	CurrentMainMenuPos  string
 	LocalMenu           []MenuItem
 	CurrentLocalMenuPos string
+	Now                 string
 }
 
 var hostname string
@@ -39,6 +41,7 @@ func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *B
 	}
 	ctx.Hostname = hostname
 	ctx.CurrentUser = GetLoggedUserLogin(w, r)
+	ctx.Now = time.Now().Format("2006-01-02 15:04:05")
 	SetMainMenu(ctx, ctx.CurrentUser != "")
 	return ctx
 }
