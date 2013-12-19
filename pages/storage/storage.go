@@ -26,9 +26,9 @@ var localMenu []app.MenuItem
 
 func createLocalMenu() []app.MenuItem {
 	if localMenu == nil {
-		localMenu = []app.MenuItem{app.NewMenuItemFromRoute("Disk Free", "storage-page", "", "page", "diskfree").SetID("diskfree"),
-			app.NewMenuItemFromRoute("Mount", "storage-page", "", "page", "mount").SetID("mount"),
-			app.NewMenuItemFromRoute("Devices", "storage-page", "", "page", "devices").SetID("devices")}
+		localMenu = []app.MenuItem{app.NewMenuItemFromRoute("Disk Free", "storage-page", "page", "diskfree").SetID("diskfree"),
+			app.NewMenuItemFromRoute("Mount", "storage-page", "page", "mount").SetID("mount"),
+			app.NewMenuItemFromRoute("Devices", "storage-page", "page", "devices").SetID("devices")}
 	}
 	return localMenu
 }

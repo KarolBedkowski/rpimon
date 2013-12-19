@@ -35,9 +35,9 @@ var localMenu []app.MenuItem
 
 func createLocalMenu() []app.MenuItem {
 	if localMenu == nil {
-		localMenu = []app.MenuItem{app.NewMenuItemFromRoute("Info", "mpd-index", ""),
-			app.NewMenuItemFromRoute("Playlist", "mpd-playlist", ""),
-			app.NewMenuItemFromRoute("Playlists", "mpd-playlists", "")}
+		localMenu = []app.MenuItem{app.NewMenuItemFromRoute("Info", "mpd-index"),
+			app.NewMenuItemFromRoute("Playlist", "mpd-playlist"),
+			app.NewMenuItemFromRoute("Playlists", "mpd-playlists")}
 	}
 	return localMenu
 }
