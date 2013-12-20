@@ -8,28 +8,6 @@ import (
 	"time"
 )
 
-// csrf tokens len
-const CSRFTOKENLEN = 64
-
-// csrf tokens name in context
-const CONTEXTCSRFTOKEN = "csrf_token"
-
-// csrf tokens name formms
-const FORMCSRFTOKEN = "BasePageContext.CsrfToken"
-
-// CSRT Token middleware
-func csrfHandler(h http.Handler) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session := GetSessionStore(w, r)
-		csrfToken := session.Values[CONTEXTCSRFTOKEN]
-		if r.Method == "POST" && r.FormValue(FORMCSRFTOKEN) != csrfToken {
-			http.Error(w, "Fobidden/CSRF", http.StatusForbidden)
-		} else {
-			h.ServeHTTP(w, r)
-		}
-	})
-}
-
 // EnhResponseWriter response writer with status
 type EnhResponseWriter struct {
 	http.ResponseWriter

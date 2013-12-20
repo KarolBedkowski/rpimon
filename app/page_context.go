@@ -1,13 +1,9 @@
 package app
 
 import (
-	//"github.com/gorilla/context"
-	"crypto/rand"
-	"encoding/base64"
 	"github.com/gorilla/sessions"
 	"io/ioutil"
 	"k.prv/rpimon/helpers"
-	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"strings"
 	"time"
@@ -38,10 +34,7 @@ func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *B
 	session := GetSessionStore(w, r)
 	csrfToken := session.Values[CONTEXTCSRFTOKEN]
 	if csrfToken == nil {
-		l.Print("csrfToken is nil - creating")
-		token := make([]byte, CSRFTOKENLEN)
-		rand.Read(token)
-		csrfToken = base64.StdEncoding.EncodeToString(token)
+		csrfToken = createNewCsrfToken()
 		session.Values[CONTEXTCSRFTOKEN] = csrfToken
 		session.Save(r, w)
 	}
