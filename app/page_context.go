@@ -19,8 +19,8 @@ type BasePageContext struct {
 	Hostname            string
 	CurrentUser         string
 	MainMenu            []MenuItem
-	CurrentMainMenuPos  string
 	LocalMenu           []MenuItem
+	CurrentMainMenuPos  string
 	CurrentLocalMenuPos string
 	Now                 string
 	FlashMessages       []interface{}
@@ -71,13 +71,17 @@ func (ctx *BasePageContext) AddFlashMessage(msg interface{}) {
 	ctx.Session.AddFlash(msg)
 }
 
+// Set value in session
 func (ctx *BasePageContext) Set(key string, value interface{}) {
 	ctx.Session.Values[key] = value
 }
 
-// SessionSave by page context
+// Get value from session
+func (ctx *BasePageContext) Get(key string) interface{} {
+	return ctx.Session.Values[key]
+}
+
+// Save session by page context
 func (ctx *BasePageContext) Save() error {
-	err := sessions.Save(ctx.Request, ctx.ResponseWriter)
-	helpers.CheckErr(err, "BasePageContext Save Error")
-	return err
+	return SaveSession(ctx.ResponseWriter, ctx.Request)
 }

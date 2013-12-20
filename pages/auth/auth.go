@@ -83,8 +83,6 @@ func handleLoginError(message string, w http.ResponseWriter, ctx *loginPageCtx) 
 }
 
 func logoffHandler(w http.ResponseWriter, r *http.Request) {
-	session := app.GetSessionStore(w, r)
-	session.Values = nil
-	session.Save(r, w)
+	app.ClearSession(w, r)
 	http.Redirect(w, r, "/", http.StatusFound)
 }

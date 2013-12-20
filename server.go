@@ -14,8 +14,8 @@ import (
 	putils "k.prv/rpimon/pages/utils"
 	"log"
 	"net/http"
-	//	_ "net/http/pprof"
-	"time"
+	_ "net/http/pprof"
+	//"time"
 )
 
 func main() {
@@ -40,6 +40,7 @@ func main() {
 	pusers.CreateRoutes(app.Router.PathPrefix("/users"))
 	pproc.CreateRoutes(app.Router.PathPrefix("/process"))
 
+	/* for filesystem store
 	go app.ClearSessionStore()
 	// clear session task
 	ticker := time.NewTicker(time.Hour)
@@ -55,6 +56,7 @@ func main() {
 			}
 		}
 	}()
+	*/
 
 	log.Printf("Listen: %s", *httpAddr)
 	if err := http.ListenAndServe(*httpAddr, nil); err != nil {
