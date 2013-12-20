@@ -1,19 +1,16 @@
 package app
 
 import (
+	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/securecookie"
-	"github.com/gorilla/sessions"
 	"k.prv/rpimon/database"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	nurl "net/url"
-	"os"
 )
 
 // App main router
 var Router = mux.NewRouter()
-var store *sessions.CookieStore
 
 // Init - Initialize application
 func Init(appConfFile string, debug bool) *AppConfiguration {
@@ -26,23 +23,7 @@ func Init(appConfFile string, debug bool) *AppConfiguration {
 
 	l.Print("Debug=", conf.Debug)
 
-	if len(conf.CookieAuthKey) < 32 {
-		l.Info("Random CookieAuthKey")
-		conf.CookieAuthKey = string(securecookie.GenerateRandomKey(32))
-	}
-	if len(conf.CookieEncKey) < 32 {
-		l.Info("Random CookieEncKey")
-		conf.CookieEncKey = string(securecookie.GenerateRandomKey(32))
-	}
-
-	err := os.MkdirAll(conf.SessionStoreDir, os.ModeDir)
-	if err != nil && !os.IsExist(err) {
-		l.Error("Createing dir for session store failed ", err)
-	}
-
-	store = sessions.NewCookieStore([]byte(conf.CookieAuthKey),
-		[]byte(conf.CookieEncKey))
-
+	initSessionStore(conf)
 	database.Init(conf.Users, conf.Debug)
 
 	http.Handle("/static/", http.StripPrefix("/static",
