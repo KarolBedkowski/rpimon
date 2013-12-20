@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/gorilla/context"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"runtime/debug"
@@ -41,13 +40,5 @@ func logHandler(h http.Handler) http.HandlerFunc {
 			}
 		}()
 		h.ServeHTTP(writer, r)
-	})
-}
-
-// Context middleware
-func contextHandler(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer context.Clear(r)
-		h.ServeHTTP(w, r)
 	})
 }

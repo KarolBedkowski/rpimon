@@ -28,7 +28,7 @@ func Init(appConfFile string, debug bool) *AppConfiguration {
 
 	http.Handle("/static/", http.StripPrefix("/static",
 		http.FileServer(http.Dir(conf.StaticDir))))
-	http.Handle("/", logHandler(contextHandler(csrfHandler(Router))))
+	http.Handle("/", logHandler(csrfHandler(context.ClearHandler(Router))))
 	return conf
 }
 
