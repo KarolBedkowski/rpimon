@@ -41,13 +41,13 @@ func (ctx loginPageCtx) Validate() (err string) {
 }
 
 func loginPageHandler(w http.ResponseWriter, r *http.Request) {
-	loginPageCtx := &loginPageCtx{app.NewBasePageContext("Login", w, r),
+	loginPageCtx := &loginPageCtx{app.NewBasePageContext("Login", "auth-login", w, r),
 		new(loginForm), ""}
 	app.RenderTemplate(w, loginPageCtx, "base", "login.tmpl", "flash.tmpl")
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	loginPageCtx := &loginPageCtx{app.NewBasePageContext("Login", w, r),
+	loginPageCtx := &loginPageCtx{app.NewBasePageContext("Login", "auth-login", w, r),
 		new(loginForm), ""}
 	r.ParseForm()
 	values := r.Form

@@ -29,7 +29,7 @@ type BasePageContext struct {
 var hostname string
 
 // NewBasePageContext create base page context for request
-func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *BasePageContext {
+func NewBasePageContext(title, mainMenuId string, w http.ResponseWriter, r *http.Request) *BasePageContext {
 
 	session := GetSessionStore(w, r)
 	csrfToken := session.Values[CONTEXTCSRFTOKEN]
@@ -52,6 +52,7 @@ func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *B
 	ctx.Hostname = hostname
 	ctx.CurrentUser = GetLoggedUserLogin(w, r)
 	ctx.Now = time.Now().Format("2006-01-02 15:04:05")
+	ctx.CurrentMainMenuPos = mainMenuId
 	SetMainMenu(ctx)
 
 	if flashes := ctx.Session.Flashes(); len(flashes) > 0 {

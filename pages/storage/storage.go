@@ -34,9 +34,8 @@ func createLocalMenu() []app.MenuItem {
 }
 
 func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Storage", w, r)}
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Storage", "storage", w, r)}
 	ctx.LocalMenu = createLocalMenu()
-	ctx.CurrentMainMenuPos = "/storage/"
 	return ctx
 }
 

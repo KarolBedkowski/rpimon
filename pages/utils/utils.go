@@ -27,8 +27,7 @@ type pageCtx struct {
 }
 
 func newPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Utils", w, r)}
-	ctx.CurrentMainMenuPos = "/utils/"
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Utils", "utils", w, r)}
 	ctx.Configuration = config
 	return ctx
 }

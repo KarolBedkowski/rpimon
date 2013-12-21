@@ -32,30 +32,30 @@ func (item MenuItem) AddQuery(query string) MenuItem {
 func SetMainMenu(ctx *BasePageContext) {
 	if ctx.CurrentUser != "" {
 		user := GetUser(ctx.CurrentUser)
-		ctx.MainMenu = []MenuItem{NewMenuItemFromRoute("Home", "main-index").SetID("/main/")}
+		ctx.MainMenu = []MenuItem{NewMenuItemFromRoute("Home", "main-index").SetID("main")}
 		if user.HasPermission("admin") {
 			ctx.MainMenu = append(ctx.MainMenu,
-				NewMenuItemFromRoute("Network", "net-index").SetID("/net/"),
-				NewMenuItemFromRoute("Storage", "storage-index").SetID("/storage/"),
-				NewMenuItemFromRoute("Logs", "logs-index").SetID("/logs/"),
-				NewMenuItemFromRoute("Process", "process-index").SetID("/process/"),
-				NewMenuItemFromRoute("Users", "users-index").SetID("/users/"),
-				NewMenuItemFromRoute("Utilities", "utils-index").SetID("/utils/"))
+				NewMenuItemFromRoute("Network", "net-index").SetID("net"),
+				NewMenuItemFromRoute("Storage", "storage-index").SetID("storage"),
+				NewMenuItemFromRoute("Logs", "logs-index").SetID("logs"),
+				NewMenuItemFromRoute("Process", "process-index").SetID("process"),
+				NewMenuItemFromRoute("Users", "users-index").SetID("users"),
+				NewMenuItemFromRoute("Utilities", "utils-index").SetID("utils"))
 		}
 		if user.HasPermission("mpd") {
 			ctx.MainMenu = append(ctx.MainMenu,
 				NewMenuItem("&nbsp;", "#"),
-				NewMenuItemFromRoute("MPD", "mpd-index").SetID("/mpd/"))
+				NewMenuItemFromRoute("MPD", "mpd-index").SetID("mpd"))
 		}
 		if user.HasPermission("files") {
 			ctx.MainMenu = append(ctx.MainMenu,
 				NewMenuItem("&nbsp;", "#"),
-				NewMenuItemFromRoute("Files", "files-index").SetID("/files/"))
+				NewMenuItemFromRoute("Files", "files-index").SetID("files"))
 		}
 		ctx.MainMenu = append(ctx.MainMenu,
 			NewMenuItem("&nbsp;", "#"),
-			NewMenuItemFromRoute("Logout", "auth-logoff").SetID("/auth/logoff"))
+			NewMenuItemFromRoute("Logout", "auth-logoff").SetID("auth-logoff"))
 		return
 	}
-	ctx.MainMenu = []MenuItem{NewMenuItemFromRoute("Login", "auth-login").SetID("/auth/login")}
+	ctx.MainMenu = []MenuItem{NewMenuItemFromRoute("Login", "auth-login").SetID("auth-login")}
 }

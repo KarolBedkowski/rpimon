@@ -41,8 +41,7 @@ func (ctx pageCtx) GetFullPath(path string) string {
 }
 
 func newPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Files", w, r)}
-	ctx.CurrentMainMenuPos = "/files/"
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Files", "files", w, r)}
 	ctx.Configuration = config
 	return ctx
 }

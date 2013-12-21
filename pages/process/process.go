@@ -38,9 +38,8 @@ func createLocalMenu() []app.MenuItem {
 }
 
 func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Process", w, r)}
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Process", "process", w, r)}
 	ctx.LocalMenu = createLocalMenu()
-	ctx.CurrentMainMenuPos = "/process/"
 	return ctx
 }
 

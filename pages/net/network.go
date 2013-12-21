@@ -36,9 +36,8 @@ func createLocalMenu() []app.MenuItem {
 }
 
 func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Network", w, r)}
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
 	ctx.LocalMenu = createLocalMenu()
-	ctx.CurrentMainMenuPos = "/net/"
 	return ctx
 }
 

@@ -68,7 +68,8 @@ type pageCtx struct {
 }
 
 func newMainPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	return &pageCtx{BasePageContext: app.NewBasePageContext("Main", w, r)}
+	ctx := pageCtx{BasePageContext: app.NewBasePageContext("Main", "main", w, r)}
+	return &ctx
 }
 
 func mainPageHanler(w http.ResponseWriter, r *http.Request) {
