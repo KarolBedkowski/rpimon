@@ -34,6 +34,16 @@ func GetLoggedUser(w http.ResponseWriter, r *http.Request) (user *database.User)
 	return
 }
 
+func GetUser(login string) (user *database.User) {
+	if login != "" {
+		user := database.GetUserByLogin(login)
+		if user != nil {
+			return user
+		}
+	}
+	return nil
+}
+
 // CheckIsUserLogger for request
 func CheckIsUserLogger(w http.ResponseWriter, r *http.Request, redirect bool) (user *database.User) {
 	user = GetLoggedUser(w, r)
@@ -58,12 +68,10 @@ func ComparePassword(userPassword string, candidatePassword string) bool {
 func VerifyPermission(h http.HandlerFunc, permission string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if user := CheckIsUserLogger(w, r, true); user != nil {
-			for _, perm := range user.Privs {
-				if perm == permission {
-					context.Set(r, USERCONTEXT, user)
-					h(w, r)
-					return
-				}
+			if user.HasPermission(permission) {
+				context.Set(r, USERCONTEXT, user)
+				h(w, r)
+				return
 			}
 			http.Error(w, "Fobidden/Privilages", http.StatusForbidden)
 		}

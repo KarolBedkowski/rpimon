@@ -18,6 +18,7 @@ type AppConfiguration struct {
 	LogFilename     string
 	UtilsFilename   string
 	MpdHost         string
+	BrowserConf     string
 }
 
 // Configuration - main app configuration instance

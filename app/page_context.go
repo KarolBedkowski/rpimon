@@ -52,7 +52,7 @@ func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *B
 	ctx.Hostname = hostname
 	ctx.CurrentUser = GetLoggedUserLogin(w, r)
 	ctx.Now = time.Now().Format("2006-01-02 15:04:05")
-	SetMainMenu(ctx, ctx.CurrentUser != "")
+	SetMainMenu(ctx)
 
 	if flashes := ctx.Session.Flashes(); len(flashes) > 0 {
 		ctx.FlashMessages = flashes
