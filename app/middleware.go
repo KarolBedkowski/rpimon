@@ -31,7 +31,7 @@ func logHandler(h http.Handler) http.HandlerFunc {
 			end := time.Now()
 			status := writer.status
 			if err := recover(); err == nil {
-				l.Info("%d %s %s %s %s", status, method, url, remote, end.Sub(start))
+				l.Debug("%d %s %s %s %s", status, method, url, remote, end.Sub(start))
 			} else {
 				l.Error("%d %s %s %s %s err:'%#v'", status, method, url, remote, end.Sub(start),
 					err)
