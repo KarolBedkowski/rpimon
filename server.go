@@ -4,6 +4,7 @@ import (
 	"flag"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/pages/auth"
+	pfiles "k.prv/rpimon/pages/files"
 	plogs "k.prv/rpimon/pages/logs"
 	pmain "k.prv/rpimon/pages/main"
 	pmpd "k.prv/rpimon/pages/mpd"
@@ -39,6 +40,8 @@ func main() {
 	plogs.CreateRoutes(app.Router.PathPrefix("/logs"))
 	pusers.CreateRoutes(app.Router.PathPrefix("/users"))
 	pproc.CreateRoutes(app.Router.PathPrefix("/process"))
+	pfiles.Init(conf.BrowserConf)
+	pfiles.CreateRoutes(app.Router.PathPrefix("/files"))
 
 	/* for filesystem store
 	go app.ClearSessionStore()

@@ -40,6 +40,8 @@ func SetMainMenu(ctx *BasePageContext, loggedUser bool) {
 			NewMenuItem("&nbsp;", "#"),
 			NewMenuItemFromRoute("MPD", "mpd-index").SetID("/mpd/"),
 			NewMenuItem("&nbsp;", "#"),
+			NewMenuItemFromRoute("Files", "files-index").SetID("/files/"),
+			NewMenuItem("&nbsp;", "#"),
 			NewMenuItemFromRoute("Utilities", "utils-index").SetID("/utils/"),
 			NewMenuItem("&nbsp;", "#"),
 			NewMenuItemFromRoute("Logout", "auth-logoff").SetID("/auth/logoff")}

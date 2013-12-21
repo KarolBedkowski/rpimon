@@ -8,5 +8,6 @@
   "Users": "./users.json",
   "TemplatesDir": "./templates",
   "StaticDir": "./static",
-  "SessionStoreDir": "./temp"
+  "SessionStoreDir": "./temp",
+	"BrowserConf": "./browser.json"
 }
