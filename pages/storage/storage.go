@@ -12,8 +12,8 @@ var subRouter *mux.Router
 // CreateRoutes for /storage
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("storage-index")
-	subRouter.HandleFunc("/{page}", app.VerifyLogged(mainPageHandler)).Name("storage-page")
+	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("storage-index")
+	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("storage-page")
 }
 
 type pageCtx struct {

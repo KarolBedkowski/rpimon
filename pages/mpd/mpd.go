@@ -14,15 +14,15 @@ var subRouter *mux.Router
 // CreateRoutes for /mpd
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler))
-	subRouter.HandleFunc("/info", app.VerifyLogged(mainPageHandler)).Name("mpd-index")
-	subRouter.HandleFunc("/action/{action}", app.VerifyLogged(actionPageHandler))
-	subRouter.HandleFunc("/playlist", app.VerifyLogged(playlistPageHandler)).Name("mpd-playlist")
+	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "mpd"))
+	subRouter.HandleFunc("/info", app.VerifyPermission(mainPageHandler, "mpd")).Name("mpd-index")
+	subRouter.HandleFunc("/action/{action}", app.VerifyPermission(actionPageHandler, "mpd"))
+	subRouter.HandleFunc("/playlist", app.VerifyPermission(playlistPageHandler, "mpd")).Name("mpd-playlist")
 	subRouter.HandleFunc("/song/{song-id:[0-9]+}/{action}",
-		app.VerifyLogged(songActionPageHandler))
-	subRouter.HandleFunc("/playlists", app.VerifyLogged(playlistsPageHandler)).Name("mpd-playlists")
+		app.VerifyPermission(songActionPageHandler, "mpd"))
+	subRouter.HandleFunc("/playlists", app.VerifyPermission(playlistsPageHandler, "mpd")).Name("mpd-playlists")
 	subRouter.HandleFunc("/playlist/{plist}/{action}",
-		app.VerifyLogged(playlistsActionPageHandler))
+		app.VerifyPermission(playlistsActionPageHandler, "mpd"))
 }
 
 type pageCtx struct {

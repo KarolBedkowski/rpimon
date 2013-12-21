@@ -12,7 +12,7 @@ var subRouter *mux.Router
 // CreateRoutes for /users
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("users-index")
+	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("users-index")
 }
 
 type pageCtx struct {

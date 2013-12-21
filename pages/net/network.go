@@ -12,8 +12,8 @@ var subRouter *mux.Router
 // CreateRoutes for /net
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("net-index")
-	subRouter.HandleFunc("/{page}", app.VerifyLogged(mainPageHandler)).Name("net-page")
+	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("net-index")
+	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("net-page")
 }
 
 type pageCtx struct {
