@@ -23,6 +23,7 @@ func main() {
 	configFilename := flag.String("conf", "./config.json", "Configuration filename")
 	debug := flag.Bool("debug", false, "Run in debug mode")
 	httpAddr := flag.String("addr", ":8000", "HTTP server address")
+	httpsAddr := flag.String("addr_https", ":8443", "HTTP server address")
 	flag.Parse()
 
 	conf := app.Init(*configFilename, *debug)
@@ -60,6 +61,13 @@ func main() {
 		}
 	}()
 	*/
+
+	go func() {
+		log.Printf("Listen: %s", *httpsAddr)
+		if err := http.ListenAndServeTLS(*httpsAddr, "cert.pem", "key.pem", nil); err != nil {
+			log.Fatalf("Error listening, %v", err)
+		}
+	}()
 
 	log.Printf("Listen: %s", *httpAddr)
 	if err := http.ListenAndServe(*httpAddr, nil); err != nil {
