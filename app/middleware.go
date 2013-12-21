@@ -3,7 +3,6 @@ package app
 import (
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
-	"runtime/debug"
 	"time"
 )
 
@@ -36,7 +35,6 @@ func logHandler(h http.Handler) http.HandlerFunc {
 			} else {
 				l.Error("%d %s %s %s %s err:'%#v'", status, method, url, remote, end.Sub(start),
 					err)
-				l.Error("%v", debug.Stack())
 			}
 		}()
 		h.ServeHTTP(writer, r)
