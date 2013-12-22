@@ -1,6 +1,9 @@
 *.sqlite
 *.log
 webapp-test
-static
 tags
 temp
+.*
+test*
+rpi
+
