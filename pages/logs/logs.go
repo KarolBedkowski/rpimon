@@ -12,8 +12,8 @@ var subRouter *mux.Router
 // CreateRoutes for /logs
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("logs-index")
-	subRouter.HandleFunc("/{page}", app.VerifyLogged(mainPageHandler)).Name("logs-page")
+	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("logs-index")
+	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("logs-page")
 }
 
 type pageCtx struct {
@@ -34,9 +34,8 @@ func createLocalMenu() []app.MenuItem {
 }
 
 func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("logs", w, r)}
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("logs", "logs", w, r)}
 	ctx.LocalMenu = createLocalMenu()
-	ctx.CurrentMainMenuPos = "/logs/"
 	return ctx
 }
 

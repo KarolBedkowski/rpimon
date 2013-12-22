@@ -14,10 +14,10 @@ var subRouter *mux.Router
 // CreateRoutes for /process
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("process-index")
-	subRouter.HandleFunc("/services", app.VerifyLogged(servicesPageHangler)).Name("process-services")
-	subRouter.HandleFunc("/services/{service}/{action}", app.VerifyLogged(serviceActionPageHandler))
-	subRouter.HandleFunc("/{page}", app.VerifyLogged(mainPageHandler)).Name("process-page")
+	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("process-index")
+	subRouter.HandleFunc("/services", app.VerifyPermission(servicesPageHangler, "admin")).Name("process-services")
+	subRouter.HandleFunc("/services/{service}/{action}", app.VerifyPermission(serviceActionPageHandler, "admin"))
+	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("process-page")
 }
 
 type pageCtx struct {
@@ -38,9 +38,8 @@ func createLocalMenu() []app.MenuItem {
 }
 
 func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Process", w, r)}
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Process", "process", w, r)}
 	ctx.LocalMenu = createLocalMenu()
-	ctx.CurrentMainMenuPos = "/process/"
 	return ctx
 }
 
@@ -100,7 +99,7 @@ func serviceActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	result := h.ReadFromCommand("sudo", "service", service, action)
 	l.Info("process serviceActionPageHandler %s %s res=%s", service, action, result)
 	session := app.GetSessionStore(w, r)
-	session.Session.AddFlash(result)
-	session.Save(w, r)
+	session.AddFlash(result)
+	session.Save(r, w)
 	http.Redirect(w, r, "/process/services", http.StatusFound)
 }

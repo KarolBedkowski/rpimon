@@ -12,8 +12,8 @@ var subRouter *mux.Router
 // CreateRoutes for /net
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("net-index")
-	subRouter.HandleFunc("/{page}", app.VerifyLogged(mainPageHandler)).Name("net-page")
+	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("net-index")
+	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("net-page")
 }
 
 type pageCtx struct {
@@ -36,9 +36,8 @@ func createLocalMenu() []app.MenuItem {
 }
 
 func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Network", w, r)}
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
 	ctx.LocalMenu = createLocalMenu()
-	ctx.CurrentMainMenuPos = "/net/"
 	return ctx
 }
 

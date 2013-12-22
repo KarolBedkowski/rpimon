@@ -16,3 +16,15 @@ func GetUserByLogin(login string) *User {
 	}
 	return nil
 }
+
+func (user *User) HasPermission(permission string) bool {
+	if permission == "" {
+		return true
+	}
+	for _, perm := range user.Privs {
+		if perm == permission {
+			return true
+		}
+	}
+	return false
+}

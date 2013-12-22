@@ -18,6 +18,11 @@ type AppConfiguration struct {
 	LogFilename     string
 	UtilsFilename   string
 	MpdHost         string
+	BrowserConf     string
+	HttpAddress     string
+	HttpsAddress    string
+	SslCert         string
+	SslKey          string
 }
 
 // Configuration - main app configuration instance

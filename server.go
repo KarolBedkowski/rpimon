@@ -4,6 +4,7 @@ import (
 	"flag"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/pages/auth"
+	pfiles "k.prv/rpimon/pages/files"
 	plogs "k.prv/rpimon/pages/logs"
 	pmain "k.prv/rpimon/pages/main"
 	pmpd "k.prv/rpimon/pages/mpd"
@@ -14,14 +15,13 @@ import (
 	putils "k.prv/rpimon/pages/utils"
 	"log"
 	"net/http"
-	//	_ "net/http/pprof"
-	"time"
+	// _ "net/http/pprof" // /debug/pprof/
+	//"time"
 )
 
 func main() {
 	configFilename := flag.String("conf", "./config.json", "Configuration filename")
 	debug := flag.Bool("debug", false, "Run in debug mode")
-	httpAddr := flag.String("addr", ":8000", "HTTP server address")
 	flag.Parse()
 
 	conf := app.Init(*configFilename, *debug)
@@ -39,7 +39,10 @@ func main() {
 	plogs.CreateRoutes(app.Router.PathPrefix("/logs"))
 	pusers.CreateRoutes(app.Router.PathPrefix("/users"))
 	pproc.CreateRoutes(app.Router.PathPrefix("/process"))
+	pfiles.Init(conf.BrowserConf)
+	pfiles.CreateRoutes(app.Router.PathPrefix("/files"))
 
+	/* for filesystem store
 	go app.ClearSessionStore()
 	// clear session task
 	ticker := time.NewTicker(time.Hour)
@@ -55,10 +58,29 @@ func main() {
 			}
 		}
 	}()
+	*/
+	if conf.HttpsAddress != "" {
+		log.Printf("Listen: %s", conf.HttpsAddress)
+		if conf.HttpAddress != "" {
+			go func() {
+				if err := http.ListenAndServeTLS(conf.HttpsAddress,
+					conf.SslCert, conf.SslKey, nil); err != nil {
+					log.Fatalf("Error listening https, %v", err)
+				}
+			}()
+		} else {
+			if err := http.ListenAndServeTLS(conf.HttpsAddress,
+				conf.SslCert, conf.SslKey, nil); err != nil {
+				log.Fatalf("Error listening https, %v", err)
+			}
+		}
+	}
 
-	log.Printf("Listen: %s", *httpAddr)
-	if err := http.ListenAndServe(*httpAddr, nil); err != nil {
-		log.Fatalf("Error listening, %v", err)
+	if conf.HttpAddress != "" {
+		log.Printf("Listen: %s", conf.HttpAddress)
+		if err := http.ListenAndServe(conf.HttpAddress, nil); err != nil {
+			log.Fatalf("Error listening http, %v", err)
+		}
 	}
 }
 

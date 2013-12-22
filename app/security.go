@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/gorilla/context"
 	"k.prv/rpimon/database"
 	"log"
 	"net/http"
@@ -8,11 +9,12 @@ import (
 
 // Session key for userid
 const USERIDSESSION = "USERID"
+const USERCONTEXT = "USER"
 
 // GetLoggedUserLogin for request
 func GetLoggedUserLogin(w http.ResponseWriter, r *http.Request) (login string) {
 	session := GetSessionStore(w, r)
-	sessLogin := session.Get(USERIDSESSION)
+	sessLogin := session.Values[USERIDSESSION]
 	if sessLogin != nil {
 		login = sessLogin.(string)
 	}
@@ -30,6 +32,16 @@ func GetLoggedUser(w http.ResponseWriter, r *http.Request) (user *database.User)
 		}
 	}
 	return
+}
+
+func GetUser(login string) (user *database.User) {
+	if login != "" {
+		user := database.GetUserByLogin(login)
+		if user != nil {
+			return user
+		}
+	}
+	return nil
 }
 
 // CheckIsUserLogger for request
@@ -56,11 +68,10 @@ func ComparePassword(userPassword string, candidatePassword string) bool {
 func VerifyPermission(h http.HandlerFunc, permission string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if user := CheckIsUserLogger(w, r, true); user != nil {
-			for _, perm := range user.Privs {
-				if perm == permission {
-					h(w, r)
-					return
-				}
+			if user.HasPermission(permission) {
+				context.Set(r, USERCONTEXT, user)
+				h(w, r)
+				return
 			}
 			http.Error(w, "Fobidden/Privilages", http.StatusForbidden)
 		}
@@ -71,6 +82,7 @@ func VerifyPermission(h http.HandlerFunc, permission string) http.HandlerFunc {
 func VerifyLogged(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if user := CheckIsUserLogger(w, r, true); user != nil {
+			context.Set(r, USERCONTEXT, user)
 			h(w, r)
 		}
 	})

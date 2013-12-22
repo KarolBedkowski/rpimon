@@ -12,7 +12,7 @@ var subRouter *mux.Router
 // CreateRoutes for /users
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.VerifyLogged(mainPageHandler)).Name("users-index")
+	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("users-index")
 }
 
 type pageCtx struct {
@@ -22,8 +22,7 @@ type pageCtx struct {
 }
 
 func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Users", w, r)}
-	ctx.CurrentMainMenuPos = "/users/"
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Users", "users", w, r)}
 	return ctx
 }
 
