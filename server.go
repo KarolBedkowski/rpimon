@@ -15,7 +15,7 @@ import (
 	putils "k.prv/rpimon/pages/utils"
 	"log"
 	"net/http"
-	_ "net/http/pprof"
+	// _ "net/http/pprof" // /debug/pprof/
 	//"time"
 )
 
