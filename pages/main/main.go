@@ -261,8 +261,12 @@ func checkIsServiceConnected(port string) (result bool) {
 		l.Warn("checkIsServiceConnected Error", err)
 		return
 	}
-	lines := strings.Split(string(out), "\n")
+	outstr := string(out)
 	lookingFor := ":" + port + " "
+	if !strings.Contains(outstr, lookingFor) {
+		return false
+	}
+	lines := strings.Split(string(out), "\n")
 	for _, line := range lines {
 		if len(line) == 0 {
 			continue
