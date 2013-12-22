@@ -55,7 +55,6 @@ a:focus {
     margin: 0;
     padding: 0;
     list-style: none;
-	display: block;
 }
 .nav-item {
     zoom: 1;
@@ -78,9 +77,6 @@ a:focus {
     font-weight: bold;
 }
 	
-.nav-menu-button {
-	display: none;
-}
 
 .content-subhead {
     text-transform: uppercase;
@@ -206,6 +202,7 @@ table tr:nth-of-type(even) {
 }
 
 
+
 @media (max-width: 767px) {
     .sidebar {
         width: 100%;
@@ -236,7 +233,6 @@ table tr:nth-of-type(even) {
 
 	.header .nav-list {
 		text-align: right;
-		display: none;
 	}
 
 	.nav-item {
@@ -246,12 +242,10 @@ table tr:nth-of-type(even) {
 	    margin-left: 0.1em ;
     	margin-right: 0.1em;
 	}
-	
-	.nav-menu-button {
-		display: block;
-		text-align: right;
-	}
 
+	span.naver-handle {
+		display: inline;
+	}	
 }
 
 @media (max-width: 480px) {
@@ -265,6 +259,4 @@ hr {
 	margin: 1em 5em;
 }
 
-.hidden {
-	display: none;
-}
+
