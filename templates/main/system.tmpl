@@ -38,36 +38,30 @@
 <div class="pure-u-1-2">
 	<section>
 		<h1>CPU</h1>
-		<table class="pure-table table-centered">
-			<thead>
-				<tr>
-					<th>User</th>
-					<th>System</th>
-					<th>IO</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>{{.CPUUser}}%</td>
-					<td>{{.CPUSystem}}%</td>
-					<td>{{.CPUIowait}}%</td>
-				</tr>
-			</tbody>
-			<thead>
-				<tr>
-					<th>Freq</th>
-					<th>Temp</th>
-					<th>Governor<br/>Freq range</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>{{.CPUFreq}}</td>
-					<td>{{.CPUTemp}}°C</td>
-					<td><small>{{.CPUGovernor}}<br/>
-					{{.CPUMinFreq}}-{{.CPUMaxFreq}}</small></td>
-				</tr>
-			</tbody>
+		<div class="big-chart">
+			<span class="pie" data-diameter="120" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.CPUUser}},{{.CPUSystem}},{{.CPUIowait}},{{.CPUIdle}}</span>
+		</div>
+		<table class="pure-table">
+			<tr>
+				<th>User</th>
+				<td>{{.CPUUser}}%</td>
+			</tr>
+			<tr>
+				<th>System</th>
+				<td>{{.CPUSystem}}%</td>
+			</tr>
+			<tr>
+				<th>IO</th>
+				<td>{{.CPUIowait}}%</td>
+			</tr>
+			<tr>
+				<th>Freq</th>
+				<td>{{.CPUFreq}}</td>
+			</tr>
+			<tr>
+				<th>Temp</th>
+				<td>{{.CPUTemp}}°C</td>
+			</tr>
 		</table>
 	</section>
 </div>
@@ -75,19 +69,24 @@
 <div class="pure-u-1-2">
 	<section>
 		<h1>Memory</h1>
-		<table class="pure-table table-centered">
-			<thead>
-				<tr>
-					<th>Used</th>
-					<th>Buffers</th>
-					<th>Cache</th>
-					<th>Swap Used</th>
-				</tr>
-			</thead>
+		<div class="big-chart">
+			<span class="pie" data-diameter="120" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.MemUsedPerc}},{{.MemBuffersPerc}},{{.MemCachePerc}},{{.MemFreePerc}}</span>
+		</div>
+		<table class="pure-table">
 			<tr>
+				<th>User</th>
 				<td>{{.MemUsedPerc}}%</td>
+			</tr>
+			<tr>
+				<th>Buffers</th>
 				<td>{{.MemBuffersPerc}}%</td>
+			</tr>
+			<tr>
+				<th>Cache</th>
 				<td>{{.MemCachePerc}}%</td>
+			</tr>
+			<tr>
+				<th>Swap Used</th>
 				<td>{{.MemSwapUsedPerc}}%</td>
 			</tr>
 		</table>
@@ -101,12 +100,13 @@
 			<thead>
 				<tr>
 					<th>Filesystem</th>
-					<th>Used</th>
+					<th colspan="2">Used</th>
 				</tr>
 			</thead>
 			{{range .Filesystems}}
 			<tr>
 				<td>{{.MountPoint}}</td>
+				<td><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.UsedPerc}},{{.FreePerc}}</span></td>
 				<td>{{.UsedPerc}}%</td>
 			</tr>
 			{{end}}
@@ -134,12 +134,14 @@
 	</section>
 </div>
 
+<script src="/static/lib/jquery/jquery.peity.min.js" type="text/javascript" ></script>
 <script type="text/javascript">
 	function refresh() {
 		window.location.reload(true);
 	};
 
 	$(function() {
+		$("span.pie").peity("pie")
 		 setTimeout(refresh, 60000);
 	});
 </script>

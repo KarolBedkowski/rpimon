@@ -275,3 +275,8 @@ dl.inline-dl dd {
 	display: block;
 	clear: right;
 }
+
+div.big-chart {
+	float: left;
+	margin-right: 1em;
+}
