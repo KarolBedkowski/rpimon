@@ -35,6 +35,7 @@ func SetMainMenu(ctx *BasePageContext) {
 		ctx.MainMenu = []MenuItem{NewMenuItemFromRoute("Home", "main-index").SetID("main")}
 		if user.HasPermission("admin") {
 			ctx.MainMenu = append(ctx.MainMenu,
+				NewMenuItemFromRoute("System", "main-system").SetID("system"),
 				NewMenuItemFromRoute("Network", "net-index").SetID("net"),
 				NewMenuItemFromRoute("Storage", "storage-index").SetID("storage"),
 				NewMenuItemFromRoute("Logs", "logs-index").SetID("logs"),

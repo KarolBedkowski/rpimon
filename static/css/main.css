@@ -258,5 +258,20 @@ hr {
 	color: #eee;
 	margin: 1em 5em;
 }
+dl.inline-dl {
+	display: block;
+	float: clear;
+}
 
+dl.inline-dl dt {
+	float: left;
+	width: 6em;
+}
 
+dl.inline-dl dd {
+	float: clear;
+	margin-bottom: 2em;
+	margin-left: 7em;
+	display: block;
+	clear: right;
+}

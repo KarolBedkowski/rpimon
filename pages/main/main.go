@@ -1,4 +1,4 @@
-package users
+package pmain
 
 import (
 	"bufio"
@@ -20,6 +20,7 @@ var subRouter *mux.Router
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", mainPageHanler).Name("main-index")
+	subRouter.HandleFunc("/system", systemPageHanler).Name("main-system")
 }
 
 type fsInfo struct {
@@ -27,8 +28,9 @@ type fsInfo struct {
 	Size       string
 	Used       string
 	Available  string
-	UserPerc   string
+	UsedPerc   int
 	MountPoint string
+	FreePerc   int
 }
 
 type interfaceInfo struct {
@@ -47,6 +49,7 @@ type pageCtx struct {
 	CPUUser         int
 	CPUIdle         int
 	CPUIowait       int
+	CPUUsed         int
 	CPUFreq         int
 	CPUMinFreq      int
 	CPUMaxFreq      int
@@ -55,6 +58,7 @@ type pageCtx struct {
 	Filesystems     []fsInfo
 	MemTotal        int
 	MemFree         int
+	MemFreeUser     int
 	MemBuffers      int
 	MemCached       int
 	MemSwapTotal    int
@@ -62,26 +66,33 @@ type pageCtx struct {
 	MemUsedPerc     int
 	MemBuffersPerc  int
 	MemCachePerc    int
+	MemFreePerc     int
+	MemFreeUserPerc int
 	MemSwapUsedPerc int
 	Interfaces      []interfaceInfo
 	Warnings        []string
 }
 
-func newMainPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := pageCtx{BasePageContext: app.NewBasePageContext("Main", "main", w, r)}
-	return &ctx
+func mainPageHanler(w http.ResponseWriter, r *http.Request) {
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Main", "main", w, r)}
+	fillUptimeInfo(ctx)
+	fillCPUInfog(ctx)
+	fillMemoryInfo(ctx)
+	fillFSInfo(ctx)
+	fillIfaceInfo(ctx, true)
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/index.tmpl", "flash.tmpl")
 }
 
-func mainPageHanler(w http.ResponseWriter, r *http.Request) {
-	data := newMainPageCtx(w, r)
+func systemPageHanler(w http.ResponseWriter, r *http.Request) {
+	data := &pageCtx{BasePageContext: app.NewBasePageContext("System", "system", w, r)}
 	fillUptimeInfo(data)
 	fillCPUInfog(data)
 	fillFSInfo(data)
 	fillMemoryInfo(data)
-	fillIfaceInfo(data)
+	fillIfaceInfo(data, false)
 	fillUnameInfo(data)
 	fillWarnings(data)
-	app.RenderTemplate(w, data, "base", "base.tmpl", "main/main.tmpl", "flash.tmpl")
+	app.RenderTemplate(w, data, "base", "base.tmpl", "main/system.tmpl", "flash.tmpl")
 }
 
 func fillUptimeInfo(ctx *pageCtx) error {
@@ -135,6 +146,7 @@ func fillCPUInfog(ctx *pageCtx) error {
 	ctx.CPUUser = int(100 * user / usage)
 	ctx.CPUIdle = int(100 * idle / usage)
 	ctx.CPUIowait = int(100 * iowait / usage)
+	ctx.CPUUsed = 100 - ctx.CPUIdle
 
 	ctx.CPUFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq") / 1000
 	ctx.CPUMinFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq") / 1000
@@ -158,7 +170,8 @@ func fillFSInfo(ctx *pageCtx) error {
 			break
 		}
 		fields := strings.Fields(line)
-		fsinfo := fsInfo{fields[0], fields[1], fields[2], fields[3], fields[4], fields[5]}
+		usedperc, _ := strconv.Atoi(strings.Trim(fields[4], "%"))
+		fsinfo := fsInfo{fields[0], fields[1], fields[2], fields[3], usedperc, fields[5], 100 - usedperc}
 		ctx.Filesystems = append(ctx.Filesystems, fsinfo)
 	}
 	return nil
@@ -196,6 +209,8 @@ func fillMemoryInfo(ctx *pageCtx) error {
 		ctx.MemUsedPerc = int(100 - 100.0*(ctx.MemFree+ctx.MemBuffers+ctx.MemCached)/ctx.MemTotal)
 		ctx.MemBuffersPerc = int(100.0 * ctx.MemBuffers / ctx.MemTotal)
 		ctx.MemCachePerc = int(100.0 * ctx.MemCached / ctx.MemTotal)
+		ctx.MemFreePerc = int(100 * ctx.MemFree / ctx.MemTotal)
+		ctx.MemFreeUserPerc = 100 - ctx.MemUsedPerc
 	}
 	if ctx.MemSwapTotal > 0 {
 		ctx.MemSwapUsedPerc = int(100 - 100.0*ctx.MemSwapFree/ctx.MemSwapTotal)
@@ -203,7 +218,7 @@ func fillMemoryInfo(ctx *pageCtx) error {
 	return nil
 }
 
-func fillIfaceInfo(ctx *pageCtx) error {
+func fillIfaceInfo(ctx *pageCtx, activeOnly bool) error {
 	out, err := exec.Command("/sbin/ip", "addr").Output()
 	if err != nil {
 		l.Warn("fillFSInfo Error", err)
@@ -216,7 +231,7 @@ func fillIfaceInfo(ctx *pageCtx) error {
 			continue
 		}
 		if line[0] != ' ' {
-			if iface != "" && iface != "lo" {
+			if iface != "" && iface != "lo" && !activeOnly {
 				ctx.Interfaces = append(ctx.Interfaces, interfaceInfo{iface, "-"})
 			}
 			iface = strings.Trim(strings.Fields(line)[1], " :")

@@ -1,0 +1,74 @@
+{{define "body"}}
+
+
+{{if .Warnings}}
+<div class="pure-u-1">
+	<div class="warnings">
+		<section>
+			<h1>Warning</h1>
+			<ul>
+			{{range .Warnings}}
+				<li>{{.}}</li>
+			{{end}}
+			</ul>
+		</section>
+	</div>
+</div>
+{{end}}
+
+<div class="pure-g-r content-ribbon">
+	<section>
+		<div class="pure-u-1">
+			<h1>{{.BasePageContext.Hostname}}</h1>
+		</div>
+		<div class="pure-u-1">
+			<dl class="inline-dl">
+				<dt><label>Load:</label></dt>
+				<dd>{{.Load}}</dd>
+				<dt><label>Uptime:</label></dt>
+				<dd>{{.Uptime}}</dd>
+				<dt><label>CPU:</label></dt>
+				<dd><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.CPUUser}},{{.CPUSystem}},{{.CPUIowait}},{{.CPUIdle}}</span>
+					<span>&nbsp;{{.CPUUsed}}% total used</span></dd>
+				<dt><label>Memory:</label></dt>
+				<dd><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.MemUsedPerc}},{{.MemBuffersPerc}},{{.MemCachePerc}},{{.MemFreePerc}}</span>
+					<span>&nbsp;{{.MemFreeUserPerc}}% available</span></dd>
+				<dt><label>Mount:</label></dt>
+				<dd>
+					<dl>
+						{{range .Filesystems}}
+						<dt>{{.MountPoint}}</dt>
+						<dd><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.UsedPerc}},{{.FreePerc}}</span>
+						&nbsp;{{.UsedPerc}}% used</dd>
+						{{end}}
+					</dl>
+				</dd>
+				<dt><label>Network:</label></dt>
+				<dd>
+					<dl>
+						{{range .Interfaces}}
+						<dt>{{.Name}}</dt>
+						<dd>{{.Address}}</dd>
+						{{end}}
+					</dl>
+				</dt>
+			</dl>
+		</div>
+	</section>
+</div>
+
+
+<script src="/static/lib/jquery/jquery.peity.min.js" type="text/javascript" ></script>
+
+<script type="text/javascript">
+	function refresh() {
+		window.location.reload(true);
+	};
+
+	$(function() {
+		$("span.pie").peity("pie")
+		setTimeout(refresh, 60000);
+	});
+</script>
+
+{{end}}
