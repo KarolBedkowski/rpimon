@@ -19,9 +19,6 @@
 <div class="pure-g-r content-ribbon">
 	<section>
 		<div class="pure-u-1">
-			<h1>{{.BasePageContext.Hostname}}</h1>
-		</div>
-		<div class="pure-u-1">
 			<dl class="inline-dl">
 				<dt><label>Load:</label></dt>
 				<dd>{{.Load}}</dd>
@@ -31,8 +28,16 @@
 				<dd><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.CPUUser}},{{.CPUSystem}},{{.CPUIowait}},{{.CPUIdle}}</span>
 					<span>&nbsp;{{.CPUUsed}}% total used</span></dd>
 				<dt><label>Memory:</label></dt>
-				<dd><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.MemUsedPerc}},{{.MemBuffersPerc}},{{.MemCachePerc}},{{.MemFreePerc}}</span>
-					<span>&nbsp;{{.MemFreeUserPerc}}% available</span></dd>
+				<dd>
+					<dl>
+						<dt>RAM</dt>
+						<dd><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.MemUsedPerc}},{{.MemBuffersPerc}},{{.MemCachePerc}},{{.MemFreePerc}}</span>
+							<span>&nbsp;{{.MemFreeUserPerc}}% available</span></dd>
+						<dt>SWAP</dt>
+						<dd><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.MemSwapUsedPerc}},{{.MemSwapFreePerc}}</span>
+							<span>&nbsp;{{.MemSwapFreePerc}}% available</span></dd>
+					</dl>
+				</dd>
 				<dt><label>Mount:</label></dt>
 				<dd>
 					<dl>

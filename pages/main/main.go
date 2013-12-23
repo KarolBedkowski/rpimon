@@ -69,14 +69,16 @@ type pageCtx struct {
 	MemFreePerc     int
 	MemFreeUserPerc int
 	MemSwapUsedPerc int
+	MemSwapFreePerc int
 	Interfaces      []interfaceInfo
 	Warnings        []string
 }
 
 func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Main", "main", w, r)}
+	fillWarnings(ctx)
 	fillUptimeInfo(ctx)
-	fillCPUInfog(ctx)
+	fillCPUInfog(ctx, true)
 	fillMemoryInfo(ctx)
 	fillFSInfo(ctx)
 	fillIfaceInfo(ctx, true)
@@ -86,7 +88,7 @@ func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 func systemPageHanler(w http.ResponseWriter, r *http.Request) {
 	data := &pageCtx{BasePageContext: app.NewBasePageContext("System", "system", w, r)}
 	fillUptimeInfo(data)
-	fillCPUInfog(data)
+	fillCPUInfog(data, false)
 	fillFSInfo(data)
 	fillMemoryInfo(data)
 	fillIfaceInfo(data, false)
@@ -123,7 +125,7 @@ func fillUnameInfo(ctx *pageCtx) error {
 	return nil
 }
 
-func fillCPUInfog(ctx *pageCtx) error {
+func fillCPUInfog(ctx *pageCtx, simple bool) error {
 	file, err := os.Open("/proc/stat")
 	if err != nil {
 		l.Warn("fillCPUInfog Error", err)
@@ -148,13 +150,14 @@ func fillCPUInfog(ctx *pageCtx) error {
 	ctx.CPUIowait = int(100 * iowait / usage)
 	ctx.CPUUsed = 100 - ctx.CPUIdle
 
-	ctx.CPUFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq") / 1000
-	ctx.CPUMinFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq") / 1000
-	ctx.CPUMaxFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq") / 1000
-	ctx.CPUGovernor, _ = helpers.ReadLineFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")
+	if !simple {
+		ctx.CPUFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq") / 1000
+		ctx.CPUMinFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq") / 1000
+		ctx.CPUMaxFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq") / 1000
+		ctx.CPUGovernor, _ = helpers.ReadLineFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")
 
-	ctx.CPUTemp = helpers.ReadIntFromFile("/sys/class/thermal/thermal_zone0/temp") / 1000
-
+		ctx.CPUTemp = helpers.ReadIntFromFile("/sys/class/thermal/thermal_zone0/temp") / 1000
+	}
 	return nil
 }
 
@@ -213,7 +216,8 @@ func fillMemoryInfo(ctx *pageCtx) error {
 		ctx.MemFreeUserPerc = 100 - ctx.MemUsedPerc
 	}
 	if ctx.MemSwapTotal > 0 {
-		ctx.MemSwapUsedPerc = int(100 - 100.0*ctx.MemSwapFree/ctx.MemSwapTotal)
+		ctx.MemSwapFreePerc = int(100.0 * ctx.MemSwapFree / ctx.MemSwapTotal)
+		ctx.MemSwapUsedPerc = 100 - ctx.MemSwapFreePerc
 	}
 	return nil
 }
