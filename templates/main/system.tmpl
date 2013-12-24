@@ -156,17 +156,17 @@
 			$('#cpu-chart').text(msg['cpu']).change()
 			$('#mem-chart').text(msg['mem']).change()
 			var meminfo = msg['meminfo'];
-			$('#meminfo-used').text(meminfo['MemUsedPerc']);
-			$('#meminfo-buff').text(meminfo['MemBuffersPerc']);
-			$('#meminfo-cach').text(meminfo['MemCachePerc']);
-			$('#meminfo-swap').text(meminfo['MemSwapUsedPerc']);
+			$('#meminfo-used').text(meminfo['UsedPerc']);
+			$('#meminfo-buff').text(meminfo['BuffersPerc']);
+			$('#meminfo-cach').text(meminfo['CachePerc']);
+			$('#meminfo-swap').text(meminfo['SwapUsedPerc']);
 			var cpuusage = msg['cpuusage'];
-			$('#cpuusage-user').text(cpuusage['CPUUser']);
-			$('#cpuusage-system').text(cpuusage['CPUSystem']);
-			$('#cpuusage-iowait').text(cpuusage['CPUIoWait']);
+			$('#cpuusage-user').text(cpuusage['User']);
+			$('#cpuusage-system').text(cpuusage['System']);
+			$('#cpuusage-iowait').text(cpuusage['IoWait']);
 			var cpuinfo = msg['cpuinfo'];
-			$('#cpuinfo-freq').text(cpuinfo['CPUFreq']);
-			$('#cpuinfo-temp').text(cpuinfo['CPUTemp']);
+			$('#cpuinfo-freq').text(cpuinfo['Freq']);
+			$('#cpuinfo-temp').text(cpuinfo['Temp']);
 			var load = msg['loadinfo']["Load"];
 			$('#load-load1').text(load[0]);
 			$('#load-load5').text(load[1]);

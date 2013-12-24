@@ -34,37 +34,37 @@ var MemHistory = make([]string, 0)
 const limit = 30
 
 type CPUUsageInfoStruct struct {
-	CPUUser   int
-	CPUIdle   int
-	CPUSystem int
-	CPUIoWait int
-	Usage     int
+	User   int
+	Idle   int
+	System int
+	IoWait int
+	Usage  int
 }
 
 var lastCPUUsage *CPUUsageInfoStruct
 
 type MemInfo struct {
-	MemTotal        int
-	MemFree         int
-	MemFreeUser     int
-	MemBuffers      int
-	MemCached       int
-	MemSwapTotal    int
-	MemSwapFree     int
-	MemUsedPerc     int
-	MemBuffersPerc  int
-	MemCachePerc    int
-	MemFreePerc     int
-	MemFreeUserPerc int
-	MemSwapUsedPerc int
-	MemSwapFreePerc int
+	Total        int
+	Free         int
+	FreeUser     int
+	Buffers      int
+	Cached       int
+	SwapTotal    int
+	SwapFree     int
+	UsedPerc     int
+	BuffersPerc  int
+	CachePerc    int
+	FreePerc     int
+	FreeUserPerc int
+	SwapUsedPerc int
+	SwapFreePerc int
 }
 
 var lastMemInfo *MemInfo
 
 type CPUInfoStruct struct {
-	CPUFreq int
-	CPUTemp int
+	Freq int
+	Temp int
 }
 
 var lastCPUInfo *CPUInfoStruct
@@ -94,7 +94,7 @@ func update() {
 		if len(MemHistory) > limit {
 			MemHistory = MemHistory[1:]
 		}
-		MemHistory = append(MemHistory, strconv.Itoa(lastMemInfo.MemUsedPerc))
+		MemHistory = append(MemHistory, strconv.Itoa(lastMemInfo.UsedPerc))
 	}
 	lastCPUInfo = gatherCPUInfo()
 }
@@ -134,11 +134,11 @@ func gatherCPUUsageInfo() *CPUUsageInfoStruct {
 	cIoWait, _ := strconv.Atoi(fields[5])
 	cpuLastIoWait, cIoWait = cIoWait, cIoWait-cpuLastIoWait
 	allDiff := cUser + cNice + cSystem + cIdle + cIoWait
-	cpuusage.CPUUser = int(100 * (cUser + cNice) / allDiff)
-	cpuusage.CPUIdle = int(100 * cIdle / allDiff)
-	cpuusage.CPUSystem = int(100 * cSystem / allDiff)
-	cpuusage.CPUIoWait = int(100 * cIoWait / allDiff)
-	cpuusage.Usage = 100 - cpuusage.CPUIdle
+	cpuusage.User = int(100 * (cUser + cNice) / allDiff)
+	cpuusage.Idle = int(100 * cIdle / allDiff)
+	cpuusage.System = int(100 * cSystem / allDiff)
+	cpuusage.IoWait = int(100 * cIoWait / allDiff)
+	cpuusage.Usage = 100 - cpuusage.Idle
 	return cpuusage
 }
 
@@ -165,29 +165,29 @@ func gatherMemoryInfo() *MemInfo {
 		}
 		switch {
 		case strings.HasPrefix(line, "MemTotal:"):
-			meminfo.MemTotal = getIntValueFromKeyVal(line)
+			meminfo.Total = getIntValueFromKeyVal(line)
 		case strings.HasPrefix(line, "MemFree:"):
-			meminfo.MemFree = getIntValueFromKeyVal(line)
+			meminfo.Free = getIntValueFromKeyVal(line)
 		case strings.HasPrefix(line, "Buffers:"):
-			meminfo.MemBuffers = getIntValueFromKeyVal(line)
+			meminfo.Buffers = getIntValueFromKeyVal(line)
 		case strings.HasPrefix(line, "Cached:"):
-			meminfo.MemCached = getIntValueFromKeyVal(line)
+			meminfo.Cached = getIntValueFromKeyVal(line)
 		case strings.HasPrefix(line, "SwapFree:"):
-			meminfo.MemSwapFree = getIntValueFromKeyVal(line)
+			meminfo.SwapFree = getIntValueFromKeyVal(line)
 		case strings.HasPrefix(line, "SwapTotal:"):
-			meminfo.MemSwapTotal = getIntValueFromKeyVal(line)
+			meminfo.SwapTotal = getIntValueFromKeyVal(line)
 		}
 	}
-	if meminfo.MemTotal > 0 {
-		meminfo.MemUsedPerc = int(100 - 100.0*(meminfo.MemFree+meminfo.MemBuffers+meminfo.MemCached)/meminfo.MemTotal)
-		meminfo.MemBuffersPerc = int(100.0 * meminfo.MemBuffers / meminfo.MemTotal)
-		meminfo.MemCachePerc = int(100.0 * meminfo.MemCached / meminfo.MemTotal)
-		meminfo.MemFreePerc = int(100 * meminfo.MemFree / meminfo.MemTotal)
-		meminfo.MemFreeUserPerc = 100 - meminfo.MemUsedPerc
+	if meminfo.Total > 0 {
+		meminfo.UsedPerc = int(100 - 100.0*(meminfo.Free+meminfo.Buffers+meminfo.Cached)/meminfo.Total)
+		meminfo.BuffersPerc = int(100.0 * meminfo.Buffers / meminfo.Total)
+		meminfo.CachePerc = int(100.0 * meminfo.Cached / meminfo.Total)
+		meminfo.FreePerc = int(100 * meminfo.Free / meminfo.Total)
+		meminfo.FreeUserPerc = 100 - meminfo.UsedPerc
 	}
-	if meminfo.MemSwapTotal > 0 {
-		meminfo.MemSwapFreePerc = int(100.0 * meminfo.MemSwapFree / meminfo.MemSwapTotal)
-		meminfo.MemSwapUsedPerc = 100 - meminfo.MemSwapFreePerc
+	if meminfo.SwapTotal > 0 {
+		meminfo.SwapFreePerc = int(100.0 * meminfo.SwapFree / meminfo.SwapTotal)
+		meminfo.SwapUsedPerc = 100 - meminfo.SwapFreePerc
 	}
 	return meminfo
 }
@@ -210,8 +210,8 @@ func GetCPUInfo() *CPUInfoStruct {
 
 func gatherCPUInfo() *CPUInfoStruct {
 	info := &CPUInfoStruct{}
-	info.CPUFreq = h.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq") / 1000
-	info.CPUTemp = h.ReadIntFromFile("/sys/class/thermal/thermal_zone0/temp") / 1000
+	info.Freq = h.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq") / 1000
+	info.Temp = h.ReadIntFromFile("/sys/class/thermal/thermal_zone0/temp") / 1000
 	return info
 }
 

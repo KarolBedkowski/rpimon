@@ -28,22 +28,22 @@
 				<dd>
 					<dl>
 						<dt>Usage</dt>
-						<dd><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.CPUUsage.CPUUser}},{{.CPUUsage.CPUSystem}},{{.CPUUsage.CPUIoWait}},{{.CPUUsage.CPUIdle}}</span>
+						<dd><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.CPUUsage.User}},{{.CPUUsage.System}},{{.CPUUsage.IoWait}},{{.CPUUsage.Idle}}</span>
 							<span>&nbsp;{{.CPUUsage.Usage}}% total used</span></dd>
 						<dt>Temp</dt>
-						<dd><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.CPUInfo.CPUTemp}}/100</span>
-							<span>&nbsp;{{.CPUInfo.CPUTemp}}C</span></dd>
+						<dd><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.CPUInfo.Temp}}/100</span>
+							<span>&nbsp;{{.CPUInfo.Temp}}C</span></dd>
 					</dl>
 				</dd>
 				<dt><label>Memory:</label></dt>
 				<dd>
 					<dl>
 						<dt>RAM</dt>
-						<dd><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.MemInfo.MemUsedPerc}},{{.MemInfo.MemBuffersPerc}},{{.MemInfo.MemCachePerc}},{{.MemInfo.MemFreePerc}}</span>
-							<span>&nbsp;{{.MemInfo.MemFreeUserPerc}}% available</span></dd>
+						<dd><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.MemInfo.UsedPerc}},{{.MemInfo.BuffersPerc}},{{.MemInfo.CachePerc}},{{.MemInfo.FreePerc}}</span>
+							<span>&nbsp;{{.MemInfo.FreeUserPerc}}% available</span></dd>
 						<dt>SWAP</dt>
-						<dd><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.MemInfo.MemSwapUsedPerc}}/100</span>
-							<span>&nbsp;{{.MemInfo.MemSwapFreePerc}}% available</span></dd>
+						<dd><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.MemInfo.SwapUsedPerc}}/100</span>
+							<span>&nbsp;{{.MemInfo.SwapFreePerc}}% available</span></dd>
 					</dl>
 				</dd>
 				<dt><label>Mount:</label></dt>
