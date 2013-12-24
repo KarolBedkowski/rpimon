@@ -1,14 +1,13 @@
 package pmain
 
 import (
-	"bufio"
+	"encoding/json"
 	"github.com/gorilla/mux"
-	"io"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/helpers"
+	//	"k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
+	"k.prv/rpimon/monitor"
 	"net/http"
-	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -21,6 +20,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", mainPageHanler).Name("main-index")
 	subRouter.HandleFunc("/system", systemPageHanler).Name("main-system")
+	subRouter.HandleFunc("/info", infoHandler)
 }
 
 type fsInfo struct {
@@ -40,46 +40,28 @@ type interfaceInfo struct {
 
 type pageCtx struct {
 	*app.BasePageContext
-	Hostname        string
-	Uname           string
-	Uptime          string
-	Users           string
-	Load            string
-	CPUSystem       int
-	CPUUser         int
-	CPUIdle         int
-	CPUIowait       int
-	CPUUsed         int
-	CPUFreq         int
-	CPUMinFreq      int
-	CPUMaxFreq      int
-	CPUGovernor     string
-	CPUTemp         int
-	Filesystems     []fsInfo
-	MemTotal        int
-	MemFree         int
-	MemFreeUser     int
-	MemBuffers      int
-	MemCached       int
-	MemSwapTotal    int
-	MemSwapFree     int
-	MemUsedPerc     int
-	MemBuffersPerc  int
-	MemCachePerc    int
-	MemFreePerc     int
-	MemFreeUserPerc int
-	MemSwapUsedPerc int
-	MemSwapFreePerc int
-	Interfaces      []interfaceInfo
-	Warnings        []string
+	Hostname    string
+	Uname       string
+	Uptime      string
+	Users       string
+	Load        string
+	CPUUsage    *monitor.CPUUsageInfoStruct
+	CPUInfo     *monitor.CPUInfoStruct
+	MemInfo     *monitor.MemInfo
+	Filesystems []fsInfo
+	Interfaces  []interfaceInfo
+	Warnings    []string
+	LoadHistory string
+	CPUHistory  string
 }
 
 func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Main", "main", w, r)}
 	fillWarnings(ctx)
 	fillUptimeInfo(ctx)
-	fillCPUInfog(ctx, true)
-	fillMemoryInfo(ctx)
+	ctx.CPUUsage = monitor.GetCPUUsageInfo()
+	ctx.CPUInfo = monitor.GetCPUInfo()
+	ctx.MemInfo = monitor.GetMemoryInfo()
 	fillFSInfo(ctx)
 	fillIfaceInfo(ctx, true)
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/index.tmpl", "flash.tmpl")
@@ -88,9 +70,7 @@ func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 func systemPageHanler(w http.ResponseWriter, r *http.Request) {
 	data := &pageCtx{BasePageContext: app.NewBasePageContext("System", "system", w, r)}
 	fillUptimeInfo(data)
-	fillCPUInfog(data, false)
 	fillFSInfo(data)
-	fillMemoryInfo(data)
 	fillIfaceInfo(data, false)
 	fillUnameInfo(data)
 	fillWarnings(data)
@@ -125,42 +105,6 @@ func fillUnameInfo(ctx *pageCtx) error {
 	return nil
 }
 
-func fillCPUInfog(ctx *pageCtx, simple bool) error {
-	file, err := os.Open("/proc/stat")
-	if err != nil {
-		l.Warn("fillCPUInfog Error", err)
-		return err
-	}
-	defer file.Close()
-	reader := bufio.NewReader(file)
-	line, _ := reader.ReadString('\n')
-	line = strings.Replace(line, "  ", " ", -1)
-	fields := strings.Fields(line)
-	user, _ := strconv.Atoi(fields[1])
-	user2, _ := strconv.Atoi(fields[2])
-	user += user2
-	system, _ := strconv.Atoi(fields[3])
-	idle, _ := strconv.Atoi(fields[4])
-	iowait, _ := strconv.Atoi(fields[5])
-	usage := user + system + idle + iowait
-
-	ctx.CPUSystem = int(100 * system / usage)
-	ctx.CPUUser = int(100 * user / usage)
-	ctx.CPUIdle = int(100 * idle / usage)
-	ctx.CPUIowait = int(100 * iowait / usage)
-	ctx.CPUUsed = 100 - ctx.CPUIdle
-
-	if !simple {
-		ctx.CPUFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq") / 1000
-		ctx.CPUMinFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq") / 1000
-		ctx.CPUMaxFreq = helpers.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq") / 1000
-		ctx.CPUGovernor, _ = helpers.ReadLineFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")
-
-		ctx.CPUTemp = helpers.ReadIntFromFile("/sys/class/thermal/thermal_zone0/temp") / 1000
-	}
-	return nil
-}
-
 func fillFSInfo(ctx *pageCtx) error {
 	out, err := exec.Command("df", "-h", "-l", "-x", "tmpfs", "-x", "devtmpfs", "-x", "rootfs").Output()
 	if err != nil {
@@ -176,48 +120,6 @@ func fillFSInfo(ctx *pageCtx) error {
 		usedperc, _ := strconv.Atoi(strings.Trim(fields[4], "%"))
 		fsinfo := fsInfo{fields[0], fields[1], fields[2], fields[3], usedperc, fields[5], 100 - usedperc}
 		ctx.Filesystems = append(ctx.Filesystems, fsinfo)
-	}
-	return nil
-}
-
-func fillMemoryInfo(ctx *pageCtx) error {
-	file, err := os.Open("/proc/meminfo")
-	if err != nil {
-		l.Warn("fillCPUInfog Error", err)
-		return err
-	}
-	defer file.Close()
-	reader := bufio.NewReader(file)
-	for {
-		line, err := reader.ReadString('\n')
-		if err == io.EOF {
-			break
-		}
-		switch {
-		case strings.HasPrefix(line, "MemTotal:"):
-			ctx.MemTotal = getIntValueFromKeyVal(line)
-		case strings.HasPrefix(line, "MemFree:"):
-			ctx.MemFree = getIntValueFromKeyVal(line)
-		case strings.HasPrefix(line, "Buffers:"):
-			ctx.MemBuffers = getIntValueFromKeyVal(line)
-		case strings.HasPrefix(line, "Cached:"):
-			ctx.MemCached = getIntValueFromKeyVal(line)
-		case strings.HasPrefix(line, "SwapFree:"):
-			ctx.MemSwapFree = getIntValueFromKeyVal(line)
-		case strings.HasPrefix(line, "SwapTotal:"):
-			ctx.MemSwapTotal = getIntValueFromKeyVal(line)
-		}
-	}
-	if ctx.MemTotal > 0 {
-		ctx.MemUsedPerc = int(100 - 100.0*(ctx.MemFree+ctx.MemBuffers+ctx.MemCached)/ctx.MemTotal)
-		ctx.MemBuffersPerc = int(100.0 * ctx.MemBuffers / ctx.MemTotal)
-		ctx.MemCachePerc = int(100.0 * ctx.MemCached / ctx.MemTotal)
-		ctx.MemFreePerc = int(100 * ctx.MemFree / ctx.MemTotal)
-		ctx.MemFreeUserPerc = 100 - ctx.MemUsedPerc
-	}
-	if ctx.MemSwapTotal > 0 {
-		ctx.MemSwapFreePerc = int(100.0 * ctx.MemSwapFree / ctx.MemSwapTotal)
-		ctx.MemSwapUsedPerc = 100 - ctx.MemSwapFreePerc
 	}
 	return nil
 }
@@ -298,4 +200,14 @@ func checkIsServiceConnected(port string) (result bool) {
 		}
 	}
 	return
+}
+
+func infoHandler(w http.ResponseWriter, r *http.Request) {
+	res := map[string]interface{}{"cpu": strings.Join(monitor.CPUHistory, ","),
+		"load":     strings.Join(monitor.LoadHistory, ","),
+		"mem":      strings.Join(monitor.MemHistory, ","),
+		"meminfo":  monitor.GetMemoryInfo(),
+		"cpuusage": monitor.GetCPUUsageInfo(),
+		"cpuinfo":  monitor.GetCPUInfo()}
+	json.NewEncoder(w).Encode(res)
 }

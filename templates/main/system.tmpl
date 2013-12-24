@@ -21,7 +21,9 @@
 			<h1>{{.BasePageContext.Hostname}}</h1>
 		</div>
 		<div class="pure-u-1">
-				<p><label>Load:</label> {{.Load}}</p>
+				<p><label>Load:</label> {{.Load}}
+				<span id="load-chart" class="chart-line" data-width="64" data-min="0" data-max="2">0</span>
+				</p>
 		</div>
 		<div class="pure-u-1-2">
 			<p><label>Uptime:</label> {{.Uptime}}</p>
@@ -38,30 +40,27 @@
 <div class="pure-u-1-2">
 	<section>
 		<h1>CPU</h1>
-		<div class="big-chart">
-			<span class="pie" data-diameter="120" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.CPUUser}},{{.CPUSystem}},{{.CPUIowait}},{{.CPUIdle}}</span>
-		</div>
-		<table class="pure-table">
-			<tr>
-				<th>User</th>
-				<td>{{.CPUUser}}%</td>
-			</tr>
-			<tr>
-				<th>System</th>
-				<td>{{.CPUSystem}}%</td>
-			</tr>
-			<tr>
-				<th>IO</th>
-				<td>{{.CPUIowait}}%</td>
-			</tr>
-			<tr>
-				<th>Freq</th>
-				<td>{{.CPUFreq}}</td>
-			</tr>
-			<tr>
-				<th>Temp</th>
-				<td>{{.CPUTemp}}°C</td>
-			</tr>
+
+		<span id="cpu-chart" class="chart-line" data-width="250" data-height="50" data-min="0" data-max="100">0</span>
+		<table class="pure-table table-center-align">
+			<thead>
+				<tr>
+					<th>User</th>
+					<th>System</th>
+					<th>IO</th>
+					<th>Freq</th>
+					<th>Temp</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><span id="cpuusage-user"></span>%</td>
+					<td><span id="cpuusage-system"></span>%</td>
+					<td><span id="cpuusage-iowait"></span>%</td>
+					<td><span id="cpuinfo-freq"></span></td>
+					<td><span id="cpuinfo-temp"></span>°C</td>
+				</tr>
+			</tbody>
 		</table>
 	</section>
 </div>
@@ -69,26 +68,24 @@
 <div class="pure-u-1-2">
 	<section>
 		<h1>Memory</h1>
-		<div class="big-chart">
-			<span class="pie" data-diameter="120" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.MemUsedPerc}},{{.MemBuffersPerc}},{{.MemCachePerc}},{{.MemFreePerc}}</span>
-		</div>
+		<span id="mem-chart" class="chart-line" data-width="250" data-height="50" data-min="0" data-max="100">0</span>
 		<table class="pure-table">
-			<tr>
-				<th>User</th>
-				<td>{{.MemUsedPerc}}%</td>
-			</tr>
-			<tr>
-				<th>Buffers</th>
-				<td>{{.MemBuffersPerc}}%</td>
-			</tr>
-			<tr>
-				<th>Cache</th>
-				<td>{{.MemCachePerc}}%</td>
-			</tr>
-			<tr>
-				<th>Swap Used</th>
-				<td>{{.MemSwapUsedPerc}}%</td>
-			</tr>
+			<thead>
+				<tr>
+					<th>User</th>
+					<th>Buffers</th>
+					<th>Cache</th>
+					<th>Swap Used</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><span id="meminfo-used"></span>%</td>
+					<td><span id="meminfo-buff"></span>%</td>
+					<td><span id="meminfo-cach"></span>%</td>
+					<td><span id="meminfo-swap"></span>%</td>
+				</tr>
+			</tbody>
 		</table>
 	</section>
 </div>
@@ -106,7 +103,7 @@
 			{{range .Filesystems}}
 			<tr>
 				<td>{{.MountPoint}}</td>
-				<td><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.UsedPerc}},{{.FreePerc}}</span></td>
+				<td><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.UsedPerc}}/100</span></td>
 				<td>{{.UsedPerc}}%</td>
 			</tr>
 			{{end}}
@@ -140,9 +137,35 @@
 		window.location.reload(true);
 	};
 
+	function getHistory() {
+		$.ajax({
+			url: '/main/info',
+			cache: false,
+			dataType: 'json'
+		}).done(function(msg) {
+			$('#load-chart').text(msg['load']).change()
+			$('#cpu-chart').text(msg['cpu']).change()
+			$('#mem-chart').text(msg['mem']).change()
+			var meminfo = msg['meminfo'];
+			$('#meminfo-used').text(meminfo['MemUsedPerc']);
+			$('#meminfo-buff').text(meminfo['MemBuffersPerc']);
+			$('#meminfo-cach').text(meminfo['MemCachePerc']);
+			$('#meminfo-swap').text(meminfo['MemSwapUsedPerc']);
+			var cpuusage = msg['cpuusage'];
+			$('#cpuusage-user').text(cpuusage['CPUUser']);
+			$('#cpuusage-system').text(cpuusage['CPUSystem']);
+			$('#cpuusage-iowait').text(cpuusage['CPUIoWait']);
+			var cpuinfo = msg['cpuinfo'];
+			$('#cpuinfo-freq').text(cpuinfo['CPUFreq']);
+			$('#cpuinfo-temp').text(cpuinfo['CPUTemp']);
+			setTimeout(getHistory, 1000);
+		});
+	}
+
 	$(function() {
 		$("span.pie").peity("pie")
-		 setTimeout(refresh, 60000);
+		$("span.chart-line").peity("line")
+		getHistory();
 	});
 </script>
 

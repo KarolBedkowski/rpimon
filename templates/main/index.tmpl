@@ -25,17 +25,25 @@
 				<dt><label>Uptime:</label></dt>
 				<dd>{{.Uptime}}</dd>
 				<dt><label>CPU:</label></dt>
-				<dd><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.CPUUser}},{{.CPUSystem}},{{.CPUIowait}},{{.CPUIdle}}</span>
-					<span>&nbsp;{{.CPUUsed}}% total used</span></dd>
+				<dd>
+					<dl>
+						<dt>Usage</dt>
+						<dd><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.CPUUsage.CPUUser}},{{.CPUUsage.CPUSystem}},{{.CPUUsage.CPUIoWait}},{{.CPUUsage.CPUIdle}}</span>
+							<span>&nbsp;{{.CPUUsage.Usage}}% total used</span></dd>
+						<dt>Temp</dt>
+						<dd><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.CPUInfo.CPUTemp}}/100</span>
+							<span>&nbsp;{{.CPUInfo.CPUTemp}}C</span></dd>
+					</dl>
+				</dd>
 				<dt><label>Memory:</label></dt>
 				<dd>
 					<dl>
 						<dt>RAM</dt>
-						<dd><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.MemUsedPerc}},{{.MemBuffersPerc}},{{.MemCachePerc}},{{.MemFreePerc}}</span>
-							<span>&nbsp;{{.MemFreeUserPerc}}% available</span></dd>
+						<dd><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.MemInfo.MemUsedPerc}},{{.MemInfo.MemBuffersPerc}},{{.MemInfo.MemCachePerc}},{{.MemInfo.MemFreePerc}}</span>
+							<span>&nbsp;{{.MemInfo.MemFreeUserPerc}}% available</span></dd>
 						<dt>SWAP</dt>
-						<dd><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.MemSwapUsedPerc}},{{.MemSwapFreePerc}}</span>
-							<span>&nbsp;{{.MemSwapFreePerc}}% available</span></dd>
+						<dd><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.MemInfo.MemSwapUsedPerc}}/100</span>
+							<span>&nbsp;{{.MemInfo.MemSwapFreePerc}}% available</span></dd>
 					</dl>
 				</dd>
 				<dt><label>Mount:</label></dt>
@@ -43,7 +51,7 @@
 					<dl>
 						{{range .Filesystems}}
 						<dt>{{.MountPoint}}</dt>
-						<dd><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.UsedPerc}},{{.FreePerc}}</span>
+						<dd><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.UsedPerc}}/100</span>
 						&nbsp;{{.UsedPerc}}% used</dd>
 						{{end}}
 					</dl>
