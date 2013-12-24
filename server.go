@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/monitor"
 	"k.prv/rpimon/pages/auth"
 	pfiles "k.prv/rpimon/pages/files"
 	plogs "k.prv/rpimon/pages/logs"
@@ -59,6 +60,9 @@ func main() {
 		}
 	}()
 	*/
+
+	monitor.Init(1)
+
 	if conf.HttpsAddress != "" {
 		log.Printf("Listen: %s", conf.HttpsAddress)
 		if conf.HttpAddress != "" {
