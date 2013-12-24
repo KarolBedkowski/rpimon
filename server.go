@@ -61,7 +61,7 @@ func main() {
 	}()
 	*/
 
-	monitor.Init(1)
+	monitor.Init(conf.MonitorUpdateInterval)
 
 	if conf.HttpsAddress != "" {
 		log.Printf("Listen: %s", conf.HttpsAddress)

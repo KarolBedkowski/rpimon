@@ -1,4 +1,12 @@
 {
+  "MonitorUpdateInterval": 5,
+  "TemplatesDir": "./templates",
+  "Users": "./users.json",
+  "CookieAuthKey": "12345678901234567890123456789012",
+  "CookieEncKey": "12345678901234567890012345678901",
+  "Debug": true,
+  "UtilsFilename": "./utils.json",
+  "LogFilename": "app.log",
   "SslKey": "key.pem",
   "SslCert": "cert.pem",
   "HttpAddress": ":8000",
@@ -6,12 +14,5 @@
   "BrowserConf": "./browser.json",
   "SessionStoreDir": "./temp",
   "StaticDir": "./static",
-  "MpdHost": "pi:6600",
-  "LogFilename": "app.log",
-  "UtilsFilename": "./utils.json",
-  "Debug": true,
-  "CookieEncKey": "12345678901234567890012345678901",
-  "CookieAuthKey": "12345678901234567890123456789012",
-  "Users": "./users.json",
-  "TemplatesDir": "./templates"
+  "MpdHost": "pi:6600"
 }
