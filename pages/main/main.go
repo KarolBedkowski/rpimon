@@ -40,8 +40,6 @@ type interfaceInfo struct {
 
 type pageCtx struct {
 	*app.BasePageContext
-	Hostname    string
-	Uname       string
 	Uptime      string
 	Users       string
 	Load        *monitor.LoadInfoStruct
@@ -51,8 +49,6 @@ type pageCtx struct {
 	Filesystems []fsInfo
 	Interfaces  []interfaceInfo
 	Warnings    []string
-	LoadHistory string
-	CPUHistory  string
 }
 
 func mainPageHanler(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +69,6 @@ func systemPageHanler(w http.ResponseWriter, r *http.Request) {
 	fillUptimeInfo(data)
 	fillFSInfo(data)
 	fillIfaceInfo(data, false)
-	fillUnameInfo(data)
 	fillWarnings(data)
 	app.RenderTemplate(w, data, "base", "base.tmpl", "main/system.tmpl", "flash.tmpl")
 }
@@ -87,21 +82,6 @@ func fillUptimeInfo(ctx *pageCtx) error {
 	fields := strings.SplitN(string(out), ",", 3)
 	ctx.Uptime = strings.Join(strings.Fields(fields[0])[2:], " ")
 	ctx.Users = strings.Split(strings.Trim(fields[1], " "), " ")[0]
-	return nil
-}
-
-var lastUname string
-
-func fillUnameInfo(ctx *pageCtx) error {
-	if lastUname == "" {
-		out, err := exec.Command("uname", "-mrsv").Output()
-		if err != nil {
-			l.Warn("fillUnameInfo Error", err)
-			return err
-		}
-		lastUname = strings.Trim(string(out), " \n")
-	}
-	ctx.Uname = lastUname
 	return nil
 }
 
@@ -164,15 +144,6 @@ func fillWarnings(ctx *pageCtx) error {
 		ctx.Warnings = append(ctx.Warnings, "FTP Connected")
 	}
 	return nil
-}
-
-func getIntValueFromKeyVal(line string) int {
-	fields := strings.Fields(line)
-	res, err := strconv.Atoi(fields[1])
-	if err != nil {
-		return 0
-	}
-	return res
 }
 
 func checkIsServiceConnected(port string) (result bool) {
