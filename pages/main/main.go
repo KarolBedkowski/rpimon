@@ -44,7 +44,7 @@ type pageCtx struct {
 	Uname       string
 	Uptime      string
 	Users       string
-	Load        string
+	Load        *monitor.LoadInfoStruct
 	CPUUsage    *monitor.CPUUsageInfoStruct
 	CPUInfo     *monitor.CPUInfoStruct
 	MemInfo     *monitor.MemInfo
@@ -62,6 +62,7 @@ func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 	ctx.CPUUsage = monitor.GetCPUUsageInfo()
 	ctx.CPUInfo = monitor.GetCPUInfo()
 	ctx.MemInfo = monitor.GetMemoryInfo()
+	ctx.Load = monitor.GetLoadInfo()
 	fillFSInfo(ctx)
 	fillIfaceInfo(ctx, true)
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/index.tmpl", "flash.tmpl")
@@ -86,7 +87,6 @@ func fillUptimeInfo(ctx *pageCtx) error {
 	fields := strings.SplitN(string(out), ",", 3)
 	ctx.Uptime = strings.Join(strings.Fields(fields[0])[2:], " ")
 	ctx.Users = strings.Split(strings.Trim(fields[1], " "), " ")[0]
-	ctx.Load = strings.Split(fields[2], ":")[1]
 	return nil
 }
 
@@ -208,6 +208,7 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 		"mem":      strings.Join(monitor.MemHistory, ","),
 		"meminfo":  monitor.GetMemoryInfo(),
 		"cpuusage": monitor.GetCPUUsageInfo(),
-		"cpuinfo":  monitor.GetCPUInfo()}
+		"cpuinfo":  monitor.GetCPUInfo(),
+		"loadinfo": monitor.GetLoadInfo()}
 	json.NewEncoder(w).Encode(res)
 }

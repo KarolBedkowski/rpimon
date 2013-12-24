@@ -69,12 +69,19 @@ type CPUInfoStruct struct {
 
 var lastCPUInfo *CPUInfoStruct
 
+type LoadInfoStruct struct {
+	Load []string
+}
+
+var lastLoadInfo *LoadInfoStruct
+
 func update() {
 	if load, err := h.ReadLineFromFile("/proc/loadavg"); err == nil {
 		if len(LoadHistory) > limit {
 			LoadHistory = LoadHistory[1:]
 		}
-		loadVal := strings.SplitN(load, " ", 2)
+		loadVal := strings.Fields(load)
+		lastLoadInfo = &LoadInfoStruct{loadVal}
 		LoadHistory = append(LoadHistory, loadVal[0])
 	}
 	if lastCPUUsage = gatherCPUUsageInfo(); lastCPUUsage != nil {
@@ -206,4 +213,11 @@ func gatherCPUInfo() *CPUInfoStruct {
 	info.CPUFreq = h.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq") / 1000
 	info.CPUTemp = h.ReadIntFromFile("/sys/class/thermal/thermal_zone0/temp") / 1000
 	return info
+}
+
+func GetLoadInfo() *LoadInfoStruct {
+	if lastLoadInfo == nil {
+		return &LoadInfoStruct{}
+	}
+	return lastLoadInfo
 }

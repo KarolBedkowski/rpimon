@@ -21,7 +21,7 @@
 		<div class="pure-u-1">
 			<dl class="inline-dl">
 				<dt><label>Load:</label></dt>
-				<dd>{{.Load}}</dd>
+				<dd>{{index .Load.Load 0}}, {{index .Load.Load 1}}, {{index .Load.Load 2}}</dd>
 				<dt><label>Uptime:</label></dt>
 				<dd>{{.Uptime}}</dd>
 				<dt><label>CPU:</label></dt>

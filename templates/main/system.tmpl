@@ -15,25 +15,26 @@
 </div>
 {{end}}
 
-<div class="pure-g-r content-ribbon">
+<div class="pure-u-1-2">
 	<section>
-		<div class="pure-u-1">
-			<h1>{{.BasePageContext.Hostname}}</h1>
-		</div>
-		<div class="pure-u-1">
-				<p><label>Load:</label> {{.Load}}
-				<span id="load-chart" class="chart-line" data-width="64" data-min="0" data-max="2">0</span>
-				</p>
-		</div>
-		<div class="pure-u-1-2">
-			<p><label>Uptime:</label> {{.Uptime}}</p>
-		</div>
-		<div class="pure-u-1-2">
-			<p><label>Users:</label> {{.Users}}</p>
-		</div>
-		<div class="pure-u-1">
-			<p><label>Kernel:</label> {{.Uname}}</p>
-		</div>
+		<h1>Load:</h1>
+		<span id="load-chart" class="chart-line" data-width="250" data-height="50" data-min="0" data-max="2">0</span>
+		<table class="pure-table table-center-align">
+			<thead>
+				<tr>
+					<th>1m</th>
+					<th>5m</th>
+					<th>15m</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><span id="load-load1"></span></td>
+					<td><span id="load-load5"></span></td>
+					<td><span id="load-load15"></span></td>
+				</tr>
+			</tbody>
+		</table>
 	</section>
 </div>
 
@@ -158,6 +159,10 @@
 			var cpuinfo = msg['cpuinfo'];
 			$('#cpuinfo-freq').text(cpuinfo['CPUFreq']);
 			$('#cpuinfo-temp').text(cpuinfo['CPUTemp']);
+			var load = msg['loadinfo']["Load"];
+			$('#load-load1').text(load[0]);
+			$('#load-load5').text(load[1]);
+			$('#load-load15').text(load[2]);
 			setTimeout(getHistory, 1000);
 		});
 	}
