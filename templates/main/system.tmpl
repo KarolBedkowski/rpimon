@@ -184,6 +184,8 @@
 			$('#uptime-users').text(uptime['Users'])
 			$("span.pie").peity("pie")
 			setTimeout(getHistory, 5000);
+		}).fail(function( jqXHR, textStatus ) {
+			setTimeout(getHistory, 10000);
 		});
 	}
 
