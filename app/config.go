@@ -8,21 +8,22 @@ import (
 
 // AppConfiguration Main app configuration.
 type AppConfiguration struct {
-	StaticDir       string
-	TemplatesDir    string
-	Users           string
-	Debug           bool
-	CookieAuthKey   string
-	CookieEncKey    string
-	SessionStoreDir string
-	LogFilename     string
-	UtilsFilename   string
-	MpdHost         string
-	BrowserConf     string
-	HttpAddress     string
-	HttpsAddress    string
-	SslCert         string
-	SslKey          string
+	StaticDir             string
+	TemplatesDir          string
+	Users                 string
+	Debug                 bool
+	CookieAuthKey         string
+	CookieEncKey          string
+	SessionStoreDir       string
+	LogFilename           string
+	UtilsFilename         string
+	MpdHost               string
+	BrowserConf           string
+	HttpAddress           string
+	HttpsAddress          string
+	SslCert               string
+	SslKey                string
+	MonitorUpdateInterval int
 }
 
 // Configuration - main app configuration instance
