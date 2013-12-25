@@ -246,87 +246,75 @@ func GetLoadInfo() *LoadInfoStruct {
 	return lastLoadInfo
 }
 
-func gatherIntefacesInfo() *InterfacesStruct {
-	ipres := h.ReadFromCommand("/sbin/ip", "addr")
-	if ipres == "" {
-		return nil
-	}
-	lines := strings.Split(ipres, "\n")
-	iface := ""
-	var result InterfacesStruct
-	for _, line := range lines {
-		if len(line) == 0 {
-			continue
-		}
-		if line[0] != ' ' {
-			if iface != "" && iface != "lo" {
-				result = append(result, InterfaceInfoStruct{iface, "-"})
-			}
-			iface = strings.Trim(strings.Fields(line)[1], " :")
-		} else if strings.HasPrefix(line, "    inet") {
-			if iface != "lo" {
-				fields := strings.Fields(line)
-				result = append(result, InterfaceInfoStruct{iface, fields[1]})
-			}
-			iface = ""
-		}
-	}
-	return &result
-}
-
 var interfacesInfoCache = h.NewSimpleCache(5)
 
 func GetInterfacesInfo() *InterfacesStruct {
 	result := interfacesInfoCache.Get(func() h.Value {
-		return gatherIntefacesInfo()
+		ipres := h.ReadFromCommand("/sbin/ip", "addr")
+		if ipres == "" {
+			return nil
+		}
+		lines := strings.Split(ipres, "\n")
+		iface := ""
+		var result InterfacesStruct
+		for _, line := range lines {
+			if len(line) == 0 {
+				continue
+			}
+			if line[0] != ' ' {
+				if iface != "" && iface != "lo" {
+					result = append(result, InterfaceInfoStruct{iface, "-"})
+				}
+				iface = strings.Trim(strings.Fields(line)[1], " :")
+			} else if strings.HasPrefix(line, "    inet") {
+				if iface != "lo" {
+					fields := strings.Fields(line)
+					result = append(result, InterfaceInfoStruct{iface, fields[1]})
+				}
+				iface = ""
+			}
+		}
+		return &result
 	})
 	return result.(*InterfacesStruct)
-}
-
-func gatherFSInfo() *FilesystemsStruct {
-	cmdout := h.ReadFromCommand("df", "-h", "-l", "-x", "tmpfs", "-x", "devtmpfs", "-x", "rootfs")
-	if cmdout == "" {
-		return nil
-	}
-	lines := strings.Split(cmdout, "\n")
-	var result FilesystemsStruct
-	for _, line := range lines[1:] {
-		if len(line) == 0 {
-			break
-		}
-		fields := strings.Fields(line)
-		usedperc, _ := strconv.Atoi(strings.Trim(fields[4], "%"))
-		result = append(result, FsInfoStruct{fields[0], fields[1], fields[2],
-			fields[3], usedperc, fields[5], 100 - usedperc})
-	}
-	return &result
 }
 
 var fsInfoCache = h.NewSimpleCache(5)
 
 func GetFilesystemsInfo() *FilesystemsStruct {
 	result := fsInfoCache.Get(func() h.Value {
-		return gatherFSInfo()
+		cmdout := h.ReadFromCommand("df", "-h", "-l", "-x", "tmpfs", "-x", "devtmpfs", "-x", "rootfs")
+		if cmdout == "" {
+			return nil
+		}
+		lines := strings.Split(cmdout, "\n")
+		var result FilesystemsStruct
+		for _, line := range lines[1:] {
+			if len(line) == 0 {
+				break
+			}
+			fields := strings.Fields(line)
+			usedperc, _ := strconv.Atoi(strings.Trim(fields[4], "%"))
+			result = append(result, FsInfoStruct{fields[0], fields[1], fields[2],
+				fields[3], usedperc, fields[5], 100 - usedperc})
+		}
+		return &result
 	})
 	return result.(*FilesystemsStruct)
-}
-
-func gatherUptimeInfo() *UptimeInfoStruct {
-	cmdout := h.ReadFromCommand("uptime")
-	if cmdout == "" {
-		return nil
-	}
-	fields := strings.SplitN(cmdout, ",", 3)
-	info := &UptimeInfoStruct{strings.Join(strings.Fields(fields[0])[2:], " "),
-		strings.Split(strings.Trim(fields[1], " "), " ")[0]}
-	return info
 }
 
 var uptimeInfoCache = h.NewSimpleCache(2)
 
 func GetUptimeInfo() *UptimeInfoStruct {
 	result := uptimeInfoCache.Get(func() h.Value {
-		return gatherUptimeInfo()
+		cmdout := h.ReadFromCommand("uptime")
+		if cmdout == "" {
+			return nil
+		}
+		fields := strings.SplitN(cmdout, ",", 3)
+		info := &UptimeInfoStruct{strings.Join(strings.Fields(fields[0])[2:], " "),
+			strings.Split(strings.Trim(fields[1], " "), " ")[0]}
+		return info
 	})
 	return result.(*UptimeInfoStruct)
 }
