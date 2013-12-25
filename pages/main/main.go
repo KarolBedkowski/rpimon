@@ -34,8 +34,7 @@ type fsInfo struct {
 
 type pageCtx struct {
 	*app.BasePageContext
-	Uptime      string
-	Users       string
+	Uptime      *monitor.UptimeInfoStruct
 	Load        *monitor.LoadInfoStruct
 	CPUUsage    *monitor.CPUUsageInfoStruct
 	CPUInfo     *monitor.CPUInfoStruct
@@ -48,7 +47,7 @@ type pageCtx struct {
 func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Main", "main", w, r)}
 	fillWarnings(ctx)
-	fillUptimeInfo(ctx)
+	ctx.Uptime = monitor.GetUptimeInfo()
 	ctx.CPUUsage = monitor.GetCPUUsageInfo()
 	ctx.CPUInfo = monitor.GetCPUInfo()
 	ctx.MemInfo = monitor.GetMemoryInfo()
@@ -60,23 +59,8 @@ func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 
 func systemPageHanler(w http.ResponseWriter, r *http.Request) {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("System", "system", w, r)}
-	fillUptimeInfo(ctx)
-	ctx.Filesystems = monitor.GetFilesystemsInfo()
-	ctx.Interfaces = monitor.GetInterfacesInfo()
 	fillWarnings(ctx)
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/system.tmpl", "flash.tmpl")
-}
-
-func fillUptimeInfo(ctx *pageCtx) error {
-	out, err := exec.Command("uptime").Output()
-	if err != nil {
-		l.Warn("fillUptimeInfo Error", err)
-		return err
-	}
-	fields := strings.SplitN(string(out), ",", 3)
-	ctx.Uptime = strings.Join(strings.Fields(fields[0])[2:], " ")
-	ctx.Users = strings.Split(strings.Trim(fields[1], " "), " ")[0]
-	return nil
 }
 
 func fillWarnings(ctx *pageCtx) error {
@@ -128,6 +112,7 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 		"cpuinfo":  monitor.GetCPUInfo(),
 		"loadinfo": monitor.GetLoadInfo(),
 		"fs":       monitor.GetFilesystemsInfo(),
-		"iface":    monitor.GetInterfacesInfo()}
+		"iface":    monitor.GetInterfacesInfo(),
+		"uptime":   monitor.GetUptimeInfo()}
 	json.NewEncoder(w).Encode(res)
 }

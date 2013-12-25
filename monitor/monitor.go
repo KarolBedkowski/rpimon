@@ -109,6 +109,13 @@ type FilesystemsStruct []FsInfoStruct
 
 var lastFilesystemInfo *FilesystemsStruct
 
+type UptimeInfoStruct struct {
+	Uptime string
+	Users  string
+}
+
+var lastUptimeInfo *UptimeInfoStruct
+
 func update() {
 	if load, err := h.ReadLineFromFile("/proc/loadavg"); err == nil {
 		if len(LoadHistory) > limit {
@@ -131,6 +138,7 @@ func update() {
 		MemHistory = append(MemHistory, strconv.Itoa(lastMemInfo.UsedPerc))
 	}
 	lastCPUInfo = gatherCPUInfo()
+	lastUptimeInfo = gatherUptimeInfo()
 }
 
 func slowUpdates() {
@@ -320,4 +328,22 @@ func GetFilesystemsInfo() *FilesystemsStruct {
 		return &FilesystemsStruct{}
 	}
 	return lastFilesystemInfo
+}
+
+func gatherUptimeInfo() *UptimeInfoStruct {
+	cmdout := h.ReadFromCommand("uptime")
+	if cmdout == "" {
+		return nil
+	}
+	fields := strings.SplitN(cmdout, ",", 3)
+	info := &UptimeInfoStruct{strings.Join(strings.Fields(fields[0])[2:], " "),
+		strings.Split(strings.Trim(fields[1], " "), " ")[0]}
+	return info
+}
+
+func GetUptimeInfo() *UptimeInfoStruct {
+	if lastUptimeInfo == nil {
+		return &UptimeInfoStruct{}
+	}
+	return lastUptimeInfo
 }

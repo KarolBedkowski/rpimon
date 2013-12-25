@@ -126,8 +126,8 @@
 <div class="pure-u-1-2">
 	<section>
 		<h1>Other</h1>
-		<p><label>Users:</label> {{.Users}}</p>
-		<p><label>Uptime:</label> {{.Uptime}}</p>
+		<p><label>Users:</label> <span id="uptime-users"></span></p>
+		<p><label>Uptime:</label> <span id="uptime-uptime"></span></p>
 	</section>
 </div>
 
@@ -179,6 +179,9 @@
 					entry["UsedPerc"], "%</td></tr>"].join(""));
 
 			});
+			var uptime = msg["uptime"];
+			$('#uptime-uptime').text(uptime['Uptime'])
+			$('#uptime-users').text(uptime['Users'])
 			$("span.pie").peity("pie")
 			setTimeout(getHistory, 5000);
 		});
