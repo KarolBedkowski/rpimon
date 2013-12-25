@@ -95,6 +95,20 @@ type InterfacesStruct []InterfaceInfoStruct
 
 var lastInterfaceInfo *InterfacesStruct
 
+type FsInfoStruct struct {
+	Name       string
+	Size       string
+	Used       string
+	Available  string
+	UsedPerc   int
+	MountPoint string
+	FreePerc   int
+}
+
+type FilesystemsStruct []FsInfoStruct
+
+var lastFilesystemInfo *FilesystemsStruct
+
 func update() {
 	if load, err := h.ReadLineFromFile("/proc/loadavg"); err == nil {
 		if len(LoadHistory) > limit {
@@ -121,7 +135,7 @@ func update() {
 
 func slowUpdates() {
 	lastInterfaceInfo = gatherIntefacesInfo()
-
+	lastFilesystemInfo = gatherFSInfo()
 }
 
 var (
@@ -280,4 +294,30 @@ func GetInterfacesInfo() *InterfacesStruct {
 		return &InterfacesStruct{}
 	}
 	return lastInterfaceInfo
+}
+
+func gatherFSInfo() *FilesystemsStruct {
+	cmdout := h.ReadFromCommand("df", "-h", "-l", "-x", "tmpfs", "-x", "devtmpfs", "-x", "rootfs")
+	if cmdout == "" {
+		return nil
+	}
+	lines := strings.Split(cmdout, "\n")
+	var result FilesystemsStruct
+	for _, line := range lines[1:] {
+		if len(line) == 0 {
+			break
+		}
+		fields := strings.Fields(line)
+		usedperc, _ := strconv.Atoi(strings.Trim(fields[4], "%"))
+		result = append(result, FsInfoStruct{fields[0], fields[1], fields[2],
+			fields[3], usedperc, fields[5], 100 - usedperc})
+	}
+	return &result
+}
+
+func GetFilesystemsInfo() *FilesystemsStruct {
+	if lastFilesystemInfo == nil {
+		return &FilesystemsStruct{}
+	}
+	return lastFilesystemInfo
 }

@@ -9,7 +9,6 @@ import (
 	"k.prv/rpimon/monitor"
 	"net/http"
 	"os/exec"
-	"strconv"
 	"strings"
 )
 
@@ -41,7 +40,7 @@ type pageCtx struct {
 	CPUUsage    *monitor.CPUUsageInfoStruct
 	CPUInfo     *monitor.CPUInfoStruct
 	MemInfo     *monitor.MemInfo
-	Filesystems []fsInfo
+	Filesystems *monitor.FilesystemsStruct
 	Interfaces  *monitor.InterfacesStruct
 	Warnings    []string
 }
@@ -54,15 +53,15 @@ func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 	ctx.CPUInfo = monitor.GetCPUInfo()
 	ctx.MemInfo = monitor.GetMemoryInfo()
 	ctx.Load = monitor.GetLoadInfo()
-	fillFSInfo(ctx)
 	ctx.Interfaces = monitor.GetInterfacesInfo()
+	ctx.Filesystems = monitor.GetFilesystemsInfo()
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/index.tmpl", "flash.tmpl")
 }
 
 func systemPageHanler(w http.ResponseWriter, r *http.Request) {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("System", "system", w, r)}
 	fillUptimeInfo(ctx)
-	fillFSInfo(ctx)
+	ctx.Filesystems = monitor.GetFilesystemsInfo()
 	ctx.Interfaces = monitor.GetInterfacesInfo()
 	fillWarnings(ctx)
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/system.tmpl", "flash.tmpl")
@@ -77,25 +76,6 @@ func fillUptimeInfo(ctx *pageCtx) error {
 	fields := strings.SplitN(string(out), ",", 3)
 	ctx.Uptime = strings.Join(strings.Fields(fields[0])[2:], " ")
 	ctx.Users = strings.Split(strings.Trim(fields[1], " "), " ")[0]
-	return nil
-}
-
-func fillFSInfo(ctx *pageCtx) error {
-	out, err := exec.Command("df", "-h", "-l", "-x", "tmpfs", "-x", "devtmpfs", "-x", "rootfs").Output()
-	if err != nil {
-		l.Warn("fillFSInfo Error", err)
-		return err
-	}
-	lines := strings.Split(string(out), "\n")
-	for _, line := range lines[1:] {
-		if len(line) == 0 {
-			break
-		}
-		fields := strings.Fields(line)
-		usedperc, _ := strconv.Atoi(strings.Trim(fields[4], "%"))
-		fsinfo := fsInfo{fields[0], fields[1], fields[2], fields[3], usedperc, fields[5], 100 - usedperc}
-		ctx.Filesystems = append(ctx.Filesystems, fsinfo)
-	}
 	return nil
 }
 
