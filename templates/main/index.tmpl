@@ -59,10 +59,12 @@
 				<dt><label>Network:</label></dt>
 				<dd>
 					<dl>
-						{{range .Interfaces}}
+					{{range .Interfaces}}
+						{{if ne .Address "-"}}
 						<dt>{{.Name}}</dt>
 						<dd>{{.Address}}</dd>
 						{{end}}
+					{{end}}
 					</dl>
 				</dt>
 			</dl>

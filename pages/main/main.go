@@ -33,11 +33,6 @@ type fsInfo struct {
 	FreePerc   int
 }
 
-type interfaceInfo struct {
-	Name    string
-	Address string
-}
-
 type pageCtx struct {
 	*app.BasePageContext
 	Uptime      string
@@ -47,7 +42,7 @@ type pageCtx struct {
 	CPUInfo     *monitor.CPUInfoStruct
 	MemInfo     *monitor.MemInfo
 	Filesystems []fsInfo
-	Interfaces  []interfaceInfo
+	Interfaces  *monitor.InterfacesStruct
 	Warnings    []string
 }
 
@@ -60,17 +55,17 @@ func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 	ctx.MemInfo = monitor.GetMemoryInfo()
 	ctx.Load = monitor.GetLoadInfo()
 	fillFSInfo(ctx)
-	fillIfaceInfo(ctx, true)
+	ctx.Interfaces = monitor.GetInterfacesInfo()
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/index.tmpl", "flash.tmpl")
 }
 
 func systemPageHanler(w http.ResponseWriter, r *http.Request) {
-	data := &pageCtx{BasePageContext: app.NewBasePageContext("System", "system", w, r)}
-	fillUptimeInfo(data)
-	fillFSInfo(data)
-	fillIfaceInfo(data, false)
-	fillWarnings(data)
-	app.RenderTemplate(w, data, "base", "base.tmpl", "main/system.tmpl", "flash.tmpl")
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("System", "system", w, r)}
+	fillUptimeInfo(ctx)
+	fillFSInfo(ctx)
+	ctx.Interfaces = monitor.GetInterfacesInfo()
+	fillWarnings(ctx)
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/system.tmpl", "flash.tmpl")
 }
 
 func fillUptimeInfo(ctx *pageCtx) error {
@@ -100,35 +95,6 @@ func fillFSInfo(ctx *pageCtx) error {
 		usedperc, _ := strconv.Atoi(strings.Trim(fields[4], "%"))
 		fsinfo := fsInfo{fields[0], fields[1], fields[2], fields[3], usedperc, fields[5], 100 - usedperc}
 		ctx.Filesystems = append(ctx.Filesystems, fsinfo)
-	}
-	return nil
-}
-
-func fillIfaceInfo(ctx *pageCtx, activeOnly bool) error {
-	out, err := exec.Command("/sbin/ip", "addr").Output()
-	if err != nil {
-		l.Warn("fillFSInfo Error", err)
-		return err
-	}
-	lines := strings.Split(string(out), "\n")
-	iface := ""
-	for _, line := range lines {
-		if len(line) == 0 {
-			continue
-		}
-		if line[0] != ' ' {
-			if iface != "" && iface != "lo" && !activeOnly {
-				ctx.Interfaces = append(ctx.Interfaces, interfaceInfo{iface, "-"})
-			}
-			iface = strings.Trim(strings.Fields(line)[1], " :")
-		} else if strings.HasPrefix(line, "    inet") {
-			if iface != "lo" {
-				fields := strings.Fields(line)
-				ctx.Interfaces = append(ctx.Interfaces,
-					interfaceInfo{iface, fields[1]})
-			}
-			iface = ""
-		}
 	}
 	return nil
 }

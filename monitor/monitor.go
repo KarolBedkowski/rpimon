@@ -1,3 +1,4 @@
+// System monitoring
 package monitor
 
 import (
@@ -11,14 +12,24 @@ import (
 	"time"
 )
 
+const slowDivider = 4
+
 func Init(interval int) {
 	ticker := time.NewTicker(time.Duration(interval) * time.Second)
 	quit := make(chan struct{})
 	go func() {
+		slow := 0
 		for {
 			select {
 			case <-ticker.C:
 				update()
+				if slow == 0 {
+					slowUpdates()
+				}
+				slow++
+				if slow > slowDivider {
+					slow = 0
+				}
 			case <-quit:
 				ticker.Stop()
 				return
@@ -75,6 +86,15 @@ type LoadInfoStruct struct {
 
 var lastLoadInfo *LoadInfoStruct
 
+type InterfaceInfoStruct struct {
+	Name    string
+	Address string
+}
+
+type InterfacesStruct []InterfaceInfoStruct
+
+var lastInterfaceInfo *InterfacesStruct
+
 func update() {
 	if load, err := h.ReadLineFromFile("/proc/loadavg"); err == nil {
 		if len(LoadHistory) > limit {
@@ -97,6 +117,11 @@ func update() {
 		MemHistory = append(MemHistory, strconv.Itoa(lastMemInfo.UsedPerc))
 	}
 	lastCPUInfo = gatherCPUInfo()
+}
+
+func slowUpdates() {
+	lastInterfaceInfo = gatherIntefacesInfo()
+
 }
 
 var (
@@ -220,4 +245,39 @@ func GetLoadInfo() *LoadInfoStruct {
 		return &LoadInfoStruct{}
 	}
 	return lastLoadInfo
+}
+
+func gatherIntefacesInfo() *InterfacesStruct {
+	ipres := h.ReadFromCommand("/sbin/ip", "addr")
+	if ipres == "" {
+		return nil
+	}
+	lines := strings.Split(ipres, "\n")
+	iface := ""
+	var result InterfacesStruct
+	for _, line := range lines {
+		if len(line) == 0 {
+			continue
+		}
+		if line[0] != ' ' {
+			if iface != "" && iface != "lo" {
+				result = append(result, InterfaceInfoStruct{iface, "-"})
+			}
+			iface = strings.Trim(strings.Fields(line)[1], " :")
+		} else if strings.HasPrefix(line, "    inet") {
+			if iface != "lo" {
+				fields := strings.Fields(line)
+				result = append(result, InterfaceInfoStruct{iface, fields[1]})
+			}
+			iface = ""
+		}
+	}
+	return &result
+}
+
+func GetInterfacesInfo() *InterfacesStruct {
+	if lastInterfaceInfo == nil {
+		return &InterfacesStruct{}
+	}
+	return lastInterfaceInfo
 }
