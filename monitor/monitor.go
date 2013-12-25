@@ -12,24 +12,14 @@ import (
 	"time"
 )
 
-const slowDivider = 4
-
 func Init(interval int) {
 	ticker := time.NewTicker(time.Duration(interval) * time.Second)
 	quit := make(chan struct{})
 	go func() {
-		slow := 0
 		for {
 			select {
 			case <-ticker.C:
 				update()
-				if slow == 0 {
-					slowUpdates()
-				}
-				slow++
-				if slow > slowDivider {
-					slow = 0
-				}
 			case <-quit:
 				ticker.Stop()
 				return
@@ -78,8 +68,6 @@ type CPUInfoStruct struct {
 	Temp int
 }
 
-var lastCPUInfo *CPUInfoStruct
-
 type LoadInfoStruct struct {
 	Load []string
 }
@@ -93,8 +81,6 @@ type InterfaceInfoStruct struct {
 
 type InterfacesStruct []InterfaceInfoStruct
 
-var lastInterfaceInfo *InterfacesStruct
-
 type FsInfoStruct struct {
 	Name       string
 	Size       string
@@ -107,14 +93,10 @@ type FsInfoStruct struct {
 
 type FilesystemsStruct []FsInfoStruct
 
-var lastFilesystemInfo *FilesystemsStruct
-
 type UptimeInfoStruct struct {
 	Uptime string
 	Users  string
 }
-
-var lastUptimeInfo *UptimeInfoStruct
 
 func update() {
 	if load, err := h.ReadLineFromFile("/proc/loadavg"); err == nil {
@@ -137,13 +119,6 @@ func update() {
 		}
 		MemHistory = append(MemHistory, strconv.Itoa(lastMemInfo.UsedPerc))
 	}
-	lastCPUInfo = gatherCPUInfo()
-	lastUptimeInfo = gatherUptimeInfo()
-}
-
-func slowUpdates() {
-	lastInterfaceInfo = gatherIntefacesInfo()
-	lastFilesystemInfo = gatherFSInfo()
 }
 
 var (
@@ -248,11 +223,13 @@ func getIntValueFromKeyVal(line string) int {
 	return res
 }
 
+var cpuInfoCache = h.NewSimpleCache(2)
+
 func GetCPUInfo() *CPUInfoStruct {
-	if lastCPUInfo == nil {
-		return &CPUInfoStruct{}
-	}
-	return lastCPUInfo
+	result := cpuInfoCache.Get(func() h.Value {
+		return gatherCPUInfo()
+	})
+	return result.(*CPUInfoStruct)
 }
 
 func gatherCPUInfo() *CPUInfoStruct {
@@ -269,81 +246,75 @@ func GetLoadInfo() *LoadInfoStruct {
 	return lastLoadInfo
 }
 
-func gatherIntefacesInfo() *InterfacesStruct {
-	ipres := h.ReadFromCommand("/sbin/ip", "addr")
-	if ipres == "" {
-		return nil
-	}
-	lines := strings.Split(ipres, "\n")
-	iface := ""
-	var result InterfacesStruct
-	for _, line := range lines {
-		if len(line) == 0 {
-			continue
-		}
-		if line[0] != ' ' {
-			if iface != "" && iface != "lo" {
-				result = append(result, InterfaceInfoStruct{iface, "-"})
-			}
-			iface = strings.Trim(strings.Fields(line)[1], " :")
-		} else if strings.HasPrefix(line, "    inet") {
-			if iface != "lo" {
-				fields := strings.Fields(line)
-				result = append(result, InterfaceInfoStruct{iface, fields[1]})
-			}
-			iface = ""
-		}
-	}
-	return &result
-}
+var interfacesInfoCache = h.NewSimpleCache(5)
 
 func GetInterfacesInfo() *InterfacesStruct {
-	if lastInterfaceInfo == nil {
-		return &InterfacesStruct{}
-	}
-	return lastInterfaceInfo
+	result := interfacesInfoCache.Get(func() h.Value {
+		ipres := h.ReadFromCommand("/sbin/ip", "addr")
+		if ipres == "" {
+			return nil
+		}
+		lines := strings.Split(ipres, "\n")
+		iface := ""
+		var result InterfacesStruct
+		for _, line := range lines {
+			if len(line) == 0 {
+				continue
+			}
+			if line[0] != ' ' {
+				if iface != "" && iface != "lo" {
+					result = append(result, InterfaceInfoStruct{iface, "-"})
+				}
+				iface = strings.Trim(strings.Fields(line)[1], " :")
+			} else if strings.HasPrefix(line, "    inet") {
+				if iface != "lo" {
+					fields := strings.Fields(line)
+					result = append(result, InterfaceInfoStruct{iface, fields[1]})
+				}
+				iface = ""
+			}
+		}
+		return &result
+	})
+	return result.(*InterfacesStruct)
 }
 
-func gatherFSInfo() *FilesystemsStruct {
-	cmdout := h.ReadFromCommand("df", "-h", "-l", "-x", "tmpfs", "-x", "devtmpfs", "-x", "rootfs")
-	if cmdout == "" {
-		return nil
-	}
-	lines := strings.Split(cmdout, "\n")
-	var result FilesystemsStruct
-	for _, line := range lines[1:] {
-		if len(line) == 0 {
-			break
-		}
-		fields := strings.Fields(line)
-		usedperc, _ := strconv.Atoi(strings.Trim(fields[4], "%"))
-		result = append(result, FsInfoStruct{fields[0], fields[1], fields[2],
-			fields[3], usedperc, fields[5], 100 - usedperc})
-	}
-	return &result
-}
+var fsInfoCache = h.NewSimpleCache(5)
 
 func GetFilesystemsInfo() *FilesystemsStruct {
-	if lastFilesystemInfo == nil {
-		return &FilesystemsStruct{}
-	}
-	return lastFilesystemInfo
+	result := fsInfoCache.Get(func() h.Value {
+		cmdout := h.ReadFromCommand("df", "-h", "-l", "-x", "tmpfs", "-x", "devtmpfs", "-x", "rootfs")
+		if cmdout == "" {
+			return nil
+		}
+		lines := strings.Split(cmdout, "\n")
+		var result FilesystemsStruct
+		for _, line := range lines[1:] {
+			if len(line) == 0 {
+				break
+			}
+			fields := strings.Fields(line)
+			usedperc, _ := strconv.Atoi(strings.Trim(fields[4], "%"))
+			result = append(result, FsInfoStruct{fields[0], fields[1], fields[2],
+				fields[3], usedperc, fields[5], 100 - usedperc})
+		}
+		return &result
+	})
+	return result.(*FilesystemsStruct)
 }
 
-func gatherUptimeInfo() *UptimeInfoStruct {
-	cmdout := h.ReadFromCommand("uptime")
-	if cmdout == "" {
-		return nil
-	}
-	fields := strings.SplitN(cmdout, ",", 3)
-	info := &UptimeInfoStruct{strings.Join(strings.Fields(fields[0])[2:], " "),
-		strings.Split(strings.Trim(fields[1], " "), " ")[0]}
-	return info
-}
+var uptimeInfoCache = h.NewSimpleCache(2)
 
 func GetUptimeInfo() *UptimeInfoStruct {
-	if lastUptimeInfo == nil {
-		return &UptimeInfoStruct{}
-	}
-	return lastUptimeInfo
+	result := uptimeInfoCache.Get(func() h.Value {
+		cmdout := h.ReadFromCommand("uptime")
+		if cmdout == "" {
+			return nil
+		}
+		fields := strings.SplitN(cmdout, ",", 3)
+		info := &UptimeInfoStruct{strings.Join(strings.Fields(fields[0])[2:], " "),
+			strings.Split(strings.Trim(fields[1], " "), " ")[0]}
+		return info
+	})
+	return result.(*UptimeInfoStruct)
 }
