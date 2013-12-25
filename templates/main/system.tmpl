@@ -101,13 +101,8 @@
 					<th colspan="2">Used</th>
 				</tr>
 			</thead>
-			{{range .Filesystems}}
-			<tr>
-				<td>{{.MountPoint}}</td>
-				<td><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.UsedPerc}}/100</span></td>
-				<td>{{.UsedPerc}}%</td>
-			</tr>
-			{{end}}
+			<tbody id="fs-table">
+			</tbody>
 		</table>
 	</section>
 </div>
@@ -122,12 +117,8 @@
 					<th>IP</th>
 				</tr>
 			</thead>
-			{{range .Interfaces}}
-			<tr>
-				<td>{{.Name}}</td>
-				<td>{{.Address}}</td>
-			</tr>
-			{{end}}
+			<tbody id="network-interfaces-table">
+			</tbody>
 		</table>
 	</section>
 </div>
@@ -171,6 +162,24 @@
 			$('#load-load1').text(load[0]);
 			$('#load-load5').text(load[1]);
 			$('#load-load15').text(load[2]);
+			// network
+			var nettablebody = $('tbody#network-interfaces-table');
+			nettablebody.text("");
+			msg["iface"].forEach(function(entry) {
+				nettablebody.append(["<tr><td>", entry["Name"], "</td><td>",
+					entry["Address"], "</td></tr>"].join(""));
+			});
+			// fs
+			var fstablebody = $('tbody#fs-table');
+			fstablebody.text("");
+			msg["fs"].forEach(function(entry) {
+				fstablebody.append(["<tr><td>", entry["MountPoint"], "</td><td>",
+					"<span class=\"pie\" data-diameter=\"32\" data-colours='[\"red\", \"#f0f0f0\"]'>", 
+					entry["UsedPerc"], "/100</span></td><td>",
+					entry["UsedPerc"], "%</td></tr>"].join(""));
+
+			});
+			$("span.pie").peity("pie")
 			setTimeout(getHistory, 5000);
 		});
 	}

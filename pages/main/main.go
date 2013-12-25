@@ -126,6 +126,8 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 		"meminfo":  monitor.GetMemoryInfo(),
 		"cpuusage": monitor.GetCPUUsageInfo(),
 		"cpuinfo":  monitor.GetCPUInfo(),
-		"loadinfo": monitor.GetLoadInfo()}
+		"loadinfo": monitor.GetLoadInfo(),
+		"fs":       monitor.GetFilesystemsInfo(),
+		"iface":    monitor.GetInterfacesInfo()}
 	json.NewEncoder(w).Encode(res)
 }
