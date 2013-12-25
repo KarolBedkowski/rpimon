@@ -12,24 +12,14 @@ import (
 	"time"
 )
 
-const slowDivider = 4
-
 func Init(interval int) {
 	ticker := time.NewTicker(time.Duration(interval) * time.Second)
 	quit := make(chan struct{})
 	go func() {
-		slow := 0
 		for {
 			select {
 			case <-ticker.C:
 				update()
-				if slow == 0 {
-					slowUpdates()
-				}
-				slow++
-				if slow > slowDivider {
-					slow = 0
-				}
 			case <-quit:
 				ticker.Stop()
 				return
@@ -78,8 +68,6 @@ type CPUInfoStruct struct {
 	Temp int
 }
 
-var lastCPUInfo *CPUInfoStruct
-
 type LoadInfoStruct struct {
 	Load []string
 }
@@ -93,8 +81,6 @@ type InterfaceInfoStruct struct {
 
 type InterfacesStruct []InterfaceInfoStruct
 
-var lastInterfaceInfo *InterfacesStruct
-
 type FsInfoStruct struct {
 	Name       string
 	Size       string
@@ -107,14 +93,10 @@ type FsInfoStruct struct {
 
 type FilesystemsStruct []FsInfoStruct
 
-var lastFilesystemInfo *FilesystemsStruct
-
 type UptimeInfoStruct struct {
 	Uptime string
 	Users  string
 }
-
-var lastUptimeInfo *UptimeInfoStruct
 
 func update() {
 	if load, err := h.ReadLineFromFile("/proc/loadavg"); err == nil {
@@ -137,13 +119,6 @@ func update() {
 		}
 		MemHistory = append(MemHistory, strconv.Itoa(lastMemInfo.UsedPerc))
 	}
-	lastCPUInfo = gatherCPUInfo()
-	lastUptimeInfo = gatherUptimeInfo()
-}
-
-func slowUpdates() {
-	lastInterfaceInfo = gatherIntefacesInfo()
-	lastFilesystemInfo = gatherFSInfo()
 }
 
 var (
@@ -248,11 +223,13 @@ func getIntValueFromKeyVal(line string) int {
 	return res
 }
 
+var cpuInfoCache = h.NewSimpleCache(2)
+
 func GetCPUInfo() *CPUInfoStruct {
-	if lastCPUInfo == nil {
-		return &CPUInfoStruct{}
-	}
-	return lastCPUInfo
+	result := cpuInfoCache.Get(func() h.Value {
+		return gatherCPUInfo()
+	})
+	return result.(*CPUInfoStruct)
 }
 
 func gatherCPUInfo() *CPUInfoStruct {
@@ -297,11 +274,13 @@ func gatherIntefacesInfo() *InterfacesStruct {
 	return &result
 }
 
+var interfacesInfoCache = h.NewSimpleCache(5)
+
 func GetInterfacesInfo() *InterfacesStruct {
-	if lastInterfaceInfo == nil {
-		return &InterfacesStruct{}
-	}
-	return lastInterfaceInfo
+	result := interfacesInfoCache.Get(func() h.Value {
+		return gatherIntefacesInfo()
+	})
+	return result.(*InterfacesStruct)
 }
 
 func gatherFSInfo() *FilesystemsStruct {
@@ -323,11 +302,13 @@ func gatherFSInfo() *FilesystemsStruct {
 	return &result
 }
 
+var fsInfoCache = h.NewSimpleCache(5)
+
 func GetFilesystemsInfo() *FilesystemsStruct {
-	if lastFilesystemInfo == nil {
-		return &FilesystemsStruct{}
-	}
-	return lastFilesystemInfo
+	result := fsInfoCache.Get(func() h.Value {
+		return gatherFSInfo()
+	})
+	return result.(*FilesystemsStruct)
 }
 
 func gatherUptimeInfo() *UptimeInfoStruct {
@@ -341,9 +322,11 @@ func gatherUptimeInfo() *UptimeInfoStruct {
 	return info
 }
 
+var uptimeInfoCache = h.NewSimpleCache(2)
+
 func GetUptimeInfo() *UptimeInfoStruct {
-	if lastUptimeInfo == nil {
-		return &UptimeInfoStruct{}
-	}
-	return lastUptimeInfo
+	result := uptimeInfoCache.Get(func() h.Value {
+		return gatherUptimeInfo()
+	})
+	return result.(*UptimeInfoStruct)
 }
