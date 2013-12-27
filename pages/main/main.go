@@ -73,17 +73,22 @@ func systemPageHanler(w http.ResponseWriter, r *http.Request) {
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/system.tmpl", "flash.tmpl")
 }
 
+var infoHandlerCache = h.NewSimpleCache(1)
 
 func infoHandler(w http.ResponseWriter, r *http.Request) {
-	res := map[string]interface{}{"cpu": strings.Join(monitor.CPUHistory, ","),
-		"load":     strings.Join(monitor.LoadHistory, ","),
-		"mem":      strings.Join(monitor.MemHistory, ","),
-		"meminfo":  monitor.GetMemoryInfo(),
-		"cpuusage": monitor.GetCPUUsageInfo(),
-		"cpuinfo":  monitor.GetCPUInfo(),
-		"loadinfo": monitor.GetLoadInfo(),
-		"fs":       monitor.GetFilesystemsInfo(),
-		"iface":    monitor.GetInterfacesInfo(),
-		"uptime":   monitor.GetUptimeInfo()}
-	json.NewEncoder(w).Encode(res)
+	data := infoHandlerCache.Get(func() h.Value {
+		res := map[string]interface{}{"cpu": strings.Join(monitor.GetCPUHistory(), ","),
+			"load":     strings.Join(monitor.GetLoadHistory(), ","),
+			"mem":      strings.Join(monitor.GetMemoryHistory(), ","),
+			"meminfo":  monitor.GetMemoryInfo(),
+			"cpuusage": monitor.GetCPUUsageInfo(),
+			"cpuinfo":  monitor.GetCPUInfo(),
+			"loadinfo": monitor.GetLoadInfo(),
+			"fs":       monitor.GetFilesystemsInfo(),
+			"iface":    monitor.GetInterfacesInfo(),
+			"uptime":   monitor.GetUptimeInfo()}
+		encoded, _ := json.Marshal(res)
+		return encoded
+	}).([]byte)
+	w.Write(data)
 }
