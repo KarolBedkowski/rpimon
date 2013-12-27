@@ -9,8 +9,16 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
+
+const historyLimit = 30
+const ifaceCacheTTL = 5
+const fsCacheTTL = 10
+const uptimeInfoCacheTTL = 2
+const warningsCacheTTL = 5
+const cpuInfoCacheTTL = 5
 
 func Init(interval int) {
 	ticker := time.NewTicker(time.Duration(interval) * time.Second)
@@ -19,7 +27,9 @@ func Init(interval int) {
 		for {
 			select {
 			case <-ticker.C:
-				update()
+				gatherLoadInfo()
+				gatherCPUUsageInfo()
+				gatherMemoryInfo()
 			case <-quit:
 				ticker.Stop()
 				return
@@ -28,11 +38,7 @@ func Init(interval int) {
 	}()
 }
 
-var LoadHistory = make([]string, 0)
-var CPUHistory = make([]string, 0)
-var MemHistory = make([]string, 0)
-
-const limit = 30
+// CPU
 
 type CPUUsageInfoStruct struct {
 	User   int
@@ -42,7 +48,72 @@ type CPUUsageInfoStruct struct {
 	Usage  int
 }
 
-var lastCPUUsage *CPUUsageInfoStruct
+var (
+	cpuLastUser   int
+	cpuLastNice   int
+	cpuLastIdle   int
+	cpuLastSystem int
+	cpuLastIoWait int
+	cpuLastAll    int
+	lastCPUUsage  *CPUUsageInfoStruct
+	cpuUsageMutex sync.RWMutex
+	cpuHistory    = make([]string, 0)
+)
+
+func GetCPUUsageInfo() *CPUUsageInfoStruct {
+	cpuUsageMutex.RLock()
+	defer cpuUsageMutex.RUnlock()
+	if lastCPUUsage == nil {
+		return &CPUUsageInfoStruct{}
+	}
+	return lastCPUUsage
+}
+
+func GetCPUHistory() []string {
+	cpuUsageMutex.RLock()
+	defer cpuUsageMutex.RUnlock()
+	return []string(cpuHistory)
+}
+
+func gatherCPUUsageInfo() *CPUUsageInfoStruct {
+	cpuusage := &CPUUsageInfoStruct{}
+	line, err := h.ReadLineFromFile("/proc/stat")
+	if err != nil {
+		l.Warn("fillCPUInfog Error", err)
+		return cpuusage
+	}
+
+	fields := strings.Fields(line)
+
+	cpuUsageMutex.Lock()
+	defer cpuUsageMutex.Unlock()
+
+	cUser, _ := strconv.Atoi(fields[1])
+	cpuLastUser, cUser = cUser, cUser-cpuLastUser
+	cNice, _ := strconv.Atoi(fields[2])
+	cpuLastNice, cNice = cNice, cNice-cpuLastNice
+	cSystem, _ := strconv.Atoi(fields[3])
+	cpuLastSystem, cSystem = cSystem, cSystem-cpuLastSystem
+	cIdle, _ := strconv.Atoi(fields[4])
+	cpuLastIdle, cIdle = cIdle, cIdle-cpuLastIdle
+	cIoWait, _ := strconv.Atoi(fields[5])
+	cpuLastIoWait, cIoWait = cIoWait, cIoWait-cpuLastIoWait
+	allDiff := cUser + cNice + cSystem + cIdle + cIoWait
+	cpuusage.User = int(100 * (cUser + cNice) / allDiff)
+	cpuusage.Idle = int(100 * cIdle / allDiff)
+	cpuusage.System = int(100 * cSystem / allDiff)
+	cpuusage.IoWait = int(100 * cIoWait / allDiff)
+	cpuusage.Usage = 100 - cpuusage.Idle
+
+	lastCPUUsage = cpuusage
+	if len(cpuHistory) > historyLimit {
+		cpuHistory = cpuHistory[1:]
+	}
+	cpuHistory = append(cpuHistory, strconv.Itoa(cpuusage.Usage))
+	return cpuusage
+}
+
+// MEMORY
 
 type MemInfo struct {
 	Total        int
@@ -61,114 +132,25 @@ type MemInfo struct {
 	SwapFreePerc int
 }
 
-var lastMemInfo *MemInfo
-
-type CPUInfoStruct struct {
-	Freq int
-	Temp int
-}
-
-type LoadInfoStruct struct {
-	Load []string
-}
-
-var lastLoadInfo *LoadInfoStruct
-
-type InterfaceInfoStruct struct {
-	Name    string
-	Address string
-}
-
-type InterfacesStruct []InterfaceInfoStruct
-
-type FsInfoStruct struct {
-	Name       string
-	Size       string
-	Used       string
-	Available  string
-	UsedPerc   int
-	MountPoint string
-	FreePerc   int
-}
-
-type FilesystemsStruct []FsInfoStruct
-
-type UptimeInfoStruct struct {
-	Uptime string
-	Users  string
-}
-
-func update() {
-	if load, err := h.ReadLineFromFile("/proc/loadavg"); err == nil {
-		if len(LoadHistory) > limit {
-			LoadHistory = LoadHistory[1:]
-		}
-		loadVal := strings.Fields(load)
-		lastLoadInfo = &LoadInfoStruct{loadVal}
-		LoadHistory = append(LoadHistory, loadVal[0])
-	}
-	if lastCPUUsage = gatherCPUUsageInfo(); lastCPUUsage != nil {
-		if len(CPUHistory) > limit {
-			CPUHistory = CPUHistory[1:]
-		}
-		CPUHistory = append(CPUHistory, strconv.Itoa(lastCPUUsage.Usage))
-	}
-	if lastMemInfo = gatherMemoryInfo(); lastMemInfo != nil {
-		if len(MemHistory) > limit {
-			MemHistory = MemHistory[1:]
-		}
-		MemHistory = append(MemHistory, strconv.Itoa(lastMemInfo.UsedPerc))
-	}
-}
-
 var (
-	cpuLastUser   int
-	cpuLastNice   int
-	cpuLastIdle   int
-	cpuLastSystem int
-	cpuLastIoWait int
-	cpuLastAll    int
+	lastMemInfo     *MemInfo
+	memoryInfoMutex sync.RWMutex
+	memHistory      = make([]string, 0)
 )
 
-func GetCPUUsageInfo() *CPUUsageInfoStruct {
-	if lastCPUUsage == nil {
-		return &CPUUsageInfoStruct{}
-	}
-	return lastCPUUsage
-}
-
-func gatherCPUUsageInfo() *CPUUsageInfoStruct {
-	cpuusage := &CPUUsageInfoStruct{}
-	line, err := h.ReadLineFromFile("/proc/stat")
-	if err != nil {
-		l.Warn("fillCPUInfog Error", err)
-		return cpuusage
-	}
-	fields := strings.Fields(line)
-	cUser, _ := strconv.Atoi(fields[1])
-	cpuLastUser, cUser = cUser, cUser-cpuLastUser
-	cNice, _ := strconv.Atoi(fields[2])
-	cpuLastNice, cNice = cNice, cNice-cpuLastNice
-	cSystem, _ := strconv.Atoi(fields[3])
-	cpuLastSystem, cSystem = cSystem, cSystem-cpuLastSystem
-	cIdle, _ := strconv.Atoi(fields[4])
-	cpuLastIdle, cIdle = cIdle, cIdle-cpuLastIdle
-	cIoWait, _ := strconv.Atoi(fields[5])
-	cpuLastIoWait, cIoWait = cIoWait, cIoWait-cpuLastIoWait
-	allDiff := cUser + cNice + cSystem + cIdle + cIoWait
-	cpuusage.User = int(100 * (cUser + cNice) / allDiff)
-	cpuusage.Idle = int(100 * cIdle / allDiff)
-	cpuusage.System = int(100 * cSystem / allDiff)
-	cpuusage.IoWait = int(100 * cIoWait / allDiff)
-	cpuusage.Usage = 100 - cpuusage.Idle
-	return cpuusage
-}
-
 func GetMemoryInfo() *MemInfo {
+	memoryInfoMutex.RLock()
+	defer memoryInfoMutex.RUnlock()
 	if lastMemInfo == nil {
 		return &MemInfo{}
 	}
 	return lastMemInfo
+}
+
+func GetMemoryHistory() []string {
+	memoryInfoMutex.RLock()
+	defer memoryInfoMutex.RUnlock()
+	return []string(memHistory)
 }
 
 func gatherMemoryInfo() *MemInfo {
@@ -211,6 +193,15 @@ func gatherMemoryInfo() *MemInfo {
 		meminfo.SwapFreePerc = int(100.0 * meminfo.SwapFree / meminfo.SwapTotal)
 		meminfo.SwapUsedPerc = 100 - meminfo.SwapFreePerc
 	}
+
+	memoryInfoMutex.Lock()
+	defer memoryInfoMutex.Unlock()
+
+	lastMemInfo = meminfo
+	if len(memHistory) > historyLimit {
+		memHistory = memHistory[1:]
+	}
+	memHistory = append(memHistory, strconv.Itoa(lastMemInfo.UsedPerc))
 	return meminfo
 }
 
@@ -223,7 +214,14 @@ func getIntValueFromKeyVal(line string) int {
 	return res
 }
 
-var cpuInfoCache = h.NewSimpleCache(2)
+// CPU INFO
+
+type CPUInfoStruct struct {
+	Freq int
+	Temp int
+}
+
+var cpuInfoCache = h.NewSimpleCache(cpuInfoCacheTTL)
 
 func GetCPUInfo() *CPUInfoStruct {
 	result := cpuInfoCache.Get(func() h.Value {
@@ -239,14 +237,57 @@ func gatherCPUInfo() *CPUInfoStruct {
 	return info
 }
 
+// LOAD
+
+type LoadInfoStruct struct {
+	Load []string
+}
+
+var (
+	lastLoadInfo *LoadInfoStruct
+	loadMutex    sync.RWMutex
+	loadHistory  = make([]string, 0)
+)
+
+func GetLoadHistory() []string {
+	loadMutex.RLock()
+	defer loadMutex.RUnlock()
+	return []string(loadHistory)
+}
+
+func gatherLoadInfo() (err error) {
+	if load, err := h.ReadLineFromFile("/proc/loadavg"); err == nil {
+		loadMutex.Lock()
+		defer loadMutex.Unlock()
+		if len(loadHistory) > historyLimit {
+			loadHistory = loadHistory[1:]
+		}
+		loadVal := strings.Fields(load)
+		lastLoadInfo = &LoadInfoStruct{loadVal}
+		loadHistory = append(loadHistory, loadVal[0])
+	}
+	return
+}
+
 func GetLoadInfo() *LoadInfoStruct {
+	loadMutex.RLock()
+	defer loadMutex.RUnlock()
 	if lastLoadInfo == nil {
-		return &LoadInfoStruct{}
+		return &LoadInfoStruct{[]string{"", "", ""}}
 	}
 	return lastLoadInfo
 }
 
-var interfacesInfoCache = h.NewSimpleCache(5)
+// NETWORK INTERFACES
+
+type InterfaceInfoStruct struct {
+	Name    string
+	Address string
+}
+
+type InterfacesStruct []InterfaceInfoStruct
+
+var interfacesInfoCache = h.NewSimpleCache(ifaceCacheTTL)
 
 func GetInterfacesInfo() *InterfacesStruct {
 	result := interfacesInfoCache.Get(func() h.Value {
@@ -279,7 +320,21 @@ func GetInterfacesInfo() *InterfacesStruct {
 	return result.(*InterfacesStruct)
 }
 
-var fsInfoCache = h.NewSimpleCache(5)
+// FILESYSTEM INFO
+
+type FsInfoStruct struct {
+	Name       string
+	Size       string
+	Used       string
+	Available  string
+	UsedPerc   int
+	MountPoint string
+	FreePerc   int
+}
+
+type FilesystemsStruct []FsInfoStruct
+
+var fsInfoCache = h.NewSimpleCache(fsCacheTTL)
 
 func GetFilesystemsInfo() *FilesystemsStruct {
 	result := fsInfoCache.Get(func() h.Value {
@@ -303,7 +358,14 @@ func GetFilesystemsInfo() *FilesystemsStruct {
 	return result.(*FilesystemsStruct)
 }
 
-var uptimeInfoCache = h.NewSimpleCache(2)
+// UPTIME
+
+type UptimeInfoStruct struct {
+	Uptime string
+	Users  string
+}
+
+var uptimeInfoCache = h.NewSimpleCache(uptimeInfoCacheTTL)
 
 func GetUptimeInfo() *UptimeInfoStruct {
 	result := uptimeInfoCache.Get(func() h.Value {
@@ -319,17 +381,25 @@ func GetUptimeInfo() *UptimeInfoStruct {
 	return result.(*UptimeInfoStruct)
 }
 
-func GetWarnings() (warnings []string) {
-	if checkIsServiceConnected("8200") {
-		warnings = append(warnings, "MiniDLNA Connected")
-	}
-	if checkIsServiceConnected("445") {
-		warnings = append(warnings, "SAMBA Connected")
-	}
-	if checkIsServiceConnected("21") {
-		warnings = append(warnings, "FTP Connected")
-	}
-	return
+// WARNINGS
+
+var warningsCache = h.NewSimpleCache(warningsCacheTTL)
+
+func GetWarnings() []string {
+	result := warningsCache.Get(func() h.Value {
+		var warnings []string
+		if checkIsServiceConnected("8200") {
+			warnings = append(warnings, "MiniDLNA Connected")
+		}
+		if checkIsServiceConnected("445") {
+			warnings = append(warnings, "SAMBA Connected")
+		}
+		if checkIsServiceConnected("21") {
+			warnings = append(warnings, "FTP Connected")
+		}
+		return warnings
+	}).([]string)
+	return result
 }
 
 func checkIsServiceConnected(port string) (result bool) {
