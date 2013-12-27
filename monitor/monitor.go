@@ -318,3 +318,42 @@ func GetUptimeInfo() *UptimeInfoStruct {
 	})
 	return result.(*UptimeInfoStruct)
 }
+
+func GetWarnings() (warnings []string) {
+	if checkIsServiceConnected("8200") {
+		warnings = append(warnings, "MiniDLNA Connected")
+	}
+	if checkIsServiceConnected("445") {
+		warnings = append(warnings, "SAMBA Connected")
+	}
+	if checkIsServiceConnected("21") {
+		warnings = append(warnings, "FTP Connected")
+	}
+	return
+}
+
+func checkIsServiceConnected(port string) (result bool) {
+	result = false
+	out := h.ReadFromCommand("netstat", "-pn", "--inet")
+	if out == "" {
+		return
+	}
+	outstr := string(out)
+	lookingFor := ":" + port + " "
+	if !strings.Contains(outstr, lookingFor) {
+		return false
+	}
+	lines := strings.Split(string(out), "\n")
+	for _, line := range lines {
+		if len(line) == 0 {
+			continue
+		}
+		if !strings.HasSuffix(line, "ESTABLISHED") {
+			continue
+		}
+		if strings.Contains(line, lookingFor) {
+			return true
+		}
+	}
+	return
+}
