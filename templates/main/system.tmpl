@@ -190,17 +190,25 @@
 	}
 
 	$(function() {
+		var colorDiv = 255.0 /  {{.MaxAcceptableLoad}};
 		$("span.pie").peity("pie");
 		$("span.chart-line").peity("line");
 		$("span.chart-line-load").peity("bar", {
 			colours: function(val) {
-				var color = 255 - parseFloat(val) * 100;
-				if (color < 0) {
-					color = 0;
-				} else if (color > 255) {
-					color = 255;
+				val = parseFloat(val)
+				var red = Math.round(val * colorDiv)
+				if (red > 255) {
+					red = 255
+				} else if (red < 0) {
+					red = 0
 				}
-				return "rgb(255, " + color + ", 0)";
+				var green = Math.round(({{.MaxAcceptableLoad}} - val) *colorDiv);
+				if (green < 0) {
+					green = 0;
+				} else if (green > 255) {
+					green = 255;
+				}
+				return  "rgb(" + red + ", " + green + ", 0)";
 			}
 		});
 		getHistory();
