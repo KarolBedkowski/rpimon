@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/database"
 	l "k.prv/rpimon/helpers/logging"
+	gzip "k.prv/rpimon/lib/gziphander"
 	"net/http"
 	nurl "net/url"
 )
@@ -27,7 +28,8 @@ func Init(appConfFile string, debug bool) *AppConfiguration {
 	database.Init(conf.Users, conf.Debug)
 
 	http.Handle("/static/", http.StripPrefix("/static",
-		http.FileServer(http.Dir(conf.StaticDir))))
+		gzip.FileServer(http.Dir(conf.StaticDir))))
+	//http.FileServer(http.Dir(conf.StaticDir))))
 	http.Handle("/", logHandler(csrfHandler(context.ClearHandler(Router))))
 	return conf
 }
