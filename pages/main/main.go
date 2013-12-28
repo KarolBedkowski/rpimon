@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	//	"k.prv/rpimon/helpers"
-	l "k.prv/rpimon/helpers/logging"
+	h "k.prv/rpimon/helpers"
 	"k.prv/rpimon/monitor"
 	"net/http"
-	"os/exec"
+	"runtime"
 	"strings"
 )
 
@@ -18,8 +17,8 @@ var subRouter *mux.Router
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", mainPageHanler).Name("main-index")
-	subRouter.HandleFunc("/system", systemPageHanler).Name("main-system")
-	subRouter.HandleFunc("/info", infoHandler)
+	subRouter.HandleFunc("/system", app.VerifyPermission(systemPageHanler, "admin")).Name("main-system")
+	subRouter.HandleFunc("/info", app.VerifyPermission(infoHandler, "admin"))
 }
 
 type fsInfo struct {
@@ -34,19 +33,21 @@ type fsInfo struct {
 
 type pageCtx struct {
 	*app.BasePageContext
-	Uptime      *monitor.UptimeInfoStruct
-	Load        *monitor.LoadInfoStruct
-	CPUUsage    *monitor.CPUUsageInfoStruct
-	CPUInfo     *monitor.CPUInfoStruct
-	MemInfo     *monitor.MemInfo
-	Filesystems *monitor.FilesystemsStruct
-	Interfaces  *monitor.InterfacesStruct
-	Warnings    []string
+	Uptime            *monitor.UptimeInfoStruct
+	Load              *monitor.LoadInfoStruct
+	CPUUsage          *monitor.CPUUsageInfoStruct
+	CPUInfo           *monitor.CPUInfoStruct
+	MemInfo           *monitor.MemInfo
+	Filesystems       *monitor.FilesystemsStruct
+	Interfaces        *monitor.InterfacesStruct
+	Warnings          []string
+	MaxAcceptableLoad int
 }
 
 func mainPageHanler(w http.ResponseWriter, r *http.Request) {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Main", "main", w, r)}
-	fillWarnings(ctx)
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext(
+		"Main", "main", w, r)}
+	ctx.Warnings = monitor.GetWarnings()
 	ctx.Uptime = monitor.GetUptimeInfo()
 	ctx.CPUUsage = monitor.GetCPUUsageInfo()
 	ctx.CPUInfo = monitor.GetCPUInfo()
@@ -54,65 +55,40 @@ func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 	ctx.Load = monitor.GetLoadInfo()
 	ctx.Interfaces = monitor.GetInterfacesInfo()
 	ctx.Filesystems = monitor.GetFilesystemsInfo()
+	ctx.MaxAcceptableLoad = runtime.NumCPU()
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/index.tmpl", "flash.tmpl")
 }
 
+type pageSystemCtx struct {
+	*app.BasePageContext
+	Warnings          []string
+	MaxAcceptableLoad int
+}
+
 func systemPageHanler(w http.ResponseWriter, r *http.Request) {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("System", "system", w, r)}
-	fillWarnings(ctx)
+	ctx := &pageSystemCtx{BasePageContext: app.NewBasePageContext(
+		"System", "system", w, r),
+		Warnings: monitor.GetWarnings()}
+	ctx.MaxAcceptableLoad = runtime.NumCPU()
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/system.tmpl", "flash.tmpl")
 }
 
-func fillWarnings(ctx *pageCtx) error {
-	if checkIsServiceConnected("8200") {
-		ctx.Warnings = append(ctx.Warnings, "MiniDLNA Connected")
-	}
-	if checkIsServiceConnected("445") {
-		ctx.Warnings = append(ctx.Warnings, "SAMBA Connected")
-	}
-	if checkIsServiceConnected("21") {
-		ctx.Warnings = append(ctx.Warnings, "FTP Connected")
-	}
-	return nil
-}
-
-func checkIsServiceConnected(port string) (result bool) {
-	result = false
-	out, err := exec.Command("netstat", "-pn", "--inet").Output()
-	if err != nil {
-		l.Warn("checkIsServiceConnected Error", err)
-		return
-	}
-	outstr := string(out)
-	lookingFor := ":" + port + " "
-	if !strings.Contains(outstr, lookingFor) {
-		return false
-	}
-	lines := strings.Split(string(out), "\n")
-	for _, line := range lines {
-		if len(line) == 0 {
-			continue
-		}
-		if !strings.HasSuffix(line, "ESTABLISHED") {
-			continue
-		}
-		if strings.Contains(line, lookingFor) {
-			return true
-		}
-	}
-	return
-}
+var infoHandlerCache = h.NewSimpleCache(1)
 
 func infoHandler(w http.ResponseWriter, r *http.Request) {
-	res := map[string]interface{}{"cpu": strings.Join(monitor.CPUHistory, ","),
-		"load":     strings.Join(monitor.LoadHistory, ","),
-		"mem":      strings.Join(monitor.MemHistory, ","),
-		"meminfo":  monitor.GetMemoryInfo(),
-		"cpuusage": monitor.GetCPUUsageInfo(),
-		"cpuinfo":  monitor.GetCPUInfo(),
-		"loadinfo": monitor.GetLoadInfo(),
-		"fs":       monitor.GetFilesystemsInfo(),
-		"iface":    monitor.GetInterfacesInfo(),
-		"uptime":   monitor.GetUptimeInfo()}
-	json.NewEncoder(w).Encode(res)
+	data := infoHandlerCache.Get(func() h.Value {
+		res := map[string]interface{}{"cpu": strings.Join(monitor.GetCPUHistory(), ","),
+			"load":     strings.Join(monitor.GetLoadHistory(), ","),
+			"mem":      strings.Join(monitor.GetMemoryHistory(), ","),
+			"meminfo":  monitor.GetMemoryInfo(),
+			"cpuusage": monitor.GetCPUUsageInfo(),
+			"cpuinfo":  monitor.GetCPUInfo(),
+			"loadinfo": monitor.GetLoadInfo(),
+			"fs":       monitor.GetFilesystemsInfo(),
+			"iface":    monitor.GetInterfacesInfo(),
+			"uptime":   monitor.GetUptimeInfo()}
+		encoded, _ := json.Marshal(res)
+		return encoded
+	}).([]byte)
+	w.Write(data)
 }

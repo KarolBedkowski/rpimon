@@ -6,4 +6,8 @@ temp
 .*
 test*
 rpi
+*.gz
+rpimon
+profile
+*.pem
 
