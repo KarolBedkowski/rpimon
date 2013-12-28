@@ -7,7 +7,6 @@ import (
 	l "k.prv/rpimon/helpers/logging"
 	gzip "k.prv/rpimon/lib/gziphander"
 	"net/http"
-	nurl "net/url"
 )
 
 // App main router
@@ -48,22 +47,5 @@ func GetNamedURL(name string, pairs ...string) (url string) {
 		return
 	}
 	url = rurl.String()
-	return
-}
-
-func PairsToQuery(pairs ...string) (query string) {
-	query = ""
-	pairsLen := len(pairs)
-	if pairsLen == 0 {
-		return
-	}
-	if pairsLen%2 != 0 {
-		l.Warn("GetNamedURL error - wron number of argiments")
-		return
-	}
-	query += "?"
-	for idx := 0; idx < pairsLen; idx += 2 {
-		query += pairs[idx] + "=" + nurl.QueryEscape(pairs[idx+1])
-	}
 	return
 }

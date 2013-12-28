@@ -1,13 +1,13 @@
 package utils
 
 import (
-	"github.com/gorilla/mux"
-	"k.prv/rpimon/app"
-	//	h "k.prv/rpimon/helpers"
 	"bufio"
 	"errors"
+	"github.com/gorilla/mux"
 	"io"
 	"io/ioutil"
+	"k.prv/rpimon/app"
+	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"os"
@@ -106,7 +106,7 @@ func mkdirPageHandler(w http.ResponseWriter, r *http.Request) {
 			http.StatusNotFound)
 	}
 	http.Redirect(w, r, app.GetNamedURL("files-index")+
-		app.PairsToQuery("p", relpath), http.StatusFound)
+		h.BuildQuery("p", relpath), http.StatusFound)
 }
 
 func uploadPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -145,7 +145,7 @@ func uploadPageHandler(w http.ResponseWriter, r *http.Request) {
 	io.Copy(out, f)
 	out.Flush()
 	http.Redirect(w, r,
-		app.GetNamedURL("files-index")+app.PairsToQuery("p", relpath),
+		app.GetNamedURL("files-index")+h.BuildQuery("p", relpath),
 		http.StatusFound)
 }
 
