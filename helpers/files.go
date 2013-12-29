@@ -25,7 +25,7 @@ func ReadLineFromFile(filename string) (string, error) {
 	return line, err
 }
 
-// ReadIntFromFile Read first line from givern file and return value as int.
+// ReadIntFromFile Read first line from given file and return value as int.
 func ReadIntFromFile(filename string) int {
 	line, err := ReadLineFromFile(filename)
 	if err != nil {
@@ -44,7 +44,6 @@ func ReadIntFromFile(filename string) int {
 }
 
 // ReadFromFileLastLines read last n lines from file
-//TODO: poprawić
 func ReadFromFileLastLines(filename string, limit int) (string, error) {
 	file, err := os.Open(filename)
 	if err != nil {

@@ -17,6 +17,7 @@ func GetUserByLogin(login string) *User {
 	return nil
 }
 
+// HasPermission check is user has given permission
 func (user *User) HasPermission(permission string) bool {
 	if permission == "" {
 		return true

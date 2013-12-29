@@ -19,8 +19,8 @@ type AppConfiguration struct {
 	UtilsFilename         string
 	MpdHost               string
 	BrowserConf           string
-	HttpAddress           string
-	HttpsAddress          string
+	HTTPAddress           string `json:"http_address"`
+	HTTPSAddress          string `json:"https_address"`
 	SslCert               string
 	SslKey                string
 	MonitorUpdateInterval int

@@ -1,5 +1,5 @@
 /*
-Geenric Cache functions
+Package helpers - generic cache for functions
 
 Example:
 var fsInfoCache = h.NewSimpleCache(5)
@@ -18,7 +18,10 @@ import (
 	"time"
 )
 
+// Value stored in cache
 type Value interface{}
+
+// SimpleCache structure holding all settings of cache
 type SimpleCache struct {
 	mutex       sync.RWMutex
 	timestamp   time.Time
@@ -26,13 +29,13 @@ type SimpleCache struct {
 	MaxCacheAge time.Duration
 }
 
+// NewSimpleCache create new cache structure
 func NewSimpleCache(maxCacheAge int) *SimpleCache {
 	return &SimpleCache{MaxCacheAge: time.Duration(maxCacheAge) * time.Second}
 }
 
-type CacheValueFunc func() Value
-
-func (cache *SimpleCache) Get(f CacheValueFunc) Value {
+// Get value from cache; if cache is expired - call function and put result in cache
+func (cache *SimpleCache) Get(f func() Value) Value {
 	cache.mutex.RLock()
 	now := time.Now()
 	if cache.value != nil && now.Sub(cache.timestamp) < cache.MaxCacheAge {

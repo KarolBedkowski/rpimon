@@ -10,7 +10,7 @@ import (
 
 // Session key for userid
 const USERIDSESSION = "USERID"
-const USERCONTEXT = "USER"
+const usercontextkey = "USER"
 
 // GetLoggedUserLogin for request
 func GetLoggedUserLogin(w http.ResponseWriter, r *http.Request) (login string) {
@@ -35,6 +35,7 @@ func GetLoggedUser(w http.ResponseWriter, r *http.Request) (user *database.User)
 	return
 }
 
+// GetUser from database based on login
 func GetUser(login string) (user *database.User) {
 	if login != "" {
 		user := database.GetUserByLogin(login)
@@ -70,7 +71,7 @@ func VerifyPermission(h http.HandlerFunc, permission string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if user := CheckIsUserLogger(w, r, true); user != nil {
 			if user.HasPermission(permission) {
-				context.Set(r, USERCONTEXT, user)
+				context.Set(r, usercontextkey, user)
 				h(w, r)
 				return
 			}
@@ -83,7 +84,7 @@ func VerifyPermission(h http.HandlerFunc, permission string) http.HandlerFunc {
 func VerifyLogged(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if user := CheckIsUserLogger(w, r, true); user != nil {
-			context.Set(r, USERCONTEXT, user)
+			context.Set(r, usercontextkey, user)
 			h(w, r)
 		}
 	})

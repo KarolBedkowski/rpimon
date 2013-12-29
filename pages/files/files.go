@@ -156,7 +156,7 @@ func isPathValid(inputPath string) (abspath, relpath string, err error) {
 		return "", "", err
 	}
 	if !strings.HasPrefix(abspath, config.BaseDir) {
-		return "", "", errors.New("Wrong path")
+		return "", "", errors.New("wrong path")
 	}
 	if relpath, err = filepath.Rel(config.BaseDir, abspath); err != nil {
 		return "", "", err

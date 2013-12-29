@@ -5,25 +5,28 @@ type MenuItem struct {
 	Title   string
 	Href    string
 	ID      string
-	Submenu []MenuItem
+	Submenu []*MenuItem
 }
 
 // NewMenuItem create new MenuItem structure
-func NewMenuItem(title, href string) MenuItem {
-	return MenuItem{Title: title, Href: href, ID: href}
+func NewMenuItem(title, href string) *MenuItem {
+	return &MenuItem{Title: title, Href: href, ID: href}
 }
 
-func NewMenuItemFromRoute(title, name string, pairs ...string) MenuItem {
-	url := GetNamedURL(name, pairs...)
-	return MenuItem{Title: title, Href: url, ID: name}
+// NewMenuItemFromRoute create new menu item pointing to named route
+func NewMenuItemFromRoute(title, routeName string, args ...string) *MenuItem {
+	url := GetNamedURL(routeName, args...)
+	return &MenuItem{Title: title, Href: url, ID: routeName}
 }
 
-func (item MenuItem) SetID(ID string) MenuItem {
+// SetID for menu item
+func (item *MenuItem) SetID(ID string) *MenuItem {
 	item.ID = ID
 	return item
 }
 
-func (item MenuItem) AddQuery(query string) MenuItem {
+// AddQuery to menu item href
+func (item *MenuItem) AddQuery(query string) *MenuItem {
 	item.Href += query
 	return item
 }
@@ -32,7 +35,7 @@ func (item MenuItem) AddQuery(query string) MenuItem {
 func SetMainMenu(ctx *BasePageContext) {
 	if ctx.CurrentUser != "" {
 		user := GetUser(ctx.CurrentUser)
-		ctx.MainMenu = []MenuItem{NewMenuItemFromRoute("Home", "main-index").SetID("main")}
+		ctx.MainMenu = []*MenuItem{NewMenuItemFromRoute("Home", "main-index").SetID("main")}
 		if user.HasPermission("admin") {
 			ctx.MainMenu = append(ctx.MainMenu,
 				NewMenuItemFromRoute("System", "main-system").SetID("system"),
@@ -58,5 +61,5 @@ func SetMainMenu(ctx *BasePageContext) {
 			NewMenuItemFromRoute("Logout", "auth-logoff").SetID("auth-logoff"))
 		return
 	}
-	ctx.MainMenu = []MenuItem{NewMenuItemFromRoute("Login", "auth-login").SetID("auth-login")}
+	ctx.MainMenu = []*MenuItem{NewMenuItemFromRoute("Login", "auth-login").SetID("auth-login")}
 }

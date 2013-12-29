@@ -22,12 +22,12 @@ type pageCtx struct {
 	Data        string
 }
 
-var localMenu []app.MenuItem
+var localMenu []*app.MenuItem
 
-func createLocalMenu() []app.MenuItem {
+func createLocalMenu() []*app.MenuItem {
 	if localMenu == nil {
 
-		localMenu = []app.MenuItem{app.NewMenuItemFromRoute("IFConfig", "net-page", "page", "ifconfig").SetID("ifconfig"),
+		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("IFConfig", "net-page", "page", "ifconfig").SetID("ifconfig"),
 			app.NewMenuItemFromRoute("IPTables", "net-page", "page", "iptables").SetID("iptables"),
 			app.NewMenuItemFromRoute("Netstat", "net-page", "page", "netstat").SetID("netstat"),
 			app.NewMenuItemFromRoute("Conenctions", "net-page", "page", "connenctions").SetID("connenctions")}
