@@ -7,7 +7,7 @@ import (
 )
 
 // csrf tokens len
-const CSRFTOKENLEN = 64
+const csrftokenlen = 64
 
 // csrf tokens name in context
 const CONTEXTCSRFTOKEN = "csrf_token"
@@ -30,7 +30,7 @@ func csrfHandler(h http.Handler) http.HandlerFunc {
 }
 
 func createNewCsrfToken() string {
-	token := make([]byte, CSRFTOKENLEN)
+	token := make([]byte, csrftokenlen)
 	rand.Read(token)
 	csrfToken := base64.StdEncoding.EncodeToString(token)
 	return csrfToken
