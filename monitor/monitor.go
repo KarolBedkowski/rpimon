@@ -242,7 +242,9 @@ func gatherCPUInfo() *CPUInfoStruct {
 
 // LoadInfoStruct information about system load
 type LoadInfoStruct struct {
-	Load []string
+	Load1  float64
+	Load5  float64
+	Load15 float64
 }
 
 var (
@@ -263,7 +265,7 @@ func GetLoadInfo() *LoadInfoStruct {
 	loadMutex.RLock()
 	defer loadMutex.RUnlock()
 	if lastLoadInfo == nil {
-		return &LoadInfoStruct{[]string{"", "", ""}}
+		return new(LoadInfoStruct)
 	}
 	return lastLoadInfo
 }
@@ -276,7 +278,10 @@ func gatherLoadInfo() (err error) {
 			loadHistory = loadHistory[1:]
 		}
 		loadVal := strings.Fields(load)
-		lastLoadInfo = &LoadInfoStruct{loadVal}
+		load1, _ := strconv.ParseFloat(loadVal[0], 10)
+		load5, _ := strconv.ParseFloat(loadVal[1], 10)
+		load15, _ := strconv.ParseFloat(loadVal[2], 10)
+		lastLoadInfo = &LoadInfoStruct{load1, load5, load15}
 		loadHistory = append(loadHistory, loadVal[0])
 	}
 	return

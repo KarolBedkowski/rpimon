@@ -42,6 +42,7 @@ type pageCtx struct {
 	Interfaces        *monitor.InterfacesStruct
 	Warnings          []string
 	MaxAcceptableLoad int
+	LoadTrucated      float64
 }
 
 func mainPageHanler(w http.ResponseWriter, r *http.Request) {
@@ -55,7 +56,12 @@ func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 	ctx.Load = monitor.GetLoadInfo()
 	ctx.Interfaces = monitor.GetInterfacesInfo()
 	ctx.Filesystems = monitor.GetFilesystemsInfo()
-	ctx.MaxAcceptableLoad = runtime.NumCPU()
+	ctx.MaxAcceptableLoad = runtime.NumCPU() * 2
+	if ctx.Load.Load1 > float64(ctx.MaxAcceptableLoad) {
+		ctx.LoadTrucated = float64(ctx.MaxAcceptableLoad)
+	} else {
+		ctx.LoadTrucated = ctx.Load.Load1
+	}
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/index.tmpl", "flash.tmpl")
 }
 
@@ -69,7 +75,7 @@ func systemPageHanler(w http.ResponseWriter, r *http.Request) {
 	ctx := &pageSystemCtx{BasePageContext: app.NewBasePageContext(
 		"System", "system", w, r),
 		Warnings: monitor.GetWarnings()}
-	ctx.MaxAcceptableLoad = runtime.NumCPU()
+	ctx.MaxAcceptableLoad = runtime.NumCPU() * 2
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/system.tmpl", "flash.tmpl")
 }
 
