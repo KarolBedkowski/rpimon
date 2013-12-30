@@ -13,10 +13,12 @@ import (
 var Router = mux.NewRouter()
 
 // Init - Initialize application
-func Init(appConfFile string, debug bool) *AppConfiguration {
+func Init(appConfFile string, debug int) *AppConfiguration {
 
 	conf := LoadConfiguration(appConfFile)
-	if debug {
+	if debug == 0 {
+		conf.Debug = false
+	} else if debug == 1 {
 		conf.Debug = true
 	}
 	l.Init(conf.LogFilename, conf.Debug)

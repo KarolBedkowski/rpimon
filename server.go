@@ -17,16 +17,22 @@ import (
 	"log"
 	"net/http"
 	// _ "net/http/pprof" // /debug/pprof/
+	"runtime"
 	//"time"
 )
 
 func main() {
 	configFilename := flag.String("conf", "./config.json", "Configuration filename")
-	debug := flag.Bool("debug", false, "Run in debug mode")
+	debug := flag.Int("debug", -1, "Run in debug mode (1) or normal (0)")
 	flag.Parse()
 
 	conf := app.Init(*configFilename, *debug)
 	defer app.Close()
+
+	if !conf.Debug {
+		log.Printf("NumCPU: %d", runtime.NumCPU())
+		runtime.GOMAXPROCS(runtime.NumCPU())
+	}
 
 	app.Router.HandleFunc("/", handleHome)
 	auth.CreateRoutes(app.Router.PathPrefix("/auth"))
