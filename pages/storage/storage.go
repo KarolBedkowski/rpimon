@@ -19,17 +19,9 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("storage-page")
 }
 
-type pageCtx struct {
-	*app.BasePageContext
-	CurrentPage string
-	Data        string
-}
-
-func newPageCtx(w http.ResponseWriter, r *http.Request, localMenuPos string, data string) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Storage", "storage", w, r)}
-	ctx.LocalMenu = createLocalMenu()
+func newPageCtx(w http.ResponseWriter, r *http.Request, localMenuPos string, data string) *app.SimpleDataPageCtx {
+	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", localMenuPos, createLocalMenu())
 	ctx.CurrentLocalMenuPos = localMenuPos
-	ctx.CurrentPage = localMenuPos
 	ctx.Data = data
 	return ctx
 }
@@ -73,17 +65,17 @@ type mountPoint struct {
 }
 
 type mountPageCtx struct {
-	*app.BasePageContext
+	*app.SimpleDataPageCtx
 	CurrentPage string
 	Data        string
 	Mounted     []*mountPoint
 }
 
 func mountPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &mountPageCtx{BasePageContext: app.NewBasePageContext("Storage", "storage", w, r)}
-	ctx.LocalMenu = createLocalMenu()
-	ctx.Data = h.ReadFromCommand("sudo", "mount")
+	ctx := &mountPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r,
+		"Storage", "storage", "storage", createLocalMenu())}
 	ctx.CurrentLocalMenuPos = "mount"
+	ctx.Data = h.ReadFromCommand("sudo", "mount")
 	ctx.Mounted = mountCmdToMountPoints(ctx.Data)
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "storage/storage.tmpl", "flash.tmpl")
 }

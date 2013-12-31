@@ -33,14 +33,8 @@ func createLocalMenu() []*app.MenuItem {
 	return localMenu
 }
 
-func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("logs", "logs", w, r)}
-	ctx.LocalMenu = createLocalMenu()
-	return ctx
-}
-
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := newNetPageCtx(w, r)
+	data := app.NewSimpleDataPageCtx(w, r, "logs", "logs", "", createLocalMenu())
 	vars := mux.Vars(r)
 	page, ok := vars["page"]
 	if !ok {

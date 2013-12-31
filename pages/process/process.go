@@ -20,12 +20,6 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("process-page")
 }
 
-type pageCtx struct {
-	*app.BasePageContext
-	CurrentPage string
-	Data        string
-}
-
 var localMenu []*app.MenuItem
 
 func createLocalMenu() []*app.MenuItem {
@@ -37,14 +31,8 @@ func createLocalMenu() []*app.MenuItem {
 	return localMenu
 }
 
-func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Process", "process", w, r)}
-	ctx.LocalMenu = createLocalMenu()
-	return ctx
-}
-
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := newNetPageCtx(w, r)
+	data := app.NewSimpleDataPageCtx(w, r, "Process", "process", "", createLocalMenu())
 	vars := mux.Vars(r)
 	page, ok := vars["page"]
 	if !ok {
@@ -62,12 +50,13 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type sevicesPageCtx struct {
-	*pageCtx
+	*app.SimpleDataPageCtx
 	Services map[string]string
 }
 
 func servicesPageHangler(w http.ResponseWriter, r *http.Request) {
-	ctx := &sevicesPageCtx{pageCtx: newNetPageCtx(w, r)}
+	ctx := &sevicesPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(
+		w, r, "Process", "process", "", createLocalMenu())}
 	ctx.Services = make(map[string]string)
 	lines := strings.Split(h.ReadFromCommand("service", "--status-all"), "\n")
 	for _, line := range lines {

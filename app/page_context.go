@@ -88,3 +88,18 @@ func (ctx *BasePageContext) Get(key string) interface{} {
 func (ctx *BasePageContext) Save() error {
 	return SaveSession(ctx.ResponseWriter, ctx.Request)
 }
+
+// SimpleDataPageCtx - context  with data (string) + title
+type SimpleDataPageCtx struct {
+	*BasePageContext
+	CurrentPage string
+	Data        string
+}
+
+// NewSimpleDataPageCtx create new simple context to show text data
+func NewSimpleDataPageCtx(w http.ResponseWriter, r *http.Request,
+	title string, mainMenuID string, cuurentPage string, localMenu []*MenuItem) *SimpleDataPageCtx {
+	ctx := &SimpleDataPageCtx{BasePageContext: NewBasePageContext(title, mainMenuID, w, r)}
+	ctx.LocalMenu = localMenu
+	return ctx
+}

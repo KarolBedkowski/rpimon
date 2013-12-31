@@ -167,14 +167,8 @@ func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
 }
 
-type logPageCtx struct {
-	*app.BasePageContext
-	CurrentPage string
-	Data        string
-}
-
 func mpdLogPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &logPageCtx{BasePageContext: app.NewBasePageContext("mpd", "mpd", w, r)}
+	ctx := app.NewSimpleDataPageCtx(w, r, "mpd", "mpd", "", createLocalMenu())
 	ctx.CurrentLocalMenuPos = "mpd-log"
 	ctx.LocalMenu = createLocalMenu()
 

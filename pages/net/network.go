@@ -16,12 +16,6 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("net-page")
 }
 
-type pageCtx struct {
-	*app.BasePageContext
-	CurrentPage string
-	Data        string
-}
-
 var localMenu []*app.MenuItem
 
 func createLocalMenu() []*app.MenuItem {
@@ -35,14 +29,8 @@ func createLocalMenu() []*app.MenuItem {
 	return localMenu
 }
 
-func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
-	ctx.LocalMenu = createLocalMenu()
-	return ctx
-}
-
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := newNetPageCtx(w, r)
+	data := app.NewSimpleDataPageCtx(w, r, "Network", "net", "", createLocalMenu())
 	vars := mux.Vars(r)
 	page, ok := vars["page"]
 	if !ok {
