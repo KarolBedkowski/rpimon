@@ -1,41 +1,28 @@
-<div class="pure-u-1">
-	<section>
-		<h1>Disk free</h1>
-		<pre>{{df}}</pre>
-	</section>
-</div>
+{{define "body"}}
 
 <div class="pure-u-1">
 	<section>
 		<h1>Mount</h1>
-		<pre>{{mount}}</pre>
-	</section>
-</div>
-
-<div class="pure-u-1">
-	<section>
-		<h1>Devices</h1>
-		<pre>{{devices}}</pre>
+		<pre>{{.Data}}</pre>
 	</section>
 </div>
 
 <div class="pure-u-1">
 	<section>
 		<h1>Umount</h1>
-		<form action="/mon/storage/umount" method="POST" class="pure-form">
+		<form action="{{namedurl "storage-umount"}}" method="POST" class="pure-form">
 			<fieldset>
 				<label for="fs">File system</label>
 				<select name="fs" id="fs">
-				%for mpoint, mdevice, mtype in mounted_fs:
-					<option value="mpoint">{{mpoint}} ({{mdevice}}, {{mtype}})</option>
-				%end
+				{{range .Mounted}}
+					<option value="{{.Mpoint}}">{{.Mpoint}} ({{.Device}}, {{.Type}})</option>
+				{{end}}
 				</select>
 				<button type="submit" class="pure-button pure-button-primary">Umount</button>
+				<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
 			</fieldset>
 		</form>
 	</section>
 </div>
 
-
-%rebase layout **locals()
-
+{{end}}

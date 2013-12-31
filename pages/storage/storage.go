@@ -5,6 +5,7 @@ import (
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	"net/http"
+	"strings"
 )
 
 var subRouter *mux.Router
@@ -13,6 +14,8 @@ var subRouter *mux.Router
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("storage-index")
+	subRouter.HandleFunc("/mount", app.VerifyPermission(mountPageHandler, "admin")).Name("storage-mount")
+	subRouter.HandleFunc("/umount", app.VerifyPermission(umountPageHandler, "admin")).Name("storage-umount").Methods("POST")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("storage-page")
 }
 
@@ -22,39 +25,95 @@ type pageCtx struct {
 	Data        string
 }
 
+func newPageCtx(w http.ResponseWriter, r *http.Request, localMenuPos string, data string) *pageCtx {
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Storage", "storage", w, r)}
+	ctx.LocalMenu = createLocalMenu()
+	ctx.CurrentLocalMenuPos = localMenuPos
+	ctx.CurrentPage = localMenuPos
+	ctx.Data = data
+	return ctx
+}
+
 var localMenu []*app.MenuItem
 
 func createLocalMenu() []*app.MenuItem {
 	if localMenu == nil {
 		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("Disk Free", "storage-page", "page", "diskfree").SetID("diskfree"),
-			app.NewMenuItemFromRoute("Mount", "storage-page", "page", "mount").SetID("mount"),
+			app.NewMenuItemFromRoute("Mount", "storage-mount").SetID("mount"),
 			app.NewMenuItemFromRoute("Devices", "storage-page", "page", "devices").SetID("devices")}
 	}
 	return localMenu
 }
 
-func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Storage", "storage", w, r)}
-	ctx.LocalMenu = createLocalMenu()
-	return ctx
-}
-
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := newNetPageCtx(w, r)
 	vars := mux.Vars(r)
 	page, ok := vars["page"]
 	if !ok {
 		page = "diskfree"
 	}
+	ctx := newPageCtx(w, r, page, "")
 	switch page {
 	case "diskfree":
-		data.Data = h.ReadFromCommand("df", "-h")
+		ctx.Data = h.ReadFromCommand("df", "-h")
 	case "mount":
-		data.Data = h.ReadFromCommand("sudo", "mount")
+		ctx.Data = h.ReadFromCommand("sudo", "mount")
 	case "devices":
-		data.Data = h.ReadFromCommand("lsblk")
+		ctx.Data = h.ReadFromCommand("lsblk")
+	default:
+		http.Redirect(w, r, app.GetNamedURL("storage-index"), 302)
+		return
 	}
-	data.CurrentLocalMenuPos = page
-	data.CurrentPage = page
-	app.RenderTemplate(w, data, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
+}
+
+type mountPoint struct {
+	Mpoint string
+	Device string
+	Type   string
+}
+
+type mountPageCtx struct {
+	*app.BasePageContext
+	CurrentPage string
+	Data        string
+	Mounted     []*mountPoint
+}
+
+func mountPageHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := &mountPageCtx{BasePageContext: app.NewBasePageContext("Storage", "storage", w, r)}
+	ctx.LocalMenu = createLocalMenu()
+	ctx.Data = h.ReadFromCommand("sudo", "mount")
+	ctx.CurrentLocalMenuPos = "mount"
+	ctx.Mounted = mountCmdToMountPoints(ctx.Data)
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "storage/storage.tmpl", "flash.tmpl")
+}
+
+func mountCmdToMountPoints(data string) (res []*mountPoint) {
+	for _, line := range strings.Split(data, "\n") {
+		if line == "" {
+			break
+		}
+		fields := strings.Fields(line)
+		res = append(res, &mountPoint{fields[2], fields[0], fields[4]})
+	}
+	return
+}
+
+func umountPageHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	values := r.Form
+	fs, ok := values["fs"]
+	if ok && fs[0] != "" {
+		data := h.ReadFromCommand("sudo", "umount", fs[0])
+		if data != "" {
+			ctx := newPageCtx(w, r, "mount", data)
+			app.RenderTemplate(w, ctx, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
+			return
+		}
+	}
+	sess := app.GetSessionStore(w, r)
+	sess.AddFlash("Umounted " + fs[0])
+	sess.Save(r, w)
+
+	http.Redirect(w, r, app.GetNamedURL("storage-mount"), 302)
 }
