@@ -90,7 +90,7 @@ func gatherCPUUsageInfo() *CPUUsageInfoStruct {
 	cpuUsageMutex.Lock()
 	defer cpuUsageMutex.Unlock()
 
-	cUser, _ := strconv.Atoi(fields[1])
+	cUser, err := strconv.Atoi(fields[1])
 	cpuLastUser, cUser = cUser, cUser-cpuLastUser
 	cNice, _ := strconv.Atoi(fields[2])
 	cpuLastNice, cNice = cNice, cNice-cpuLastNice
@@ -414,18 +414,21 @@ func GetWarnings() []string {
 	return result
 }
 
+var netstatCache = h.NewSimpleCache(warningsCacheTTL)
+
 func checkIsServiceConnected(port string) (result bool) {
 	result = false
-	out := h.ReadFromCommand("netstat", "-pn", "--inet")
+	out := netstatCache.Get(func() h.Value {
+		return string(h.ReadFromCommand("netstat", "-pn", "--inet"))
+	}).(string)
 	if out == "" {
 		return
 	}
-	outstr := string(out)
 	lookingFor := ":" + port + " "
-	if !strings.Contains(outstr, lookingFor) {
+	if !strings.Contains(out, lookingFor) {
 		return false
 	}
-	lines := strings.Split(string(out), "\n")
+	lines := strings.Split(out, "\n")
 	for _, line := range lines {
 		if len(line) == 0 {
 			continue
