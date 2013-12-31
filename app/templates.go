@@ -1,17 +1,21 @@
 package app
 
 import (
+	"html/template"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
-	"text/template"
 )
 
 var cacheLock sync.Mutex
 var cacheItems = map[string]*template.Template{}
+
+var funcMap = template.FuncMap{
+	"namedurl": GetNamedURL,
+}
 
 // RenderTemplate - render given template
 func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenames ...string) {
@@ -19,8 +23,8 @@ func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenam
 	cacheLock.Lock()
 	defer cacheLock.Unlock()
 
-	templatePath := strings.Join(filenames, "|")
-	ctemplate, ok := cacheItems[templatePath]
+	templateKey := strings.Join(filenames, "|")
+	ctemplate, ok := cacheItems[templateKey]
 	if !ok || Configuration.Debug {
 		templates := []string{}
 		for _, filename := range filenames {
@@ -31,8 +35,9 @@ func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenam
 			}
 			templates = append(templates, fullPath)
 		}
-		ctemplate = template.Must(template.ParseFiles(templates...))
-		cacheItems[templatePath] = ctemplate
+		ctemplate = template.New(templateKey).Funcs(funcMap)
+		ctemplate = template.Must(ctemplate.ParseFiles(templates...))
+		cacheItems[templateKey] = ctemplate
 	}
 	err := ctemplate.ExecuteTemplate(w, name, ctx)
 	if err != nil {
