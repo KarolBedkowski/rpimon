@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/gompd/mpd"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
+	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"strconv"
@@ -17,6 +18,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "mpd"))
 	subRouter.HandleFunc("/info", app.VerifyPermission(mainPageHandler, "mpd")).Name("mpd-index")
 	subRouter.HandleFunc("/action/{action}", app.VerifyPermission(actionPageHandler, "mpd"))
+	subRouter.HandleFunc("/log", app.VerifyPermission(mpdLogPageHandler, "mpd")).Name("mpd-log")
 	subRouter.HandleFunc("/playlist", app.VerifyPermission(playlistPageHandler, "mpd")).Name("mpd-playlist")
 	subRouter.HandleFunc("/song/{song-id:[0-9]+}/{action}",
 		app.VerifyPermission(songActionPageHandler, "mpd"))
@@ -37,7 +39,9 @@ func createLocalMenu() []*app.MenuItem {
 	if localMenu == nil {
 		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("Info", "mpd-index"),
 			app.NewMenuItemFromRoute("Playlist", "mpd-playlist"),
-			app.NewMenuItemFromRoute("Playlists", "mpd-playlists")}
+			app.NewMenuItemFromRoute("Playlists", "mpd-playlists"),
+			app.NewMenuItemFromRoute("Log", "mpd-log"),
+		}
 	}
 	return localMenu
 }
@@ -161,4 +165,23 @@ func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
 		session.Save(r, w)
 	}
 	http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
+}
+
+type logPageCtx struct {
+	*app.BasePageContext
+	CurrentPage string
+	Data        string
+}
+
+func mpdLogPageHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := &logPageCtx{BasePageContext: app.NewBasePageContext("mpd", "mpd", w, r)}
+	ctx.CurrentLocalMenuPos = "mpd-log"
+	ctx.LocalMenu = createLocalMenu()
+
+	if lines, err := h.ReadFromFileLastLines("/var/log/mpd/mpd.log", 25); err != nil {
+		ctx.Data = err.Error()
+	} else {
+		ctx.Data = lines
+	}
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
 }
