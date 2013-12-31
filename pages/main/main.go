@@ -96,5 +96,6 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 		encoded, _ := json.Marshal(res)
 		return encoded
 	}).([]byte)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(data)
 }

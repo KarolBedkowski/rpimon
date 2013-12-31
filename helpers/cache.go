@@ -39,7 +39,7 @@ func (cache *SimpleCache) Get(f func() Value) Value {
 	cache.mutex.RLock()
 	now := time.Now()
 	if cache.value != nil && now.Sub(cache.timestamp) < cache.MaxCacheAge {
-		cache.mutex.RUnlock()
+		defer cache.mutex.RUnlock()
 		return cache.value
 	}
 	cache.mutex.RUnlock()

@@ -48,16 +48,16 @@ func SetMainMenu(ctx *BasePageContext) {
 		}
 		if user.HasPermission("mpd") {
 			ctx.MainMenu = append(ctx.MainMenu,
-				NewMenuItem("&nbsp;", "#"),
+				NewMenuItem(" ", "#"),
 				NewMenuItemFromRoute("MPD", "mpd-index").SetID("mpd"))
 		}
 		if user.HasPermission("files") {
 			ctx.MainMenu = append(ctx.MainMenu,
-				NewMenuItem("&nbsp;", "#"),
+				NewMenuItem(" ", "#"),
 				NewMenuItemFromRoute("Files", "files-index").SetID("files"))
 		}
 		ctx.MainMenu = append(ctx.MainMenu,
-			NewMenuItem("&nbsp;", "#"),
+			NewMenuItem(" ", "#"),
 			NewMenuItemFromRoute("Logout", "auth-logoff").SetID("auth-logoff"))
 		return
 	}

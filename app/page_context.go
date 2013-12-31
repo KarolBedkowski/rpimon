@@ -28,6 +28,12 @@ type BasePageContext struct {
 
 var hostname string
 
+func init() {
+	file, err := ioutil.ReadFile("/etc/hostname")
+	helpers.CheckErr(err, "Load hostname error")
+	hostname = strings.Trim(string(file), " \n")
+}
+
 // NewBasePageContext create base page context for request
 func NewBasePageContext(title, mainMenuID string, w http.ResponseWriter, r *http.Request) *BasePageContext {
 
@@ -40,19 +46,15 @@ func NewBasePageContext(title, mainMenuID string, w http.ResponseWriter, r *http
 	}
 
 	ctx := &BasePageContext{Title: title,
-		ResponseWriter: w,
-		Request:        r,
-		Session:        session,
-		CsrfToken:      csrfToken.(string)}
-	if hostname == "" {
-		file, err := ioutil.ReadFile("/etc/hostname")
-		helpers.CheckErr(err, "Load hostname error")
-		hostname = strings.Trim(string(file), " \n")
-	}
-	ctx.Hostname = hostname
-	ctx.CurrentUser = GetLoggedUserLogin(w, r)
-	ctx.Now = time.Now().Format("2006-01-02 15:04:05")
-	ctx.CurrentMainMenuPos = mainMenuID
+		ResponseWriter:     w,
+		Request:            r,
+		Session:            session,
+		CsrfToken:          csrfToken.(string),
+		Hostname:           hostname,
+		CurrentUser:        GetLoggedUserLogin(w, r),
+		Now:                time.Now().Format("2006-01-02 15:04:05"),
+		CurrentMainMenuPos: mainMenuID}
+
 	SetMainMenu(ctx)
 
 	if flashes := ctx.Session.Flashes(); len(flashes) > 0 {

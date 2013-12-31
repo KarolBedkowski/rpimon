@@ -6,9 +6,9 @@ import (
 	//	"k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
-	"os"
-	"path/filepath"
-	"time"
+	//	"os"
+	//	"path/filepath"
+	//	"time"
 )
 
 const storesession = "SESSION"
@@ -64,6 +64,7 @@ func SaveSession(w http.ResponseWriter, r *http.Request) error {
 }
 
 // ClearSessionStore - remove old session files
+/*
 func ClearSessionStore() error {
 	l.Info("Start ClearSessionStore")
 	now := time.Now()
@@ -77,3 +78,4 @@ func ClearSessionStore() error {
 	})
 	return nil
 }
+*/

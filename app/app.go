@@ -20,9 +20,9 @@ func Init(appConfFile string, debug int) *AppConfiguration {
 		conf.Debug = false
 	} else if debug == 1 {
 		conf.Debug = true
-	}
-	l.Init(conf.LogFilename, conf.Debug)
+	} // other: use value from config
 
+	l.Init(conf.LogFilename, conf.Debug)
 	l.Print("Debug=", conf.Debug)
 
 	initSessionStore(conf)
@@ -30,7 +30,6 @@ func Init(appConfFile string, debug int) *AppConfiguration {
 
 	http.Handle("/static/", http.StripPrefix("/static",
 		gzip.FileServer(http.Dir(conf.StaticDir))))
-	//http.FileServer(http.Dir(conf.StaticDir))))
 	http.Handle("/", logHandler(csrfHandler(context.ClearHandler(Router))))
 	return conf
 }
@@ -42,12 +41,10 @@ func Close() {
 
 // GetNamedURL - Return url for named route and parameters
 func GetNamedURL(name string, pairs ...string) (url string) {
-	url = ""
 	rurl, err := Router.Get(name).URL(pairs...)
 	if err != nil {
 		l.Warn("GetNamedURL error %s", err)
-		return
+		return ""
 	}
-	url = rurl.String()
-	return
+	return rurl.String()
 }

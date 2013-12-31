@@ -23,9 +23,11 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/",
 		app.VerifyPermission(verifyAccess(mainPageHandler), "files")).Name("files-index")
 	subRouter.HandleFunc("/mkdir",
-		app.VerifyPermission(verifyAccess(mkdirPageHandler), "files")).Methods("POST")
+		app.VerifyPermission(verifyAccess(mkdirPageHandler), "files")).Methods(
+		"POST").Name("files-mkdir")
 	subRouter.HandleFunc("/upload",
-		app.VerifyPermission(verifyAccess(uploadPageHandler), "files")).Methods("POST")
+		app.VerifyPermission(verifyAccess(uploadPageHandler), "files")).Methods(
+		"POST").Name("files-upload")
 }
 
 type pageCtx struct {
