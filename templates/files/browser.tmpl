@@ -12,7 +12,7 @@
 					<th>Date</th>
 				</tr>
 			</thead>
-			<tbody
+			<tbody>
 			{{$ctx := . }}
 			{{if ne .Path "."}}
 				<tr>
@@ -38,7 +38,7 @@
 	<div class="pure-u-1-2">
 		<section>
 			<h2>Upload</h2>
-			<form action="/files/upload" method="post" enctype="multipart/form-data">
+			<form action="{{namedurl "files-upload"}}" method="post" enctype="multipart/form-data">
 				File: <input type="file" name="upload" />
 				<input type="submit" value="Start upload" />
 				<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
@@ -49,7 +49,7 @@
 	<div class="pure-u-1-2">
 		<section>
 			<h2>Create directory</h2>
-			<form action="/files/mkdir" method="post">
+			<form action="{{namedurl "files-mkdir"}}" method="post">
 				<input type="text" name="name" />
 				<input type="submit" value="Mkdir" />
 				<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
