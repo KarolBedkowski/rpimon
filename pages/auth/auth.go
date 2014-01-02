@@ -65,10 +65,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		handleLoginError("Wrong user or password", w, loginPageCtx)
 		return
 	}
-	l.Info("User %s log in", user.Login)
-	loginPageCtx.Set(app.USERIDSESSION, user.Login)
 	loginPageCtx.AddFlashMessage("User log in")
-	loginPageCtx.Save()
+	app.LoginUser(w, r, user.Login)
 	if values["back"] != nil && values["back"][0] != "" {
 		l.Debug("Redirect to ", values["back"][0])
 		http.Redirect(w, r, values["back"][0], http.StatusFound)

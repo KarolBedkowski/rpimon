@@ -4,20 +4,34 @@ import (
 	"github.com/gorilla/context"
 	"k.prv/rpimon/database"
 	h "k.prv/rpimon/helpers"
+	l "k.prv/rpimon/helpers/logging"
 	"log"
 	"net/http"
+	"time"
 )
 
 // Session key for userid
-const USERIDSESSION = "USERID"
+const sessionLoginKey = "USERID"
 const usercontextkey = "USER"
+
+const sessionTimestampKey = "timestamp"
+
+const maxSessionAge = time.Duration(24) * time.Hour
 
 // GetLoggedUserLogin for request
 func GetLoggedUserLogin(w http.ResponseWriter, r *http.Request) (login string) {
 	session := GetSessionStore(w, r)
-	sessLogin := session.Values[USERIDSESSION]
-	if sessLogin != nil {
-		login = sessLogin.(string)
+	if ts, ok := session.Values[sessionTimestampKey]; ok {
+		timestamp := time.Unix(ts.(int64), 0)
+		now := time.Now()
+		if now.Sub(timestamp) < maxSessionAge {
+			session.Values[sessionTimestampKey] = now.Unix()
+			session.Save(r, w)
+			sessLogin := session.Values[sessionLoginKey]
+			if sessLogin != nil {
+				login = sessLogin.(string)
+			}
+		}
 	}
 	return
 }
@@ -88,4 +102,14 @@ func VerifyLogged(h http.HandlerFunc) http.HandlerFunc {
 			h(w, r)
 		}
 	})
+}
+
+// LoginUser - update session
+func LoginUser(w http.ResponseWriter, r *http.Request, login string) error {
+	l.Info("User %s log in", login)
+	session := GetSessionStore(w, r)
+	session.Values[sessionLoginKey] = login
+	session.Values[sessionTimestampKey] = time.Now().Unix()
+	session.Save(r, w)
+	return nil
 }
