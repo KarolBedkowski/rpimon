@@ -1,6 +1,7 @@
 
 function ts2str(ts) {
 	ts = parseInt(ts);
+	if (ts > 0) {
 	var date = new Date(ts * 1000);
 	var hours = date.getHours();
 	var minutes = date.getMinutes();
@@ -8,6 +9,8 @@ function ts2str(ts) {
 	return [(hours < 10) ? ("0" + hours) : hours,
 		(minutes < 10) ? ("0" + minutes) : minutes,
 		(seconds < 10) ? ("0" + seconds) : seconds].join(":");
+	}
+	return "";
 }
 
 function refresh() {
@@ -37,5 +40,13 @@ function refresh() {
 	}).fail(function(jqXHR, textStatus) {
 		setTimeout(refresh, 5000);
 	});
+ }
+
+function do_action(t) {
+	var btn = $(this);
+	var act = btn.data("action");
+	$.get("/mpd/action/" + act, 
+		function(data) {
+		});
  }
 

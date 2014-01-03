@@ -13,11 +13,11 @@
 {{else}}
 <div class="pure-u-1">
 	<section>
-		<a class="pure-button" href="/mpd/action/play">Play</a>
-		<a class="pure-button" href="/mpd/action/next">Next</a>
-		<a class="pure-button" href="/mpd/action/prev">Previous</a>
-		<a class="pure-button" href="/mpd/action/pause">Pause</a>
-		<a class="pure-button" href="/mpd/action/stop">Stop</a>
+		<a class="pure-button" href="#" data-action="play">Play</a>
+		<a class="pure-button" href="#" data-action="next">Next</a>
+		<a class="pure-button" href="#" data-action="prev">Previous</a>
+		<a class="pure-button" href="#" data-action="pause">Pause</a>
+		<a class="pure-button" href="#" data-action="stop">Stop</a>
 	</section>
 </div>
 
@@ -106,9 +106,6 @@
 		<h2>Actions</h2>
 		<div class="pure-menu pure-menu-open">
 		<ul>
-			<li class="pure-menu-heading"><strong>Play</strong></li>
-			<li><a href="/mpd/action/toggle_random">Toggle Random</a></li>
-			<li><a href="/mpd/action/toggle_repeat">Toggle Repeat</a></li>
 			<li class="pure-menu-heading"><strong>Tools</strong></li>
 			<li><a href="/mpd/action/update" onclick="return lconfirm()">Update</a></li>
 		</ul>
@@ -126,6 +123,7 @@
 	}
 
 	$(function() {
+		$("a.pure-button").on("click", do_action);
 		setTimeout(refresh, 100);
 	});
 </script>
