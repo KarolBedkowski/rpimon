@@ -27,35 +27,35 @@
 		<table class="pure-table table-left-align">
 			<tr>
 				<th>Name</th>
-				<td >{{.Status.Current.Name}}</td>
+				<td id="curr-name">{{.Status.Current.Name}}</td>
 			</tr>
 			<tr>
 				<th>Artist</th>
-				<td >{{.Status.Current.Artist}}</td>
+				<td id="curr-artist">{{.Status.Current.Artist}}</td>
 			</tr>
 			<tr>
 				<th>Title</th>
-				<td >{{.Status.Current.Title}}</td>
+				<td id="curr-title">{{.Status.Current.Title}}</td>
 			</tr>
 			<tr>
 				<th>Album</th>
-				<td>{{.Status.Current.Album}}</td>
+				<td id="curr-album">{{.Status.Current.Album}}</td>
 			</tr>
 			<tr>
 				<th>Track</th>
-				<td>{{.Status.Current.Track}}</td>
+				<td id="curr-track">{{.Status.Current.Track}}</td>
 			</tr>
 			<tr>
 				<th>Date</th>
-				<td>{{.Status.Current.Date}}</td>
+				<td id="curr-date">{{.Status.Current.Date}}</td>
 			</tr>
 			<tr>
 				<th>Genre</th>
-				<td>{{.Status.Current.Genre}}</td>
+				<td id="curr-genre">{{.Status.Current.Genre}}</td>
 			</tr>
 			<tr>
 				<th>File</th>
-				<td >{{.Status.Current.file}}</td>
+				<td id="curr-file">{{.Status.Current.file}}</td>
 			</tr>
 		</table>
 	</section>
@@ -67,27 +67,35 @@
 		<table class="pure-table table-left-align">
 			<tr>
 				<th>State</th>
-				<td>{{.Status.Status.state}}</td>
+				<td id="st-state">{{.Status.Status.state}}</td>
+			</tr>
+			<tr>
+				<th>Time</th>
+				<td id="st-time">{{.Status.Status.time}}</td>
 			</tr>
 			<tr>
 				<th>Audio</th>
-				<td>{{.Status.Status.audio}}</td>
+				<td id="st-audio">{{.Status.Status.audio}}</td>
 			</tr>
 			<tr>
 				<th>Bitrate</th>
-				<td>{{.Status.Status.bitrate}}</td>
+				<td id="st-bitrate">{{.Status.Status.bitrate}}</td>
 			</tr>
 			<tr>
 				<th>Random</th>
-				<td>{{.Status.Status.random}}</td>
+				<td><span id="st-random">{{.Status.Status.random}}</span>
+					<a href="/mpd/action/toggle_random">Toggle</a>
+				</td>
 			</tr>
 			<tr>
 				<th>Repeat</th>
-				<td>{{.Status.Status.repeat}}</td>
+				<td> <span id="st-repeat">{{.Status.Status.repeat}}</span>
+					<a href="/mpd/action/toggle_repeat">Toggle</a>
+				</td>
 			</tr>
 			<tr>
 				<th>Volume</th>
-				<td>{{.Status.Status.volume}}</td>
+				<td id="st-volume">{{.Status.Status.volume}}</td>
 			</tr>
 		</table>
 	</section>
@@ -110,17 +118,17 @@
 
 {{end}}
 
+<script src="/static/js/mpd-index.js" type="text/javascript" ></script>
+
 <script type="text/javascript">
 	function lconfirm() {
 		return confirm('Are you sure?');
 	}
-	function refresh() {
-		window.location.reload(true);
-	 }
 
 	$(function() {
-		setTimeout(refresh, 60000);
+		setTimeout(refresh, 100);
 	});
 </script>
+
 
 {{end}}

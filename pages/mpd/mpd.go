@@ -2,6 +2,7 @@ package mpd
 
 import (
 	"code.google.com/p/gompd/mpd"
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
@@ -25,6 +26,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/playlists", app.VerifyPermission(playlistsPageHandler, "mpd")).Name("mpd-playlists")
 	subRouter.HandleFunc("/playlist/{plist}/{action}",
 		app.VerifyPermission(playlistsActionPageHandler, "mpd"))
+	subRouter.HandleFunc("/service/info", app.VerifyPermission(infoHandler, "mpd"))
 }
 
 type pageCtx struct {
@@ -178,4 +180,16 @@ func mpdLogPageHandler(w http.ResponseWriter, r *http.Request) {
 		ctx.Data = lines
 	}
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
+}
+
+var infoHandlerCache = h.NewSimpleCache(1)
+
+func infoHandler(w http.ResponseWriter, r *http.Request) {
+	data := infoHandlerCache.Get(func() h.Value {
+		status := getStatus()
+		encoded, _ := json.Marshal(status)
+		return encoded
+	}).([]byte)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(data)
 }
