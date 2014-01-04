@@ -3,6 +3,7 @@ package mpd
 import (
 	"code.google.com/p/gompd/mpd"
 	l "k.prv/rpimon/helpers/logging"
+	"strconv"
 )
 
 type mpdStatus struct {
@@ -146,4 +147,24 @@ func mpdPlaylistAction(playlist, action string) error {
 		l.Warn("page.mpd mpdAction: wrong action ", action)
 	}
 	return nil
+}
+
+func setVolume(volume int) error {
+	conn, err := mpd.Dial("tcp", host)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	return conn.SetVolume(volume)
+}
+
+func seekPos(pos, time int) error {
+	conn, err := mpd.Dial("tcp", host)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	song, err := conn.CurrentSong()
+	sid, err := strconv.Atoi(song["Id"])
+	return conn.SeekId(sid, time)
 }

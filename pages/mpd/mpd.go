@@ -57,7 +57,6 @@ func newPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := newPageCtx(w, r)
-	data.Status = getStatus()
 	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/index.tmpl", "flash.tmpl")
 }
 
@@ -68,7 +67,31 @@ func actionPageHandler(w http.ResponseWriter, r *http.Request) {
 		l.Warn("page.mpd actionPageHandler: missing action ", vars)
 		return
 	}
-	mpdAction(action)
+	r.ParseForm()
+	switch action {
+	case "volume":
+		{
+			if vol := r.Form["vol"][0]; vol != "" {
+				volInt, ok := strconv.Atoi(vol)
+				if ok == nil {
+					setVolume(volInt)
+					return
+				}
+			}
+		}
+	case "seek":
+		{
+			if time := r.Form["time"][0]; time != "" {
+				timeInt, ok := strconv.Atoi(time)
+				if ok == nil {
+					seekPos(-1, timeInt)
+					return
+				}
+			}
+		}
+	default:
+		mpdAction(action)
+	}
 	http.Redirect(w, r, app.GetNamedURL("mpd-index"), http.StatusFound)
 }
 
