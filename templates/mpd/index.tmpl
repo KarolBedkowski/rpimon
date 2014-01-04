@@ -16,105 +16,56 @@
 		<a class="pure-button ui-state-default" href="#" data-action="pause"><span class="ui-icon ui-icon-pause"></span></a>
 		<a class="pure-button ui-state-default" href="#" data-action="stop"><span class="ui-icon ui-icon-stop"></span></a>
 		<a class="pure-button ui-state-default" href="#" data-action="next"><span class="ui-icon ui-icon-seek-next"></span></a>
+		<a class="pure-button ui-state-default" href="#" data-action="toggle_random"><span class="ui-icon ui-icon-shuffle"></span></a>
+		<a class="pure-button ui-state-default" href="#" data-action="toggle_repeat"><span class="ui-icon ui-icon-arrowrefresh-1-w"></span></a>
 	</section>
 </div>
 
 <div class="pure-u-1" id="currsong-sect">
 	<section>
-		<h2>Current song</h2>
-		<table class="pure-table table-left-align">
-			<tr>
-				<th>Name</th>
-				<td id="curr-name">&nbsp;</td>
-			</tr>
-			<tr>
-				<th>Artist</th>
-				<td id="curr-artist">&nbsp;</td>
-			</tr>
-			<tr>
-				<th>Title</th>
-				<td id="curr-title">&nbsp;</td>
-			</tr>
-			<tr>
-				<th>Album</th>
-				<td id="curr-album">&nbsp;</td>
-			</tr>
-			<tr>
-				<th>Track</th>
-				<td id="curr-track">&nbsp;</td>
-			</tr>
-			<tr>
-				<th>Date</th>
-				<td id="curr-date">&nbsp;</td>
-			</tr>
-			<tr>
-				<th>Time</th>
-				<td id="curr-time">&nbsp;</td>
-			</tr>
-			<tr>
-				<th>Genre</th>
-				<td id="curr-genre">&nbsp;</td>
-			</tr>
-			<tr>
-				<th>File</th>
-				<td id="curr-file">&nbsp;</td>
-			</tr>
-		</table>
-	</section>
-</div>
+		<div id="curr-name"></div>
+		<div id="curr-artist"></div>
+		<div id="track-info">
+			<span id="curr-track"></span>
+			<span id="curr-title"></span>
+		</div>
+		<div id="album-info">
+			<span id="curr-date"></span>
+			<span id="curr-album"></span>
+		</div>
+		<div id="curr-genre"></div>
 
-<div class="pure-u-1" id="status-sect">
-	<section>
-		<h2>Status</h2>
-		<table class="pure-table table-left-align">
-			<tr>
-				<th>State</th>
-				<td id="st-state">&nbsp;</td>
-			</tr>
-			<tr>
-				<th>Time</th>
-				<td><span id="st-time">&nbsp;</span>
-					<div id="slider-song-pos" style="width: 200px"></div>
-				</td>
-			</tr>
-			<tr>
-				<th>Audio</th>
-				<td id="st-audio">&nbsp;</td>
-			</tr>
-			<tr>
-				<th>Bitrate</th>
-				<td id="st-bitrate">&nbsp;</td>
-			</tr>
-			<tr>
-				<th>Random</th>
-				<td>
-					<a class="ajax-action" href="#" data-action="toggle_random" id="st-random">Toggle</a>
-				</td>
-			</tr>
-			<tr>
-				<th>Repeat</th>
-				<td>
-					<a class="ajax-action" href="#" data-action="toggle_repeat" id="st-repeat">Toggle</a>
-				</td>
-			</tr>
-			<tr>
-				<th>Volume</th>
-				<td><span id="st-volume">&nbsp;</span>
-					<div id="slider-volume" style="width: 150px;"></div>
-				</td>
-			</tr>
-		</table>
-	</section>
-</div>
+		<div id="pos-info">
+			<div id="slider-song-pos" style="width: 300px"></div>
+			<div id="pos-info-time">
+				<span id="st-time">&nbsp;</span>
+				<span id="curr-time">&nbsp;</span>
+			</div>
+		</div>
+		
+		<div style="clear: both"></div>
 
-<div class="pure-u-1" id="actions-sect">
-	<section>
-		<h2>Actions</h2>
-		<div class="pure-menu pure-menu-open">
-		<ul>
-			<li class="pure-menu-heading"><strong>Tools</strong></li>
-			<li><a href="/mpd/action/update" onclick="return lconfirm()">Update</a></li>
-		</ul>
+		<div id="volume">
+			<div id="volume-label"><label for="st-voliume">Volume</label></div>
+			<div id="slider-volume"></div>
+			<div id="st-volume">&nbsp;</div>
+		</div>
+
+		<div style="clear: both"></div>
+
+		<div id="additional-info">
+			<div>
+				<label for="curr-file">File:</label>
+				<span id="curr-file"></span>
+			</div>
+			<div>
+				<label for="st-audio">Audio:</label>
+				<span id="st-audio">&nbsp;</span>
+			</div>
+			<div>
+				<label for="st-bitrate">Bitrate</label>
+				<span id="st-bitrate">&nbsp;</span>
+			</div>
 		</div>
 	</section>
 </div>

@@ -27,6 +27,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/playlist/{plist}/{action}",
 		app.VerifyPermission(playlistsActionPageHandler, "mpd"))
 	subRouter.HandleFunc("/service/info", app.VerifyPermission(infoHandler, "mpd"))
+	subRouter.HandleFunc("/actions", app.VerifyPermission(actionsPageHangler, "mpd")).Name("mpd-actions")
 }
 
 type pageCtx struct {
@@ -43,6 +44,7 @@ func createLocalMenu() []*app.MenuItem {
 			app.NewMenuItemFromRoute("Playlist", "mpd-playlist"),
 			app.NewMenuItemFromRoute("Playlists", "mpd-playlists"),
 			app.NewMenuItemFromRoute("Log", "mpd-log"),
+			app.NewMenuItemFromRoute("Actions", "mpd-actions"),
 		}
 	}
 	return localMenu
@@ -215,4 +217,12 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 	}).([]byte)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(data)
+}
+
+const fakeResult = `{"Status":{"consume":"0","mixrampdb":"0.000000","mixrampdelay":"nan","nextsong":"1","nextsongid":"1","playlist":"2","playlistlength":"222","random":"0","repeat":"0","single":"0","song":"0","songid":"0","state":"stop","volume":"100","xfade":"0"},"Current":{"Album":"Café Del Mar - Classic I","Artist":"Jules Massenet","Date":"2002","Genre":"Baroque, Modern, Romantic, Classical","Id":"0","Last-Modified":"2013-09-27T06:14:59Z","Pos":"0","Time":"312","Title":"Meditation","Track":"01/12","file":"muzyka/mp3/cafe del mar/compilations/classics/2002, classic/01. jules massenet - meditation.mp3"},"Error":""}`
+
+func actionsPageHangler(w http.ResponseWriter, r *http.Request) {
+	ctx := newPageCtx(w, r)
+	ctx.CurrentLocalMenuPos = "mpd-actions"
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "mpd/actions.tmpl", "flash.tmpl")
 }

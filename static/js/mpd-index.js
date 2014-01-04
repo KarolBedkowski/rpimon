@@ -2,6 +2,10 @@
 var MPD = MPD || {
 	changingPos: false,
 	changingVol: false,
+	lastState: {
+		Status: {},
+		Current: {},
+	},
 };
 
 function ts2str(ts) {
@@ -22,7 +26,6 @@ function ts2str(ts) {
 MPD.onError = function onErrorF(errormsg) {
 	$("#buttons-sect").hide();
 	$("#currsong-sect").hide();
-	$("#status-sect").hide();
 	$("#actions-sect").hide();
 	$("#error-msg").text(errormsg);
 	$("#error-msg-box").show();
@@ -41,7 +44,6 @@ MPD.refresh = function refreshF() {
 			$("#error-msg-box").hide();
 			$("#buttons-sect").show();
 			$("#currsong-sect").show();
-			$("#status-sect").show();
 			$("#actions-sect").show();
 			var current = msg["Current"];
 			$('#curr-name').text(current["Name"]);
@@ -53,12 +55,35 @@ MPD.refresh = function refreshF() {
 			$('#curr-genre').text(current["Genre"]);
 			$('#curr-file').text(current["file"]);
 			var status = msg["Status"];
-			$("#st-state").text(status["state"]);
 			$("#st-time").text(ts2str(status["elapsed"]));
 			$("#st-audio").text(status["audio"]);
 			$("#st-bitrate").text(status["bitrate"]);
-			$("#st-random").text(status["random"] == "1" ? "YES" : "NO");
-			$("#st-repeat").text(status["repeat"] == "1" ? "YES" : "NO");
+			if (status["random"] != MPD.lastState["Status"]["random"]) {
+				if (status["random"] == "1") {
+					$('a[data-action="toggle_random"]')
+						.removeClass("ui-state-default")
+						.addClass("ui-state-active")
+						.attr("title", "Random OFF");
+				} else {
+					$('a[data-action="toggle_random"]')
+						.removeClass("ui-state-active")
+						.addClass("ui-state-default")
+						.attr("title", "Random ON");
+				}
+			}
+			if (status["repeat"] != MPD.lastState["Status"]["repeat"]) {
+				if (status["repeat"] == "1") {
+					$('a[data-action="toggle_repeat"]')
+						.removeClass("ui-state-default")
+						.addClass("ui-state-active")
+						.attr("title", "Repeat OFF");
+				} else {
+					$('a[data-action="toggle_repeat"]')
+						.removeClass("ui-state-active")
+						.addClass("ui-state-default")
+						.attr("title", "Repeat ON");
+				}
+			}
 			var volume = status["volume"];
 			$("#st-volume").text(volume);
 			if (!MPD.changingVol) {
@@ -81,10 +106,20 @@ MPD.refresh = function refreshF() {
 					$("#slider-song-pos").slider("option", "disabled", true);
 				}
 			}
+			if (status["state"] != MPD.lastState["Status"]["state"]) {
+				if (status["state"] == "play") {
+					$('a[data-action="play"]').hide();
+					$('a[data-action="pause"]').show();
+				} else {
+					$('a[data-action="play"]').show();
+					$('a[data-action="pause"]').hide();
+				}
+			}
+			MPD.lastState = msg;
 			setTimeout(MPD.refresh, 1000);
 		}
 	}).fail(function(jqXHR, textStatus) {
-		MPD.onError(msg["Error"]);
+		MPD.onError(textStatus);
 	});
  }
 
@@ -108,7 +143,6 @@ MPD.seek = function seekF(value) {
  MPD.init = function initF() {
 	$("#buttons-sect").hide();
 	$("#currsong-sect").hide();
-	$("#status-sect").hide();
 	$("#actions-sect").hide();
 	$("a.pure-button").on("click", MPD.doAction);
 	$("a.ajax-action").on("click", MPD.doAction);
