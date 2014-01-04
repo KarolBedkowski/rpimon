@@ -9,13 +9,13 @@ var MPD = MPD || {
 };
 
 function ts2str(ts) {
-	ts = parseFloat(ts);
+	ts = Math.floor(parseFloat(ts));
 	if (ts > 0) {
-		var date = new Date(ts * 1000.0);
-		var hours = date.getHours() - 1;
-		var minutes = date.getMinutes();
-		var seconds = date.getSeconds();
-		return [(hours < 10) ? ("0" + hours) : hours,
+		var seconds = Math.floor(ts % 60);
+		ts = Math.floor(ts / 60);
+		var minutes = ts % 60;
+		var hours = Math.floor(ts / 60);
+		return [hours,
 			(minutes < 10) ? ("0" + minutes) : minutes,
 			(seconds < 10) ? ("0" + seconds) : seconds].join(":");
 		}
