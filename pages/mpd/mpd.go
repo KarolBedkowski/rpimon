@@ -94,7 +94,9 @@ func actionPageHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		mpdAction(action)
 	}
-	http.Redirect(w, r, app.GetNamedURL("mpd-index"), http.StatusFound)
+	if action == "update" {
+		http.Redirect(w, r, app.GetNamedURL("mpd-index"), http.StatusFound)
+	}
 }
 
 type playlistPageCtx struct {
