@@ -5,7 +5,7 @@
 
 <div class="pure-u-1" id="error-msg-box">
 	<div class="warnings">
-		<p>Connection error:<br/><span id="error-msg">Loading...</span></p>
+		<p id="error-msg">Loading...</p>
 	</div>
 </div>
 
@@ -127,30 +127,7 @@
 		return confirm('Are you sure?');
 	}
 
-	$(function() {
-		$("#buttons-sect").hide();
-		$("#currsong-sect").hide();
-		$("#status-sect").hide();
-		$("#actions-sect").hide();
-		$("a.pure-button").on("click", do_action);
-		$("a.ajax-action").on("click", do_action);
-		$("#slider-volume").slider({
-			min: 0,
-			max: 100,
-			// slide
-			stop: function( event, ui ) {
-				setVolume(ui.value);
-			}
-		});
-		$("#slider-song-pos").slider({
-			disabled: true,
-			min: 0,
-			stop: function( event, ui ) {
-				seek(ui.value);
-			}
-		});
-		setTimeout(refresh, 50);
-	});
+	$(MPD.init);
 </script>
 
 

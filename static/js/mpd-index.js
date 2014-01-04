@@ -1,4 +1,9 @@
 
+var MPD = MPD || {
+	changingPos: false,
+	changingVol: false,
+};
+
 function ts2str(ts) {
 	ts = parseFloat(ts);
 	if (ts > 0) {
@@ -14,24 +19,24 @@ function ts2str(ts) {
 }
 
 
-function onError(errormsg) {
+MPD.onError = function onErrorF(errormsg) {
 	$("#buttons-sect").hide();
 	$("#currsong-sect").hide();
 	$("#status-sect").hide();
 	$("#actions-sect").hide();
 	$("#error-msg").text(errormsg);
 	$("#error-msg-box").show();
-	setTimeout(refresh, 5000);
+	setTimeout(MPD.refresh, 5000);
 }
 
-function refresh() {
+MPD.refresh = function refreshF() {
 	$.ajax({
 		url: '/mpd/service/info',
 		cache: false,
 		dataType: 'json'
 	}).done(function(msg) {
 		if (msg["Error"]) {
-			onError(msg["Error"]);
+			MPD.onError(msg["Error"]);
 		} else {
 			$("#error-msg-box").hide();
 			$("#buttons-sect").show();
@@ -56,46 +61,79 @@ function refresh() {
 			$("#st-repeat").text(status["repeat"] == "1" ? "YES" : "NO");
 			var volume = status["volume"];
 			$("#st-volume").text(volume);
-			var currVol = $("#slider-volume").slider("value");
-			if (currVol != volume) {
-				$("#slider-volume").slider("value", volume);
+			if (!MPD.changingVol) {
+				var currVol = $("#slider-volume").slider("value");
+				if (currVol != volume) {
+					$("#slider-volume").slider("value", volume);
+				}
 			}
 			var songTime = current["Time"];
 			$("#curr-time").text(ts2str(songTime));
-			if (songTime) {
-				songTime = parseInt(songTime);
-				var pos = parseInt(status["elapsed"])
-				$("#slider-song-pos").slider("option", "disabled", false);
-				$("#slider-song-pos").slider("option", "max", songTime);
-				$("#slider-song-pos").slider("value", pos);
-			} else {
-				$("#slider-song-pos").slider("value", 0);
-				$("#slider-song-pos").slider("option", "disabled", true);
+			if (!MPD.changingPos) {
+				if (songTime) {
+					songTime = parseInt(songTime);
+					var pos = parseInt(status["elapsed"])
+					$("#slider-song-pos").slider("option", "disabled", false);
+					$("#slider-song-pos").slider("option", "max", songTime);
+					$("#slider-song-pos").slider("value", pos);
+				} else {
+					$("#slider-song-pos").slider("value", 0);
+					$("#slider-song-pos").slider("option", "disabled", true);
+				}
 			}
-			setTimeout(refresh, 1000);
+			setTimeout(MPD.refresh, 1000);
 		}
 	}).fail(function(jqXHR, textStatus) {
-		onError(msg["Error"]);
+		MPD.onError(msg["Error"]);
 	});
  }
 
-function do_action(t) {
+MPD.doAction = function doActionF(t) {
 	var btn = $(this);
 	var act = btn.data("action");
-	$.get("/mpd/action/" + act, 
-		function(data) {
-		});
+	$.get("/mpd/action/" + act)
  }
 
 
- function setVolume(value) {
-	$.get("/mpd/action/volume", {vol: value
- }).done(function(data) {
-	});
+MPD.setVolume = function setVolumeF(value) {
+	$.get("/mpd/action/volume", {vol: value});
  }
 
- function seek(value) {
-	$.get("/mpd/action/seek", {time: value
- }).done(function(data) {
+
+MPD.seek = function seekF(value) {
+	$.get("/mpd/action/seek", {time: value});
+ }
+
+
+ MPD.init = function initF() {
+	$("#buttons-sect").hide();
+	$("#currsong-sect").hide();
+	$("#status-sect").hide();
+	$("#actions-sect").hide();
+	$("a.pure-button").on("click", MPD.doAction);
+	$("a.ajax-action").on("click", MPD.doAction);
+	$("#slider-volume").slider({
+		min: 0,
+		max: 100,
+		// slide
+		start: function(event, ui) {
+			MPD.changingVol = true;
+		},
+		stop: function(event, ui) {
+			MPD.changingVol = false;
+			MPD.setVolume(ui.value);
+		}
 	});
+	$("#slider-song-pos").slider({
+		disabled: true,
+		min: 0,
+		start: function(event, ui) {
+			MPD.changingPos = true;
+		},
+		stop: function(event, ui) {
+			MPD.changingPos = false;
+			MPD.seek(ui.value);
+		}
+	});
+	setTimeout(MPD.refresh, 50);
  }
