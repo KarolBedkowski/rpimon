@@ -24,9 +24,8 @@ function ts2str(ts) {
 
 
 MPD.onError = function onErrorF(errormsg) {
-	$("#buttons-sect").hide();
-	$("#currsong-sect").hide();
-	$("#actions-sect").hide();
+	$("div.mpd-buttons-sect").hide();
+	$("div.mpd-info-section").hide();
 	$("#error-msg").text(errormsg);
 	$("#error-msg-box").show();
 	setTimeout(MPD.refresh, 5000);
@@ -42,9 +41,8 @@ MPD.refresh = function refreshF() {
 			MPD.onError(msg["Error"]);
 		} else {
 			$("#error-msg-box").hide();
-			$("#buttons-sect").show();
-			$("#currsong-sect").show();
-			$("#actions-sect").show();
+			$("div.mpd-buttons-sect").show();
+			$("div.mpd-info-section").show();
 			var current = msg["Current"];
 			$('#curr-name').text(current["Name"]);
 			$('#curr-artist').text(current["Artist"]);
@@ -141,9 +139,8 @@ MPD.seek = function seekF(value) {
 
 
  MPD.init = function initF() {
-	$("#buttons-sect").hide();
-	$("#currsong-sect").hide();
-	$("#actions-sect").hide();
+	$("div.mpd-buttons-sect").hide();
+	$("div.mpd-info-section").hide();
 	$("a.pure-button").on("click", MPD.doAction);
 	$("a.ajax-action").on("click", MPD.doAction);
 	$("#slider-volume").slider({

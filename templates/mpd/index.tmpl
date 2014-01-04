@@ -9,50 +9,70 @@
 	</div>
 </div>
 
-<div class="pure-u-1" id="buttons-sect">
+<div class="pure-u-1 mpd-buttons-sect">
 	<section>
 		<a class="pure-button ui-state-default" href="#" data-action="prev"><span class="ui-icon ui-icon-seek-prev"></span></a>
 		<a class="pure-button ui-state-default" href="#" data-action="play"><span class="ui-icon ui-icon-play"></span></a>
 		<a class="pure-button ui-state-default" href="#" data-action="pause"><span class="ui-icon ui-icon-pause"></span></a>
 		<a class="pure-button ui-state-default" href="#" data-action="stop"><span class="ui-icon ui-icon-stop"></span></a>
 		<a class="pure-button ui-state-default" href="#" data-action="next"><span class="ui-icon ui-icon-seek-next"></span></a>
-		<a class="pure-button ui-state-default" href="#" data-action="toggle_random"><span class="ui-icon ui-icon-shuffle"></span></a>
-		<a class="pure-button ui-state-default" href="#" data-action="toggle_repeat"><span class="ui-icon ui-icon-arrowrefresh-1-w"></span></a>
 	</section>
 </div>
 
-<div class="pure-u-1" id="currsong-sect">
+<div class="pure-u-1 mpd-info-section" id="song-box">
 	<section>
 		<div id="curr-name"></div>
 		<div id="curr-artist"></div>
 		<div id="track-info">
 			<span id="curr-track"></span>
+			&nbsp;
 			<span id="curr-title"></span>
 		</div>
 		<div id="album-info">
 			<span id="curr-date"></span>
+			&nbsp;
 			<span id="curr-album"></span>
 		</div>
 		<div id="curr-genre"></div>
+	</section>
+</div>
 
+<div class="pure-u-1 mpd-info-section" id="mpd-sliders-pos">
+	<section>
 		<div id="pos-info">
-			<div id="slider-song-pos" style="width: 300px"></div>
 			<div id="pos-info-time">
 				<span id="st-time">&nbsp;</span>
 				<span id="curr-time">&nbsp;</span>
 			</div>
+			<div style="clear:both;"></div>
+			<div id="slider-song-pos"></div>
 		</div>
-		
-		<div style="clear: both"></div>
+	</section>
+</div>
 
+<div class="pure-u-1 mpd-info-section" id="mpd-sliders-vol">
+	<section>
 		<div id="volume">
-			<div id="volume-label"><label for="st-voliume">Volume</label></div>
+			<div id="info">
+				<div id="volume-label"><label for="st-voliume">Volume&nbsp;</label></div>
+				<div id="st-volume">&nbsp;</div>
+			</div>
+			<div style="clear:both;"></div>
 			<div id="slider-volume"></div>
-			<div id="st-volume">&nbsp;</div>
 		</div>
 
-		<div style="clear: both"></div>
+	</section>
+</div>
 
+<div class="pure-u-1 mpd-buttons-sect">
+	<section>
+		<a class="pure-button ui-state-default" href="#" data-action="toggle_random"><span class="ui-icon ui-icon-shuffle"></span></a>
+		<a class="pure-button ui-state-default" href="#" data-action="toggle_repeat"><span class="ui-icon ui-icon-arrowrefresh-1-w"></span></a>
+	</section>
+</div>
+
+<div class="pure-u-1 mpd-info-section" id="songinfo-box">
+	<section>
 		<div id="additional-info">
 			<div>
 				<label for="curr-file">File:</label>
@@ -69,6 +89,7 @@
 		</div>
 	</section>
 </div>
+
 
 <script src="/static/lib/jquery/jquery-ui-1.10.3.custom.min.js" type="text/javascript" ></script>
 <script src="/static/js/mpd-index.js" type="text/javascript" ></script>
