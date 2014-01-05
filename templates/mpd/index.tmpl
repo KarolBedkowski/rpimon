@@ -5,7 +5,7 @@
 
 <div class="pure-u-1" id="error-msg-box">
 	<div class="warnings">
-		<p id="error-msg">Loading...</p>
+		<p id="error-msg"></p>
 	</div>
 </div>
 
@@ -83,8 +83,16 @@
 				<span id="st-audio">&nbsp;</span>
 			</div>
 			<div>
-				<label for="st-bitrate">Bitrate</label>
+				<label for="st-bitrate">Bitrate:</label>
 				<span id="st-bitrate">&nbsp;</span>
+			</div>
+			<div>
+				<label for="st-playlistlength">Playlist length:</label>
+				<span id="st-playlistlength">&nbsp;</span>
+			</div>
+			<div>
+				<label for="st-state">State:</label>
+				<span id="st-state">&nbsp;</span>
 			</div>
 		</div>
 	</section>
@@ -95,10 +103,6 @@
 <script src="/static/js/mpd.js" type="text/javascript" ></script>
 
 <script type="text/javascript">
-	function lconfirm() {
-		return confirm('Are you sure?');
-	}
-
 	$(function() {
 		var ctrlUrl = "{{namedurl "mpd-control" "action" "-"}}";
 		ctrlUrl = ctrlUrl.substring(0, ctrlUrl.length - 2);

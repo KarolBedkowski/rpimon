@@ -22,7 +22,7 @@ function ts2str(ts) {
 			(seconds < 10) ? ("0" + seconds) : seconds].join(":");
 		}
 	return "";
-}
+};
 
 
 MPD.onError = function onErrorF(errormsg) {
@@ -31,7 +31,7 @@ MPD.onError = function onErrorF(errormsg) {
 	$("#error-msg").text(errormsg);
 	$("#error-msg-box").show();
 	setTimeout(MPD.refresh, 5000);
-}
+};
 
 MPD.refresh = function refreshF() {
 	$.ajax({
@@ -84,6 +84,8 @@ MPD.refresh = function refreshF() {
 						.attr("title", "Repeat ON");
 				}
 			}
+			$("#st-playlistlength").text(status["playlistlength"]);
+			$("#st-state").text(status["state"]);
 			var volume = status["volume"];
 			$("#st-volume").text(volume);
 			if (!MPD.changingVol) {
@@ -116,33 +118,40 @@ MPD.refresh = function refreshF() {
 				}
 			}
 			MPD.lastState = msg;
+			MPD.connectingMessage.hide()
 			setTimeout(MPD.refresh, 1000);
 		}
 	}).fail(function(jqXHR, textStatus) {
 		MPD.onError(textStatus);
 	});
- }
+};
 
-MPD.doAction = function doActionF(t) {
+MPD.doAction = function doActionF(event) {
+	event.preventDefault();
 	var btn = $(this);
 	var act = btn.data("action");
 	$.get(MPD.mpdControlUrl + "/" + act)
- }
+};
 
 
 MPD.setVolume = function setVolumeF(value) {
 	$.get(MPD.mpdControlUrl + "/volume", {vol: value});
- }
+};
 
 
 MPD.seek = function seekF(value) {
 	$.get(MPD.mpdControlUrl + "/seek", {time: value});
- }
+};
 
 
- MPD.initIndexPage = function initIndexPageF(mpdControlUrl, mpdServiceInfoUrl) {
+MPD.initIndexPage = function initIndexPageF(mpdControlUrl, mpdServiceInfoUrl) {
 	MPD.mpdControlUrl = mpdControlUrl
 	MPD.mpdServiceInfoUrl = mpdServiceInfoUrl
+	$("#error-msg-box").hide();
+	MPD.connectingMessage = new Messi('Connecting...', {
+		closeButton: false,
+		width: 'auto',
+	});
 	$("div.mpd-buttons-sect").hide();
 	$("div.mpd-info-section").hide();
 	$("a.pure-button").on("click", MPD.doAction);
@@ -171,12 +180,13 @@ MPD.seek = function seekF(value) {
 		}
 	});
 	setTimeout(MPD.refresh, 50);
- };
+};
 
- MPD.initLibraryPage = function initLibraryPageF(mpdControlUrl, mpdServiceInfoUrl) {
+MPD.initLibraryPage = function initLibraryPageF(mpdControlUrl, mpdServiceInfoUrl) {
 	MPD.mpdControlUrl = mpdControlUrl
 	MPD.mpdServiceInfoUrl = mpdServiceInfoUrl
-	$("a.action").on("click", function() {
+	$("a.action").on("click", function(event) {
+		event.preventDefault();
 		var link = $(this);
 		var p = link.data("path");
 		var message = new Messi('Adding...', {
@@ -205,5 +215,5 @@ MPD.seek = function seekF(value) {
 			});
 		})
 	});
- };
+};
 

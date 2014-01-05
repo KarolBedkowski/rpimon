@@ -10,7 +10,7 @@
 		</div>
 		{{else}}
 		<p>
-			<a class="pure-button" href="{{namedurl "mpd-pl-action" "action" "clear"}}" onclick="return lconfirm()">Clear</a>
+			<a class="pure-button" href="{{namedurl "mpd-pl-action" "action" "clear"}}" onclick="return RPI.confirm()">Clear</a>
 		</p>
 		<table class="pure-table">
 			<thead>
@@ -50,9 +50,6 @@
 
 <script src="/static/lib/jquery/jquery.tablesorter.min.js" type="text/javascript"></script>
 <script type="text/javascript">
-	function lconfirm() {
-		return confirm('Are you sure?');
-	}
 	$(function() {
 		$('table').tablesorter({
 			ignoreCase: true,
