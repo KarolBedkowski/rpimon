@@ -378,3 +378,7 @@ div#additional-info {
 		text-align: left;
 	}
 }
+
+.pure-button .button-label {
+	font-size: 8pt;
+}

@@ -63,12 +63,16 @@ MPD.refresh = function refreshF() {
 					$('a[data-action="toggle_random"]')
 						.removeClass("ui-state-default")
 						.addClass("ui-state-active")
-						.attr("title", "Random OFF");
+						.attr("title", "Random ON");
+					$('a[data-action="toggle_random"] span.button-label')
+						.text("ON");
 				} else {
 					$('a[data-action="toggle_random"]')
 						.removeClass("ui-state-active")
 						.addClass("ui-state-default")
-						.attr("title", "Random ON");
+						.attr("title", "Random OFF");
+					$('a[data-action="toggle_random"] span.button-label')
+						.text("off");
 				}
 			}
 			if (status["repeat"] != MPD.lastState["Status"]["repeat"]) {
@@ -76,12 +80,16 @@ MPD.refresh = function refreshF() {
 					$('a[data-action="toggle_repeat"]')
 						.removeClass("ui-state-default")
 						.addClass("ui-state-active")
-						.attr("title", "Repeat OFF");
+						.attr("title", "Repeat ON");
+					$('a[data-action="toggle_repeat"] span.button-label')
+						.text("ON");
 				} else {
 					$('a[data-action="toggle_repeat"]')
 						.removeClass("ui-state-active")
 						.addClass("ui-state-default")
-						.attr("title", "Repeat ON");
+						.attr("title", "Repeat OFF");
+					$('a[data-action="toggle_repeat"] span.button-label')
+						.text("off");
 				}
 			}
 			$("#st-playlistlength").text(status["playlistlength"]);
