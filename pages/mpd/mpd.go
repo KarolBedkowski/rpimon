@@ -1,7 +1,6 @@
 package mpd
 
 import (
-	"code.google.com/p/gompd/mpd"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
@@ -107,103 +106,6 @@ func actionPageHandler(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 		}
 	}
-}
-
-type playlistPageCtx struct {
-	*app.BasePageContext
-	CurrentPage   string
-	Playlist      []mpd.Attrs
-	CurrentSongID string
-	Error         error
-}
-
-func newPlaylistPageCtx(w http.ResponseWriter, r *http.Request) *playlistPageCtx {
-	ctx := &playlistPageCtx{BasePageContext: app.NewBasePageContext("Mpd", "mpd", w, r)}
-	ctx.LocalMenu = createLocalMenu()
-	ctx.CurrentLocalMenuPos = "mpd-playlist"
-	return ctx
-}
-
-func playlistPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := newPlaylistPageCtx(w, r)
-	playlist, err, current := mpdPlaylistInfo()
-	data.Playlist = playlist
-	data.Error = err
-	data.CurrentSongID = current
-	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlist.tmpl", "flash.tmpl")
-}
-
-func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	action, ok := vars["action"]
-	if !ok || action == "" {
-		l.Warn("page.mpd songActionPageHandler: missing action ", vars)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
-		return
-	}
-	songIDStr, ok := vars["song-id"]
-	if !ok || songIDStr == "" {
-		l.Warn("page.mpd songActionPageHandler: missing songID ", vars)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
-		return
-	}
-	songID, err := strconv.Atoi(songIDStr)
-	if err != nil || songID < 0 {
-		l.Warn("page.mpd songActionPageHandler: wrong songID ", vars)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
-		return
-	}
-	err = mpdSongAction(songID, action)
-	if err != nil {
-		session := app.GetSessionStore(w, r)
-		session.AddFlash(err.Error())
-		session.Save(r, w)
-	}
-	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
-}
-
-type playlistsPageCtx struct {
-	*app.BasePageContext
-	CurrentPage string
-	Playlists   []mpd.Attrs
-	Error       error
-}
-
-func newPlaylistsPageCtx(w http.ResponseWriter, r *http.Request) *playlistsPageCtx {
-	ctx := &playlistsPageCtx{BasePageContext: app.NewBasePageContext("Mpd", "mpd", w, r)}
-	ctx.LocalMenu = createLocalMenu()
-	ctx.CurrentLocalMenuPos = "mpd-playlists"
-	return ctx
-}
-func playlistsPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := newPlaylistsPageCtx(w, r)
-	playlists, err := mpdGetPlaylists()
-	data.Playlists = playlists
-	data.Error = err
-	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlists.tmpl", "flash.tmpl")
-}
-
-func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	action, ok := vars["action"]
-	if !ok || action == "" {
-		l.Warn("page.mpd playlistsActionPageHandler: missing action ", vars)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
-		return
-	}
-	playlist, ok := vars["plist"]
-	if !ok || playlist == "" {
-		l.Warn("page.mpd playlistsActionPageHandler: missing songID ", vars)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
-		return
-	}
-	err := mpdPlaylistAction(playlist, action)
-	if err != nil {
-		session := app.GetSessionStore(w, r)
-		session.AddFlash(err.Error())
-		session.Save(r, w)
-	}
-	http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
 }
 
 func mpdLogPageHandler(w http.ResponseWriter, r *http.Request) {
