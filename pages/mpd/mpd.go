@@ -19,14 +19,14 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "mpd"))
 	subRouter.HandleFunc("/info", app.VerifyPermission(mainPageHandler, "mpd")).Name("mpd-index")
-	subRouter.HandleFunc("/action/{action}", app.VerifyPermission(actionPageHandler, "mpd"))
+	subRouter.HandleFunc("/action/{action}", app.VerifyPermission(actionPageHandler, "mpd")).Name("mpd-action")
 	subRouter.HandleFunc("/log", app.VerifyPermission(mpdLogPageHandler, "mpd")).Name("mpd-log")
 	subRouter.HandleFunc("/playlist", app.VerifyPermission(playlistPageHandler, "mpd")).Name("mpd-playlist")
 	subRouter.HandleFunc("/song/{song-id:[0-9]+}/{action}",
 		app.VerifyPermission(songActionPageHandler, "mpd"))
 	subRouter.HandleFunc("/playlists", app.VerifyPermission(playlistsPageHandler, "mpd")).Name("mpd-playlists")
 	subRouter.HandleFunc("/playlist/{plist}/{action}",
-		app.VerifyPermission(playlistsActionPageHandler, "mpd"))
+		app.VerifyPermission(playlistsActionPageHandler, "mpd")).Name("mpd-playlists-action")
 	subRouter.HandleFunc("/service/info", app.VerifyPermission(infoHandler, "mpd"))
 	subRouter.HandleFunc("/actions", app.VerifyPermission(actionsPageHandler, "mpd")).Name("mpd-actions")
 	subRouter.HandleFunc("/library", app.VerifyPermission(libraryPageHandler, "mpd")).Name("mpd-library")
@@ -97,8 +97,15 @@ func actionPageHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		mpdAction(action)
 	}
-	if action == "update" {
-		http.Redirect(w, r, app.GetNamedURL("mpd-index"), http.StatusFound)
+	switch action {
+	case "update":
+		{
+			http.Redirect(w, r, app.GetNamedURL("mpd-index"), http.StatusFound)
+		}
+	case "playlist-clear":
+		{
+			http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+		}
 	}
 }
 

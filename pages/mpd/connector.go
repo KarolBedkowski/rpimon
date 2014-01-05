@@ -75,6 +75,8 @@ func mpdAction(action string) error {
 		conn.Repeat(stat["repeat"] == "0")
 	case "update":
 		conn.Update("")
+	case "playlist-clear":
+		conn.Clear()
 	default:
 		l.Warn("page.mpd mpdAction: wrong action ", action)
 	}

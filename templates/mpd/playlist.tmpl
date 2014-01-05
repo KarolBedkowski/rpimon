@@ -9,6 +9,9 @@
 			<p>Connection error:<br/>{{.Error}}</p>
 		</div>
 		{{else}}
+		<p>
+			<a class="pure-button" href="{{namedurl "mpd-action" "action" "playlist-clear"}}">Clear</a>
+		</p>
 		<table class="pure-table">
 			<thead>
 				<tr>
