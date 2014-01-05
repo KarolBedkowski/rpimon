@@ -92,7 +92,7 @@
 
 
 <script src="/static/lib/jquery/jquery-ui-1.10.3.custom.min.js" type="text/javascript" ></script>
-<script src="/static/js/mpd-index.js" type="text/javascript" ></script>
+<script src="/static/js/mpd.js" type="text/javascript" ></script>
 
 <script type="text/javascript">
 	function lconfirm() {
@@ -102,7 +102,7 @@
 	$(function() {
 		var ctrlUrl = "{{namedurl "mpd-control" "action" "-"}}";
 		ctrlUrl = ctrlUrl.substring(0, ctrlUrl.length - 2);
-		MPD.init(ctrlUrl, "{{namedurl "mpd-service-info"}}");
+		MPD.initIndexPage(ctrlUrl, "{{namedurl "mpd-service-info"}}");
 	});
 </script>
 

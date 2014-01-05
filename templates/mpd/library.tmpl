@@ -1,5 +1,9 @@
 {{define "body"}}
 
+<script src="/static/lib/jquery/messi.min.js" type="text/javascript"></script>
+<link href="/static/css/messi.min.css" rel="stylesheet" type="text/css" />
+
+
 <div class="pure-u-1">
 	<section>
 		<h1>MPD Library</h1>
@@ -38,9 +42,9 @@
 				<tr>
 					<td><a href="{{$ml}}?p={{$path}}/{{.}}">[ {{.}} ]</a></td>
 					<td>
-						<a href="{{$ml}}?a=add&u={{$path}}/{{.}}&p={{$path}}">Add</a>
+						<a href="#" class="action" data-action="add" data-uri="{{$path}}/{{.}}">Add</a>
 						| 
-						<a href="{{$ml}}?a=replace&u={{$path}}/{{.}}&p={{$path}}">Replace</a>
+						<a href="#" class="action" data-action="replace" data-uri="{{$path}}/{{.}}">Replace</a>
 					</td>
 				</tr>
 			{{end}}
@@ -48,9 +52,9 @@
 				<tr>
 					<td>{{.}}</td>
 					<td>
-						<a href="{{$ml}}?a=add&u={{$path}}/{{.}}&p={{$path}}">Add</a>
+						<a href="#" class="action" data-action="add" data-uri="{{$path}}/{{.}}">Add</a>
 						|
-						<a href="{{$ml}}?a=replace&u={{$path}}/{{.}}&p={{$path}}">Replace</a>
+						<a href="#" class="action" data-action="replace" data-uri="{{$path}}/{{.}}">Replace</a>
 					</td>
 				</tr>
 			{{end}}
@@ -60,7 +64,9 @@
 	</section>
 </div>
 
+
 <script src="/static/lib/jquery/jquery.tablesorter.min.js" type="text/javascript"></script>
+<script src="/static/js/mpd.js" type="text/javascript" ></script>
 <script type="text/javascript">
 	function lconfirm() {
 		return confirm('Are you sure?');
@@ -69,8 +75,12 @@
 		$('table').tablesorter({
 			ignoreCase: true,
 		});
+		var ctrlUrl = "{{namedurl "mpd-control" "action" "-"}}";
+		ctrlUrl = ctrlUrl.substring(0, ctrlUrl.length - 2);
+		MPD.initLibraryPage(ctrlUrl, "{{namedurl "mpd-service-info"}}");
 	});
 </script>
+
 
 
 {{end}}

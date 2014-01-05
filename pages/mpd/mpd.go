@@ -7,6 +7,7 @@ import (
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -178,39 +179,34 @@ func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx.Path = ""
 	r.ParseForm()
 	if path, ok := r.Form["p"]; ok {
-		ctx.Path = strings.TrimLeft(path[0], "/")
+		ctx.Path, _ = url.QueryUnescape(strings.TrimLeft(path[0], "/"))
 	}
 	if action, ok := r.Form["a"]; ok {
-		switch action[0] {
-		case "add":
+		switch {
+		case action[0] == "add" || action[0] == "replace":
 			if uriL, ok := r.Form["u"]; ok {
 				uri := strings.TrimLeft(uriL[0], "/")
-				err := addFileToPlaylist(uri, false)
+				uri, _ = url.QueryUnescape(uri)
+				err := addFileToPlaylist(uri, action[0] == "replace")
 				if err == nil {
-					ctx.AddFlashMessage("Added " + uri)
-					ctx.Save()
-					http.Redirect(w, r, app.GetNamedURL("mpd-library")+
-						h.BuildQuery("p", ctx.Path), http.StatusFound)
+					if r.Method == "GET" {
+						if action[0] == "add" {
+							ctx.AddFlashMessage("Added " + uri)
+						} else {
+							ctx.AddFlashMessage("Playlist cleared and added " + uri)
+						}
+						ctx.Save()
+						http.Redirect(w, r, app.GetNamedURL("mpd-library")+
+							h.BuildQuery("p", ctx.Path), http.StatusFound)
+					} else {
+						w.Write([]byte("OK"))
+					}
 					return
 				} else {
 					ctx.Error = err.Error()
 				}
 			}
-		case "replace":
-			if uriL, ok := r.Form["u"]; ok {
-				uri := strings.TrimLeft(uriL[0], "/")
-				err := addFileToPlaylist(uri, true)
-				if err == nil {
-					ctx.AddFlashMessage("Playlist cleared and added " + uri)
-					ctx.Save()
-					http.Redirect(w, r, app.GetNamedURL("mpd-library")+
-						h.BuildQuery("p", ctx.Path), http.StatusFound)
-					return
-				} else {
-					ctx.Error = err.Error()
-				}
-			}
-		case "up":
+		case action[0] == "up":
 			if ctx.Path != "" {
 				idx := strings.LastIndex(ctx.Path, "/")
 				if idx > 0 {
@@ -221,6 +217,10 @@ func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	ctx.Folders, ctx.Files, _ = getFiles(ctx.Path)
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "mpd/library.tmpl", "flash.tmpl")
+	if r.Method == "GET" {
+		ctx.Folders, ctx.Files, _ = getFiles(ctx.Path)
+		app.RenderTemplate(w, ctx, "base", "base.tmpl", "mpd/library.tmpl", "flash.tmpl")
+	} else {
+		w.Write([]byte(ctx.Error))
+	}
 }

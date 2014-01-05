@@ -140,7 +140,7 @@ MPD.seek = function seekF(value) {
  }
 
 
- MPD.init = function initF(mpdControlUrl, mpdServiceInfoUrl) {
+ MPD.initIndexPage = function initIndexPageF(mpdControlUrl, mpdServiceInfoUrl) {
 	MPD.mpdControlUrl = mpdControlUrl
 	MPD.mpdServiceInfoUrl = mpdServiceInfoUrl
 	$("div.mpd-buttons-sect").hide();
@@ -171,4 +171,39 @@ MPD.seek = function seekF(value) {
 		}
 	});
 	setTimeout(MPD.refresh, 50);
- }
+ };
+
+ MPD.initLibraryPage = function initLibraryPageF(mpdControlUrl, mpdServiceInfoUrl) {
+	MPD.mpdControlUrl = mpdControlUrl
+	MPD.mpdServiceInfoUrl = mpdServiceInfoUrl
+	$("a.action").on("click", function() {
+		var link = $(this);
+		var p = link.data("path");
+		var message = new Messi('Adding...', {
+			closeButton: false,
+			modal: true,
+			width: 'auto',
+		});
+		$("div.message").show();
+		$.ajax({
+			type: "PUT",
+			data: {
+				a: link.data("action"),
+				u: link.data("uri"),
+			}
+		}).done(function(msg) {
+			message.hide()
+		}).fail(function(jqXHR, textStatus) {
+			console.log(textStatus);
+			message.hide()
+			new Messi(textStatus, {
+				title: 'Error', 
+				titleClass: 'anim warning', 
+				buttons: [{
+					id: 0, label: 'Close', val: 'X'
+				}]
+			});
+		})
+	});
+ };
+
