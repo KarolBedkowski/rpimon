@@ -75,8 +75,6 @@ func mpdAction(action string) error {
 		conn.Repeat(stat["repeat"] == "0")
 	case "update":
 		conn.Update("")
-	case "playlist-clear":
-		conn.Clear()
 	default:
 		l.Warn("page.mpd mpdAction: wrong action ", action)
 	}
@@ -112,7 +110,8 @@ func mpdSongAction(songID int, action string) error {
 	switch action {
 	case "play":
 		conn.PlayId(songID)
-
+	case "remove":
+		conn.DeleteId(songID)
 	default:
 		l.Warn("page.mpd mpdAction: wrong action ", action)
 	}
@@ -132,7 +131,7 @@ func mpdGetPlaylists() (playlists []mpd.Attrs, err error) {
 	return
 }
 
-func mpdPlaylistAction(playlist, action string) error {
+func mpdPlaylistsAction(playlist, action string) error {
 	conn, err := mpd.Dial("tcp", host)
 	if err != nil {
 		return err
@@ -218,4 +217,17 @@ func addFileToPlaylist(uri string, clearPlaylist bool) error {
 		conn.Clear()
 	}
 	return conn.Add(uri)
+}
+
+func playlistAction(action string) (err error) {
+	conn, err := mpd.Dial("tcp", host)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	switch action {
+	case "clear":
+		return conn.Clear()
+	}
+	return
 }

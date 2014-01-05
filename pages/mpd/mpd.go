@@ -16,19 +16,48 @@ var subRouter *mux.Router
 // CreateRoutes for /mpd
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
+	// Main page
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "mpd"))
-	subRouter.HandleFunc("/info", app.VerifyPermission(mainPageHandler, "mpd")).Name("mpd-index")
-	subRouter.HandleFunc("/action/{action}", app.VerifyPermission(actionPageHandler, "mpd")).Name("mpd-action")
-	subRouter.HandleFunc("/log", app.VerifyPermission(mpdLogPageHandler, "mpd")).Name("mpd-log")
-	subRouter.HandleFunc("/playlist", app.VerifyPermission(playlistPageHandler, "mpd")).Name("mpd-playlist")
+	subRouter.HandleFunc("/main",
+		app.VerifyPermission(mainPageHandler, "mpd")).Name(
+		"mpd-index")
+	// Playing control
+	subRouter.HandleFunc("/control/{action}",
+		app.VerifyPermission(controlHandler, "mpd")).Name(
+		"mpd-control")
+	// current Playlist
+	subRouter.HandleFunc("/playlist",
+		app.VerifyPermission(playlistPageHandler, "mpd")).Name(
+		"mpd-playlist")
+	subRouter.HandleFunc("/playlist/{action}",
+		app.VerifyPermission(playlistActionPageHandler, "mpd")).Name(
+		"mpd-pl-action")
 	subRouter.HandleFunc("/song/{song-id:[0-9]+}/{action}",
-		app.VerifyPermission(songActionPageHandler, "mpd"))
-	subRouter.HandleFunc("/playlists", app.VerifyPermission(playlistsPageHandler, "mpd")).Name("mpd-playlists")
-	subRouter.HandleFunc("/playlist/{plist}/{action}",
-		app.VerifyPermission(playlistsActionPageHandler, "mpd")).Name("mpd-playlists-action")
-	subRouter.HandleFunc("/service/info", app.VerifyPermission(infoHandler, "mpd"))
-	subRouter.HandleFunc("/actions", app.VerifyPermission(actionsPageHandler, "mpd")).Name("mpd-actions")
-	subRouter.HandleFunc("/library", app.VerifyPermission(libraryPageHandler, "mpd")).Name("mpd-library")
+		app.VerifyPermission(songActionPageHandler, "mpd")).Name(
+		"mpd-song-action")
+	// Playlists
+	subRouter.HandleFunc("/playlists",
+		app.VerifyPermission(playlistsPageHandler, "mpd")).Name(
+		"mpd-playlists")
+	subRouter.HandleFunc("/playlists/{plist}/{action}",
+		app.VerifyPermission(playlistsActionPageHandler, "mpd")).Name(
+		"mpd-pls-action")
+	// Services
+	subRouter.HandleFunc("/service/info",
+		app.VerifyPermission(infoHandler, "mpd")).Name(
+		"mpd-service-info")
+	// MPD actions
+	subRouter.HandleFunc("/actions",
+		app.VerifyPermission(actionsPageHandler, "mpd")).Name(
+		"mpd-actions")
+	// Library
+	subRouter.HandleFunc("/library",
+		app.VerifyPermission(libraryPageHandler, "mpd")).Name(
+		"mpd-library")
+	// orher
+	subRouter.HandleFunc("/log",
+		app.VerifyPermission(mpdLogPageHandler, "mpd")).Name(
+		"mpd-log")
 }
 
 type pageCtx struct {
@@ -64,33 +93,29 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/index.tmpl", "flash.tmpl")
 }
 
-func actionPageHandler(w http.ResponseWriter, r *http.Request) {
+func controlHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	action, ok := vars["action"]
 	if !ok || action == "" {
-		l.Warn("page.mpd actionPageHandler: missing action ", vars)
+		l.Warn("page.mpd controlHandler: missing action ", vars)
 		return
 	}
 	r.ParseForm()
 	switch action {
 	case "volume":
-		{
-			if vol := r.Form["vol"][0]; vol != "" {
-				volInt, ok := strconv.Atoi(vol)
-				if ok == nil {
-					setVolume(volInt)
-					return
-				}
+		if vol := r.Form["vol"][0]; vol != "" {
+			volInt, ok := strconv.Atoi(vol)
+			if ok == nil {
+				setVolume(volInt)
+				return
 			}
 		}
 	case "seek":
-		{
-			if time := r.Form["time"][0]; time != "" {
-				timeInt, ok := strconv.Atoi(time)
-				if ok == nil {
-					seekPos(-1, timeInt)
-					return
-				}
+		if time := r.Form["time"][0]; time != "" {
+			timeInt, ok := strconv.Atoi(time)
+			if ok == nil {
+				seekPos(-1, timeInt)
+				return
 			}
 		}
 	default:
@@ -98,13 +123,9 @@ func actionPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	switch action {
 	case "update":
-		{
-			http.Redirect(w, r, app.GetNamedURL("mpd-index"), http.StatusFound)
-		}
+		http.Redirect(w, r, app.GetNamedURL("mpd-index"), http.StatusFound)
 	case "playlist-clear":
-		{
-			http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
-		}
+		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 	}
 }
 
@@ -162,46 +183,40 @@ func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
 	if action, ok := r.Form["a"]; ok {
 		switch action[0] {
 		case "add":
-			{
-				if uriL, ok := r.Form["u"]; ok {
-					uri := strings.TrimLeft(uriL[0], "/")
-					err := addFileToPlaylist(uri, false)
-					if err == nil {
-						ctx.AddFlashMessage("Added " + uri)
-						ctx.Save()
-						http.Redirect(w, r, app.GetNamedURL("mpd-library")+
-							h.BuildQuery("p", ctx.Path), http.StatusFound)
-						return
-					} else {
-						ctx.Error = err.Error()
-					}
+			if uriL, ok := r.Form["u"]; ok {
+				uri := strings.TrimLeft(uriL[0], "/")
+				err := addFileToPlaylist(uri, false)
+				if err == nil {
+					ctx.AddFlashMessage("Added " + uri)
+					ctx.Save()
+					http.Redirect(w, r, app.GetNamedURL("mpd-library")+
+						h.BuildQuery("p", ctx.Path), http.StatusFound)
+					return
+				} else {
+					ctx.Error = err.Error()
 				}
 			}
 		case "replace":
-			{
-				if uriL, ok := r.Form["u"]; ok {
-					uri := strings.TrimLeft(uriL[0], "/")
-					err := addFileToPlaylist(uri, true)
-					if err == nil {
-						ctx.AddFlashMessage("Playlist cleared and added " + uri)
-						ctx.Save()
-						http.Redirect(w, r, app.GetNamedURL("mpd-library")+
-							h.BuildQuery("p", ctx.Path), http.StatusFound)
-						return
-					} else {
-						ctx.Error = err.Error()
-					}
+			if uriL, ok := r.Form["u"]; ok {
+				uri := strings.TrimLeft(uriL[0], "/")
+				err := addFileToPlaylist(uri, true)
+				if err == nil {
+					ctx.AddFlashMessage("Playlist cleared and added " + uri)
+					ctx.Save()
+					http.Redirect(w, r, app.GetNamedURL("mpd-library")+
+						h.BuildQuery("p", ctx.Path), http.StatusFound)
+					return
+				} else {
+					ctx.Error = err.Error()
 				}
 			}
 		case "up":
-			{
-				if ctx.Path != "" {
-					idx := strings.LastIndex(ctx.Path, "/")
-					if idx > 0 {
-						ctx.Path = ctx.Path[:idx]
-					} else {
-						ctx.Path = ""
-					}
+			if ctx.Path != "" {
+				idx := strings.LastIndex(ctx.Path, "/")
+				if idx > 0 {
+					ctx.Path = ctx.Path[:idx]
+				} else {
+					ctx.Path = ""
 				}
 			}
 		}

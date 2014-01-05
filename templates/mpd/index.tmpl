@@ -99,7 +99,11 @@
 		return confirm('Are you sure?');
 	}
 
-	$(MPD.init);
+	$(function() {
+		var ctrlUrl = "{{namedurl "mpd-control" "action" "-"}}";
+		ctrlUrl = ctrlUrl.substring(0, ctrlUrl.length - 2);
+		MPD.init(ctrlUrl, "{{namedurl "mpd-service-info"}}");
+	});
 </script>
 
 

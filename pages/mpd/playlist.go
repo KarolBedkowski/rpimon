@@ -63,3 +63,12 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 }
+
+func playlistActionPageHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	action, ok := vars["action"]
+	if ok && action != "" {
+		playlistAction(action)
+	}
+	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+}

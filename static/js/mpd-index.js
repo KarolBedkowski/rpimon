@@ -6,6 +6,8 @@ var MPD = MPD || {
 		Status: {},
 		Current: {},
 	},
+	mpdControlUrl: "/mpd/control",
+	mpdServiceInfoUrl: "/mpd/service/info",
 };
 
 function ts2str(ts) {
@@ -33,7 +35,7 @@ MPD.onError = function onErrorF(errormsg) {
 
 MPD.refresh = function refreshF() {
 	$.ajax({
-		url: '/mpd/service/info',
+		url: MPD.mpdServiceInfoUrl,
 		cache: false,
 		dataType: 'json'
 	}).done(function(msg) {
@@ -124,21 +126,23 @@ MPD.refresh = function refreshF() {
 MPD.doAction = function doActionF(t) {
 	var btn = $(this);
 	var act = btn.data("action");
-	$.get("/mpd/action/" + act)
+	$.get(MPD.mpdControlUrl + "/" + act)
  }
 
 
 MPD.setVolume = function setVolumeF(value) {
-	$.get("/mpd/action/volume", {vol: value});
+	$.get(MPD.mpdControlUrl + "/volume", {vol: value});
  }
 
 
 MPD.seek = function seekF(value) {
-	$.get("/mpd/action/seek", {time: value});
+	$.get(MPD.mpdControlUrl + "/seek", {time: value});
  }
 
 
- MPD.init = function initF() {
+ MPD.init = function initF(mpdControlUrl, mpdServiceInfoUrl) {
+	MPD.mpdControlUrl = mpdControlUrl
+	MPD.mpdServiceInfoUrl = mpdServiceInfoUrl
 	$("div.mpd-buttons-sect").hide();
 	$("div.mpd-info-section").hide();
 	$("a.pure-button").on("click", MPD.doAction);

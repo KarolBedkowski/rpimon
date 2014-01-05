@@ -20,7 +20,7 @@
 			{{range .Playlists}}
 				<tr>
 					<td>{{.playlist}}</td>
-					<td><a href="/mpd/playlist/{{.playlist}}/play">Play</a> 
+					<td><a href="{{namedurl "mpd-pls-action" "plist" .playlist "action" "play"}}">Play</a> 
 					</td>
 				</tr>
 			{{end}}
