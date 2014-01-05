@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/gompd/mpd"
 	l "k.prv/rpimon/helpers/logging"
 	"strconv"
+	"strings"
 )
 
 type mpdStatus struct {
@@ -167,4 +168,52 @@ func seekPos(pos, time int) error {
 	song, err := conn.CurrentSong()
 	sid, err := strconv.Atoi(song["Id"])
 	return conn.SeekId(sid, time)
+}
+
+func getFiles(path string) (folders []string, files []string, err error) {
+	conn, err := mpd.Dial("tcp", host)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer conn.Close()
+	mpdFiles, err := conn.GetFiles()
+	if err != nil {
+		return nil, nil, err
+	}
+	var prefixLen = 0
+	if path != "" {
+		prefixLen = len(path) + 1
+	}
+	loadedFolders := make(map[string]bool)
+
+	for _, fname := range mpdFiles {
+		if !strings.HasPrefix(fname, path) {
+			continue
+		}
+		fname = fname[prefixLen:]
+		slashIndex := strings.Index(fname, "/")
+		if slashIndex > 0 {
+			fname = fname[:slashIndex]
+			if _, added := loadedFolders[fname]; !added {
+				loadedFolders[fname] = true
+				folders = append(folders, fname)
+			}
+		} else {
+			l.Debug(fname)
+			files = append(files, fname)
+		}
+	}
+	return
+}
+
+func addFileToPlaylist(uri string, clearPlaylist bool) error {
+	conn, err := mpd.Dial("tcp", host)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	if clearPlaylist {
+		conn.Clear()
+	}
+	return conn.Add(uri)
 }
