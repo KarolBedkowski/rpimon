@@ -41,9 +41,14 @@ func Close() {
 
 // GetNamedURL - Return url for named route and parameters
 func GetNamedURL(name string, pairs ...string) (url string) {
-	rurl, err := Router.Get(name).URL(pairs...)
+	route := Router.Get(name)
+	if route == nil {
+		l.Error("GetNamedURL %s error", name)
+		return ""
+	}
+	rurl, err := route.URL(pairs...)
 	if err != nil {
-		l.Warn("GetNamedURL error %s", err)
+		l.Error("GetNamedURL %s error %s", name, err)
 		return ""
 	}
 	return rurl.String()
