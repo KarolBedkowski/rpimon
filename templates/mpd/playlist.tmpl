@@ -1,8 +1,8 @@
 {{define "body"}}
-<div class="pure-u-1">
+<div class="container">
 	<h1>MPD Current Playlists</h1>
 	{{if .Error}}
-	<div class="warnings">
+	<div class="alert alert-warning">
 		<p>Connection error:<br/>{{.Error}}</p>
 	</div>
 	{{end}}
@@ -10,12 +10,12 @@
 
 {{if not .Error}}
 
-<div class="pure-u-1">
-	<section>
-		<p>
-			<a class="pure-button" href="{{namedurl "mpd-pl-action" "action" "clear"}}" onclick="return RPI.confirm()">Clear</a>
-		</p>
-		<table class="pure-table">
+<div class="container">
+	<p>
+		<a class="btn btn-default" href="{{namedurl "mpd-pl-action" "action" "clear"}}" onclick="return RPI.confirm()">Clear</a>
+	</p>
+	<div class="table-responsive">
+		<table class="table table-hover table-bordered table-condensed">
 			<thead>
 				<tr>
 					<th>Pos</th>
@@ -47,31 +47,29 @@
 			{{end}}
 			</tbody>
 		</table>
-	</section>
+	</div>
 </div>
 
-<div class="pure-g-r">
-	<div class="pure-u-1-2">
-		<section>
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
 			<h2>Save Playlist</h2>
 			<form action="{{namedurl "mpd-pl-save"}}" method="post">
 				<label for="name">Name:</label>
 				<input type="text" name="Name" id="name" required/>
-				<input type="submit" value="Save" />
+				<input type="submit" value="Save" class="btn btn-primary btn-sm" />
 				<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
 			</form>
-		</section>
-	</div>
-	<div class="pure-u-1-2">
-		<section>
+		</div>
+		<div class="col-md-6">
 			<h2>Add custom</h2>
 			<form action="{{namedurl "mpd-pl-add"}}" method="post">
 				<label for="uri">URI:</label>
 				<input type="text" name="Uri" id="uri" required/>
-				<input type="submit" value="Add" />
+				<input type="submit" value="Add" class="btn btn-primary btn-sm"/>
 				<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
 			</form>
-		</section>
+		</div>
 	</div>
 </div>
 {{end}}

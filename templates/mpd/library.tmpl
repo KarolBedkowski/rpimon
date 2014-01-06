@@ -1,29 +1,29 @@
 {{define "body"}}
 
-<div class="pure-u-1">
+<div class="container">
 	<h1>MPD Library</h1>
 </div>
 
 {{if .Error}}
-<div class="pure-u-1" id="error-msg-box">
-	<div class="warnings">
+<div class="container" id="error-msg-box">
+	<div class="alert alert-warning">
 		<p id="error-msg"></p>
 	</div>
 </div>
 
 {{else}}
 
-<div class="pure-u-1">
-	<section>
-		<h2>{{if .Path}}{{.Path}}{{else}}Library{{end}}</h2>
-		{{$path := .Path}}
-		{{$ml := namedurl "mpd-library"}}
-		<p>
-			{{if .Path}}
-			<a class="pure-button" href="{{$ml}}?a=up&p={{$path}}">Go Up</a>
-			{{end}}
-		</p>
-		<table class="pure-table">
+<div class="container">
+	<h2>{{if .Path}}{{.Path}}{{else}}Library{{end}}</h2>
+	{{$path := .Path}}
+	{{$ml := namedurl "mpd-library"}}
+	<p>
+		{{if .Path}}
+		<a class="btn btn-default" href="{{$ml}}?a=up&p={{$path}}" role="button">Go Up</a>
+		{{end}}
+	</p>
+	<div class="table-responsive">
+		<table class="table table-hover table-bordered table-condensed">
 			<thead>
 				<tr>
 					<th>Name</th>
@@ -53,16 +53,16 @@
 			{{end}}
 			</tbody>
 		</table>
-	</section>
+	</div>
 </div>
 
-<div class="pure-u-1">
+<div class="container">
 	<section>
 		<p>
-			<a class="pure-button action" data-action="add" data-uri="{{.Path}}">Add this folder</a>
-			<a class="pure-button action" data-action="replace" data-uri="{{.Path}}">Clear playlist and this folder</a>
+			<a class="btn btn-default action" data-action="add" data-uri="{{.Path}}" role="button">Add this folder</a>
+			<a class="btn btn-default action" data-action="replace" data-uri="{{.Path}}" role="button">Clear playlist and this folder</a>
 			&nbsp;
-			<a class="pure-button" href="{{namedurl "mpd-control" "action" "update"}}" onclick="return RPI.confirm()">Update Library</a></li>
+			<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" onclick="return RPI.confirm()" role="button">Update Library</a></li>
 		</p>
 	</section>
 </div>

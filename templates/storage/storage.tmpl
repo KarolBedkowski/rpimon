@@ -1,28 +1,24 @@
 {{define "body"}}
 
-<div class="pure-u-1">
-	<section>
-		<h1>Mount</h1>
-		<pre>{{.Data}}</pre>
-	</section>
+<div class="container">
+	<h1>Mount</h1>
+	<pre>{{.Data}}</pre>
 </div>
 
-<div class="pure-u-1">
-	<section>
-		<h1>Umount</h1>
-		<form action="{{namedurl "storage-umount"}}" method="POST" class="pure-form">
-			<fieldset>
-				<label for="fs">File system</label>
-				<select name="fs" id="fs">
-				{{range .Mounted}}
-					<option value="{{.Mpoint}}">{{.Mpoint}} ({{.Device}}, {{.Type}})</option>
-				{{end}}
-				</select>
-				<button type="submit" class="pure-button pure-button-primary">Umount</button>
-				<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
-			</fieldset>
-		</form>
-	</section>
+<div class="container">
+	<h2>Umount</h2>
+	<form action="{{namedurl "storage-umount"}}" method="POST">
+		<fieldset>
+			<label for="fs">File system</label>
+			<select name="fs" id="fs">
+			{{range .Mounted}}
+				<option value="{{.Mpoint}}">{{.Mpoint}} ({{.Device}}, {{.Type}})</option>
+			{{end}}
+			</select>
+			<button type="submit" class="btn btn-primary">Umount</button>
+			<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
+		</fieldset>
+	</form>
 </div>
 
 {{end}}
