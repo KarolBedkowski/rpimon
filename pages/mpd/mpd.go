@@ -197,9 +197,8 @@ func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
 						w.Write([]byte("OK"))
 					}
 					return
-				} else {
-					ctx.Error = err.Error()
 				}
+				ctx.Error = err.Error()
 			}
 		case action[0] == "up":
 			if ctx.Path != "" {

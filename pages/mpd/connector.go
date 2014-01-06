@@ -176,6 +176,7 @@ func seekPos(pos, time int) error {
 
 var mpdLibraryCache = h.NewKeyCache(300)
 
+// LibraryDir keep subdirectories and files for one folder in library
 type LibraryDir struct {
 	Folders []string
 	Files   []string
