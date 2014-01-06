@@ -50,16 +50,29 @@
 	</section>
 </div>
 
-<div class="pure-u-1">
-	<section>
-		<h2>Save Playlist</h2>
-		<form action="{{namedurl "mpd-pl-save"}}" method="post">
-			<label for="name">Name:</label>
-			<input type="text" name="Name" id="name" required/>
-			<input type="submit" value="Save" />
-			<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
-		</form>
-	</section>
+<div class="pure-g-r">
+	<div class="pure-u-1-2">
+		<section>
+			<h2>Save Playlist</h2>
+			<form action="{{namedurl "mpd-pl-save"}}" method="post">
+				<label for="name">Name:</label>
+				<input type="text" name="Name" id="name" required/>
+				<input type="submit" value="Save" />
+				<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
+			</form>
+		</section>
+	</div>
+	<div class="pure-u-1-2">
+		<section>
+			<h2>Add custom</h2>
+			<form action="{{namedurl "mpd-pl-add"}}" method="post">
+				<label for="uri">URI:</label>
+				<input type="text" name="Uri" id="uri" required/>
+				<input type="submit" value="Add" />
+				<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
+			</form>
+		</section>
+	</div>
 </div>
 {{end}}
 

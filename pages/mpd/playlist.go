@@ -92,7 +92,7 @@ func playlistSavePageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := playlistSave(form.Name); err != nil {
-		handleError("Saving playlist error", w, r)
+		handleError("Saving playlist error: "+err.Error(), w, r)
 	} else {
 		session := app.GetSessionStore(w, r)
 		session.AddFlash("Playlist saved")
@@ -105,4 +105,28 @@ func handleError(msg string, w http.ResponseWriter, r *http.Request) {
 	session := app.GetSessionStore(w, r)
 	session.AddFlash(msg)
 	session.Save(r, w)
+}
+
+type addToPlaylistForm struct {
+	Uri       string
+	CsrfToken string
+}
+
+func addToPlaylistPageHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	form := &addToPlaylistForm{}
+	decoder.Decode(form, r.Form)
+	if form.Uri == "" {
+		handleError("Missing uri", w, r)
+		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+		return
+	}
+	if err := addToPlaylist(form.Uri); err != nil {
+		handleError("Adding to playlist error "+err.Error(), w, r)
+	} else {
+		session := app.GetSessionStore(w, r)
+		session.AddFlash("Added to playlist")
+		session.Save(r, w)
+	}
+	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 }
