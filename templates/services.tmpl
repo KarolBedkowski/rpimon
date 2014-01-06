@@ -1,33 +1,31 @@
 
 {{define "body"}}
 
-<div class="pure-u-1">
-	<section>
-		<h1>Services</h1>
-		<table class="pure-table">
-			<thead>
-				<tr>
-					<th>Service</th>
-					<th>Status</th>
-					<th>Actions</th>
-				</tr>
-			</thead>
-			<tbody>
-			{{range $key, $val := .Services}}
-				<tr>
-					<td>{{$key}}</td>
-					<td>{{$val}}</td>
-					<td><a href="services/{{$key | urlquery}}/start" onclick="return RPI.confirm()">start</a> |
-					<a href="services/{{$key | urlquery}}/stop" onclick="return RPI.confirm()">stop</a> |
-					<a href="services/{{$key | urlquery}}/restart" onclick="return RPI.confirm()">restart</a> |
-					<a href="services/{{$key | urlquery}}/reload" onclick="return RPI.confirm()">reload</a> |
-					<a href="services/{{$key | urlquery}}/force-reload" onclick="return RPI.confirm()">force-reload</a>
-					</td>
-				</tr>
-			{{end}}
-			</tbody>
-		</table>
-	</section>
+<div class="container">
+	<h1>Services</h1>
+	<table class="">
+		<thead>
+			<tr>
+				<th>Service</th>
+				<th>Status</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+		{{range $key, $val := .Services}}
+			<tr>
+				<td>{{$key}}</td>
+				<td>{{$val}}</td>
+				<td><a href="services/{{$key | urlquery}}/start" onclick="return RPI.confirm()">start</a> |
+				<a href="services/{{$key | urlquery}}/stop" onclick="return RPI.confirm()">stop</a> |
+				<a href="services/{{$key | urlquery}}/restart" onclick="return RPI.confirm()">restart</a> |
+				<a href="services/{{$key | urlquery}}/reload" onclick="return RPI.confirm()">reload</a> |
+				<a href="services/{{$key | urlquery}}/force-reload" onclick="return RPI.confirm()">force-reload</a>
+				</td>
+			</tr>
+		{{end}}
+		</tbody>
+	</table>
 </div>
 
 

@@ -90,10 +90,6 @@ table.table-left-align th {
     text-align: left;
 }
 
-table tr:nth-of-type(even) {
-    background: #f5f5ff;
-}
-
 
 hr {
 	color: #eee;
@@ -131,15 +127,12 @@ div.chart-box {
 }
 
 
-div.mpd-buttons-sect section,
-div.mpd-info-section section {
+div.mpd-buttons-sect,
+div.mpd-info-section {
+	margin: 1.5em auto;
 	text-align: center;
-	margin: 1.5em 0;
 }
 
-div.mpd-info-section section div {
-	margin: 0.5em 0;
-}
 
 #song-box #curr-name {
 	font-size: 20pt;
@@ -219,7 +212,7 @@ div#additional-info {
 	}
 }
 
-.pure-button .button-label {
+.btn .button-label {
 	font-size: 8pt;
 }
 

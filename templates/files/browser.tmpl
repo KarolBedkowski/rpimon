@@ -1,42 +1,38 @@
 {{define "body"}}
-<div class="pure-g-r content-ribbon">
-	<div class="pure-u-1">
-	<section>
-		<h1>Browser</h1>
-		<p><b>Path:</b> {{.Path}}</p>
-		<table class="pure-table">
-			<thead>
-				<tr>
-					<th>Filename</th>
-					<th>Size</th>
-					<th>Date</th>
-				</tr>
-			</thead>
-			<tbody>
-			{{$ctx := . }}
-			{{if ne .Path "."}}
-				<tr>
-					<td><a href="?p={{$ctx.GetFullPath ".." | urlquery}}">[ .. ]</a></td>
-					<td>&nbsp;</td>
-					<td>&nbsp;</td>
-				</tr>
-			{{end}}
-			{{range .Files}}
-				<tr>
-					<td><a href="?p={{$ctx.GetFullPath .Name | urlquery}}">{{.Name}}</a></td>
-					<td>{{if .IsDir}}[dir]{{else}}{{.Size}}{{end}}</td>
-					<td>{{.ModTime}}</td>
-				</tr>
-			{{end}}
-			</tbody>
-		</table>
-	</section>
-	</div>
+<div class="container">
+	<h1>Browser</h1>
+	<p><b>Path:</b> {{.Path}}</p>
+	<table class="table table-hover table-bordered table-condensed">
+		<thead>
+			<tr>
+				<th>Filename</th>
+				<th>Size</th>
+				<th>Date</th>
+			</tr>
+		</thead>
+		<tbody>
+		{{$ctx := . }}
+		{{if ne .Path "."}}
+			<tr>
+				<td><a href="?p={{$ctx.GetFullPath ".." | urlquery}}">[ .. ]</a></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+		{{end}}
+		{{range .Files}}
+			<tr>
+				<td><a href="?p={{$ctx.GetFullPath .Name | urlquery}}">{{.Name}}</a></td>
+				<td>{{if .IsDir}}[dir]{{else}}{{.Size}}{{end}}</td>
+				<td>{{.ModTime}}</td>
+			</tr>
+		{{end}}
+		</tbody>
+	</table>
 </div>
 
-<div class="pure-g-r content-ribbon">
-	<div class="pure-u-1-2">
-		<section>
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
 			<h2>Upload</h2>
 			<form action="{{namedurl "files-upload"}}" method="post" enctype="multipart/form-data">
 				File: <input type="file" name="upload" />
@@ -44,10 +40,8 @@
 				<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
 				<input type="hidden" name="p" id="" value="{{.Path}}" />
 			</form>
-		</section>
-	</div>
-	<div class="pure-u-1-2">
-		<section>
+		</div>
+		<div class="col-md-6">
 			<h2>Create directory</h2>
 			<form action="{{namedurl "files-mkdir"}}" method="post">
 				<input type="text" name="name" />
@@ -55,7 +49,7 @@
 				<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
 				<input type="hidden" name="p" id="" value="{{.Path}}" />
 			</form>
-		</section>
+		</div>
 	</div>
 </div>
 
