@@ -45,11 +45,6 @@ label {
 }
 
 
-div.pure-menu-horizontal {
-    border-bottom: 1px solid #bbb !important;
-    margin-bottom: 1.5em;
-    float: clear;
-}
 
 .playlist-current-song {
     background-color: yellow;
@@ -216,3 +211,14 @@ div#additional-info {
 	font-size: 8pt;
 }
 
+
+footer {
+	margin-top: 30px;
+	padding-top: 10px;
+	color: #777;
+	border-top: 1px solid #e5e5e5;
+}
+
+.row div {
+	margin-bottom: 10px;
+}
