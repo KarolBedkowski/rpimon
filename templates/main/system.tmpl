@@ -1,7 +1,7 @@
 {{define "body"}}
 
 {{if .Warnings}}
-<div class="pure-u-1">
+<div class="container">
 	<div class="warnings">
 		<section>
 			<h1>Warning</h1>
@@ -15,126 +15,130 @@
 </div>
 {{end}}
 
-<div class="pure-u-1-2">
-	<section>
-		<h1>Load:</h1>
-		<div class="chart-box">
-			<span id="load-chart" class="chart-line-load" data-width="280" data-height="50" data-min="0" data-max="{{.MaxAcceptableLoad}}">0</span>
-		</div>
-		<table class="pure-table table-centered">
-			<thead>
-				<tr>
-					<th>1m</th>
-					<th>5m</th>
-					<th>15m</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td><span id="load-load1"></span></td>
-					<td><span id="load-load5"></span></td>
-					<td><span id="load-load15"></span></td>
-				</tr>
-			</tbody>
-		</table>
-	</section>
-</div>
 
-<div class="pure-u-1-2">
-	<section>
-		<h1>CPU</h1>
+<div class="container">
+	<div class="row">
+	<div class="col-xs-12 col-sm-6 col-md-4">
+		<section>
+			<h1>Load:</h1>
+			<div class="chart-box">
+				<span id="load-chart" class="chart-line-load" data-width="280" data-height="50" data-min="0" data-max="{{.MaxAcceptableLoad}}">0</span>
+			</div>
+			<table class="pure-table table-centered">
+				<thead>
+					<tr>
+						<th>1m</th>
+						<th>5m</th>
+						<th>15m</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><span id="load-load1"></span></td>
+						<td><span id="load-load5"></span></td>
+						<td><span id="load-load15"></span></td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+	</div>
 
-		<div class="chart-box">
-			<span id="cpu-chart" class="chart-line" data-width="280" data-height="50" data-min="0" data-max="100">0</span>
-		</div>
-		<table class="pure-table table-centered">
-			<thead>
-				<tr>
-					<th>User</th>
-					<th>System</th>
-					<th>IO</th>
-					<th>Freq</th>
-					<th>Temp</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td><span id="cpuusage-user"></span>%</td>
-					<td><span id="cpuusage-system"></span>%</td>
-					<td><span id="cpuusage-iowait"></span>%</td>
-					<td><span id="cpuinfo-freq"></span></td>
-					<td><span id="cpuinfo-temp"></span>°C</td>
-				</tr>
-			</tbody>
-		</table>
-	</section>
-</div>
+	<div class="col-xs-12 col-sm-6 col-md-4">
+		<section>
+			<h1>CPU</h1>
 
-<div class="pure-u-1-2">
-	<section>
-		<h1>Memory</h1>
-		<div class="chart-box">
-			<span id="mem-chart" class="chart-line" data-width="280" data-height="50" data-min="0" data-max="100">0</span>
-		</div>
-		<table class="pure-table table-centered">
-			<thead>
-				<tr>
-					<th>User</th>
-					<th>Buffers</th>
-					<th>Cache</th>
-					<th>Swap Used</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td><span id="meminfo-used"></span>%</td>
-					<td><span id="meminfo-buff"></span>%</td>
-					<td><span id="meminfo-cach"></span>%</td>
-					<td><span id="meminfo-swap"></span>%</td>
-				</tr>
-			</tbody>
-		</table>
-	</section>
-</div>
+			<div class="chart-box">
+				<span id="cpu-chart" class="chart-line" data-width="280" data-height="50" data-min="0" data-max="100">0</span>
+			</div>
+			<table class="pure-table table-centered">
+				<thead>
+					<tr>
+						<th>User</th>
+						<th>System</th>
+						<th>IO</th>
+						<th>Freq</th>
+						<th>Temp</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><span id="cpuusage-user"></span>%</td>
+						<td><span id="cpuusage-system"></span>%</td>
+						<td><span id="cpuusage-iowait"></span>%</td>
+						<td><span id="cpuinfo-freq"></span></td>
+						<td><span id="cpuinfo-temp"></span>°C</td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+	</div>
 
-<div class="pure-u-1-2">
-	<section>
-		<h1>Mount</h1>
-		<table class="pure-table">
-			<thead>
-				<tr>
-					<th>Filesystem</th>
-					<th colspan="2">Used</th>
-				</tr>
-			</thead>
-			<tbody id="fs-table">
-			</tbody>
-		</table>
-	</section>
-</div>
+	<div class="col-xs-12 col-sm-6 col-md-4">
+		<section>
+			<h1>Memory</h1>
+			<div class="chart-box">
+				<span id="mem-chart" class="chart-line" data-width="280" data-height="50" data-min="0" data-max="100">0</span>
+			</div>
+			<table class="pure-table table-centered">
+				<thead>
+					<tr>
+						<th>User</th>
+						<th>Buffers</th>
+						<th>Cache</th>
+						<th>Swap Used</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><span id="meminfo-used"></span>%</td>
+						<td><span id="meminfo-buff"></span>%</td>
+						<td><span id="meminfo-cach"></span>%</td>
+						<td><span id="meminfo-swap"></span>%</td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+	</div>
 
-<div class="pure-u-1-2">
-	<section>
-		<h1>Network interfaces</h1>
-		<table class="pure-table">
-			<thead>
-				<tr>
-					<th>Interface</th>
-					<th>IP</th>
-				</tr>
-			</thead>
-			<tbody id="network-interfaces-table">
-			</tbody>
-		</table>
-	</section>
-</div>
+	<div class="col-xs-12 col-sm-6 col-md-4">
+		<section>
+			<h1>Mount</h1>
+			<table class="pure-table">
+				<thead>
+					<tr>
+						<th>Filesystem</th>
+						<th colspan="2">Used</th>
+					</tr>
+				</thead>
+				<tbody id="fs-table">
+				</tbody>
+			</table>
+		</section>
+	</div>
 
-<div class="pure-u-1-2">
-	<section>
-		<h1>Other</h1>
-		<p><label>Users:</label> <span id="uptime-users"></span></p>
-		<p><label>Uptime:</label> <span id="uptime-uptime"></span></p>
-	</section>
+	<div class="col-xs-12 col-sm-6 col-md-4">
+		<section>
+			<h1>Network interfaces</h1>
+			<table class="pure-table">
+				<thead>
+					<tr>
+						<th>Interface</th>
+						<th>IP</th>
+					</tr>
+				</thead>
+				<tbody id="network-interfaces-table">
+				</tbody>
+			</table>
+		</section>
+	</div>
+
+	<div class="col-xs-12 col-sm-6 col-md-4">
+		<section>
+			<h1>Other</h1>
+			<p><label>Users:</label> <span id="uptime-users"></span></p>
+			<p><label>Uptime:</label> <span id="uptime-uptime"></span></p>
+		</section>
+	</div>
 </div>
 
 <script src="/static/lib/jquery/jquery.peity.min.js" type="text/javascript" ></script>
