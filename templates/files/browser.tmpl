@@ -28,6 +28,23 @@
 		{{end}}
 		</tbody>
 	</table>
+	<div id="pager" class="pager">
+		<form>
+			<button type="button" class="btn btn-default btn-xs first"><span class="glyphicon glyphicon-step-backward"></span></button>
+			<button type="button" class="btn btn-default btn-xs prev"><span class="glyphicon glyphicon-chevron-left"></span></button>
+			&nbsp;
+			<input type="text" class="pagedisplay"></input>
+			&nbsp;
+			<button type="button" class="btn btn-default btn-xs next"><span class="glyphicon glyphicon-chevron-right"></span></button>
+			<button type="button" class="btn btn-default btn-xs last"><span class="glyphicon glyphicon-step-forward"></span></button>
+			&nbsp;
+			<select class="pagesize">
+				<option selected="selected" value="20">20</option>
+				<option value="50">50</option>
+				<option value="100">100</option>
+			</select>
+		</form>
+	</div>
 </div>
 
 <div class="container">
@@ -35,7 +52,7 @@
 		<div class="col-md-6">
 			<h2>Upload</h2>
 			<form action="{{namedurl "files-upload"}}" method="post" enctype="multipart/form-data">
-				File: <input type="file" name="upload" />
+				<input type="file" name="upload" />
 				<input type="submit" value="Start upload" class="btn btn-primary btn-sm"/>
 				<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
 				<input type="hidden" name="p" id="" value="{{.Path}}" />
@@ -54,10 +71,15 @@
 </div>
 
 <script src="/static/lib/jquery/jquery.tablesorter.min.js" type="text/javascript"></script>
+<script src="/static/lib/jquery/jquery.tablesorter.pager.js" type="text/javascript"></script>
 <script type="text/javascript">
 	$(function() {
 		$('table').tablesorter({
 			ignoreCase: true,
+		}).tablesorterPager({
+			container: $("#pager"),
+			positionFixed: false,
+			size: 20,
 		});
 	});
 </script>
