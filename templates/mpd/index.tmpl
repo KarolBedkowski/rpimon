@@ -1,107 +1,94 @@
 {{define "body"}}
-<div class="pure-u-1">
+<div class="container">
 		<h1>MPD</h1>
 </div>
 
-<div class="pure-u-1" id="error-msg-box">
+<div class="container" id="error-msg-box">
 	<div class="warnings">
 		<p id="error-msg"></p>
 	</div>
 </div>
 
-<div class="pure-u-1 mpd-buttons-sect">
-	<section>
-		<a class="pure-button ui-state-default" href="#" data-action="prev"><span class="ui-icon ui-icon-seek-prev"></span></a>
-		<a class="pure-button ui-state-default" href="#" data-action="play"><span class="ui-icon ui-icon-play"></span></a>
-		<a class="pure-button ui-state-default" href="#" data-action="pause"><span class="ui-icon ui-icon-pause"></span></a>
-		<a class="pure-button ui-state-default" href="#" data-action="stop"><span class="ui-icon ui-icon-stop"></span></a>
-		<a class="pure-button ui-state-default" href="#" data-action="next"><span class="ui-icon ui-icon-seek-next"></span></a>
-	</section>
+<div class="container mpd-buttons-sect">
+	<a class="btn btn-lg ui-state-default" href="#" data-action="prev" role="button"><span class="ui-icon ui-icon-seek-prev"></span></a>
+	<a class="btn btn-lg ui-state-default" href="#" data-action="play"><span class="ui-icon ui-icon-play"></span></a>
+	<a class="btn btn-lg ui-state-default" href="#" data-action="pause"><span class="ui-icon ui-icon-pause"></span></a>
+	<a class="btn btn-lg ui-state-default" href="#" data-action="stop"><span class="ui-icon ui-icon-stop"></span></a>
+	<a class="btn btn-lg ui-state-default" href="#" data-action="next"><span class="ui-icon ui-icon-seek-next"></span></a>
 </div>
 
-<div class="pure-u-1 mpd-info-section" id="song-box">
-	<section>
-		<div id="curr-name"></div>
-		<div id="curr-artist"></div>
-		<div id="track-info">
-			<span id="curr-track"></span>
-			&nbsp;
-			<span id="curr-title"></span>
-		</div>
-		<div id="album-info">
-			<span id="curr-date"></span>
-			&nbsp;
-			<span id="curr-album"></span>
-		</div>
-		<div id="curr-genre"></div>
-	</section>
+<div class="container mpd-info-section center-block" id="song-box">
+	<div id="curr-name"></div>
+	<div id="curr-artist"></div>
+	<div id="track-info">
+		<span id="curr-track"></span>
+		&nbsp;
+		<span id="curr-title"></span>
+	</div>
+	<div id="album-info">
+		<span id="curr-date"></span>
+		&nbsp;
+		<span id="curr-album"></span>
+	</div>
+	<div id="curr-genre"></div>
 </div>
 
-<div class="pure-u-1 mpd-info-section" id="mpd-sliders-pos">
-	<section>
-		<div id="pos-info">
-			<div id="pos-info-time">
-				<span id="st-time">&nbsp;</span>
-				<span id="curr-time">&nbsp;</span>
-			</div>
-			<div style="clear:both;"></div>
-			<div id="slider-song-pos"></div>
+<div class="container mpd-info-section" id="mpd-sliders-pos">
+	<div id="pos-info">
+		<div id="pos-info-time">
+			<span id="st-time">&nbsp;</span>
+			<span id="curr-time">&nbsp;</span>
 		</div>
-	</section>
+		<div style="clear:both;"></div>
+		<div id="slider-song-pos"></div>
+	</div>
 </div>
 
-<div class="pure-u-1 mpd-info-section" id="mpd-sliders-vol">
-	<section>
-		<div id="volume">
-			<div id="info">
-				<div id="volume-label"><label for="st-voliume">Volume&nbsp;</label></div>
-				<div id="st-volume">&nbsp;</div>
-			</div>
-			<div style="clear:both;"></div>
-			<div id="slider-volume"></div>
+<div class="container mpd-info-section" id="mpd-sliders-vol">
+	<div id="volume">
+		<div id="info">
+			<div id="volume-label"><label for="st-voliume">Volume&nbsp;</label></div>
+			<div id="st-volume">&nbsp;</div>
 		</div>
-
-	</section>
+		<div style="clear:both;"></div>
+		<div id="slider-volume"></div>
+	</div>
 </div>
 
-<div class="pure-u-1 mpd-buttons-sect">
-	<section>
-		<a class="pure-button ui-state-default" href="#" data-action="toggle_random">
-			<span class="ui-icon ui-icon-shuffle"></span>
-			<span class="button-label">&nbsp</span>
-		</a>
-		<a class="pure-button ui-state-default" href="#" data-action="toggle_repeat">
-			<span class="ui-icon ui-icon-arrowrefresh-1-w"></span>
-			<span class="button-label">&nbsp</span>
-		</a>
-	</section>
+<div class="container mpd-buttons-sect">
+	<a class="btn btn-lg ui-state-default" href="#" data-action="toggle_random">
+		<span class="ui-icon ui-icon-shuffle"></span>
+		<span class="button-label">&nbsp</span>
+	</a>
+	<a class="btn btn-lg ui-state-default" href="#" data-action="toggle_repeat">
+		<span class="ui-icon ui-icon-arrowrefresh-1-w"></span>
+		<span class="button-label">&nbsp</span>
+	</a>
 </div>
 
-<div class="pure-u-1 mpd-info-section" id="songinfo-box">
-	<section>
-		<div id="additional-info">
-			<div>
-				<label for="curr-file">File:</label>
-				<span id="curr-file"></span>
-			</div>
-			<div>
-				<label for="st-audio">Audio:</label>
-				<span id="st-audio">&nbsp;</span>
-			</div>
-			<div>
-				<label for="st-bitrate">Bitrate:</label>
-				<span id="st-bitrate">&nbsp;</span>
-			</div>
-			<div>
-				<label for="st-playlistlength">Playlist length:</label>
-				<span id="st-playlistlength">&nbsp;</span>
-			</div>
-			<div>
-				<label for="st-state">State:</label>
-				<span id="st-state">&nbsp;</span>
-			</div>
+<div class="container mpd-info-section" id="songinfo-box">
+	<div id="additional-info">
+		<div>
+			<label for="curr-file">File:</label>
+			<span id="curr-file"></span>
 		</div>
-	</section>
+		<div>
+			<label for="st-audio">Audio:</label>
+			<span id="st-audio">&nbsp;</span>
+		</div>
+		<div>
+			<label for="st-bitrate">Bitrate:</label>
+			<span id="st-bitrate">&nbsp;</span>
+		</div>
+		<div>
+			<label for="st-playlistlength">Playlist length:</label>
+			<span id="st-playlistlength">&nbsp;</span>
+		</div>
+		<div>
+			<label for="st-state">State:</label>
+			<span id="st-state">&nbsp;</span>
+		</div>
+	</div>
 </div>
 
 
