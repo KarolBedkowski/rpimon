@@ -5,11 +5,14 @@ package mpd
 import (
 	"code.google.com/p/gompd/mpd"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"strconv"
 )
+
+var decoder = schema.NewDecoder()
 
 type playlistPageCtx struct {
 	*app.BasePageContext
@@ -65,10 +68,41 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func playlistActionPageHandler(w http.ResponseWriter, r *http.Request) {
+	l.Info("playlistActionPageHandler")
 	vars := mux.Vars(r)
 	action, ok := vars["action"]
 	if ok && action != "" {
 		playlistAction(action)
 	}
 	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+}
+
+type savePlaylistForm struct {
+	Name      string
+	CsrfToken string
+}
+
+func playlistSavePageHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	form := &savePlaylistForm{}
+	decoder.Decode(form, r.Form)
+	if form.Name == "" {
+		handleError("Missing name", w, r)
+		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+		return
+	}
+	if err := playlistSave(form.Name); err != nil {
+		handleError("Saving playlist error", w, r)
+	} else {
+		session := app.GetSessionStore(w, r)
+		session.AddFlash("Playlist saved")
+		session.Save(r, w)
+	}
+	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+}
+
+func handleError(msg string, w http.ResponseWriter, r *http.Request) {
+	session := app.GetSessionStore(w, r)
+	session.AddFlash(msg)
+	session.Save(r, w)
 }

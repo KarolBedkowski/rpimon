@@ -258,3 +258,12 @@ func playlistAction(action string) (err error) {
 	}
 	return
 }
+
+func playlistSave(name string) (err error) {
+	conn, err := mpd.Dial("tcp", host)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	return conn.PlaylistSave(name)
+}
