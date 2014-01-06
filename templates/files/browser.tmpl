@@ -36,7 +36,7 @@
 			<h2>Upload</h2>
 			<form action="{{namedurl "files-upload"}}" method="post" enctype="multipart/form-data">
 				File: <input type="file" name="upload" />
-				<input type="submit" value="Start upload" />
+				<input type="submit" value="Start upload" class="btn btn-primary btn-sm"/>
 				<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
 				<input type="hidden" name="p" id="" value="{{.Path}}" />
 			</form>
@@ -45,7 +45,7 @@
 			<h2>Create directory</h2>
 			<form action="{{namedurl "files-mkdir"}}" method="post">
 				<input type="text" name="name" />
-				<input type="submit" value="Mkdir" />
+				<input type="submit" value="Mkdir"  class="btn btn-primary btn-sm"/>
 				<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
 				<input type="hidden" name="p" id="" value="{{.Path}}" />
 			</form>

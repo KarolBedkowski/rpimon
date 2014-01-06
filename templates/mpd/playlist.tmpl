@@ -57,7 +57,7 @@
 			<form action="{{namedurl "mpd-pl-save"}}" method="post">
 				<label for="name">Name:</label>
 				<input type="text" name="Name" id="name" required/>
-				<input type="submit" value="Save" class="btn btn-primary" />
+				<input type="submit" value="Save" class="btn btn-primary btn-sm" />
 				<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
 			</form>
 		</div>
@@ -66,7 +66,7 @@
 			<form action="{{namedurl "mpd-pl-add"}}" method="post">
 				<label for="uri">URI:</label>
 				<input type="text" name="Uri" id="uri" required/>
-				<input type="submit" value="Add" class="btn btn-primary"/>
+				<input type="submit" value="Add" class="btn btn-primary btn-sm"/>
 				<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
 			</form>
 		</div>
