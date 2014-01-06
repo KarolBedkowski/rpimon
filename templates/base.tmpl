@@ -4,67 +4,72 @@
 	<head>
 		<meta charset="utf-8">
 		<title>{{.Title}} - {{.BasePageContext.Hostname}} - Monitor</title>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link href="/static/css/tablesorter.css" rel="stylesheet">
-		<link rel="stylesheet" href="/static/css/flick/jquery-ui-1.10.3.custom.css" media="all">
-		<link rel="stylesheet" href="/static/css/pure-min.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="/static/css/messi.min.css" type="text/css" media="all"/>
-		<link rel="stylesheet" href="/static/css/jquery.fs.naver.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="/static/css/main.css" type="text/css" media="all" />
+		<link rel="stylesheet" href="/static/css/bootstrap.min.css">
+		<link rel="stylesheet" href="/static/css/bootstrap-theme.min.css">
+		<link rel="stylesheet" href="/static/css/tablesorter.css">
+		<link rel="stylesheet" href="/static/css/flick/jquery-ui-1.10.3.custom.css" >
+		<link rel="stylesheet" href="/static/css/messi.min.css" type="text/css" />
+		<link rel="stylesheet" href="/static/css/jquery.fs.naver.css" type="text/css"  />
+		<link rel="stylesheet" href="/static/css/main.css" type="text/css"  />
+		<!--[if lt IE 9]>
+		<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+		<script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+		<![endif]-->
 		<script src="/static/lib/jquery/jquery-1.10.2.min.js" type="text/javascript" ></script>
 		<script src="/static/lib/jquery/jquery.fs.naver.min.js" type="text/javascript"></script>
 		<script src="/static/lib/jquery/messi.min.js" type="text/javascript"></script>
+		<script src="/static/lib/bootstrap.min.js" type="text/javascript"></script>
 		<script src="/static/js/common.js" type="text/javascript"></script>
 	</head>
 	<body>
-		<div class="pure-g-r" id="layout">
-			<div class="sidebar pure-u">
-				<header class="header">
-					<hgroup class="hgroup">
-						<h1><a class="pure-menu-heading" href="/">Monitor</a></h1>
-						<h2>{{.BasePageContext.Hostname}}</h2>
-					</hgroup>
-					<nav class="nav">
-						<ul class="nav-list">
-							{{$current := .BasePageContext.CurrentMainMenuPos}}
-							{{range .BasePageContext.MainMenu}}
-							<li class="nav-item{{if eq .ID $current}} nav-item-selected{{end}}">
-								<a class="" href="{{.Href}}">{{.Title}}</a>
-							</li>
-							{{end}}
-						</ul>
-					</nav>
-				</header>
-			</div><!-- end sidebar -->
-			<div class="pure-u-1">
-				<div class="content">
-					{{if .BasePageContext.LocalMenu}}
-					<div class="pure-u-1" id="local-menu">
-						<div class="pure-menu pure-menu-open pure-menu-horizontal">
-							<ul>
-								{{$currentl := .BasePageContext.CurrentLocalMenuPos}}
-								{{range .BasePageContext.LocalMenu}}
-									<li class="{{if eq .ID $currentl}}pure-menu-selected {{end}}">
-										<a href="{{.Href}}" >{{.Title}}</a>
-									</li>
-								{{end}}
-							</ul>
-						</div>
-					</div>
-					{{end}}
-					{{template "flash" .}}
-					<div class="pure-g-r content-ribbon">
-					{{template "body" .}}
-					</div>
+		<div class="navbar navbar-default navbar-static-top" role="navigation">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="#">Monitor <strong>{{.BasePageContext.Hostname}}</strong></a>
+				</div>
+				<div class="navbar-collapse collapse">
+					<ul class="nav navbar-nav">
+						{{$current := .BasePageContext.CurrentMainMenuPos}}
+						{{range .BasePageContext.MainMenu}}
+						<li {{if eq .ID $current}}class="active"{{end}}>
+							<a class="" href="{{.Href}}">{{.Title}}</a>
+						</li>
+						{{end}}
+					</ul>
 				</div>
 			</div>
-			<div class="pure-u-1">
-				<footer class="footer">
-					<br/>
-					<hr/>
-					<p><small>{{.Now}} | {{.CurrentUser}} | RPIMON v0.3</small></p>
-				</footer>
+		</div>
+		{{if .BasePageContext.LocalMenu}}
+		<div class="container">
+			<div class="pure-u-1" id="local-menu">
+				<div class="pure-menu pure-menu-open pure-menu-horizontal">
+					<ul>
+						{{$currentl := .BasePageContext.CurrentLocalMenuPos}}
+						{{range .BasePageContext.LocalMenu}}
+							<li class="{{if eq .ID $currentl}}pure-menu-selected {{end}}">
+								<a href="{{.Href}}" >{{.Title}}</a>
+							</li>
+						{{end}}
+					</ul>
+				</div>
 			</div>
+		</div>
+		{{end}}
+		{{template "flash" .}}
+		{{template "body" .}}
+
+		<div class="container">
+			<footer class="footer">
+				<p><small>{{.Now}} | {{.CurrentUser}} | RPIMON v0.3</small></p>
+			</footer>
 		</div>
 	</body>
 	<script type="text/javascript" charset="utf-8">
