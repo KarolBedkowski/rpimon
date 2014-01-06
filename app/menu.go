@@ -37,29 +37,24 @@ func SetMainMenu(ctx *BasePageContext) {
 		user := GetUser(ctx.CurrentUser)
 		ctx.MainMenu = []*MenuItem{NewMenuItemFromRoute("Home", "main-index").SetID("main")}
 		if user.HasPermission("admin") {
-			ctx.MainMenu = append(ctx.MainMenu,
-				NewMenuItemFromRoute("System", "main-system").SetID("system"),
+			sysMI := NewMenuItem("System", "")
+			sysMI.Submenu = []*MenuItem{
+				NewMenuItemFromRoute("Live view", "main-system").SetID("system"),
 				NewMenuItemFromRoute("Network", "net-index").SetID("net"),
 				NewMenuItemFromRoute("Storage", "storage-index").SetID("storage"),
 				NewMenuItemFromRoute("Logs", "logs-index").SetID("logs"),
 				NewMenuItemFromRoute("Process", "process-index").SetID("process"),
 				NewMenuItemFromRoute("Users", "users-index").SetID("users"),
-				NewMenuItemFromRoute("Utilities", "utils-index").SetID("utils"))
+				NewMenuItemFromRoute("Utilities", "utils-index").SetID("utils")}
+			ctx.MainMenu = append(ctx.MainMenu, sysMI)
 		}
 		if user.HasPermission("mpd") {
 			ctx.MainMenu = append(ctx.MainMenu,
-				NewMenuItem(" ", "#"),
 				NewMenuItemFromRoute("MPD", "mpd-index").SetID("mpd"))
 		}
 		if user.HasPermission("files") {
 			ctx.MainMenu = append(ctx.MainMenu,
-				NewMenuItem(" ", "#"),
 				NewMenuItemFromRoute("Files", "files-index").SetID("files"))
 		}
-		ctx.MainMenu = append(ctx.MainMenu,
-			NewMenuItem(" ", "#"),
-			NewMenuItemFromRoute("Logout", "auth-logoff").SetID("auth-logoff"))
-		return
 	}
-	ctx.MainMenu = []*MenuItem{NewMenuItemFromRoute("Login", "auth-login").SetID("auth-login")}
 }

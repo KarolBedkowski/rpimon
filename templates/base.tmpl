@@ -39,10 +39,32 @@
 					<ul class="nav navbar-nav">
 						{{$current := .BasePageContext.CurrentMainMenuPos}}
 						{{range .BasePageContext.MainMenu}}
-						<li {{if eq .ID $current}}class="active"{{end}}>
+						{{if .Submenu}}
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">{{.Title}} <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+							{{range .Submenu}}
+								<li {{if eq .ID $current}}class="active"{{end}}>
+									<a class="" href="{{.Href}}">{{.Title}}</a>
+								</li>
+							{{end}}
+							</ul>
+						</li>
+						{{else}}
+						<li class="{{if eq .ID $current}}active{{end}}">
 							<a class="" href="{{.Href}}">{{.Title}}</a>
 						</li>
 						{{end}}
+						{{end}}
+					</ul>
+					<ul class="nav navbar-nav navbar-right">
+						<li>
+							{{if .CurrentUser}}
+							<a class="" href="{{namedurl "auth-logoff"}}">Logoff</a>
+							{{else}}
+							<a class="" href="{{namedurl "auth-login"}}">Login</a>
+							{{end}}
+						</li>
 					</ul>
 				</div>
 			</div>
