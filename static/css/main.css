@@ -124,7 +124,7 @@ div.chart-box {
 
 div.mpd-buttons-sect,
 div.mpd-info-section {
-	margin: 1.5em auto;
+	margin: 2em auto;
 	text-align: center;
 }
 
@@ -152,24 +152,17 @@ div.mpd-info-section {
 #mpd-sliders-pos #pos-info,
 #mpd-sliders-vol #volume {
 	margin: 0 auto;
-	width: 300px;
+	width: 75%;
 	font-size: 10pt;
-}
-
-#mpd-sliders-vol #pos-info #slider-song-pos,
-#mpd-sliders-vol #volume #slider-volume {
-	width: 300px;
 }
 
 #mpd-sliders-vol #volume #st-volume,
 #mpd-sliders-pos #pos-info #curr-time {
-	width: 140px;
 	float: right;
 	text-align: right;
 }
 #mpd-sliders-vol #volume #volume-label,
 #mpd-sliders-pos #pos-info #st-time {
-	width: 140px;
 	float: left;
 	text-align: left;
 }
@@ -180,32 +173,6 @@ div#additional-info {
 	margin: 6em auto;
 }
 
-@media (max-width: 500px) {
-	#mpd-sliders-pos #pos-info,
-	#mpd-sliders-vol #volume {
-		margin: 0 auto;
-		width: 280px;
-		font-size: 10pt;
-	}
-
-	#mpd-sliders-vol #pos-info #slider-song-pos,
-	#mpd-sliders-vol #volume #slider-volume {
-		width: 280px;
-	}
-
-	#mpd-sliders-vol #volume #st-volume,
-	#mpd-sliders-pos #pos-info #curr-time {
-		width: 100px;
-		float: right;
-		text-align: right;
-	}
-	#mpd-sliders-vol #volume #volume-label,
-	#mpd-sliders-pos #pos-info #st-time {
-		width: 100px;
-		float: left;
-		text-align: left;
-	}
-}
 
 .btn .button-label {
 	font-size: 8pt;
