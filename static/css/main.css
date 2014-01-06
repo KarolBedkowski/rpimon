@@ -7,6 +7,7 @@
 
 html {
 	font-size: 12pt;
+	line-height: 120%;
 }
 
 a {
@@ -203,7 +204,7 @@ table tr:nth-of-type(even) {
 
 
 
-@media (max-width: 767px) {
+@media (max-width: 700px) {
     .sidebar {
         width: 100%;
         position: relative;
@@ -287,4 +288,97 @@ div.chart-box {
 	height: 52px;
 	margin: 5px 0;
 	padding: 1px;
+}
+
+
+div.mpd-buttons-sect section,
+div.mpd-info-section section {
+	text-align: center;
+	margin: 1.5em 0;
+}
+
+div.mpd-info-section section div {
+	margin: 0.5em 0;
+}
+
+#song-box #curr-name {
+	font-size: 20pt;
+	font-weight: bold;
+}
+
+#song-box #curr-artist {
+	font-size: 16pt;
+	font-weight: bold;
+}
+
+#song-box #curr-title {
+	font-size: 20pt;
+	font-weight: bold;
+}
+
+#song-box #curr-genre,
+#song-box #curr-date {
+	font-size: 9pt;
+}
+
+#mpd-sliders-pos #pos-info,
+#mpd-sliders-vol #volume {
+	margin: 0 auto;
+	width: 300px;
+	font-size: 10pt;
+}
+
+#mpd-sliders-vol #pos-info #slider-song-pos,
+#mpd-sliders-vol #volume #slider-volume {
+	width: 300px;
+}
+
+#mpd-sliders-vol #volume #st-volume,
+#mpd-sliders-pos #pos-info #curr-time {
+	width: 140px;
+	float: right;
+	text-align: right;
+}
+#mpd-sliders-vol #volume #volume-label,
+#mpd-sliders-pos #pos-info #st-time {
+	width: 140px;
+	float: left;
+	text-align: left;
+}
+
+div#additional-info {
+	font-size: 9pt;
+	text-align: left;
+	margin: 6em auto;
+}
+
+@media (max-width: 500px) {
+	#mpd-sliders-pos #pos-info,
+	#mpd-sliders-vol #volume {
+		margin: 0 auto;
+		width: 280px;
+		font-size: 10pt;
+	}
+
+	#mpd-sliders-vol #pos-info #slider-song-pos,
+	#mpd-sliders-vol #volume #slider-volume {
+		width: 280px;
+	}
+
+	#mpd-sliders-vol #volume #st-volume,
+	#mpd-sliders-pos #pos-info #curr-time {
+		width: 100px;
+		float: right;
+		text-align: right;
+	}
+	#mpd-sliders-vol #volume #volume-label,
+	#mpd-sliders-pos #pos-info #st-time {
+		width: 100px;
+		float: left;
+		text-align: left;
+	}
+}
+
+.pure-button .button-label {
+	font-size: 8pt;
 }

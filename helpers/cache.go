@@ -52,3 +52,86 @@ func (cache *SimpleCache) Get(f func() Value) Value {
 	cache.timestamp = now
 	return value
 }
+
+// GetValue from cache
+func (cache *SimpleCache) GetValue() (value Value, ok bool) {
+	cache.mutex.RLock()
+	defer cache.mutex.RUnlock()
+	if cache.value != nil && time.Now().Sub(cache.timestamp) < cache.MaxCacheAge {
+		return cache.value, true
+	}
+	return
+}
+
+// SetValue put value to cache
+func (cache *SimpleCache) SetValue(value Value) {
+	cache.mutex.Lock()
+	defer cache.mutex.Unlock()
+	cache.value = value
+	cache.timestamp = time.Now()
+}
+
+// Clear cache
+func (cache *SimpleCache) Clear() {
+	cache.value = nil
+}
+
+type KeyCacheItem struct {
+	timestamp time.Time
+	value     Value
+}
+
+type KeyCache struct {
+	mutex       sync.RWMutex
+	values      map[string]KeyCacheItem
+	MaxCacheAge time.Duration
+}
+
+// NewSimpleCache create new cache structure
+func NewKeyCache(maxCacheAge int) *KeyCache {
+	return &KeyCache{MaxCacheAge: time.Duration(maxCacheAge) * time.Second,
+		values: make(map[string]KeyCacheItem)}
+}
+
+// Get value from cache; if cache is expired - call function and put result in cache
+func (cache *KeyCache) Get(key string, f func(fkey string) Value) (value Value) {
+	cache.mutex.RLock()
+	now := time.Now()
+	cacheItem, ok := cache.values[key]
+	if ok && now.Sub(cacheItem.timestamp) < cache.MaxCacheAge {
+		defer cache.mutex.RUnlock()
+		return cacheItem.value
+	}
+	cache.mutex.RUnlock()
+
+	cache.mutex.Lock()
+	defer cache.mutex.Unlock()
+
+	value = f(key)
+	cache.values[key] = KeyCacheItem{now, value}
+	return value
+}
+
+// GetValue from cache
+func (cache *KeyCache) GetValue(key string) (value Value, ok bool) {
+	cache.mutex.RLock()
+	defer cache.mutex.RUnlock()
+	now := time.Now()
+	cacheItem, ok := cache.values[key]
+	if ok && now.Sub(cacheItem.timestamp) < cache.MaxCacheAge {
+		return cacheItem.value, true
+	}
+	return nil, false
+}
+
+// SetValue put value to cache
+func (cache *KeyCache) SetValue(key string, value Value) {
+	cache.mutex.Lock()
+	defer cache.mutex.Unlock()
+	cache.values[key] = KeyCacheItem{time.Now(), value}
+}
+
+// Clear cache
+func (cache *KeyCache) Clear() {
+	cache.values = make(map[string]KeyCacheItem)
+}
