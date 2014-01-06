@@ -2,6 +2,7 @@ package mpd
 
 import (
 	"code.google.com/p/gompd/mpd"
+	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"strconv"
 	"strings"
@@ -171,20 +172,43 @@ func seekPos(pos, time int) error {
 	return conn.SeekId(sid, time)
 }
 
+var mpdLibraryCache = h.NewKeyCache(300)
+
+type LibraryDir struct {
+	Folders []string
+	Files   []string
+}
+
+var mpdListFilesCache = h.NewSimpleCache(300)
+
 func getFiles(path string) (folders []string, files []string, err error) {
-	conn, err := mpd.Dial("tcp", host)
-	if err != nil {
-		return nil, nil, err
+	if cached, ok := mpdLibraryCache.GetValue(path); ok {
+		cachedLD := cached.(LibraryDir)
+		return cachedLD.Folders, cachedLD.Files, nil
 	}
-	defer conn.Close()
-	mpdFiles, err := conn.GetFiles()
-	if err != nil {
-		return nil, nil, err
+
+	var mpdFiles []string
+	if filesC, ok := mpdListFilesCache.GetValue(); ok {
+		mpdFiles = filesC.([]string)
+	} else {
+		conn, err := mpd.Dial("tcp", host)
+		if err != nil {
+			return nil, nil, err
+		}
+		defer conn.Close()
+		// FIXME: mpd - zmianic na ls
+		mpdFiles, err = conn.GetFiles()
+		if err != nil {
+			return nil, nil, err
+		}
+		mpdListFilesCache.SetValue(mpdFiles)
 	}
+
 	var prefixLen = 0
 	if path != "" {
 		prefixLen = len(path) + 1
 	}
+
 	loadedFolders := make(map[string]bool)
 
 	for _, fname := range mpdFiles {
@@ -200,10 +224,11 @@ func getFiles(path string) (folders []string, files []string, err error) {
 				folders = append(folders, fname)
 			}
 		} else {
-			l.Debug(fname)
 			files = append(files, fname)
 		}
 	}
+
+	mpdLibraryCache.SetValue(path, LibraryDir{folders, files})
 	return
 }
 
