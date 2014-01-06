@@ -48,19 +48,15 @@
 			</div>
 		</div>
 		{{if .BasePageContext.LocalMenu}}
-		<div class="container">
-			<div class="pure-u-1" id="local-menu">
-				<div class="pure-menu pure-menu-open pure-menu-horizontal">
-					<ul>
-						{{$currentl := .BasePageContext.CurrentLocalMenuPos}}
-						{{range .BasePageContext.LocalMenu}}
-							<li class="{{if eq .ID $currentl}}pure-menu-selected {{end}}">
-								<a href="{{.Href}}" >{{.Title}}</a>
-							</li>
-						{{end}}
-					</ul>
-				</div>
-			</div>
+		<div class="container" id="local-menu">
+			<ul class="nav nav-tabs">
+				{{$currentl := .BasePageContext.CurrentLocalMenuPos}}
+				{{range .BasePageContext.LocalMenu}}
+				<li{{if eq .ID $currentl}} class="active"{{end}}>
+					<a href="{{.Href}}" >{{.Title}}</a>
+				</li>
+				{{end}}
+			</ul>
 		</div>
 		{{end}}
 		{{template "flash" .}}
