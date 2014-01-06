@@ -7,19 +7,12 @@
 			{{range $key, $elements := .Configuration.Utils}}
 				<li class="pure-menu-heading"><strong>{{$key}}</strong></li>
 				{{range $idx, $ele := $elements}}
-				<li><a href="/utils/{{$key | urlquery}}/{{$idx | urlquery}}" onclick="return lconfirm()">{{$ele.Name}}</a></li>
+				<li><a href="/utils/{{$key | urlquery}}/{{$idx | urlquery}}" onclick="return RPI.confirm()">{{$ele.Name}}</a></li>
 				{{end}}
 			{{end}}
 			</ul>
 		</div>
 	</section>
 </div>
-
-<script type="text/javascript">
-		function lconfirm() {
-				return confirm('Are you sure?');
-		}
-</script>
-
 
 {{end}}

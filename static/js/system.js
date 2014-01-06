@@ -1,7 +1,11 @@
+var SYSTEM = SYSTEM || {
+	infoUrl: "/main/info",
+};
 
-function getHistory() {
+
+SYSTEM.getHistory = function getHistoryF() {
 	$.ajax({
-		url: '/main/info',
+		url: SYSTEM.infoUrl,
 		cache: false,
 		dataType: 'json'
 	}).done(function(msg) {
@@ -45,9 +49,19 @@ function getHistory() {
 		$('#uptime-uptime').text(uptime['Uptime'])
 		$('#uptime-users').text(uptime['Users'])
 		$("span.pie").peity("pie")
-		setTimeout(getHistory, 5000);
+		SYSTEM.connectingMessage.hide();
+		setTimeout(SYSTEM.getHistory, 5000);
 	}).fail(function( jqXHR, textStatus ) {
-		setTimeout(getHistory, 10000);
+		SYSTEM.connectingMessage.show();
+		setTimeout(SYSTEM.getHistory, 10000);
 	});
-}
+};
 
+SYSTEM.initIndexPage = function initIndexPageF(infoUrl) {
+	SYSTEM.infoUrl = infoUrl
+	SYSTEM.connectingMessage = new Messi('Connecting...', {
+		closeButton: false,
+		width: 'auto',
+	});
+	SYSTEM.getHistory();
+};

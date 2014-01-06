@@ -17,8 +17,12 @@ var subRouter *mux.Router
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", mainPageHanler).Name("main-index")
-	subRouter.HandleFunc("/system", app.VerifyPermission(systemPageHanler, "admin")).Name("main-system")
-	subRouter.HandleFunc("/info", app.VerifyPermission(infoHandler, "admin"))
+	subRouter.HandleFunc("/system",
+		app.VerifyPermission(systemPageHanler, "admin")).Name(
+		"main-system")
+	subRouter.HandleFunc("/info",
+		app.VerifyPermission(infoHandler, "admin")).Name(
+		"main-serv-info")
 }
 
 type fsInfo struct {
