@@ -10,6 +10,7 @@ clean:
 	rm -f server rpimon
 	find ./static -iname '*.css.gz' -exec rm -f {} ';'
 	find ./static -iname '*.js.gz' -exec rm -f {} ';'
+	find . -iname '*.orig' -exec rm -f {} ';'
 
 compress:
 	find ./static -iname '*.css' -exec gzip -f -k {} ';'
