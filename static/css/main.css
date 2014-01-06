@@ -1,117 +1,9 @@
 
-* {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-}
 
 html {
 	font-size: 12pt;
 	line-height: 120%;
 }
-
-a {
-    text-decoration: none;
-    color: rgb(142, 142, 214);
-}
-a:hover,
-a:focus {
-    text-decoration: underline;
-}
-
-/* LAYOUT CSS */
-#layout {
-    padding-left: 15%; /* "left col (nav + list)" width */
-    position: relative;
-}
-
-.sidebar {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    width: 15%;
-    margin-left: -15%;
-    background: rgb(24, 33, 61);
-    color: #fff;
-}
-
-.header {
-    margin: 50% 2em 0;
-    text-align: right;
-}
-
-.brand-title,
-.brand-tagline {
-    margin: 0;
-}
-.brand-title {
-    text-transform: uppercase;
-}
-.brand-tagline {
-    font-weight: 300;
-    color: rgb(142, 142, 214);
-}
-
-.nav-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-.nav-item {
-    zoom: 1;
-    margin-top: 1em ;
-    margin-bottom: 1em;
-}
-
-.nav-item a {
-    color: #fff;
-	padding: 0.2em;
-}
-.nav-item a:hover,
-.nav-item a:focus {
-    color: rgb(142, 142, 214);
-    text-decoration: none;
-}
-
-.nav-item-selected a {
-    color: #fff;
-    font-weight: bold;
-}
-	
-
-.content-subhead {
-    text-transform: uppercase;
-    color: #aaa;
-    border-bottom: 1px solid #eee;
-    padding: 0.4em 0;
-    font-size: 80%;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-}
-
-.content {
-    padding: 2em 3em 0;
-}
-
-
-.footer {
-    text-align: center;
-    padding: 1em 0;
-}
-.footer a {
-    color: #ccc;
-    font-size: 80%;
-}
-.footer .pure-menu a:hover,
-.footer .pure-menu a:focus {
-    background: none;
-}
-
-
-body .primary-button {
-    background: #afafff;
-}
-
 
 pre {
 	background: #fafafa;
@@ -202,58 +94,6 @@ table tr:nth-of-type(even) {
     background: #f5f5ff;
 }
 
-
-
-@media (max-width: 700px) {
-    .sidebar {
-        width: 100%;
-        position: relative;
-        margin: 0;
-    }
-
-    .header {
-        text-align: center;
-        top: auto;
-        margin: 0;
-        positionstatic;
-		padding: 1em;
-    }
-
-	.header .hgroup {
-		float: left;
-		margin-right: 1em;
-	}
-
-	.header h1 {
-		margin-top: 0;
-	}
-
-    #layout {
-        padding: 0;
-    }
-
-	.header .nav-list {
-		text-align: right;
-	}
-
-	.nav-item {
-	    display: inline-block;
-	    *display: inline;
-		zoom: 1;
-	    margin-left: 0.1em ;
-    	margin-right: 0.1em;
-	}
-
-	span.naver-handle {
-		display: inline;
-	}	
-}
-
-@media (max-width: 480px) {
-    .content {
-        padding: 2em 1em 0;
-    }
-}
 
 hr {
 	color: #eee;
@@ -382,3 +222,4 @@ div#additional-info {
 .pure-button .button-label {
 	font-size: 8pt;
 }
+
