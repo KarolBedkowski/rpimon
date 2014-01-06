@@ -1,5 +1,5 @@
 html {
-	font-size: 12pt;
+	font-size: 10pt;
 	line-height: 120%;
 }
 
@@ -8,6 +8,7 @@ pre {
 	border: 1px solid #eee;
 	padding: 0.5em;
 	white-space: pre;
+	font-size: 9pt;
 }
 
 
