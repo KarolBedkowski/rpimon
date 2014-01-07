@@ -157,4 +157,9 @@ footer {
 
 .row div {
 	margin-bottom: 10px;
+div.pager input {
+	border: none;
+	width: 60px;
+	text-align: center;
+}
 }

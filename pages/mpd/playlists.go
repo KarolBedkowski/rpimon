@@ -28,7 +28,7 @@ func playlistsPageHandler(w http.ResponseWriter, r *http.Request) {
 	playlists, err := mpdGetPlaylists()
 	data.Playlists = playlists
 	data.Error = err
-	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlists.tmpl", "flash.tmpl")
+	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlists.tmpl", "flash.tmpl", "pager.tmpl")
 }
 
 func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {

@@ -35,7 +35,7 @@ func playlistPageHandler(w http.ResponseWriter, r *http.Request) {
 	data.Playlist = playlist
 	data.Error = err
 	data.CurrentSongID = current
-	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlist.tmpl", "flash.tmpl")
+	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlist.tmpl", "flash.tmpl", "pager.tmpl")
 }
 
 func songActionPageHandler(w http.ResponseWriter, r *http.Request) {

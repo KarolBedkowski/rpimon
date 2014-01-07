@@ -213,7 +213,8 @@ func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.Method == "GET" {
 		ctx.Folders, ctx.Files, _ = getFiles(ctx.Path)
-		app.RenderTemplate(w, ctx, "base", "base.tmpl", "mpd/library.tmpl", "flash.tmpl")
+		app.RenderTemplate(w, ctx, "base", "base.tmpl", "mpd/library.tmpl", "flash.tmpl",
+			"pager.tmpl")
 	} else {
 		w.Write([]byte(ctx.Error))
 	}
