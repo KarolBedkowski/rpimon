@@ -149,7 +149,7 @@
 				
 					$(this).trigger("appendCache");
 					
-					config.size = parseInt($(".pagesize",pager).val());
+					config.size = parseInt($(config.cssPageSize,pager).val());
 					
 					$(config.cssFirst,pager).click(function() {
 						moveToFirstPage(table);
