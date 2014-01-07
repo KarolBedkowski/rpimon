@@ -76,21 +76,22 @@ func (cache *SimpleCache) Clear() {
 	cache.value = nil
 }
 
-type KeyCacheItem struct {
+type keycacheitem struct {
 	timestamp time.Time
 	value     Value
 }
 
+// KeyCache structure
 type KeyCache struct {
 	mutex       sync.RWMutex
-	values      map[string]KeyCacheItem
+	values      map[string]keycacheitem
 	MaxCacheAge time.Duration
 }
 
-// NewSimpleCache create new cache structure
+// NewKeyCache create new cache structure
 func NewKeyCache(maxCacheAge int) *KeyCache {
 	return &KeyCache{MaxCacheAge: time.Duration(maxCacheAge) * time.Second,
-		values: make(map[string]KeyCacheItem)}
+		values: make(map[string]keycacheitem)}
 }
 
 // Get value from cache; if cache is expired - call function and put result in cache
@@ -108,7 +109,7 @@ func (cache *KeyCache) Get(key string, f func(fkey string) Value) (value Value) 
 	defer cache.mutex.Unlock()
 
 	value = f(key)
-	cache.values[key] = KeyCacheItem{now, value}
+	cache.values[key] = keycacheitem{now, value}
 	return value
 }
 
@@ -128,10 +129,10 @@ func (cache *KeyCache) GetValue(key string) (value Value, ok bool) {
 func (cache *KeyCache) SetValue(key string, value Value) {
 	cache.mutex.Lock()
 	defer cache.mutex.Unlock()
-	cache.values[key] = KeyCacheItem{time.Now(), value}
+	cache.values[key] = keycacheitem{time.Now(), value}
 }
 
 // Clear cache
 func (cache *KeyCache) Clear() {
-	cache.values = make(map[string]KeyCacheItem)
+	cache.values = make(map[string]keycacheitem)
 }
