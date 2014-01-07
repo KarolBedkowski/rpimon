@@ -61,15 +61,13 @@ MPD.refresh = function refreshF() {
 			if (status["random"] != MPD.lastState["Status"]["random"]) {
 				if (status["random"] == "1") {
 					$('a[data-action="toggle_random"]')
-						.removeClass("ui-state-default")
-						.addClass("ui-state-active").addClass("active")
+						.addClass("active")
 						.attr("title", "Random ON");
 					$('a[data-action="toggle_random"] span.button-label')
 						.text("ON");
 				} else {
 					$('a[data-action="toggle_random"]')
-						.removeClass("ui-state-active").removeClass("active")
-						.addClass("ui-state-default")
+						.removeClass("active")
 						.attr("title", "Random OFF");
 					$('a[data-action="toggle_random"] span.button-label')
 						.text("off");
@@ -78,15 +76,13 @@ MPD.refresh = function refreshF() {
 			if (status["repeat"] != MPD.lastState["Status"]["repeat"]) {
 				if (status["repeat"] == "1") {
 					$('a[data-action="toggle_repeat"]')
-						.removeClass("ui-state-default")
-						.addClass("ui-state-active").addClass("active")
+						.addClass("active")
 						.attr("title", "Repeat ON");
 					$('a[data-action="toggle_repeat"] span.button-label')
 						.text("ON");
 				} else {
 					$('a[data-action="toggle_repeat"]')
-						.removeClass("ui-state-active").removeClass("active")
-						.addClass("ui-state-default")
+						.removeClass("active")
 						.attr("title", "Repeat OFF");
 					$('a[data-action="toggle_repeat"] span.button-label')
 						.text("off");
@@ -123,6 +119,11 @@ MPD.refresh = function refreshF() {
 				} else {
 					$('a[data-action="play"]').show();
 					$('a[data-action="pause"]').hide();
+				}
+				if (status["state"] == "stop") {
+					$('a[data-action="stop"]').addClass("active");
+				} else {
+					$('a[data-action="stop"]').removeClass("active");
 				}
 			}
 			MPD.lastState = msg;

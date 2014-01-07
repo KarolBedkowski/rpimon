@@ -12,7 +12,7 @@
 
 <div class="container">
 	<p>
-		<a class="btn btn-default" href="{{namedurl "mpd-pl-action" "action" "clear"}}" onclick="return RPI.confirm()">Clear</a>
+		<a class="btn btn-default btn-sm" href="{{namedurl "mpd-pl-action" "action" "clear"}}" onclick="return RPI.confirm()">Clear</a>
 	</p>
 	<div class="table-responsive">
 		<table class="table table-hover table-bordered table-condensed">
@@ -23,14 +23,14 @@
 					<th>Artist</th>
 					<th>track</th>
 					<th>Title</th>
-					<th>Actions</th>
+					<th width="48px">Actions</th>
 				</tr>
 			</thead>
 			<tbody>
 			{{$currentSongId := .CurrentSongID}}
 			{{range .Playlist}}
 				{{if eq .Id $currentSongId}}
-				<tr class="playlist-current-song">
+				<tr class="playlist-current-song active">
 				{{else}}
 				<tr>
 				{{end}}
@@ -39,9 +39,9 @@
 					<td>{{.Artist}}</td>
 					<td>{{.Track}}</td>
 					<td>{{.Title}}</td>
-					<td><a href="{{namedurl "mpd-song-action" "song-id" .Id "action" "play"}}">Play</a>
-					|
-					<a href="{{namedurl "mpd-song-action" "song-id" .Id "action" "remove"}}">Remove</a>
+					<td><a href="{{namedurl "mpd-song-action" "song-id" .Id "action" "play"}}"><span class="glyphicon glyphicon-play" title="Play"></span></a>
+						&nbsp;
+					<a href="{{namedurl "mpd-song-action" "song-id" .Id "action" "remove"}}"><span class="glyphicon glyphicon-remove" title="Remove"></span></a>
 					</td>
 				</tr>
 			{{end}}
@@ -55,18 +55,16 @@
 	<div class="row">
 		<div class="col-md-6">
 			<h2>Save Playlist</h2>
-			<form action="{{namedurl "mpd-pl-save"}}" method="post">
-				<label for="name">Name:</label>
-				<input type="text" name="Name" id="name" required/>
+			<form action="{{namedurl "mpd-pl-save"}}" method="post" class="form-inline">
+				<input type="text" name="Name" id="name" placeholder="Playlist name" required/>
 				<input type="submit" value="Save" class="btn btn-primary btn-sm" />
 				<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
 			</form>
 		</div>
 		<div class="col-md-6">
 			<h2>Add custom</h2>
-			<form action="{{namedurl "mpd-pl-add"}}" method="post">
-				<label for="uri">URI:</label>
-				<input type="text" name="Uri" id="uri" required/>
+			<form action="{{namedurl "mpd-pl-add"}}" method="post" class="form-inline">
+				<input type="text" name="Uri" id="uri" placeholder="URI" required/>
 				<input type="submit" value="Add" class="btn btn-primary btn-sm"/>
 				<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
 			</form>

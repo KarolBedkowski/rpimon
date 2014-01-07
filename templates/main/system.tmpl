@@ -17,14 +17,13 @@
 
 
 <div class="container">
-	<div class="row">
-	<div class="col-xs-12 col-sm-6 col-md-4">
-		<section>
+	<div class="row row-centered">
+		<div class="col-xs-12 col-sm-6 col-md-4">
 			<h1>Load:</h1>
 			<div class="chart-box">
 				<span id="load-chart" class="chart-line-load" data-width="280" data-height="50" data-min="0" data-max="{{.MaxAcceptableLoad}}">0</span>
 			</div>
-			<table class="table table-hover table-bordered table-condensed table-centered">
+			<table class="table-hover table-bordered table-condensed table-centered">
 				<thead>
 					<tr>
 						<th>1m</th>
@@ -40,17 +39,15 @@
 					</tr>
 				</tbody>
 			</table>
-		</section>
-	</div>
+		</div>
 
-	<div class="col-xs-12 col-sm-6 col-md-4">
-		<section>
+		<div class="col-xs-12 col-sm-6 col-md-4">
 			<h1>CPU</h1>
 
 			<div class="chart-box">
 				<span id="cpu-chart" class="chart-line" data-width="280" data-height="50" data-min="0" data-max="100">0</span>
 			</div>
-			<table class="table table-hover table-bordered table-condensed table-centered">
+			<table class="table-hover table-bordered table-condensed table-centered">
 				<thead>
 					<tr>
 						<th>User</th>
@@ -70,16 +67,14 @@
 					</tr>
 				</tbody>
 			</table>
-		</section>
-	</div>
+		</div>
 
-	<div class="col-xs-12 col-sm-6 col-md-4">
-		<section>
+		<div class="col-xs-12 col-sm-6 col-md-4">
 			<h1>Memory</h1>
 			<div class="chart-box">
 				<span id="mem-chart" class="chart-line" data-width="280" data-height="50" data-min="0" data-max="100">0</span>
 			</div>
-			<table class="table table-hover table-bordered table-condensed table-centered">
+			<table class="table-hover table-bordered table-condensed table-centered">
 				<thead>
 					<tr>
 						<th>User</th>
@@ -97,13 +92,11 @@
 					</tr>
 				</tbody>
 			</table>
-		</section>
-	</div>
+		</div>
 
-	<div class="col-xs-12 col-sm-6 col-md-4">
-		<section>
+		<div class="col-xs-12 col-sm-6 col-md-4">
 			<h1>Mount</h1>
-			<table class="table table-hover table-bordered table-condensed">
+			<table class="table-hover table-bordered table-condensed">
 				<thead>
 					<tr>
 						<th>Filesystem</th>
@@ -113,13 +106,11 @@
 				<tbody id="fs-table">
 				</tbody>
 			</table>
-		</section>
-	</div>
+		</div>
 
-	<div class="col-xs-12 col-sm-6 col-md-4">
-		<section>
+		<div class="col-xs-12 col-sm-6 col-md-4">
 			<h1>Network interfaces</h1>
-			<table class="table table-hover table-bordered table-condensed">
+			<table class="table-hover table-bordered table-condensed">
 				<thead>
 					<tr>
 						<th>Interface</th>
@@ -129,15 +120,13 @@
 				<tbody id="network-interfaces-table">
 				</tbody>
 			</table>
-		</section>
-	</div>
+		</div>
 
-	<div class="col-xs-12 col-sm-6 col-md-4">
-		<section>
+		<div class="col-xs-12 col-sm-6 col-md-4">
 			<h1>Other</h1>
 			<p><label>Users:</label> <span id="uptime-users"></span></p>
 			<p><label>Uptime:</label> <span id="uptime-uptime"></span></p>
-		</section>
+		</div>
 	</div>
 </div>
 

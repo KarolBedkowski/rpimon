@@ -19,35 +19,38 @@
 	{{$ml := namedurl "mpd-library"}}
 	<p>
 		{{if .Path}}
-		<a class="btn btn-default" href="{{$ml}}?a=up&p={{$path}}" role="button">Go Up</a>
+		<a class="btn btn-default btn-sm" href="{{$ml}}?a=up&p={{$path}}" role="button">Go Up</a>
 		{{end}}
 	</p>
 	<div class="table-responsive">
-		<table class="table table-hover table-bordered table-condensed">
+		<table class="table-hover table-bordered table-condensed">
 			<thead>
 				<tr>
+					<td width="32px"></td>
 					<th>Name</th>
-					<th>Actions</th>
+					<th width="48px">Actions</th>
 				</tr>
 			</thead>
 			<tbody>
 			{{range .Folders}}
 				<tr>
-					<td><a href="{{$ml}}?p={{$path}}/{{.}}">[ {{.}} ]</a></td>
+					<td><span class="glyphicon glyphicon-folder-close"></span></td>
+					<td><a href="{{$ml}}?p={{$path}}/{{.}}">{{.}}</a></td>
 					<td>
-						<a href="#" class="action" data-action="add" data-uri="{{$path}}/{{.}}">Add</a>
-						| 
-						<a href="#" class="action" data-action="replace" data-uri="{{$path}}/{{.}}">Replace</a>
+						<a href="#" class="action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
+						&nbsp; 
+						<a href="#" class="action" data-action="replace" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-play" title="Replace"></a>
 					</td>
 				</tr>
 			{{end}}
 			{{range .Files}}
 				<tr>
+					<td class="ui-state-active"><span class="ui-icon ui-icon-document"></span></td>
 					<td>{{.}}</td>
 					<td>
-						<a href="#" class="action" data-action="add" data-uri="{{$path}}/{{.}}">Add</a>
-						|
-						<a href="#" class="action" data-action="replace" data-uri="{{$path}}/{{.}}">Replace</a>
+						<a href="#" class="action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
+						&nbsp; 
+						<a href="#" class="action" data-action="replace" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-play" title="Replace"></a>
 					</td>
 				</tr>
 			{{end}}

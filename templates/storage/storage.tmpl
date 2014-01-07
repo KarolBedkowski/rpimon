@@ -7,9 +7,9 @@
 
 <div class="container">
 	<h2>Umount</h2>
-	<form action="{{namedurl "storage-umount"}}" method="POST">
+	<form action="{{namedurl "storage-umount"}}" method="POST" class="form-inline">
 		<fieldset>
-			<label for="fs">File system</label>
+			<label for="fs">File system: </label>
 			<select name="fs" id="fs">
 			{{range .Mounted}}
 				<option value="{{.Mpoint}}">{{.Mpoint}} ({{.Device}}, {{.Type}})</option>
