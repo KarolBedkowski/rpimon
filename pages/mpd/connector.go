@@ -277,3 +277,22 @@ func addToPlaylist(uri string) (err error) {
 	defer conn.Close()
 	return conn.Add(uri)
 }
+
+var mpdShortStatusCache = h.NewSimpleCache(5)
+
+func GetShortStatus() (map[string]string, error) {
+	if result, ok := mpdShortStatusCache.GetValue(); ok {
+		return result.(map[string]string), nil
+	}
+	conn, err := mpd.Dial("tcp", host)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	status, err := conn.Status()
+	if err == nil {
+		mpdShortStatusCache.SetValue(status)
+	}
+	return status, err
+}

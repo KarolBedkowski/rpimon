@@ -6,6 +6,7 @@ import (
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	"k.prv/rpimon/monitor"
+	"k.prv/rpimon/pages/mpd"
 	"net/http"
 	"runtime"
 	"strings"
@@ -44,6 +45,7 @@ type pageCtx struct {
 	MemInfo           *monitor.MemInfo
 	Filesystems       *monitor.FilesystemsStruct
 	Interfaces        *monitor.InterfacesStruct
+	MpdStatus         map[string]string
 	Warnings          []string
 	MaxAcceptableLoad int
 	LoadTrucated      float64
@@ -65,6 +67,9 @@ func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 		ctx.LoadTrucated = float64(ctx.MaxAcceptableLoad)
 	} else {
 		ctx.LoadTrucated = ctx.Load.Load1
+	}
+	if mpdStatus, err := mpd.GetShortStatus(); err == nil {
+		ctx.MpdStatus = mpdStatus
 	}
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/index.tmpl", "flash.tmpl")
 }

@@ -75,6 +75,18 @@
 				{{end}}
 			</dl>
 		</div>
+		
+		<div class="col-xs-12 col-sm-6 col-md-4">
+			<h1>MPD</h1>
+			{{if .MpdStatus}}
+			<dl class="inline-dl">
+				<dt>State:</dt>
+				<dd>{{.MpdStatus.state}}</dd>
+			</dl>
+			{{else}}
+			<p>Missing data</p>
+			{{end}}
+		</div>
 	</div>
 </div>
 <script src="/static/lib/jquery/jquery.peity.min.js" type="text/javascript" ></script>
