@@ -1,6 +1,5 @@
-html {
+body {
 	font-size: 10pt;
-	line-height: 120%;
 }
 
 pre {
@@ -167,4 +166,9 @@ div.pager input {
 table {
 	margin-left: auto;
 	margin-right: auto;
+}
+
+.alert {
+	font-size: 11pt;
+	font-weight: bold;
 }
