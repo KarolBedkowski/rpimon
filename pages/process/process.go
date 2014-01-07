@@ -40,9 +40,9 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	switch page {
 	case "psaxl":
-		data.Data = h.ReadFromCommand("ps", "axl")
+		data.Data = h.ReadFromCommand("ps", "axlww")
 	case "top":
-		data.Data = h.ReadFromCommand("top", "-b", "-n 1")
+		data.Data = h.ReadFromCommand("top", "-b", "-n", "1", "-w", "1024")
 	}
 	data.CurrentLocalMenuPos = page
 	data.CurrentPage = page
