@@ -2,11 +2,12 @@ build: clean
 	GOGCCFLAGS="-s -fPIC -O4 -Ofast -march=native" go build
 
 build_pi:
-	CGO_ENABLED="0" GOGCCFLAGS="-fPIC -O4 -Ofast -march=native -s" GOARCH=arm GOARM=5 go build -o rpi/rpimon
+	CGO_ENABLED="0" GOGCCFLAGS="-fPIC -O4 -Ofast -march=native -s" GOARCH=arm GOARM=5 go build -o rpimon
 	#CGO_ENABLED="0" GOGCCFLAGS="-g -O2 -fPIC" GOARCH=arm GOARM=5 go build server.go 
 
 clean:
 	go clean
+	rm -rf temp dist
 	rm -f server rpimon
 	find ./static -iname '*.css.gz' -exec rm -f {} ';'
 	find ./static -iname '*.js.gz' -exec rm -f {} ';'
@@ -16,14 +17,13 @@ compress:
 	find ./static -iname '*.css' -exec gzip -f -k {} ';'
 	find ./static -iname '*.js' -exec gzip -f -k {} ';'
 
-install_pi: dist
+install_pi: build_pi dist
 	cp rpi/* dist/
 	ssh k@pi sudo service k_rpimon stop
 	rsync -arv --delete dist/* k@pi:rpimon/
 	ssh k@pi sudo service k_rpimon start
 
 run: clean
-	rm -rf temp
 	mkdir temp
 	go-reload server.go
 
@@ -36,7 +36,7 @@ debug: clean
 	gdb ./server
 
 
-dist: clean build
+dist:
 	rm -rf dist
 	mkdir "dist" || true
 	cp -r static templates dist/
