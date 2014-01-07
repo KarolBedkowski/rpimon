@@ -282,7 +282,8 @@ var mpdShortStatusCache = h.NewSimpleCache(5)
 
 func GetShortStatus() (map[string]string, error) {
 	if result, ok := mpdShortStatusCache.GetValue(); ok {
-		return result.(map[string]string), nil
+		cachedValue := result.(mpd.Attrs)
+		return map[string]string(cachedValue), nil
 	}
 	conn, err := mpd.Dial("tcp", host)
 	if err != nil {
