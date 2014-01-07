@@ -1,9 +1,5 @@
 {{define "body"}}
 
-<div class="container">
-	<h1>MPD Library</h1>
-</div>
-
 {{if .Error}}
 <div class="container" id="error-msg-box">
 	<div class="alert alert-warning">
@@ -14,7 +10,7 @@
 {{else}}
 
 <div class="container">
-	<h2>{{if .Path}}{{.Path}}{{else}}Library{{end}}</h2>
+	<p class="breadcrumb">{{if .Path}}{{.Path}}{{else}}<i>Library</i>{{end}}</p>
 	{{$path := .Path}}
 	{{$ml := namedurl "mpd-library"}}
 	<p>
@@ -22,7 +18,7 @@
 		<a class="btn btn-default btn-sm" href="{{$ml}}?a=up&p={{$path}}" role="button">Go Up</a>
 		{{end}}
 	</p>
-	<div class="table-responsive">
+	<div class="">
 		<table class="table-hover table-bordered table-condensed">
 			<thead>
 				<tr>
@@ -56,8 +52,8 @@
 			{{end}}
 			</tbody>
 		</table>
-		{{template "pager" }}
 	</div>
+	{{template "pager" }}
 </div>
 
 <div class="container">

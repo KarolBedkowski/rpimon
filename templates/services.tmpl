@@ -2,34 +2,35 @@
 {{define "body"}}
 
 <div class="container">
-	<h1>Services</h1>
-	<table class="table-hover table-bordered table-condensed" id="services">
-		<thead>
-			<tr>
-				<th>Service</th>
-				<th>Status</th>
-				<th width="120px">Actions</th>
-			</tr>
-		</thead>
-		<tbody>
-		{{range $key, $val := .Services}}
-			<tr {{if eq $val "+"}}class="active"{{end}}>
-				<td>{{$key}}</td>
-				<td>{{if eq $val "+"}}running{{else}}{{if eq $val "-"}}stoped{{else}}{{$val}}{{end}}{{end}}</td>
-				<td><a href="services/{{$key | urlquery}}/start" title="Start"><span class="glyphicon glyphicon-play"></span></a> 
-				&nbsp;
-				<a href="services/{{$key | urlquery}}/stop" title="Stop"><span class="glyphicon glyphicon-stop"></span></a> 
-				&nbsp;
-				<a href="services/{{$key | urlquery}}/restart" title="Restart"><span class="glyphicon glyphicon-repeat"></span></a> 
-				&nbsp;
-				<a href="services/{{$key | urlquery}}/reload" title="Reload"><span class="glyphicon glyphicon-refresh"></span></a> 
-				&nbsp;
-				<a href="services/{{$key | urlquery}}/force-reload" title="Force Reload"><span class="glyphicon glyphicon-retweet"></span></a>
-				</td>
-			</tr>
-		{{end}}
-		</tbody>
-	</table>
+	<div class="table-responsive">
+		<table class="table-hover table-bordered table-condensed" id="services">
+			<thead>
+				<tr>
+					<th>Service</th>
+					<th>Status</th>
+					<th width="120px">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{range $key, $val := .Services}}
+				<tr {{if eq $val "+"}}class="active"{{end}}>
+					<td>{{$key}}</td>
+					<td>{{if eq $val "+"}}running{{else}}{{if eq $val "-"}}stoped{{else}}{{$val}}{{end}}{{end}}</td>
+					<td><a href="services/{{$key | urlquery}}/start" title="Start"><span class="glyphicon glyphicon-play"></span></a> 
+					&nbsp;
+					<a href="services/{{$key | urlquery}}/stop" title="Stop"><span class="glyphicon glyphicon-stop"></span></a> 
+					&nbsp;
+					<a href="services/{{$key | urlquery}}/restart" title="Restart"><span class="glyphicon glyphicon-repeat"></span></a> 
+					&nbsp;
+					<a href="services/{{$key | urlquery}}/reload" title="Reload"><span class="glyphicon glyphicon-refresh"></span></a> 
+					&nbsp;
+					<a href="services/{{$key | urlquery}}/force-reload" title="Force Reload"><span class="glyphicon glyphicon-retweet"></span></a>
+					</td>
+				</tr>
+			{{end}}
+			</tbody>
+		</table>
+	</div>
 	{{template "pager" }}
 </div>
 

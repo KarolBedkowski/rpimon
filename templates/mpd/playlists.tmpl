@@ -1,33 +1,32 @@
 {{define "body"}}
 
-<div class="container">
-	<h1>MPD Current Playlists</h1>
 {{if .Error}}
+<div class="container">
 	<div class="alert alert-warning">
 		<p>Connection error:<br/>{{.Error}}</p>
 	</div>
-{{end}}
 </div>
-
-{{if not .Error}}
+{{else}}
 <div class="container">
-	<table class="table-hover table-condensed table-bordered">
-		<thead>
-			<tr>
-				<th>Name</th>
-				<th>Actions</th>
-			</tr>
-		</thead>
-		<tbody>
-		{{range .Playlists}}
-			<tr>
-				<td>{{.playlist}}</td>
-				<td><a href="{{namedurl "mpd-pls-action" "plist" .playlist "action" "play"}}" title="Play"><span class="glyphicon glyphicon-play"></a> 
-				</td>
-			</tr>
-		{{end}}
-		</tbody>
-	</table>
+	<div class="">
+		<table class="table-hover table-condensed table-bordered">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{range .Playlists}}
+				<tr>
+					<td>{{.playlist}}</td>
+					<td><a href="{{namedurl "mpd-pls-action" "plist" .playlist "action" "play"}}" title="Play"><span class="glyphicon glyphicon-play"></a> 
+					</td>
+				</tr>
+			{{end}}
+			</tbody>
+		</table>
+	</div>
 	{{template "pager" }}
 </div>
 

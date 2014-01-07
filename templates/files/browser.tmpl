@@ -1,35 +1,36 @@
 {{define "body"}}
 <div class="container">
-	<h1>Browser</h1>
-	<p><b>Path:</b> {{.Path}}</p>
-	<table class="table-hover table-bordered table-condensed">
-		<thead>
-			<tr>
-				<td width="32px"></td>
-				<th>Filename</th>
-				<th>Size</th>
-				<th>Date</th>
-			</tr>
-		</thead>
-		<tbody>
-		{{$ctx := . }}
-		{{if ne .Path "."}}
-			<tr>
-				<td><a href="?p={{$ctx.GetFullPath ".." | urlquery}}">[ .. ]</a></td>
-				<td>&nbsp;</td>
-				<td>&nbsp;</td>
-			</tr>
-		{{end}}
-		{{range .Files}}
-			<tr>
-				<td><span class="glyphicon {{if .IsDir}}glyphicon-folder-close{{else}}glyphicon-file{{end}}"></span></td>
-				<td><a href="?p={{$ctx.GetFullPath .Name | urlquery}}">{{.Name}}</a></td>
-				<td>{{if .IsDir}}[dir]{{else}}{{.Size}}{{end}}</td>
-				<td>{{.ModTime}}</td>
-			</tr>
-		{{end}}
-		</tbody>
-	</table>
+	<p class="breadcrumb">{{.Path}}</p>
+	<div class="table-responsive">
+		<table class="table-hover table-bordered table-condensed">
+			<thead>
+				<tr>
+					<td width="32px"></td>
+					<th>Filename</th>
+					<th>Size</th>
+					<th>Date</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{$ctx := . }}
+			{{if ne .Path "."}}
+				<tr>
+					<td><a href="?p={{$ctx.GetFullPath ".." | urlquery}}">[ .. ]</a></td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+				</tr>
+			{{end}}
+			{{range .Files}}
+				<tr>
+					<td><span class="glyphicon {{if .IsDir}}glyphicon-folder-close{{else}}glyphicon-file{{end}}"></span></td>
+					<td><a href="?p={{$ctx.GetFullPath .Name | urlquery}}">{{.Name}}</a></td>
+					<td>{{if .IsDir}}[dir]{{else}}{{.Size}}{{end}}</td>
+					<td>{{.ModTime}}</td>
+				</tr>
+			{{end}}
+			</tbody>
+		</table>
+	</div>
 	{{template "pager" }}
 </div>
 
