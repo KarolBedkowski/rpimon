@@ -1,4 +1,4 @@
-build: clean compress
+build: clean
 	GOGCCFLAGS="-s -fPIC -O4 -Ofast -march=native" go build
 
 build_pi:
@@ -16,9 +16,10 @@ compress:
 	find ./static -iname '*.css' -exec gzip -f -k {} ';'
 	find ./static -iname '*.js' -exec gzip -f -k {} ';'
 
-install_pi: build_pi compress
+install_pi: dist
+	cp rpi/* dist/
 	ssh k@pi sudo service k_rpimon stop
-	rsync -arv --delete templates static rpi/* k@pi:rpimon/
+	rsync -arv --delete dist/* k@pi:rpimon/
 	ssh k@pi sudo service k_rpimon start
 
 run: clean
@@ -33,3 +34,16 @@ certs:
 debug: clean
 	go build -gcflags "-N -l" server.go
 	gdb ./server
+
+
+dist: clean build
+	rm -rf dist
+	mkdir "dist" || true
+	cp -r static templates dist/
+	cp *.json dist/
+	cp rpimon dist/
+	find dist -name *.css -exec yui-compressor -o "{}.tmp" "{}" ';' -exec  mv "{}.tmp" "{}" ';'
+	find dist -name *.js -exec yui-compressor -o "{}.tmp" "{}" ';' -exec  mv "{}.tmp" "{}" ';'
+	find dist -iname '*.css' -exec gzip -f -k {} ';'
+	find dist -iname '*.js' -exec gzip -f -k {} ';'
+
