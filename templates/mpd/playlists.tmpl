@@ -20,7 +20,9 @@
 			{{range .Playlists}}
 				<tr>
 					<td>{{.playlist}}</td>
-					<td><a href="{{namedurl "mpd-pls-action" "plist" .playlist "action" "play"}}" title="Play"><span class="glyphicon glyphicon-play"></a> 
+					<td><a href="{{namedurl "mpd-pls-action" "plist" .playlist "action" "play"}}" title="Play"><span class="glyphicon glyphicon-play">
+					&nbsp;
+					<a href="{{namedurl "mpd-pls-action" "plist" .playlist "action" "remove"}}" title="Remove" class="action-confirm"><span class="glyphicon glyphicon-remove"></a> 
 					</td>
 				</tr>
 			{{end}}
@@ -37,6 +39,9 @@
 			ignoreCase: true,
 		});
 		addPager($('table'));
+		$('a.action-confirm').on("click", function() {
+			return RPI.confirm();
+		});
 	});
 </script>
 {{end}}
