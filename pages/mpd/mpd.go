@@ -39,6 +39,9 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/playlist/{action}",
 		app.VerifyPermission(playlistActionPageHandler, "mpd")).Name(
 		"mpd-pl-action")
+	subRouter.HandleFunc("/playlist/serv/info",
+		app.VerifyPermission(sInfoPlaylistHandler, "mpd")).Name(
+		"mpd-pl-serv-info")
 	subRouter.HandleFunc("/song/{song-id:[0-9]+}/{action}",
 		app.VerifyPermission(songActionPageHandler, "mpd")).Name(
 		"mpd-song-action")

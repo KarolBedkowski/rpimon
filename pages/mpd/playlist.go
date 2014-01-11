@@ -132,3 +132,20 @@ func addToPlaylistPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 }
+
+func sInfoPlaylistHandler(w http.ResponseWriter, r *http.Request) {
+	result := map[string]interface{}{"error": nil,
+		"playlist": nil,
+		"stat":     nil,
+	}
+	playlist, err, stat := mpdPlaylistInfo()
+	if err == nil {
+		result["playlist"] = playlist
+		result["stat"] = stat
+	} else {
+		result["error"] = err.Error()
+	}
+	encoded, _ := json.Marshal(result)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(encoded)
+}
