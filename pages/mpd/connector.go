@@ -148,6 +148,7 @@ func mpdPlaylistsAction(playlist, action string) error {
 		conn.Play(-1)
 	case "add":
 		conn.PlaylistLoad(playlist, -1, -1)
+		conn.Play(-1)
 	case "remove":
 		return conn.PlaylistRemove(playlist)
 	default:
@@ -246,7 +247,11 @@ func addFileToPlaylist(uri string, clearPlaylist bool) error {
 	if clearPlaylist {
 		conn.Clear()
 	}
-	return conn.Add(uri)
+	err = conn.Add(uri)
+	if err == nil {
+		conn.Play(-1)
+	}
+	return err
 }
 
 func playlistAction(action string) (err error) {
