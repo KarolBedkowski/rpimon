@@ -78,7 +78,7 @@
 		});
 		var page = 0;
 		{{if .CurrentSongID}}
-		page = Math.floor(parseInt({{.CurrentSongID}}) / 20);
+		page = Math.floor(parseInt({{.CurrentSong}}) / 20);
 		{{end}}
 		addPager($('table'), page);
 		$("form").validate();

@@ -19,6 +19,7 @@ type playlistPageCtx struct {
 	CurrentPage   string
 	Playlist      []mpd.Attrs
 	CurrentSongID string
+	CurrentSong   string
 	Error         error
 }
 
@@ -31,10 +32,11 @@ func newPlaylistPageCtx(w http.ResponseWriter, r *http.Request) *playlistPageCtx
 
 func playlistPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := newPlaylistPageCtx(w, r)
-	playlist, err, current := mpdPlaylistInfo()
+	playlist, err, stat := mpdPlaylistInfo()
 	data.Playlist = playlist
 	data.Error = err
-	data.CurrentSongID = current
+	data.CurrentSongID = stat["songid"]
+	data.CurrentSong = stat["song"]
 	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlist.tmpl", "flash.tmpl", "pager.tmpl")
 }
 

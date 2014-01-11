@@ -84,7 +84,7 @@ func mpdAction(action string) error {
 	return nil
 }
 
-func mpdPlaylistInfo() (playlist []mpd.Attrs, err error, currentSong string) {
+func mpdPlaylistInfo() (playlist []mpd.Attrs, err error, stat mpd.Attrs) {
 	conn, err := mpd.Dial("tcp", host)
 	if err != nil {
 		return
@@ -94,11 +94,9 @@ func mpdPlaylistInfo() (playlist []mpd.Attrs, err error, currentSong string) {
 	if err != nil {
 		l.Error(err.Error())
 	}
-	stat, err := conn.Status()
+	stat, err = conn.Status()
 	if err != nil {
 		l.Error(err.Error())
-	} else {
-		currentSong = stat["songid"]
 	}
 	return
 }
