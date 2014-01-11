@@ -51,5 +51,9 @@ func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
 		session.AddFlash(err.Error())
 		session.Save(r, w)
 	}
-	http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
+	if r.Method == "GET" {
+		http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
+	} else {
+		w.Write([]byte("OK"))
+	}
 }

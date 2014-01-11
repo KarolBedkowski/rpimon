@@ -20,9 +20,9 @@
 			{{range .Playlists}}
 				<tr>
 					<td>{{.playlist}}</td>
-					<td><a href="{{namedurl "mpd-pls-action" "plist" .playlist "action" "play"}}" title="Play"><span class="glyphicon glyphicon-play">
+					<td><a href="{{namedurl "mpd-pls-action" "plist" .playlist "action" "play"}}" title="Play" class="ajax-action"><span class="glyphicon glyphicon-play">
 					&nbsp;
-					<a href="{{namedurl "mpd-pls-action" "plist" .playlist "action" "remove"}}" title="Remove" class="action-confirm"><span class="glyphicon glyphicon-remove"></a> 
+					<a href="{{namedurl "mpd-pls-action" "plist" .playlist "action" "remove"}}" title="Remove" class="action-confirm"><span class="glyphicon glyphicon-remove"></a>
 					</td>
 				</tr>
 			{{end}}
@@ -41,6 +41,29 @@
 		addPager($('table'));
 		$('a.action-confirm').on("click", function() {
 			return RPI.confirm();
+		});
+		$('a.ajax-action').on("click", function(event) {
+			event.preventDefault();
+			var message = new Messi('Loading...', {
+				closeButton: false,
+				modal: true,
+				width: 'auto',
+			});
+			$.ajax({
+				url: this.href,
+				type: "PUT",
+			}).done(function(msg) {
+				message.hide()
+			}).fail(function(jqXHR, textStatus) {
+				message.hide()
+				new Messi(textStatus, {
+					title: 'Error',
+					titleClass: 'anim warning',
+					buttons: [{
+						id: 0, label: 'Close', val: 'X'
+					}]
+				});
+			});
 		});
 	});
 </script>
