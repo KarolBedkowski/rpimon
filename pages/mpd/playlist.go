@@ -57,12 +57,18 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = mpdSongAction(songID, action)
-	if err != nil {
-		session := app.GetSessionStore(w, r)
-		session.AddFlash(err.Error())
-		session.Save(r, w)
+	if r.Method == "PUT" {
+		encoded, _ := json.Marshal(getStatus())
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.Write(encoded)
+	} else {
+		if err != nil {
+			session := app.GetSessionStore(w, r)
+			session.AddFlash(err.Error())
+			session.Save(r, w)
+		}
+		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 	}
-	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 }
 
 func playlistActionPageHandler(w http.ResponseWriter, r *http.Request) {

@@ -44,71 +44,14 @@
 </div>
 
 <script src="/static/lib/jquery/jquery.tablesorter.min.js" type="text/javascript"></script>
+<script src="/static/js/mpd.js" type="text/javascript" ></script>
 <script type="text/javascript">
 	$(function() {
 		$('table').tablesorter({
 			ignoreCase: true,
 		});
 		$("form").validate();
-
-		var message = new Messi('Loading...', {
-			closeButton: false,
-			modal: true,
-			width: 'auto',
-		});
-
-		function processPlaylist(response) {
-			var tbody = $("#playlist-tbody");
-			var current = response.stat.songid;
-			$.each(response["playlist"], function(i, item) {
-				var tr = $("<tr>").append(
-					$("<td>").text(i + 1),
-					$("<td>").text(item.Album),
-					$("<td>").text(item.Artist),
-					$("<td>").text(item.Track));
-				if ("Title" in item) {
-					tr.append($("<td>").text(item.Title));
-				} else {
-					tr.append($("<td>").text(item.file));
-				}
-				tr.append(
-					$("<td>").html('<a href="/mpd/song/' + item.Id + '/play"><span class="glyphicon glyphicon-play" title="Play"></span></a>'+
-						'&nbsp;<a href="/mpd/song/' + item.Id + '/remove"><span class="glyphicon glyphicon-remove" title="Remove"></span></a>')
-				);
-				if (item.Id == current) {
-					tr.addClass("playlist-current-song active");
-				}
-				tbody.append(tr);
-			});
-			$('table').tablesorter();
-		}
-		
-		function showError(message) {
-			console.log(message);
-			message.hide()
-			new Messi(message, {
-				title: 'Error', 
-				titleClass: 'anim warning', 
-				buttons: [{
-					id: 0, label: 'Close', val: 'X'
-				}]
-			});
-		}
-
-		$.ajax({
-			url: "/mpd/playlist/serv/info",
-		}).done(function(response) {
-			$("#playlist-tbody").text("");
-			if (response.error == null) {
-				processPlaylist(response);
-				message.hide()
-			} else {
-				message.hide()
-				showError(response.error);
-			}
-		}).fail(function(jqXHR, message) {
-			showError(message);
-		});
+		MPD.plist.init();
 	});
 </script>
 
