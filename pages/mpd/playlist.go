@@ -4,6 +4,7 @@ package mpd
 
 import (
 	"code.google.com/p/gompd/mpd"
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
@@ -32,11 +33,6 @@ func newPlaylistPageCtx(w http.ResponseWriter, r *http.Request) *playlistPageCtx
 
 func playlistPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := newPlaylistPageCtx(w, r)
-	playlist, err, stat := mpdPlaylistInfo()
-	data.Playlist = playlist
-	data.Error = err
-	data.CurrentSongID = stat["songid"]
-	data.CurrentSong = stat["song"]
 	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlist.tmpl", "flash.tmpl", "pager.tmpl")
 }
 

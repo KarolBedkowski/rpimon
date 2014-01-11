@@ -1,11 +1,4 @@
 {{define "body"}}
-{{if .Error}}
-<div class="container">
-	<div class="alert alert-warning">
-		<p>Connection error:<br/>{{.Error}}</p>
-	</div>
-</div>
-{{else}}
 
 <div class="container">
 	<p>
@@ -23,29 +16,10 @@
 					<th width="48px">Actions</th>
 				</tr>
 			</thead>
-			<tbody>
-			{{$currentSongId := .CurrentSongID}}
-			{{range .Playlist}}
-				{{if eq .Id $currentSongId}}
-				<tr class="playlist-current-song active">
-				{{else}}
-				<tr>
-				{{end}}
-					<td>{{.Pos}}</td>
-					<td>{{.Album}}</td>
-					<td>{{.Artist}}</td>
-					<td>{{.Track}}</td>
-					<td>{{.Title}}</td>
-					<td><a href="{{namedurl "mpd-song-action" "song-id" .Id "action" "play"}}"><span class="glyphicon glyphicon-play" title="Play"></span></a>
-						&nbsp;
-					<a href="{{namedurl "mpd-song-action" "song-id" .Id "action" "remove"}}"><span class="glyphicon glyphicon-remove" title="Remove"></span></a>
-					</td>
-				</tr>
-			{{end}}
+			<tbody id="playlist-tbody">
 			</tbody>
 		</table>
 	</div>
-	{{template "pager" }}
 </div>
 
 <div class="container">
@@ -68,7 +42,6 @@
 		</div>
 	</div>
 </div>
-{{end}}
 
 <script src="/static/lib/jquery/jquery.tablesorter.min.js" type="text/javascript"></script>
 <script type="text/javascript">
@@ -76,12 +49,66 @@
 		$('table').tablesorter({
 			ignoreCase: true,
 		});
-		var page = 0;
-		{{if .CurrentSongID}}
-		page = Math.floor(parseInt({{.CurrentSong}}) / 20);
-		{{end}}
-		addPager($('table'), page);
 		$("form").validate();
+
+		var message = new Messi('Loading...', {
+			closeButton: false,
+			modal: true,
+			width: 'auto',
+		});
+
+		function processPlaylist(response) {
+			var tbody = $("#playlist-tbody");
+			var current = response.stat.songid;
+			$.each(response["playlist"], function(i, item) {
+				var tr = $("<tr>").append(
+					$("<td>").text(i + 1),
+					$("<td>").text(item.Album),
+					$("<td>").text(item.Artist),
+					$("<td>").text(item.Track));
+				if ("Title" in item) {
+					tr.append($("<td>").text(item.Title));
+				} else {
+					tr.append($("<td>").text(item.file));
+				}
+				tr.append(
+					$("<td>").html('<a href="/mpd/song/' + item.Id + '/play"><span class="glyphicon glyphicon-play" title="Play"></span></a>'+
+						'&nbsp;<a href="/mpd/song/' + item.Id + '/remove"><span class="glyphicon glyphicon-remove" title="Remove"></span></a>')
+				);
+				if (item.Id == current) {
+					tr.addClass("playlist-current-song active");
+				}
+				tbody.append(tr);
+			});
+			$('table').tablesorter();
+		}
+		
+		function showError(message) {
+			console.log(message);
+			message.hide()
+			new Messi(message, {
+				title: 'Error', 
+				titleClass: 'anim warning', 
+				buttons: [{
+					id: 0, label: 'Close', val: 'X'
+				}]
+			});
+		}
+
+		$.ajax({
+			url: "/mpd/playlist/serv/info",
+		}).done(function(response) {
+			$("#playlist-tbody").text("");
+			if (response.error == null) {
+				processPlaylist(response);
+				message.hide()
+			} else {
+				message.hide()
+				showError(response.error);
+			}
+		}).fail(function(jqXHR, message) {
+			showError(message);
+		});
 	});
 </script>
 
