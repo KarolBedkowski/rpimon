@@ -137,42 +137,37 @@ func addToPlaylistPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func sInfoPlaylistHandler(w http.ResponseWriter, r *http.Request) {
 	result := map[string]interface{}{"error": nil,
-		"playlist": nil,
-		"stat":     nil,
+		"aaData":               nil,
+		"stat":                 nil,
+		"iTotalDisplayRecords": 0,
+		"iTotalRecords":        0,
 	}
-	var start = -1
-	var end = -1
 	r.ParseForm()
-	if iDisplayStart, ok := r.Form["iDisplayStart"]; ok {
-		if iDisplayStart[0] != "" {
-			start, _ = strconv.Atoi(iDisplayStart[0])
-		}
-	}
-	if iDisplayLength, ok := r.Form["iDisplayLength"]; ok {
-		if iDisplayLength[0] != "" {
-			end, _ = strconv.Atoi(iDisplayLength[0])
-			if end > 0 {
-				if start == -1 {
-					start = 0
-				}
-				end += start
-			} else {
-				end = -1
-				if start == 0 {
-					start = -1
-				}
-			}
-		}
-	}
 	var echo = ""
 	if echoL, ok := r.Form["sEcho"]; ok {
 		echo = echoL[0]
 	}
-	playlist, err, stat := mpdPlaylistInfo(start, end)
+	playlist, err, stat := mpdPlaylistInfo(-1, -1)
 	if err == nil {
-		result["playlist"] = playlist
+		for _, item := range playlist {
+			if _, ok := item["Artist"]; !ok {
+				item["Artist"] = ""
+			}
+			if _, ok := item["Album"]; !ok {
+				item["Album"] = ""
+			}
+			if _, ok := item["Track"]; !ok {
+				item["Track"] = ""
+			}
+			if title, ok := item["Title"]; !ok || title == "" {
+				item["Title"] = item["file"]
+			}
+		}
 		result["stat"] = stat
-		result["echo"] = echo
+		result["aaData"] = playlist
+		result["sEcho"] = echo
+		result["iTotalRecords"] = len(playlist)
+		result["iTotalDisplayRecords"] = len(playlist)
 	} else {
 		result["error"] = err.Error()
 	}

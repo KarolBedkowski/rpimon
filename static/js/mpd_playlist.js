@@ -12,34 +12,7 @@ MPD.plist = (function(self, $) {
 			data: aoData || {},
 		}).done(function(response) {
 			currentSongId = response.stat.songid;
-			var aaData = [];
-			var playlist = response.playlist
-			var plistlen = playlist.length;
-			for (idx=0; idx < plistlen; ++idx) {
-				var item = playlist[idx];
-				if (item != null) {
-					if (item.Album == null) {
-						item.Album = "";
-					}
-					if (item.Artist == null) {
-						item.Artist = "";
-					}
-					if (item.Track == null) {
-						item.Track = "";
-					}
-					if (!("Title" in item) || item.Title == null) {
-						item.Title = item.file;
-					}
-					aaData.push(item);
-				}
-			}
-			var playlist = {
-				"iTotalDisplayRecords": parseInt(response.stat.playlistlength),
-				"iTotalRecords": parseInt(response.stat.playlistlength),
-				"aaData": aaData,
-				"sEcho": response.echo,
-			};
-			fnCallback(playlist);
+			fnCallback(response);
 			message.hide();
 		}).fail(function(jqXHR, message) {
 			message.hide()
@@ -75,7 +48,7 @@ MPD.plist = (function(self, $) {
 			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
 			"sPaginationType": "full_numbers",
 			"bProcessing": true,
-			"bServerSide": true,
+			//"bServerSide": true,
 			"sAjaxSource": "/mpd/playlist/serv/info",
 			"fnServerData": processServerData,
 			"aoColumns": [
@@ -111,7 +84,8 @@ MPD.plist = (function(self, $) {
 
 	function playSong(event) {
 		event.preventDefault()
-		var id = $(this).closest('tr').data("songid");
+		var tr = $(this).closest('tr')
+		var id = tr.data("songid");
 		showLoadingMessage();
 		$.ajax({
 			url: "/mpd/song/" + id  + "/play",
@@ -120,8 +94,14 @@ MPD.plist = (function(self, $) {
 			message.hide()
 			if (result.Error == "") {
 				$("tr.active").removeClass("active").removeClass("playlist-current-song");
-				var newSongId = result.Status.songid;
-				$('tr[data-songid='+newSongId+']').addClass("playlist-current-song active");
+				currentSongId = result.Status.songid;
+				if (currentSongId != id) {
+					// $('tr[data-songid=... not work on dynamic created data
+					tr = $('tr').filter(function() {
+					    return $(this).data('songid') == currentSongId;
+					}).first();
+				}
+				tr.addClass("playlist-current-song active");
 			} else {
 				showError(result.error);
 			}
