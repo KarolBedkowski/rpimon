@@ -140,10 +140,39 @@ func sInfoPlaylistHandler(w http.ResponseWriter, r *http.Request) {
 		"playlist": nil,
 		"stat":     nil,
 	}
-	playlist, err, stat := mpdPlaylistInfo()
+	var start = -1
+	var end = -1
+	r.ParseForm()
+	if iDisplayStart, ok := r.Form["iDisplayStart"]; ok {
+		if iDisplayStart[0] != "" {
+			start, _ = strconv.Atoi(iDisplayStart[0])
+		}
+	}
+	if iDisplayLength, ok := r.Form["iDisplayLength"]; ok {
+		if iDisplayLength[0] != "" {
+			end, _ = strconv.Atoi(iDisplayLength[0])
+			if end > 0 {
+				if start == -1 {
+					start = 0
+				}
+				end += start
+			} else {
+				end = -1
+				if start == 0 {
+					start = -1
+				}
+			}
+		}
+	}
+	var echo = ""
+	if echoL, ok := r.Form["sEcho"]; ok {
+		echo = echoL[0]
+	}
+	playlist, err, stat := mpdPlaylistInfo(start, end)
 	if err == nil {
 		result["playlist"] = playlist
 		result["stat"] = stat
+		result["echo"] = echo
 	} else {
 		result["error"] = err.Error()
 	}

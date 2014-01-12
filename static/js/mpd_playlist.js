@@ -4,39 +4,47 @@ var MPD = MPD || {};
 MPD.plist = (function(self, $) {
 	var message = null;
 	var table = null;
+	var currentSongId = -1;
 
-	function processPlaylist(response) {
-		var tbody = $("#playlist-tbody");
-		var current = response.stat.songid;
-		var playlist = response.playlist;
-		var resLen = playlist.length;
-		for (var i=0; i<resLen; i++) {
-			var item = playlist[i];
-			var tr = $("<tr>").attr("data-songid", item.Id).append(
-				$("<td>").text(item.Album),
-				$("<td>").text(item.Artist),
-				$("<td>").text(item.Track));
-			if ("Title" in item) {
-				tr.append($("<td>").text(item.Title));
-			} else {
-				tr.append($("<td>").text(item.file));
+	function processServerData(sSource, aoData, fnCallback) {
+		$.ajax({
+			url: sSource,
+			data: aoData || {},
+		}).done(function(response) {
+			currentSongId = response.stat.songid;
+			var aaData = [];
+			var playlist = response.playlist
+			var plistlen = playlist.length;
+			for (idx=0; idx < plistlen; ++idx) {
+				var item = playlist[idx];
+				if (item != null) {
+					if (item.Album == null) {
+						item.Album = "";
+					}
+					if (item.Artist == null) {
+						item.Artist = "";
+					}
+					if (item.Track == null) {
+						item.Track = "";
+					}
+					if (!("Title" in item) || item.Title == null) {
+						item.Title = item.file;
+					}
+					aaData.push(item);
+				}
 			}
-			tr.append(
-				$("<td>").html('<a href="#" class="play-song-action"><span class="glyphicon glyphicon-play" title="Play"></span></a>&nbsp;<a href="#" class="remove-song-action"><span class="glyphicon glyphicon-remove" title="Remove"></span></a>')
-			);
-			if (item.Id == current) {
-				tr.addClass("playlist-current-song active");
-			}
-			tbody.append(tr);
-		};
-		table = $('table').dataTable({
-			"bAutoWidth": false,
-			"bStateSave": true,
-			"iDisplayLength": 15,
-			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
+			var playlist = {
+				"iTotalDisplayRecords": parseInt(response.stat.playlistlength),
+				"iTotalRecords": parseInt(response.stat.playlistlength),
+				"aaData": aaData,
+				"sEcho": response.echo,
+			};
+			fnCallback(playlist);
+			message.hide();
+		}).fail(function(jqXHR, message) {
+			message.hide()
+			showError(message);
 		});
-		$("a.play-song-action").on("click", playSong);
-		$("a.remove-song-action").on("click", removeSong);
 	};
 
 	function showLoadingMessage() {
@@ -60,20 +68,45 @@ MPD.plist = (function(self, $) {
 	};
 
 	self.refresh = function refreshF() {
-		$.ajax({
-			url: "/mpd/playlist/serv/info",
-		}).done(function(response) {
-			$("#playlist-tbody").text("");
-			if (response.error == null) {
-				processPlaylist(response);
-				message.hide()
-			} else {
-				message.hide()
-				showError(response.error);
-			}
-		}).fail(function(jqXHR, message) {
-			showError(message);
+		table = $('table').dataTable({
+			"bAutoWidth": false,
+			"bStateSave": true,
+			"iDisplayLength": 15,
+			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
+			"sPaginationType": "full_numbers",
+			"bProcessing": true,
+			"bServerSide": true,
+			"sAjaxSource": "/mpd/playlist/serv/info",
+			"fnServerData": processServerData,
+			"aoColumns": [
+				{"mData": "Album"},
+				{"mData": "Artist"},
+				{"mData": "Track"},
+				{"mData": "Title"},
+				{"mData": null},
+			],
+			"aoColumnDefs": [{
+				"aTargets": [4],
+				"mData": null,
+				"bSortable": false,
+				"mRender": function(data, type, full) {
+					return '<a href="#" class="play-song-action"><span class="glyphicon glyphicon-play" title="Play"></span></a>&nbsp;<a href="#" class="remove-song-action"><span class="glyphicon glyphicon-remove" title="Remove"></span></a>';
+				},
+			}],
+			"fnRowCallback": function(row, aData, iDisplayIndex, iDisplayIndexFull) {
+				$(row).data("songid", aData.Id);
+				if (aData.Id == currentSongId) {
+					// mark current song
+					$(row).addClass("playlist-current-song active");
+				}
+			},
+			"fnDrawCallback": function( oSettings ) {
+				$("a.play-song-action").on("click", playSong);
+				$("a.remove-song-action").on("click", removeSong);
+			},
 		});
+		message.hide();
+		return
 	};
 
 	function playSong(event) {
@@ -112,11 +145,8 @@ MPD.plist = (function(self, $) {
 		}).done(function(result) {
 			message.hide()
 			if (result.Error == "") {
-				table.fnDeleteRow(tr[0], function() {
-					$("tr.active").removeClass("active").removeClass("playlist-current-song");
-					var newSongId = result.Status.songid;
-					$('tr[data-songid='+newSongId+']').addClass("playlist-current-song active");
-				}, true);
+				// redraw table on success
+				table.fnDraw();
 			} else {
 				showError(result.error);
 			}

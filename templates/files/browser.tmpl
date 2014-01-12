@@ -5,7 +5,6 @@
 		<table class="table-hover table-bordered table-condensed">
 			<thead>
 				<tr>
-					<td width="32px"></td>
 					<th>Filename</th>
 					<th>Size</th>
 					<th>Date</th>
@@ -22,8 +21,9 @@
 			{{end}}
 			{{range .Files}}
 				<tr>
-					<td><span class="glyphicon {{if .IsDir}}glyphicon-folder-close{{else}}glyphicon-file{{end}}"></span></td>
-					<td><a href="?p={{$ctx.GetFullPath .Name | urlquery}}">{{.Name}}</a></td>
+					<td><span class="glyphicon {{if .IsDir}}glyphicon-folder-close{{else}}glyphicon-file{{end}}"></span>
+					&nbsp;
+					<a href="?p={{$ctx.GetFullPath .Name | urlquery}}">{{.Name}}</a></td>
 					<td>{{if .IsDir}}[dir]{{else}}{{.Size}}{{end}}</td>
 					<td>{{.ModTime}}</td>
 				</tr>
