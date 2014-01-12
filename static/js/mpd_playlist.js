@@ -7,7 +7,10 @@ MPD.plist = (function(self) {
 	function processPlaylist(response) {
 		var tbody = $("#playlist-tbody");
 		var current = response.stat.songid;
-		$.each(response["playlist"], function(i, item) {
+		var playlist = response.playlist;
+		var resLen = playlist.length;
+		for (var i=0; i<resLen; i++) {
+			var item = playlist[i];
 			var tr = $("<tr>").attr("data-songid", item.Id).append(
 				$("<td>").text(i + 1),
 				$("<td>").text(item.Album),
@@ -19,14 +22,13 @@ MPD.plist = (function(self) {
 				tr.append($("<td>").text(item.file));
 			}
 			tr.append(
-				$("<td>").html('<a href="#" class="play-song-action"><span class="glyphicon glyphicon-play" title="Play"></span></a>'+
-					'&nbsp;<a href="#" class="remove-song-action"><span class="glyphicon glyphicon-remove" title="Remove"></span></a>')
+				$("<td>").html('<a href="#" class="play-song-action"><span class="glyphicon glyphicon-play" title="Play"></span></a>&nbsp;<a href="#" class="remove-song-action"><span class="glyphicon glyphicon-remove" title="Remove"></span></a>')
 			);
 			if (item.Id == current) {
 				tr.addClass("playlist-current-song active");
 			}
 			tbody.append(tr);
-		});
+		};
 		$('table').tablesorter();
 		$("a.play-song-action").on("click", self.playSong);
 		$("a.remove-song-action").on("click", self.removeSong);
