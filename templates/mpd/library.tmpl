@@ -22,7 +22,6 @@
 		<table class="table-hover table-bordered table-condensed">
 			<thead>
 				<tr>
-					<td width="32px"></td>
 					<th>Name</th>
 					<th width="48px">Actions</th>
 				</tr>
@@ -30,8 +29,7 @@
 			<tbody>
 			{{range .Folders}}
 				<tr>
-					<td><span class="glyphicon glyphicon-folder-close"></span></td>
-					<td><a href="{{$ml}}?p={{$path}}/{{.}}">{{.}}</a></td>
+					<td><span class="glyphicon glyphicon-folder-close"></span><a href="{{$ml}}?p={{$path}}/{{.}}">&nbsp;{{.}}</a></td>
 					<td>
 						<a href="#" class="action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
 						&nbsp; 
@@ -41,8 +39,7 @@
 			{{end}}
 			{{range .Files}}
 				<tr>
-					<td class="ui-state-active"><span class="ui-icon ui-icon-document"></span></td>
-					<td>{{.}}</td>
+					<td><span class="glyphicon glyphicon-file"></span>&nbsp;{{.}}</td>
 					<td>
 						<a href="#" class="action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
 						&nbsp; 
@@ -77,7 +74,7 @@
 		addPager($('table'));
 		var ctrlUrl = "{{namedurl "mpd-control" "action" "-"}}";
 		ctrlUrl = ctrlUrl.substring(0, ctrlUrl.length - 2);
-		MPD.initLibraryPage(ctrlUrl, "{{namedurl "mpd-service-info"}}");
+		MPD.library.init(ctrlUrl, "{{namedurl "mpd-service-info"}}");
 	});
 </script>
 

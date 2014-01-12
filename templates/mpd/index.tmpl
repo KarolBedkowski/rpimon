@@ -100,6 +100,10 @@
 			<label for="st-state">State:</label>
 			<span id="st-state">&nbsp;</span>
 		</div>
+		<div>
+			<label for="st-error">Error:</label>
+			<span id="st-error">&nbsp;</span>
+		</div>
 	</div>
 </div>
 
@@ -111,7 +115,7 @@
 	$(function() {
 		var ctrlUrl = "{{namedurl "mpd-control" "action" "-"}}";
 		ctrlUrl = ctrlUrl.substring(0, ctrlUrl.length - 2);
-		MPD.initIndexPage(ctrlUrl, "{{namedurl "mpd-service-info"}}");
+		MPD.status.init(ctrlUrl, "{{namedurl "mpd-service-info"}}");
 	});
 </script>
 
