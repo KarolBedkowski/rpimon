@@ -1,8 +1,8 @@
+var RPI = (function(self) {
 
-var RPI = RPI || {
-};
+	self.confirm = function confirmF() {
+		return confirm('Are you sure?');
+	};
 
-
-RPI.confirm = function confirmF() {
-	return confirm('Are you sure?');
-};
+	return self;
+}(RPI || {}));

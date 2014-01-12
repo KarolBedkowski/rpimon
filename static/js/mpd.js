@@ -1,19 +1,6 @@
 
 var MPD = MPD || {};
 
-function ts2str(ts) {
-	ts = Math.floor(parseFloat(ts));
-	if (ts > 0) {
-		var seconds = Math.floor(ts % 60);
-		ts = Math.floor(ts / 60);
-		var minutes = ts % 60;
-		var hours = Math.floor(ts / 60);
-		return [hours,
-			(minutes < 10) ? ("0" + minutes) : minutes,
-			(seconds < 10) ? ("0" + seconds) : seconds].join(":");
-		}
-	return "";
-};
 
 MPD.status = (function(self, $) {
 	var changingPos = false,
@@ -32,6 +19,20 @@ MPD.status = (function(self, $) {
 		$("#error-msg").text(errormsg);
 		$("#error-msg-box").show();
 		setTimeout(refresh, 5000);
+	};
+
+	function ts2str(ts) {
+		ts = Math.floor(parseFloat(ts));
+		if (ts > 0) {
+			var seconds = Math.floor(ts % 60);
+			ts = Math.floor(ts / 60);
+			var minutes = ts % 60;
+			var hours = Math.floor(ts / 60);
+			return [hours,
+				(minutes < 10) ? ("0" + minutes) : minutes,
+				(seconds < 10) ? ("0" + seconds) : seconds].join(":");
+			}
+		return "";
 	};
 
 	function refresh() {
