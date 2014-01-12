@@ -31,7 +31,6 @@
 			</tbody>
 		</table>
 	</div>
-	{{template "pager" }}
 </div>
 
 <div class="container">
@@ -57,13 +56,15 @@
 	</div>
 </div>
 
-<script src="/static/lib/jquery/jquery.tablesorter.min.js" type="text/javascript"></script>
+<script src="/static/lib/jquery/jquery.dataTables.js" type="text/javascript"></script>
 <script type="text/javascript">
 	$(function() {
-		$('table').tablesorter({
-			ignoreCase: true,
+		$('table').dataTable({
+			"bAutoWidth": false,
+			"bStateSave": true,
+			"iDisplayLength": 15,
+			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
 		});
-		addPager($('table'));
 	});
 </script>
 {{end}}

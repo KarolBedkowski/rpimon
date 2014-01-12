@@ -3,6 +3,7 @@ var MPD = MPD || {};
 
 MPD.plist = (function(self, $) {
 	var message = null;
+	var table = null;
 
 	function processPlaylist(response) {
 		var tbody = $("#playlist-tbody");
@@ -12,7 +13,6 @@ MPD.plist = (function(self, $) {
 		for (var i=0; i<resLen; i++) {
 			var item = playlist[i];
 			var tr = $("<tr>").attr("data-songid", item.Id).append(
-				$("<td>").text(i + 1),
 				$("<td>").text(item.Album),
 				$("<td>").text(item.Artist),
 				$("<td>").text(item.Track));
@@ -29,7 +29,12 @@ MPD.plist = (function(self, $) {
 			}
 			tbody.append(tr);
 		};
-		$('table').tablesorter();
+		table = $('table').dataTable({
+			"bAutoWidth": false,
+			"bStateSave": true,
+			"iDisplayLength": 15,
+			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
+		});
 		$("a.play-song-action").on("click", playSong);
 		$("a.remove-song-action").on("click", removeSong);
 	};
@@ -107,12 +112,11 @@ MPD.plist = (function(self, $) {
 		}).done(function(result) {
 			message.hide()
 			if (result.Error == "") {
-				tr.slideUp(100, function() {
+				table.fnDeleteRow(tr[0], function() {
 					$("tr.active").removeClass("active").removeClass("playlist-current-song");
 					var newSongId = result.Status.songid;
 					$('tr[data-songid='+newSongId+']').addClass("playlist-current-song active");
-					tr.remove();
-				});
+				}, true);
 			} else {
 				showError(result.error);
 			}

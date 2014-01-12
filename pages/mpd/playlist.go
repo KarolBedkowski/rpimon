@@ -33,7 +33,7 @@ func newPlaylistPageCtx(w http.ResponseWriter, r *http.Request) *playlistPageCtx
 
 func playlistPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := newPlaylistPageCtx(w, r)
-	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlist.tmpl", "flash.tmpl", "pager.tmpl")
+	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlist.tmpl", "flash.tmpl")
 }
 
 func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
