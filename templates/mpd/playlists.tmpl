@@ -33,6 +33,7 @@
 </div>
 
 <script src="/static/lib/jquery/jquery.tablesorter.min.js" type="text/javascript"></script>
+<script src="/static/js/mpd_playlists.js" type="text/javascript"></script>
 <script type="text/javascript">
 	$(function() {
 		$('table').tablesorter({
@@ -42,29 +43,7 @@
 		$('a.action-confirm').on("click", function() {
 			return RPI.confirm();
 		});
-		$('a.ajax-action').on("click", function(event) {
-			event.preventDefault();
-			var message = new Messi('Loading...', {
-				closeButton: false,
-				modal: true,
-				width: 'auto',
-			});
-			$.ajax({
-				url: this.href,
-				type: "PUT",
-			}).done(function(msg) {
-				message.hide()
-			}).fail(function(jqXHR, textStatus) {
-				message.hide()
-				new Messi(textStatus, {
-					title: 'Error',
-					titleClass: 'anim warning',
-					buttons: [{
-						id: 0, label: 'Close', val: 'X'
-					}]
-				});
-			});
-		});
+		$('a.ajax-action').on("click", MPD.plists.action);
 	});
 </script>
 {{end}}
