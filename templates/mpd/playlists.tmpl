@@ -20,7 +20,9 @@
 			{{range .Playlists}}
 				<tr>
 					<td>{{.playlist}}</td>
-					<td><a href="{{namedurl "mpd-pls-action" "plist" .playlist "action" "play"}}" title="Play"><span class="glyphicon glyphicon-play"></a> 
+					<td><a href="{{namedurl "mpd-pls-action" "plist" .playlist "action" "play"}}" title="Play" class="ajax-action"><span class="glyphicon glyphicon-play">
+					&nbsp;
+					<a href="{{namedurl "mpd-pls-action" "plist" .playlist "action" "remove"}}" title="Remove" class="action-confirm"><span class="glyphicon glyphicon-remove"></a>
 					</td>
 				</tr>
 			{{end}}
@@ -31,12 +33,17 @@
 </div>
 
 <script src="/static/lib/jquery/jquery.tablesorter.min.js" type="text/javascript"></script>
+<script src="/static/js/mpd_playlists.js" type="text/javascript"></script>
 <script type="text/javascript">
 	$(function() {
 		$('table').tablesorter({
 			ignoreCase: true,
 		});
 		addPager($('table'));
+		$('a.action-confirm').on("click", function() {
+			return RPI.confirm();
+		});
+		$('a.ajax-action').on("click", MPD.plists.action);
 	});
 </script>
 {{end}}

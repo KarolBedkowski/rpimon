@@ -4,6 +4,7 @@ package mpd
 
 import (
 	"code.google.com/p/gompd/mpd"
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
@@ -19,6 +20,7 @@ type playlistPageCtx struct {
 	CurrentPage   string
 	Playlist      []mpd.Attrs
 	CurrentSongID string
+	CurrentSong   string
 	Error         error
 }
 
@@ -31,10 +33,6 @@ func newPlaylistPageCtx(w http.ResponseWriter, r *http.Request) *playlistPageCtx
 
 func playlistPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := newPlaylistPageCtx(w, r)
-	playlist, err, current := mpdPlaylistInfo()
-	data.Playlist = playlist
-	data.Error = err
-	data.CurrentSongID = current
 	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlist.tmpl", "flash.tmpl", "pager.tmpl")
 }
 
@@ -59,12 +57,18 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = mpdSongAction(songID, action)
-	if err != nil {
-		session := app.GetSessionStore(w, r)
-		session.AddFlash(err.Error())
-		session.Save(r, w)
+	if r.Method == "PUT" {
+		encoded, _ := json.Marshal(getStatus())
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.Write(encoded)
+	} else {
+		if err != nil {
+			session := app.GetSessionStore(w, r)
+			session.AddFlash(err.Error())
+			session.Save(r, w)
+		}
+		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 	}
-	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 }
 
 func playlistActionPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -129,4 +133,21 @@ func addToPlaylistPageHandler(w http.ResponseWriter, r *http.Request) {
 		session.Save(r, w)
 	}
 	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+}
+
+func sInfoPlaylistHandler(w http.ResponseWriter, r *http.Request) {
+	result := map[string]interface{}{"error": nil,
+		"playlist": nil,
+		"stat":     nil,
+	}
+	playlist, err, stat := mpdPlaylistInfo()
+	if err == nil {
+		result["playlist"] = playlist
+		result["stat"] = stat
+	} else {
+		result["error"] = err.Error()
+	}
+	encoded, _ := json.Marshal(result)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(encoded)
 }
