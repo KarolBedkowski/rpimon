@@ -1,7 +1,7 @@
 
 var MPD = MPD || {};
 
-MPD.plists = (function(self) {
+MPD.plists = (function(self, $) {
 	var message = null;
 
 	self.action = function(event) {
@@ -29,4 +29,4 @@ MPD.plists = (function(self) {
 	};
 
 	return self;
-})(MPD.plists || {});
+}(MPD.plists || {}, jQuery));

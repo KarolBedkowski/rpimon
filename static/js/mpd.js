@@ -15,7 +15,7 @@ function ts2str(ts) {
 	return "";
 };
 
-MPD.status = (function(self) {
+MPD.status = (function(self, $) {
 	var changingPos = false,
 		changingVol = false,
 		lastState = {
@@ -137,23 +137,20 @@ MPD.status = (function(self) {
 		});
 	};
 
-	self.doAction = function doActionF(event) {
+	function doAction(event) {
 		event.preventDefault();
 		var btn = $(this);
 		var act = btn.data("action");
 		$.get(mpdControlUrl + "/" + act)
 	};
 
-
-	self.setVolume = function setVolumeF(value) {
+	function setVolume(value) {
 		$.get(mpdControlUrl + "/volume", {vol: value});
 	};
 
-
-	self.seek = function seekF(value) {
+	function seek(value) {
 		$.get(mpdControlUrl + "/seek", {time: value});
 	};
-
 
 	self.init = function initF(mpdControlUrl_, mpdServiceInfoUrl_) {
 		mpdControlUrl = mpdControlUrl_
@@ -165,8 +162,8 @@ MPD.status = (function(self) {
 		});
 		$("div.mpd-buttons-sect").hide();
 		$("div.mpd-info-section").hide();
-		$("a.btn").on("click", self.doAction);
-		$("a.ajax-action").on("click", self.doAction);
+		$("a.btn").on("click", doAction);
+		$("a.ajax-action").on("click", doAction);
 		$("#slider-volume").slider({
 			min: 0,
 			max: 100,
@@ -176,7 +173,7 @@ MPD.status = (function(self) {
 			},
 			stop: function(event, ui) {
 				changingVol = false;
-				self.setVolume(ui.value);
+				setVolume(ui.value);
 			}
 		});
 		$("#slider-song-pos").slider({
@@ -186,12 +183,12 @@ MPD.status = (function(self) {
 				changingPos = true;
 			},
 			stop: function(event, ui) {
-				self.changingPos = false;
-				self.seek(ui.value);
+				changingPos = false;
+				seek(ui.value);
 			}
 		});
 		setTimeout(refresh, 50);
 	};
 
 	return self;
-})(MPD.status || {});
+}(MPD.status || {}, jQuery));

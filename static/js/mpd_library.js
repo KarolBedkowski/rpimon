@@ -1,7 +1,7 @@
 
 var MPD = MPD || {};
 
-MPD.library = (function(self) {
+MPD.library = (function(self, $) {
 	var message = null;
 	var mpdControlUrl = null;
 	var mpdServiceInfoUrl = null;
@@ -41,5 +41,5 @@ MPD.library = (function(self) {
 	};
 
 	return self;
-})(MPD.library || {});
+}(MPD.library || {}, jQuery));
 

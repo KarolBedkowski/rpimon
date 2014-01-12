@@ -1,7 +1,7 @@
 
 var MPD = MPD || {};
 
-MPD.plist = (function(self) {
+MPD.plist = (function(self, $) {
 	var message = null;
 
 	function processPlaylist(response) {
@@ -30,8 +30,8 @@ MPD.plist = (function(self) {
 			tbody.append(tr);
 		};
 		$('table').tablesorter();
-		$("a.play-song-action").on("click", self.playSong);
-		$("a.remove-song-action").on("click", self.removeSong);
+		$("a.play-song-action").on("click", playSong);
+		$("a.remove-song-action").on("click", removeSong);
 	};
 
 	function showLoadingMessage() {
@@ -71,7 +71,7 @@ MPD.plist = (function(self) {
 		});
 	};
 
-	self.playSong = function playSongF(event) {
+	function playSong(event) {
 		event.preventDefault()
 		var id = $(this).closest('tr').data("songid");
 		showLoadingMessage();
@@ -93,7 +93,7 @@ MPD.plist = (function(self) {
 		});
 	};
 
-	self.removeSong = function removeSongF(event) {
+	function removeSong(event) {
 		event.preventDefault()
 		if (!RPI.confirm()) {
 			return
@@ -128,4 +128,4 @@ MPD.plist = (function(self) {
 	};
 
 	return self;
-})(MPD.plist || {});
+}(MPD.plist || {}, jQuery));
