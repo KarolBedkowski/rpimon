@@ -52,7 +52,7 @@ MPD.plist = (function(self, $) {
 			"bSort": false,
 			"iDisplayLength": 15,
 			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
-			"sPaginationType": "full_numbers",
+			"sPaginationType": "bootstrap",		
 			"bProcessing": true,
 			"bServerSide": true,
 			"sAjaxSource": "/mpd/playlist/serv/info",
