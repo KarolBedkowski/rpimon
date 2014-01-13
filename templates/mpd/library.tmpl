@@ -67,12 +67,6 @@
 <script src="/static/js/mpd_library.js" type="text/javascript" ></script>
 <script type="text/javascript">
 	$(function() {
-		$('table').dataTable({
-			"bAutoWidth": false,
-			"bStateSave": true,
-			"iDisplayLength": 15,
-			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
-		});
 		var ctrlUrl = "{{namedurl "mpd-control" "action" "-"}}";
 		ctrlUrl = ctrlUrl.substring(0, ctrlUrl.length - 2);
 		MPD.library.init(ctrlUrl, "{{namedurl "mpd-service-info"}}");
