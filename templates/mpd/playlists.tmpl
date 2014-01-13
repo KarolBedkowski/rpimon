@@ -29,21 +29,13 @@
 			</tbody>
 		</table>
 	</div>
-	{{template "pager" }}
 </div>
 
-<script src="/static/lib/jquery/jquery.tablesorter.min.js" type="text/javascript"></script>
+<script src="/static/lib/jquery/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/static/js/mpd_playlists.js" type="text/javascript"></script>
 <script type="text/javascript">
 	$(function() {
-		$('table').tablesorter({
-			ignoreCase: true,
-		});
-		addPager($('table'));
-		$('a.action-confirm').on("click", function() {
-			return RPI.confirm();
-		});
-		$('a.ajax-action').on("click", MPD.plists.action);
+		MPD.plists.init();
 	});
 </script>
 {{end}}

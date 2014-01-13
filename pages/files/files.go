@@ -81,8 +81,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error "+err.Error(), http.StatusBadRequest)
 	}
 
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "files/browser.tmpl", "flash.tmpl",
-		"pager.tmpl")
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "files/browser.tmpl", "flash.tmpl")
 }
 
 func mkdirPageHandler(w http.ResponseWriter, r *http.Request) {

@@ -4,7 +4,7 @@ var MPD = MPD || {};
 MPD.plists = (function(self, $) {
 	var message = null;
 
-	self.action = function(event) {
+	action = function(event) {
 		event.preventDefault();
 		var message = new Messi('Loading...', {
 			closeButton: false,
@@ -26,6 +26,24 @@ MPD.plists = (function(self, $) {
 				}]
 			});
 		});
+	};
+
+	self.init = function initF() {
+		$('table').dataTable({
+			"bAutoWidth": false,
+			"bStateSave": true,
+			"sPaginationType": "full_numbers",
+			"iDisplayLength": 15,
+			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
+			"aoColumnDefs": [{
+				"aTargets": [1],
+				"bSortable": false,
+			}],
+		});
+		$('a.action-confirm').on("click", function() {
+			return RPI.confirm();
+		});
+		$('a.ajax-action').on("click", action);
 	};
 
 	return self;

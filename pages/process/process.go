@@ -68,7 +68,7 @@ func servicesPageHangler(w http.ResponseWriter, r *http.Request) {
 
 	ctx.CurrentLocalMenuPos = "services"
 	ctx.CurrentPage = "services"
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "services.tmpl", "flash.tmpl", "pager.tmpl")
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "services.tmpl", "flash.tmpl")
 
 }
 

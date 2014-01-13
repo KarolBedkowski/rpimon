@@ -5,7 +5,6 @@
 		<table class="table-hover table-bordered table-condensed">
 			<thead>
 				<tr>
-					<td width="32px"></td>
 					<th>Filename</th>
 					<th>Size</th>
 					<th>Date</th>
@@ -22,8 +21,9 @@
 			{{end}}
 			{{range .Files}}
 				<tr>
-					<td><span class="glyphicon {{if .IsDir}}glyphicon-folder-close{{else}}glyphicon-file{{end}}"></span></td>
-					<td><a href="?p={{$ctx.GetFullPath .Name | urlquery}}">{{.Name}}</a></td>
+					<td><span class="glyphicon {{if .IsDir}}glyphicon-folder-close{{else}}glyphicon-file{{end}}"></span>
+					&nbsp;
+					<a href="?p={{$ctx.GetFullPath .Name | urlquery}}">{{.Name}}</a></td>
 					<td>{{if .IsDir}}[dir]{{else}}{{.Size}}{{end}}</td>
 					<td>{{.ModTime}}</td>
 				</tr>
@@ -31,7 +31,6 @@
 			</tbody>
 		</table>
 	</div>
-	{{template "pager" }}
 </div>
 
 <div class="container">
@@ -57,13 +56,16 @@
 	</div>
 </div>
 
-<script src="/static/lib/jquery/jquery.tablesorter.min.js" type="text/javascript"></script>
+<script src="/static/lib/jquery/jquery.dataTables.js" type="text/javascript"></script>
 <script type="text/javascript">
 	$(function() {
-		$('table').tablesorter({
-			ignoreCase: true,
+		$('table').dataTable({
+			"bAutoWidth": false,
+			"bStateSave": true,
+			"iDisplayLength": 15,
+			"sPaginationType": "full_numbers",
+			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
 		});
-		addPager($('table'));
 	});
 </script>
 {{end}}

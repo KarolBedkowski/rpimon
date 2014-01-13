@@ -9,6 +9,20 @@ MPD.library = (function(self, $) {
 	self.init = function initF(mpdControlUrl_, mpdServiceInfoUrl_) {
 		mpdControlUrl = mpdControlUrl_
 		mpdServiceInfoUrl = mpdServiceInfoUrl_
+
+		$('table').dataTable({
+			"bAutoWidth": false,
+			"bStateSave": true,
+			"sPaginationType": "full_numbers",
+			"iDisplayLength": 15,
+			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
+			"aoColumnDefs": [{
+				"aTargets": [1],
+				"bSortable": false,
+			}],
+		});
+
+
 		$("a.action").on("click", function(event) {
 			event.preventDefault();
 			var link = $(this);
