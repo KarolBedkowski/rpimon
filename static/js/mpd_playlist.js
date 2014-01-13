@@ -11,9 +11,14 @@ MPD.plist = (function(self, $) {
 			url: sSource,
 			data: aoData || {},
 		}).done(function(response) {
-			currentSongId = response.stat.songid;
-			fnCallback(response);
 			message.hide();
+			if (response.error) {
+				showError(message);
+			}
+			else {
+				currentSongId = response.stat.songid;
+				fnCallback(response);
+			}
 		}).fail(function(jqXHR, message) {
 			message.hide()
 			showError(message);
@@ -44,11 +49,12 @@ MPD.plist = (function(self, $) {
 		table = $('table').dataTable({
 			"bAutoWidth": false,
 			"bStateSave": true,
+			"bSort": false,
 			"iDisplayLength": 15,
 			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
 			"sPaginationType": "full_numbers",
 			"bProcessing": true,
-			//"bServerSide": true,
+			"bServerSide": true,
 			"sAjaxSource": "/mpd/playlist/serv/info",
 			"fnServerData": processServerData,
 			"aoColumns": [

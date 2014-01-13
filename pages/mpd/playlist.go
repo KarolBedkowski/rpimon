@@ -8,9 +8,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
+	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 var decoder = schema.NewDecoder()
@@ -135,20 +137,76 @@ func addToPlaylistPageHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 }
 
+var mpdPlaylistCache = h.NewSimpleCache(10)
+var mpdStatusCache = h.NewSimpleCache(10)
+
+type sInfoParams struct {
+	Start  int    `schema:"iDisplayStart"`
+	End    int    `schema:"iDisplayLength"`
+	Echo   string `schema:"sEcho"`
+	Search string `schema:"sSearch"`
+}
+
+func getPlaylistStat() (playlist []mpd.Attrs, stat mpd.Attrs, err error) {
+	if cachedPlaylist, ok := mpdPlaylistCache.GetValue(); ok {
+		playlist = cachedPlaylist.([]mpd.Attrs)
+	}
+	if cachedStat, ok := mpdStatusCache.GetValue(); ok {
+		stat = cachedStat.(mpd.Attrs)
+	}
+	if len(playlist) == 0 || len(stat) == 0 {
+		playlist, err, stat = mpdPlaylistInfo(-1, -1)
+	}
+	return
+}
+
+func filterPlaylist(playlist []mpd.Attrs, filter string) (filtered []mpd.Attrs) {
+	filtered = make([]mpd.Attrs, 0)
+	for _, item := range playlist {
+		for _, value := range item {
+			if strings.Contains(value, filter) {
+				filtered = append(filtered, item)
+				break
+			}
+		}
+	}
+	return
+}
+
 func sInfoPlaylistHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	params := &sInfoParams{}
+	decoder.Decode(params, r.Form)
+	start := params.Start
+	if params.End > 0 {
+		params.End += start
+	}
+	end := params.End
 	result := map[string]interface{}{"error": nil,
 		"aaData":               nil,
 		"stat":                 nil,
 		"iTotalDisplayRecords": 0,
 		"iTotalRecords":        0,
+		"sEcho":                params.Echo,
 	}
-	r.ParseForm()
-	var echo = ""
-	if echoL, ok := r.Form["sEcho"]; ok {
-		echo = echoL[0]
-	}
-	playlist, err, stat := mpdPlaylistInfo(-1, -1)
+
+	playlist, stat, err := getPlaylistStat()
+
 	if err == nil {
+		if params.Search != "" {
+			playlist = filterPlaylist(playlist, params.Search)
+			result["iTotalDisplayRecords"] = len(playlist)
+		} else {
+			result["iTotalDisplayRecords"] = stat["playlistlength"]
+		}
+		if len(playlist) > 0 {
+			if end > 0 && end < len(playlist) {
+				playlist = playlist[start:end]
+			} else {
+				playlist = playlist[start:]
+			}
+		}
+		result["iTotalRecords"] = stat["playlistlength"]
 		for _, item := range playlist {
 			if _, ok := item["Artist"]; !ok {
 				item["Artist"] = ""
@@ -165,12 +223,10 @@ func sInfoPlaylistHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		result["stat"] = stat
 		result["aaData"] = playlist
-		result["sEcho"] = echo
-		result["iTotalRecords"] = len(playlist)
-		result["iTotalDisplayRecords"] = len(playlist)
 	} else {
 		result["error"] = err.Error()
 	}
+
 	encoded, _ := json.Marshal(result)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(encoded)
