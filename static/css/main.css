@@ -176,3 +176,9 @@ table {
 #local-menu {
 	margin-bottom: 20px;
 }
+
+.dataTables_wrapper table {
+	clear: both;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}

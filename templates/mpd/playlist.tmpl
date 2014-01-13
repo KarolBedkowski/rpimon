@@ -1,9 +1,6 @@
 {{define "body"}}
 
 <div class="container">
-	<p>
-		<a class="btn btn-default btn-sm" href="{{namedurl "mpd-pl-action" "action" "clear"}}" onclick="return RPI.confirm()">Clear</a>
-	</p>
 	<div class="table-responsive">
 		<table class="table table-hover table-bordered table-condensed" id="table-playlist">
 			<thead>
@@ -19,6 +16,9 @@
 			</tbody>
 		</table>
 	</div>
+	<p>
+		<a class="btn btn-default btn-sm" href="{{namedurl "mpd-pl-action" "action" "clear"}}" onclick="return RPI.confirm()">Clear</a>
+	</p>
 </div>
 
 <div class="container">

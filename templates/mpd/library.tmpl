@@ -55,10 +55,10 @@
 <div class="container">
 	<section>
 		<p>
-			<a class="btn btn-default action" data-action="add" data-uri="{{.Path}}" role="button">Add this folder</a>
-			<a class="btn btn-default action" data-action="replace" data-uri="{{.Path}}" role="button">Clear playlist and this folder</a>
+			<a class="btn btn-default btn-sm action" data-action="add" data-uri="{{.Path}}" role="button">Add this folder</a>
+			<a class="btn btn-default btn-sm action" data-action="replace" data-uri="{{.Path}}" role="button">Clear playlist and this folder</a>
 			&nbsp;
-			<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" onclick="return RPI.confirm()" role="button">Update Library</a></li>
+			<a class="btn btn-default btn-sm" href="{{namedurl "mpd-control" "action" "update"}}" onclick="return RPI.confirm()" role="button">Update Library</a></li>
 		</p>
 	</section>
 </div>
