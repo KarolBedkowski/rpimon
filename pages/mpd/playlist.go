@@ -162,9 +162,10 @@ func getPlaylistStat() (playlist []mpd.Attrs, stat mpd.Attrs, err error) {
 
 func filterPlaylist(playlist []mpd.Attrs, filter string) (filtered []mpd.Attrs) {
 	filtered = make([]mpd.Attrs, 0)
+	filter = strings.ToLower(filter)
 	for _, item := range playlist {
 		for _, value := range item {
-			if strings.Contains(value, filter) {
+			if strings.Contains(strings.ToLower(value), filter) {
 				filtered = append(filtered, item)
 				break
 			}
