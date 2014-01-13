@@ -32,6 +32,7 @@ MPD.plists = (function(self, $) {
 		$('table').dataTable({
 			"bAutoWidth": false,
 			"bStateSave": true,
+			"bFilter": false,
 			"sPaginationType": "bootstrap",		
 			"iDisplayLength": 15,
 			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
