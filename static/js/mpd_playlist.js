@@ -82,6 +82,7 @@ MPD.plist = (function(self, $) {
 			"fnDrawCallback": function( oSettings ) {
 				$("a.play-song-action").on("click", playSong);
 				$("a.remove-song-action").on("click", removeSong);
+				$("tr").on("click",  playSong);
 			},
 		});
 		message.hide();
@@ -90,8 +91,12 @@ MPD.plist = (function(self, $) {
 
 	function playSong(event) {
 		event.preventDefault()
-		var tr = $(this).closest('tr')
+		var tr = $(this);
 		var id = tr.data("songid");
+		if (!id) {
+			tr = tr.closest('tr');
+			id = tr.data("songid");
+		}
 		showLoadingMessage();
 		$.ajax({
 			url: "/mpd/song/" + id  + "/play",
