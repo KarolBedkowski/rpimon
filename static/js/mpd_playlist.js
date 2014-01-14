@@ -2,7 +2,7 @@
 var MPD = MPD || {};
 
 MPD.plist = (function(self, $) {
-	var message = null;
+	var msg_loading = null;
 	var table = null;
 	var currentSongId = -1;
 
@@ -11,32 +11,41 @@ MPD.plist = (function(self, $) {
 			url: sSource,
 			data: aoData || {},
 		}).done(function(response) {
-			message.hide();
+			hideLoadingMessage();
 			if (response.error) {
-				showError(message);
+				showError(response.error);
 			}
 			else {
 				currentSongId = response.stat.songid;
 				fnCallback(response);
 			}
-		}).fail(function(jqXHR, message) {
-			message.hide()
-			showError(message);
+		}).fail(function(jqXHR, result) {
+			showError(result);
 		});
 	};
 
 	function showLoadingMessage() {
-		message = new Messi('Loading...', {
+		if (msg_loading) {
+			return;
+		}
+		msg_loading = new Messi('Loading...', {
 			closeButton: false,
 			modal: true,
 			width: 'auto',
 		});
 	};
 
-	function showError(message) {
-		console.log(message);
-		message.hide()
-		new Messi(message, {
+	function hideLoadingMessage() {
+		if (msg_loading) {
+			msg_loading.hide();
+			msg_loading = null;
+		}
+	};
+
+	function showError(result) {
+		hideLoadingMessage();
+		console.log(result);
+		new Messi(result, {
 			title: 'Error',
 			titleClass: 'anim warning',
 			buttons: [{
@@ -58,10 +67,10 @@ MPD.plist = (function(self, $) {
 			"sAjaxSource": "/mpd/playlist/serv/info",
 			"fnServerData": processServerData,
 			"aoColumns": [
-				{"mData": "Album"},
-				{"mData": "Artist"},
-				{"mData": "Track"},
-				{"mData": "Title"},
+				{"sTitle": "Album"},
+				{"sTitle": "Artist"},
+				{"sTitle": "Track"},
+				{"sTitle": "Title"},
 				{"mData": null},
 			],
 			"aoColumnDefs": [{
@@ -73,8 +82,8 @@ MPD.plist = (function(self, $) {
 				},
 			}],
 			"fnRowCallback": function(row, aData, iDisplayIndex, iDisplayIndexFull) {
-				$(row).data("songid", aData.Id);
-				if (aData.Id == currentSongId) {
+				$(row).data("songid", aData[4]);
+				if (aData[4] == currentSongId) {
 					// mark current song
 					$(row).addClass("playlist-current-song active");
 				}
@@ -85,7 +94,7 @@ MPD.plist = (function(self, $) {
 				$("tr").on("click",  playSong);
 			},
 		});
-		message.hide();
+		hideLoadingMessage()
 		return
 	};
 
@@ -102,7 +111,6 @@ MPD.plist = (function(self, $) {
 			url: "/mpd/song/" + id  + "/play",
 			method: "PUT"
 		}).done(function(result) {
-			message.hide()
 			if (result.Error == "") {
 				$("tr.active").removeClass("active").removeClass("playlist-current-song");
 				currentSongId = result.Status.songid;
@@ -113,12 +121,12 @@ MPD.plist = (function(self, $) {
 					}).first();
 				}
 				tr.addClass("playlist-current-song active");
+				hideLoadingMessage()
 			} else {
 				showError(result.error);
 			}
-		}).fail(function(jqXHR, message) {
-			message.hide()
-			showError(message);
+		}).fail(function(jqXHR, result) {
+			showError(result);
 		});
 	};
 
@@ -134,16 +142,15 @@ MPD.plist = (function(self, $) {
 			url: "/mpd/song/" + id  + "/remove",
 			method: "PUT"
 		}).done(function(result) {
-			message.hide()
+			hideLoadingMessage()
 			if (result.Error == "") {
 				// redraw table on success
 				table.fnDraw();
 			} else {
 				showError(result.error);
 			}
-		}).fail(function(jqXHR, message) {
-			message.hide()
-			showError(message);
+		}).fail(function(jqXHR, result) {
+			showError(result);
 		});
 	};
 

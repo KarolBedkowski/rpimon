@@ -147,21 +147,32 @@ type sInfoParams struct {
 	Search string `schema:"sSearch"`
 }
 
-func getPlaylistStat() (playlist []mpd.Attrs, stat mpd.Attrs, err error) {
+func getPlaylistStat() (playlist [][]string, stat mpd.Attrs, err error) {
 	if cachedPlaylist, ok := mpdPlaylistCache.GetValue(); ok {
-		playlist = cachedPlaylist.([]mpd.Attrs)
+		playlist = cachedPlaylist.([][]string)
 	}
 	if cachedStat, ok := mpdStatusCache.GetValue(); ok {
 		stat = cachedStat.(mpd.Attrs)
 	}
 	if len(playlist) == 0 || len(stat) == 0 {
-		playlist, err, stat = mpdPlaylistInfo(-1, -1)
+		var lplaylist []mpd.Attrs
+		lplaylist, err, stat = mpdPlaylistInfo(-1, -1)
+		for _, item := range lplaylist {
+			l.Print(item)
+			if title, ok := item["Title"]; !ok || title == "" {
+				item["Title"] = item["file"]
+			}
+			playlist = append(playlist, []string{item["Album"],
+				item["Artist"], item["Track"], item["Title"],
+				item["Id"],
+			})
+		}
 	}
 	return
 }
 
-func filterPlaylist(playlist []mpd.Attrs, filter string) (filtered []mpd.Attrs) {
-	filtered = make([]mpd.Attrs, 0)
+func filterPlaylist(playlist [][]string, filter string) (filtered [][]string) {
+	filtered = make([][]string, 0)
 	filter = strings.ToLower(filter)
 	for _, item := range playlist {
 		for _, value := range item {
@@ -208,20 +219,6 @@ func sInfoPlaylistHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		result["iTotalRecords"] = stat["playlistlength"]
-		for _, item := range playlist {
-			if _, ok := item["Artist"]; !ok {
-				item["Artist"] = ""
-			}
-			if _, ok := item["Album"]; !ok {
-				item["Album"] = ""
-			}
-			if _, ok := item["Track"]; !ok {
-				item["Track"] = ""
-			}
-			if title, ok := item["Title"]; !ok || title == "" {
-				item["Title"] = item["file"]
-			}
-		}
 		result["stat"] = stat
 		result["aaData"] = playlist
 	} else {
