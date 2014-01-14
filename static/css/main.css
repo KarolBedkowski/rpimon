@@ -186,3 +186,7 @@ table {
 .dataTables_wrapper .dataTables_filter input {
 	font-size: 8pt;
 }
+
+div.messi-box {
+	background-color: #FFFFFF;
+}

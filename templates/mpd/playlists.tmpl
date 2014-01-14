@@ -1,12 +1,5 @@
 {{define "body"}}
 
-{{if .Error}}
-<div class="container">
-	<div class="alert alert-warning">
-		<p>Connection error:<br/>{{.Error}}</p>
-	</div>
-</div>
-{{else}}
 <div class="container">
 	<div class="">
 		<table class="table-hover table-condensed table-bordered">
@@ -36,9 +29,23 @@
 <script src="/static/js/mpd_playlists.js" type="text/javascript"></script>
 <script type="text/javascript">
 	$(function() {
+		{{if .Error}}
+		new Messi({{.Error}}, {
+			title: 'Error',
+			titleClass: 'anim warning',
+			buttons: [
+				{id: 1, label: "Reload", val: "R", class: 'btn-success'},
+			],
+			callback: function(val) {
+				if (val == "R") {
+					location.reload();
+				}
+			},	
+		});
+		{{else}}
 		MPD.plists.init();
+		{{end}}
 	});
 </script>
 {{end}}
 
-{{end}}

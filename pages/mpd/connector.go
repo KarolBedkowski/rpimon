@@ -120,8 +120,10 @@ func mpdSongAction(songID int, action string) error {
 }
 
 func mpdGetPlaylists() (playlists []mpd.Attrs, err error) {
-	conn, err := mpd.Dial("tcp", host)
+	var conn *mpd.Client
+	conn, err = mpd.Dial("tcp", host)
 	if err != nil {
+		l.Warn("mpdGetPlaylists error ", err.Error)
 		return
 	}
 	defer conn.Close()

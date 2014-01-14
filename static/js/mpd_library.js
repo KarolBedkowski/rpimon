@@ -2,7 +2,6 @@
 var MPD = MPD || {};
 
 MPD.library = (function(self, $) {
-	var message = null;
 	var mpdControlUrl = null;
 	var mpdServiceInfoUrl = null;
 

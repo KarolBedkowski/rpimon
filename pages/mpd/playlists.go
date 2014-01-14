@@ -14,7 +14,7 @@ type playlistsPageCtx struct {
 	*app.BasePageContext
 	CurrentPage string
 	Playlists   []mpd.Attrs
-	Error       error
+	Error       string
 }
 
 func newPlaylistsPageCtx(w http.ResponseWriter, r *http.Request) *playlistsPageCtx {
@@ -27,7 +27,9 @@ func playlistsPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := newPlaylistsPageCtx(w, r)
 	playlists, err := mpdGetPlaylists()
 	data.Playlists = playlists
-	data.Error = err
+	if err != nil {
+		data.Error = err.Error()
+	}
 	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlists.tmpl", "flash.tmpl")
 }
 

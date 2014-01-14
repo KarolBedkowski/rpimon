@@ -2,8 +2,6 @@
 var MPD = MPD || {};
 
 MPD.plists = (function(self, $) {
-	var message = null;
-
 	action = function(event) {
 		event.preventDefault();
 		var message = new Messi('Loading...', {

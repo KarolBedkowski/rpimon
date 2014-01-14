@@ -16,9 +16,18 @@ MPD.status = (function(self, $) {
 	function onError(errormsg) {
 		$("div.mpd-buttons-sect").hide();
 		$("div.mpd-info-section").hide();
-		$("#error-msg").text(errormsg);
-		$("#error-msg-box").show();
-		setTimeout(refresh, 5000);
+		new Messi(errormsg, {
+			title: 'Error',
+			titleClass: 'anim warning',
+			buttons: [
+				{id: 1, label: "Reconnect", val: "R", class: 'btn-success'},
+			],
+			callback: function(val) {
+				if (val == "R") {
+					refresh();
+				}
+			},	
+		});
 	};
 
 	function ts2str(ts) {
@@ -44,7 +53,6 @@ MPD.status = (function(self, $) {
 			if (msg["Error"]) {
 				onError(msg["Error"]);
 			} else {
-				$("#error-msg-box").hide();
 				$("div.mpd-buttons-sect").show();
 				$("div.mpd-info-section").show();
 				var current = msg["Current"];
@@ -130,7 +138,10 @@ MPD.status = (function(self, $) {
 					}
 				}
 				lastState = msg;
-				connectingMessage.hide()
+				if (connectingMessage) {
+					connectingMessage.hide();
+					connectingMessage = null;
+				}
 				setTimeout(refresh, 1000);
 			}
 		}).fail(function(jqXHR, textStatus) {
@@ -156,7 +167,6 @@ MPD.status = (function(self, $) {
 	self.init = function initF(mpdControlUrl_, mpdServiceInfoUrl_) {
 		mpdControlUrl = mpdControlUrl_
 		mpdServiceInfoUrl = mpdServiceInfoUrl_
-		$("#error-msg-box").hide();
 		connectingMessage = new Messi('Connecting...', {
 			closeButton: false,
 			width: 'auto',

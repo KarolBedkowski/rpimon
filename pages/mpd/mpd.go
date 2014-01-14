@@ -234,7 +234,11 @@ func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if r.Method == "GET" {
-		ctx.Folders, ctx.Files, _ = getFiles(ctx.Path)
+		var err error
+		ctx.Folders, ctx.Files, err = getFiles(ctx.Path)
+		if err != nil {
+			ctx.Error = err.Error()
+		}
 		app.RenderTemplate(w, ctx, "base", "base.tmpl", "mpd/library.tmpl", "flash.tmpl")
 	} else {
 		w.Write([]byte(ctx.Error))

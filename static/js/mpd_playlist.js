@@ -42,15 +42,20 @@ MPD.plist = (function(self, $) {
 		}
 	};
 
-	function showError(result) {
+	function showError(errormsg) {
 		hideLoadingMessage();
-		console.log(result);
-		new Messi(result, {
+		console.log(errormsg);
+		new Messi(errormsg, {
 			title: 'Error',
 			titleClass: 'anim warning',
-			buttons: [{
-				id: 0, label: 'Close', val: 'X'
-			}]
+			buttons: [
+				{id: 1, label: "Reload", val: "R", class: 'btn-success'},
+			],
+			callback: function(val) {
+				if (val == "R") {
+					location.reload();
+				}
+			},	
 		});
 	};
 
@@ -94,7 +99,6 @@ MPD.plist = (function(self, $) {
 				$("tr").on("click",  playSong);
 			},
 		});
-		hideLoadingMessage()
 		return
 	};
 

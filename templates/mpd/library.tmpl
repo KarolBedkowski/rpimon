@@ -1,14 +1,5 @@
 {{define "body"}}
 
-{{if .Error}}
-<div class="container" id="error-msg-box">
-	<div class="alert alert-warning">
-		<p id="error-msg"></p>
-	</div>
-</div>
-
-{{else}}
-
 <div class="container">
 	{{$path := .Path}}
 	{{$ml := namedurl "mpd-library"}}
@@ -71,12 +62,25 @@
 <script src="/static/js/mpd_library.js" type="text/javascript" ></script>
 <script type="text/javascript">
 	$(function() {
+		{{if .Error}}
+		new Messi({{.Error}}, {
+			title: 'Error',
+			titleClass: 'anim warning',
+			buttons: [
+				{id: 1, label: "Reload", val: "R", class: 'btn-success'},
+			],
+			callback: function(val) {
+				if (val == "R") {
+					location.reload();
+				}
+			},	
+		});
+		{{else}}
 		var ctrlUrl = "{{namedurl "mpd-control" "action" "-"}}";
 		ctrlUrl = ctrlUrl.substring(0, ctrlUrl.length - 2);
 		MPD.library.init(ctrlUrl, "{{namedurl "mpd-service-info"}}");
+		{{end}}
 	});
 </script>
-
-{{end}}
 
 {{end}}
