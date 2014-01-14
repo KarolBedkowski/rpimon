@@ -27,7 +27,7 @@
 					&nbsp;
 					<a href="?p={{$ctx.GetFullPath .Name | urlquery}}">{{.Name}}</a></td>
 					<td>{{if .IsDir}}[dir]{{else}}{{.Size}}{{end}}</td>
-					<td>{{.ModTime}}</td>
+					<td>{{formatDate .ModTime ""}}</td>
 				</tr>
 			{{end}}
 			</tbody>
