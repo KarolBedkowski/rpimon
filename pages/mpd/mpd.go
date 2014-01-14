@@ -8,6 +8,7 @@ import (
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -168,6 +169,13 @@ type libraryPageCtx struct {
 	Files       []string
 	Folders     []string
 	Error       string
+	Breadcrumb  []BreadcrumbItem
+}
+
+type BreadcrumbItem struct {
+	Title  string
+	Href   string
+	Active bool
 }
 
 func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -179,6 +187,17 @@ func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
 	if path, ok := r.Form["p"]; ok {
 		ctx.Path, _ = url.QueryUnescape(strings.TrimLeft(path[0], "/"))
 	}
+
+	ctx.Breadcrumb = append(ctx.Breadcrumb, BreadcrumbItem{"[Library]", "", false})
+	if ctx.Path != "" && ctx.Path != "." {
+		prevPath := ""
+		for idx, pElem := range strings.Split(ctx.Path, "/") {
+			ctx.Breadcrumb[idx].Active = true
+			prevPath = filepath.Join(prevPath, pElem)
+			ctx.Breadcrumb = append(ctx.Breadcrumb, BreadcrumbItem{pElem, prevPath, false})
+		}
+	}
+
 	if action, ok := r.Form["a"]; ok {
 		switch {
 		case action[0] == "add" || action[0] == "replace":

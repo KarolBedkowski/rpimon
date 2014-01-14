@@ -10,14 +10,17 @@
 {{else}}
 
 <div class="container">
-	<p class="breadcrumb">{{if .Path}}{{.Path}}{{else}}<i>Library</i>{{end}}</p>
 	{{$path := .Path}}
 	{{$ml := namedurl "mpd-library"}}
-	<p>
-		{{if .Path}}
-		<a class="btn btn-default btn-sm" href="{{$ml}}?a=up&p={{$path}}" role="button">Go Up</a>
+	<ol class="breadcrumb">
+	{{range .Breadcrumb}}
+		{{if .Active}}
+		<li class="active"><a href="{{$ml}}?p={{.Href}}">{{.Title}}</a></li>
+		{{else}}
+		<li>{{.Title}}</li>
 		{{end}}
-	</p>
+	{{end}}
+	</ol>
 	<div class="">
 		<table class="table-hover table-bordered table-condensed">
 			<thead>
