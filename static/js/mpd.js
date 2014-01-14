@@ -168,6 +168,7 @@ MPD.status = (function(self, $) {
 		$("#slider-volume").slider({
 			min: 0,
 			max: 100,
+			range: "min",
 			// slide
 			start: function(event, ui) {
 				changingVol = true;
@@ -180,6 +181,7 @@ MPD.status = (function(self, $) {
 		$("#slider-song-pos").slider({
 			disabled: true,
 			min: 0,
+			range: "min",
 			start: function(event, ui) {
 				changingPos = true;
 			},
