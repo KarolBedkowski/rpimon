@@ -30,12 +30,19 @@ func CreateRoutes(parentRoute *mux.Route) {
 		"POST").Name("files-upload")
 }
 
+type BreadcrumbItem struct {
+	Title  string
+	Href   string
+	Active bool
+}
+
 type pageCtx struct {
 	*app.BasePageContext
 	CurrentPage   string
 	Configuration configuration
 	Files         []os.FileInfo
 	Path          string
+	Breadcrumb    []BreadcrumbItem
 }
 
 func (ctx pageCtx) GetFullPath(path string) string {
@@ -59,8 +66,16 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	if abspathd, ok := r.Form["ABS_PATH"]; ok {
 		abspath = abspathd[0]
 	}
-
+	ctx.Breadcrumb = append(ctx.Breadcrumb, BreadcrumbItem{"[Root]", "", false})
 	ctx.Path = relpath
+	if relpath != "" && relpath != "." {
+		prevPath := ""
+		for idx, pElem := range strings.Split(relpath, "/") {
+			ctx.Breadcrumb[idx].Active = true
+			prevPath = filepath.Join(prevPath, pElem)
+			ctx.Breadcrumb = append(ctx.Breadcrumb, BreadcrumbItem{pElem, prevPath, false})
+		}
+	}
 
 	isDirectory, err := isDir(abspath)
 	if err != nil {

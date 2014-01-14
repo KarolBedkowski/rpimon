@@ -1,12 +1,15 @@
 {{define "body"}}
+{{$ctx := . }}
 <div class="container">
-	<p class="breadcrumb">{{.Path}}</p>
-	{{$ctx := . }}
-	{{if ne .Path "."}}
-	<p>
-		<a class="btn btn-default btn-sm" href="?p={{$ctx.GetFullPath ".." | urlquery}}">Go Up</a>
-	</p>
+	<ol class="breadcrumb">
+	{{range .Breadcrumb}}
+		{{if .Active}}
+		<li class="active"><a href="?p={{.Href}}">{{.Title}}</a></li>
+		{{else}}
+		<li>{{.Title}}</li>
+		{{end}}
 	{{end}}
+	</ol>
 
 	<div class="table-responsive">
 		<table class="table-hover table-bordered table-condensed">
