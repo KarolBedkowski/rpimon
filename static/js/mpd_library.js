@@ -14,11 +14,14 @@ MPD.library = (function(self, $) {
 			"bStateSave": true,
 			"sPaginationType": "bootstrap",		
 			"iDisplayLength": 15,
-			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
+			"bLengthChange": false,
 			"aoColumnDefs": [{
 				"aTargets": [1],
 				"bSortable": false,
 			}],
+			"sDom": "t"+
+				"<'row'<'col-xs-12 col-sm-6 col-md-4'i><'col-xs-12 col-sm-6 col-md-4'p>" + 
+				"<'col-xs-12 col-sm-6 col-md-4'f>r>"
 		});
 
 

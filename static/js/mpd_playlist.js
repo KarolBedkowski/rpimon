@@ -98,6 +98,9 @@ MPD.plist = (function(self, $) {
 				$("a.remove-song-action").on("click", removeSong);
 				$("tr").on("click",  playSong);
 			},
+			"sDom": "t"+
+				"<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>" + 
+				"<'row'<'col-xs-12 col-sm-6'l><'col-xs-12 col-sm-6'f>r>"
 		});
 		return
 	};

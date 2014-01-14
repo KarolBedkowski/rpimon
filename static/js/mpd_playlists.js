@@ -33,11 +33,13 @@ MPD.plists = (function(self, $) {
 			"bFilter": false,
 			"sPaginationType": "bootstrap",		
 			"iDisplayLength": 15,
-			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
+			"bLengthChange": false,
 			"aoColumnDefs": [{
 				"aTargets": [1],
 				"bSortable": false,
 			}],
+			"sDom": "t"+
+				"<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>" 
 		});
 		$('a.action-confirm').on("click", function() {
 			return RPI.confirm();

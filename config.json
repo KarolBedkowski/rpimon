@@ -14,5 +14,5 @@
   "BrowserConf": "./browser.json",
   "SessionStoreDir": "./temp",
   "StaticDir": "./static",
-  "MpdHost": "pi:6600"
+  "MpdHost": "localhost:6600"
 }
