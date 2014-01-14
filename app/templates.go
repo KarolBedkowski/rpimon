@@ -8,13 +8,22 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 )
 
 var cacheLock sync.Mutex
 var cacheItems = map[string]*template.Template{}
 
 var funcMap = template.FuncMap{
-	"namedurl": GetNamedURL,
+	"namedurl":   GetNamedURL,
+	"formatDate": formatDate,
+}
+
+func formatDate(date time.Time, format string) string {
+	if format == "" {
+		format = "2006-01-02 15:04:05"
+	}
+	return date.Format(format)
 }
 
 // RenderTemplate - render given template
