@@ -42,8 +42,8 @@ dist:
 	cp -r static templates dist/
 	cp *.json dist/
 	cp rpimon dist/
-	find dist -name *.css -exec yui-compressor -o "{}.tmp" "{}" ';' -exec  mv "{}.tmp" "{}" ';'
-	find dist -name *.js -exec yui-compressor -o "{}.tmp" "{}" ';' -exec  mv "{}.tmp" "{}" ';'
+	find dist -name *.css -print -exec yui-compressor -v -o "{}.tmp" "{}" ';' -exec  mv "{}.tmp" "{}" ';'
+	find dist -name *.js -print -exec yui-compressor -v -o "{}.tmp" "{}" ';' -exec  mv "{}.tmp" "{}" ';'
 	find dist -iname '*.css' -exec gzip -f -k {} ';'
 	find dist -iname '*.js' -exec gzip -f -k {} ';'
 
