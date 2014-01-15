@@ -64,14 +64,16 @@
 </div>
 
 <div class="container mpd-buttons-sect">
-	<a class="btn ui-state-default" href="#" data-action="toggle_random">
-		<span class="glyphicon glyphicon-random"></span><br/>
-		<span class="button-label">&nbsp</span>
-	</a>
-	<a class="btn ui-state-default" href="#" data-action="toggle_repeat">
-		<span class="glyphicon glyphicon-repeat"></span><br/>
-		<span class="button-label">&nbsp</span>
-	</a>
+	<div class="btn-group">
+		<a class="btn ui-state-default" href="#" data-action="toggle_random">
+			<span class="glyphicon glyphicon-random"></span><br/>
+			<span class="button-label">&nbsp</span>
+		</a>
+		<a class="btn ui-state-default" href="#" data-action="toggle_repeat">
+			<span class="glyphicon glyphicon-repeat"></span><br/>
+			<span class="button-label">&nbsp</span>
+		</a>
+	</div>
 </div>
 
 <div class="container mpd-info-section" id="songinfo-box">
@@ -79,6 +81,7 @@
 		<div>
 			<label for="curr-file">File:</label>
 			<span id="curr-file"></span>
+			<a href="#" id="action-info"><span class="glyphicon glyphicon-info-sign" title="Info"></a>
 		</div>
 		<div>
 			<label for="st-audio">Audio:</label>

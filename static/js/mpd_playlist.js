@@ -171,6 +171,17 @@ MPD.plist = (function(self, $) {
 		});
 	};
 
+	function songInfo(event) {
+		event.preventDefault();
+		var link = $(this);
+		var p = link.data("uri");
+		var opt = {params: {
+				uri: p,
+			},
+		};
+		Messi.load('/mpd/service/song-info', opt);
+	};
+
 	self.init = function initF() {
 		showLoadingMessage();
 		self.refresh();

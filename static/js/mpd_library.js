@@ -51,6 +51,16 @@ MPD.library = (function(self, $) {
 				});
 			});
 		});
+		$("a.action-info").on("click", function(event) {
+			event.preventDefault();
+			var link = $(this);
+			var p = link.data("uri");
+			var opt = {params: {
+					uri: p,
+				},
+			};
+			Messi.load('/mpd/service/song-info', opt);
+		});
 	};
 
 	return self;

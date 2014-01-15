@@ -26,7 +26,7 @@ MPD.status = (function(self, $) {
 				if (val == "R") {
 					refresh();
 				}
-			},	
+			},
 		});
 	};
 
@@ -200,6 +200,18 @@ MPD.status = (function(self, $) {
 				seek(ui.value);
 			}
 		});
+
+		$("a#action-info").on("click", function(event) {
+			event.preventDefault();
+			if (lastState.Current && lastState.Current.file) {
+				var opt = {params: {
+						uri: lastState.Current.file,
+					},
+				};
+				Messi.load('/mpd/service/song-info', opt);
+			}
+		});
+
 		setTimeout(refresh, 50);
 	};
 
