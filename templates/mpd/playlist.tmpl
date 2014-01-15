@@ -1,21 +1,23 @@
 {{define "body"}}
 
 <div class="container">
-	<div class="table-responsive">
-		<table class="table table-hover table-bordered table-condensed" id="table-playlist">
-			<thead>
-				<tr>
-					<th>Album</th>
-					<th>Artist</th>
-					<th>track</th>
-					<th>Title</th>
-					<th width="48px">Actions</th>
-				</tr>
-			</thead>
-			<tbody id="playlist-tbody">
-			</tbody>
-		</table>
-	</div>
+	<table class="table table-hover table-bordered table-condensed" id="table-playlist">
+		<thead>
+			<tr>
+				<th>
+					<div class="row">
+						<span class="col-title col-sm-6 col-xs-12 col-md-5">Title</span>
+						<span class="col-artist col-sm-6 col-xs-12 col-md-4">Artist</span>
+						<span class="col-track col-sm-2 col-xs-3 col-md-1">Track</span>
+						<span class="col-album col-sm-10 col-xs-9 col-md-2">Album</span>
+					</div>
+				</th>
+				<th>&nbsp;</th>
+			</tr>
+		</thead>
+		<tbody id="playlist-tbody">
+		</tbody>
+	</table>
 	<p>
 		<a class="btn btn-default btn-sm" href="{{namedurl "mpd-pl-action" "action" "clear"}}" onclick="return RPI.confirm()">Clear</a>
 	</p>

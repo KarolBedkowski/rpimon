@@ -64,28 +64,37 @@ MPD.plist = (function(self, $) {
 			"bAutoWidth": false,
 			"bStateSave": true,
 			"bSort": false,
-			"iDisplayLength": 15,
-			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
 			"sPaginationType": "bootstrap",		
 			"bProcessing": true,
 			"bServerSide": true,
 			"sAjaxSource": "/mpd/playlist/serv/info",
 			"fnServerData": processServerData,
 			"aoColumns": [
-				{"sTitle": "Album"},
-				{"sTitle": "Artist"},
-				{"sTitle": "Track"},
-				{"sTitle": "Title"},
+				{},
 				{"mData": null},
 			],
-			"aoColumnDefs": [{
-				"aTargets": [4],
-				"mData": null,
-				"bSortable": false,
-				"mRender": function(data, type, full) {
-					return '<a href="#" class="play-song-action"><span class="glyphicon glyphicon-play" title="Play"></span></a>&nbsp;<a href="#" class="remove-song-action"><span class="glyphicon glyphicon-remove" title="Remove"></span></a>';
+			"aoColumnDefs": [
+				{
+					"aTargets": [0],
+					"mData": null,
+					"mRender": function(data, type, full) {
+						var title = full[3] || full[5];
+						return ['<div class="row"><span class="col-title col-sm-6 col-xs-12 col-md-5">', title, '</span>' +
+							'<span class="col-artist col-sm-6 col-xs-12 col-md-4">', full[1], '</span>',
+							'<span class="col-track col-sm-2 col-xs-3 col-md-1">', full[2], '</span>',
+							'<span class="col-album col-sm-10 col-xs-9 col-md-2">', full[0], '</span></div>'].join("");
+					},
 				},
-			}],
+				{
+					"aTargets": [1],
+					"mData": null,
+					"bSortable": false,
+					"mRender": function(data, type, full) {
+						return '<a href="#" class="play-song-action"><span class="glyphicon glyphicon-play" title="Play"></span></a> <a href="#" class="remove-song-action"><span class="glyphicon glyphicon-remove" title="Remove"></span></a> ' + 
+							'<a href="#" class="action-info" data-uri="' + full[5] + '"><span class="glyphicon glyphicon-info-sign" title="Info"></a>';
+					},
+				}
+			],
 			"fnRowCallback": function(row, aData, iDisplayIndex, iDisplayIndexFull) {
 				$(row).data("songid", aData[4]);
 				if (aData[4] == currentSongId) {
@@ -96,11 +105,12 @@ MPD.plist = (function(self, $) {
 			"fnDrawCallback": function( oSettings ) {
 				$("a.play-song-action").on("click", playSong);
 				$("a.remove-song-action").on("click", removeSong);
+				$("a.action-info").on("click", songInfo);
 				$("tr").on("click",  playSong);
 			},
-			"sDom": "t"+
-				"<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>" + 
-				"<'row'<'col-xs-12 col-sm-6'l><'col-xs-12 col-sm-6'f>r>"
+			"sDom": "<'row'<'col-xs-12 col-sm-6'l><'col-xs-12 col-sm-6'f>r>" + "t"+
+				"<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>",
+				
 		});
 		return
 	};

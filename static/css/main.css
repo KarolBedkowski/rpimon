@@ -186,3 +186,10 @@ div.messi-box {
 	background-color: #FFFFFF;
 }
 
+span.col-track,
+span.col-album {
+	font-size: 80%;
+}
+span.col-title {
+	font-weight: bold;
+}

@@ -17,7 +17,7 @@
 			<thead>
 				<tr>
 					<th>Name</th>
-					<th width="48px">Actions</th>
+					<th width="48px">&nbsp;</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -36,8 +36,8 @@
 					<td><span class="glyphicon glyphicon-file"></span>&nbsp;{{.}}</td>
 					<td>
 						<a href="#" class="action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
-						&nbsp; 
 						<a href="#" class="action" data-action="replace" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-play" title="Replace"></a>
+						<a href="#" class="action-info" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-info-sign" title="Info"></a>
 					</td>
 				</tr>
 			{{end}}
@@ -49,10 +49,18 @@
 <div class="container">
 	<section>
 		<p>
-			<a class="btn btn-default btn-sm action" data-action="add" data-uri="{{.Path}}" role="button">Add this folder</a>
-			<a class="btn btn-default btn-sm action" data-action="replace" data-uri="{{.Path}}" role="button">Clear playlist and this folder</a>
-			&nbsp;
-			<a class="btn btn-default btn-sm" href="{{namedurl "mpd-control" "action" "update"}}" onclick="return RPI.confirm()" role="button">Update Library</a></li>
+			<div class="btn-group btn-group-sm">
+				<a class="btn btn-success action" data-action="add" data-uri="{{.Path}}" role="button">
+					<span class="glyphicon glyphicon-plus"></span>
+					Add this folder
+				</a>
+				<a class="btn btn-warning action" data-action="replace" data-uri="{{.Path}}" role="button">Clear playlist and this folder</a>
+				&nbsp;
+				<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" onclick="return RPI.confirm()" role="button">
+					<span class="glyphicon glyphicon-refresh"></span>
+					Update Library
+				</a>
+			</div>
 		</p>
 	</section>
 </div>

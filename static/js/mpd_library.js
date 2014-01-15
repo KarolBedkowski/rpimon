@@ -13,15 +13,12 @@ MPD.library = (function(self, $) {
 			"bAutoWidth": false,
 			"bStateSave": true,
 			"sPaginationType": "bootstrap",		
-			"iDisplayLength": 15,
-			"bLengthChange": false,
 			"aoColumnDefs": [{
 				"aTargets": [1],
 				"bSortable": false,
 			}],
-			"sDom": "t"+
-				"<'row'<'col-xs-12 col-sm-6 col-md-4'i><'col-xs-12 col-sm-6 col-md-4'p>" + 
-				"<'col-xs-12 col-sm-6 col-md-4'f>r>"
+			"sDom": "<'row'<'col-xs-12 col-sm-6'l><'col-xs-12 col-sm-6'f>r>" + "t"+
+				"<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>",
 		});
 
 

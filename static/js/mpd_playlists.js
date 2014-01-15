@@ -38,8 +38,8 @@ MPD.plists = (function(self, $) {
 				"aTargets": [1],
 				"bSortable": false,
 			}],
-			"sDom": "t"+
-				"<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>" 
+//			"sDom": "t"+
+//				"<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>" 
 		});
 		$('a.action-confirm').on("click", function() {
 			return RPI.confirm();

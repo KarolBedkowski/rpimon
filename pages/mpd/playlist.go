@@ -164,7 +164,7 @@ func getPlaylistStat() (playlist [][]string, stat mpd.Attrs, err error) {
 			}
 			playlist = append(playlist, []string{item["Album"],
 				item["Artist"], item["Track"], item["Title"],
-				item["Id"],
+				item["Id"], item["file"],
 			})
 		}
 	}
