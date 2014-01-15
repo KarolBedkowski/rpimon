@@ -42,18 +42,22 @@
 						{{range .BasePageContext.MainMenu}}
 						{{if .Submenu}}
 						<li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown">{{.Title}} <b class="caret"></b></a>
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">{{if .Icon}}<span class="{{.Icon}}"></span>&nbsp;{{end}}{{.Title}} <b class="caret"></b></a>
 							<ul class="dropdown-menu">
 							{{range .Submenu}}
+								{{if .Href}}
 								<li {{if eq .ID $current}}class="active"{{end}}>
-									<a class="" href="{{.Href}}">{{.Title}}</a>
+									<a class="" href="{{.Href}}">{{if .Icon}}<span class="{{.Icon}}"></span>&nbsp;{{end}}{{.Title}}</a>
 								</li>
+								{{else}}
+								<li class="divider"></li>
+								{{end}}
 							{{end}}
 							</ul>
 						</li>
 						{{else}}
 						<li class="{{if eq .ID $current}}active{{end}}">
-							<a class="" href="{{.Href}}">{{.Title}}</a>
+							<a class="" href="{{.Href}}">{{if .Icon}}<span class="{{.Icon}}"></span>&nbsp;{{end}}{{.Title}}</a>
 						</li>
 						{{end}}
 						{{end}}
@@ -61,9 +65,9 @@
 					<ul class="nav navbar-nav navbar-right">
 						<li>
 							{{if .CurrentUser}}
-							<a class="" href="{{namedurl "auth-logoff"}}">Logoff</a>
+							<a class="" href="{{namedurl "auth-logoff"}}"><span class="glyphicon glyphicon-log-out"></span>&nbsp;Logoff</a>
 							{{else}}
-							<a class="" href="{{namedurl "auth-login"}}">Login</a>
+							<a class="" href="{{namedurl "auth-login"}}"><span class="glyphicon glyphicon-log-in"></span>&nbsp;Login</a>
 							{{end}}
 						</li>
 					</ul>

@@ -42,26 +42,28 @@ func (item *MenuItem) SetIcon(icon string) *MenuItem {
 func SetMainMenu(ctx *BasePageContext) {
 	if ctx.CurrentUser != "" {
 		user := GetUser(ctx.CurrentUser)
-		ctx.MainMenu = []*MenuItem{NewMenuItemFromRoute("Home", "main-index").SetID("main")}
+		ctx.MainMenu = []*MenuItem{NewMenuItemFromRoute("Home", "main-index").SetID("main").SetIcon("glyphicon glyphicon-home")}
 		if user.HasPermission("admin") {
-			sysMI := NewMenuItem("System", "")
+			sysMI := NewMenuItem("System", "").SetIcon("glyphicon glyphicon-wrench")
 			sysMI.Submenu = []*MenuItem{
 				NewMenuItemFromRoute("Live view", "main-system").SetID("system"),
+				NewMenuItem("-", ""),
 				NewMenuItemFromRoute("Network", "net-index").SetID("net"),
 				NewMenuItemFromRoute("Storage", "storage-index").SetID("storage"),
 				NewMenuItemFromRoute("Logs", "logs-index").SetID("logs"),
 				NewMenuItemFromRoute("Process", "process-index").SetID("process"),
 				NewMenuItemFromRoute("Users", "users-index").SetID("users"),
+				NewMenuItem("-", ""),
 				NewMenuItemFromRoute("Utilities", "utils-index").SetID("utils")}
 			ctx.MainMenu = append(ctx.MainMenu, sysMI)
 		}
 		if user.HasPermission("mpd") {
 			ctx.MainMenu = append(ctx.MainMenu,
-				NewMenuItemFromRoute("MPD", "mpd-index").SetID("mpd"))
+				NewMenuItemFromRoute("MPD", "mpd-index").SetID("mpd").SetIcon("glyphicon glyphicon-music"))
 		}
 		if user.HasPermission("files") {
 			ctx.MainMenu = append(ctx.MainMenu,
-				NewMenuItemFromRoute("Files", "files-index").SetID("files"))
+				NewMenuItemFromRoute("Files", "files-index").SetID("files").SetIcon("glyphicon glyphicon-hdd"))
 		}
 	}
 }
