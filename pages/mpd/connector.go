@@ -304,3 +304,12 @@ func GetShortStatus() (map[string]string, error) {
 	}
 	return status, err
 }
+
+func getSongInfo(uri string) (info []mpd.Attrs, err error) {
+	conn, err := mpd.Dial("tcp", host)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	return conn.ListAllInfo(uri)
+}

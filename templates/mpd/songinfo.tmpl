@@ -1,0 +1,16 @@
+{{define "song-info"}}
+
+{{if .Error}}
+<div class="alert alert-danger">{{.Error}}</div>
+{{else}}
+<table class="table">
+{{range .Info}}
+	{{range $key, $val := .}}
+		<tr><th>{{$key}}</th><td>{{$val}}</td></tr>
+	{{end}}
+{{end}}
+</table>
+
+{{end}}
+
+{{end}}

@@ -1,6 +1,7 @@
 package mpd
 
 import (
+	"code.google.com/p/gompd/mpd"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
@@ -57,6 +58,9 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/service/info",
 		app.VerifyPermission(infoHandler, "mpd")).Name(
 		"mpd-service-info")
+	subRouter.HandleFunc("/service/song-info",
+		app.VerifyPermission(songInfoHandler, "mpd")).Name(
+		"mpd-service-song-info")
 	// Library
 	subRouter.HandleFunc("/library",
 		app.VerifyPermission(libraryPageHandler, "mpd")).Name(
@@ -243,4 +247,24 @@ func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.Write([]byte(ctx.Error))
 	}
+}
+
+type songInfoCtx struct {
+	Error string
+	Info  []mpd.Attrs
+}
+
+func songInfoHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	l.Printf(r.Form)
+	ctx := songInfoCtx{}
+	if songUri, ok := r.Form["uri"]; ok && songUri[0] != "" {
+		uri, _ := url.QueryUnescape(songUri[0])
+		result, err := getSongInfo(uri)
+		ctx.Info = result
+		if err != nil {
+			ctx.Error = err.Error()
+		}
+	}
+	app.RenderTemplate(w, ctx, "song-info", "mpd/songinfo.tmpl")
 }
