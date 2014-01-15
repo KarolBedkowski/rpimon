@@ -81,11 +81,11 @@ var localMenu []*app.MenuItem
 
 func createLocalMenu() []*app.MenuItem {
 	if localMenu == nil {
-		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("Status", "mpd-index"),
-			app.NewMenuItemFromRoute("Playlist", "mpd-playlist"),
-			app.NewMenuItemFromRoute("Library", "mpd-library"),
-			app.NewMenuItemFromRoute("Playlists", "mpd-playlists"),
-			app.NewMenuItemFromRoute("Log", "mpd-log"),
+		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("Status", "mpd-index").SetIcon("glyphicon glyphicon-music"),
+			app.NewMenuItemFromRoute("Playlist", "mpd-playlist").SetIcon("glyphicon glyphicon-list"),
+			app.NewMenuItemFromRoute("Library", "mpd-library").SetIcon("glyphicon glyphicon-folder-open"),
+			app.NewMenuItemFromRoute("Playlists", "mpd-playlists").SetIcon("glyphicon glyphicon-floppy-open"),
+			app.NewMenuItemFromRoute("Log", "mpd-log").SetIcon("glyphicon glyphicon-wrench"),
 		}
 	}
 	return localMenu
