@@ -2,9 +2,9 @@
 var MPD = MPD || {};
 
 MPD.plist = (function(self, $) {
-	var msg_loading = null;
-	var table = null;
-	var currentSongId = -1;
+	var msg_loading = null,
+		table = null,
+		currentSongId = -1;
 
 	function processServerData(sSource, aoData, fnCallback) {
 		$.ajax({
@@ -48,9 +48,12 @@ MPD.plist = (function(self, $) {
 		new Messi(errormsg, {
 			title: 'Error',
 			titleClass: 'anim warning',
-			buttons: [
-				{id: 1, label: "Reload", val: "R", class: 'btn-success'},
-			],
+			buttons: [{
+				"id": 1, 
+				"label": "Reload", 
+				"val": "R", 
+				"class": 'btn-success'
+			}],
 			callback: function(val) {
 				if (val == "R") {
 					location.reload();
@@ -108,8 +111,7 @@ MPD.plist = (function(self, $) {
 				$("a.action-info").on("click", songInfo);
 				$("tr").on("click",  playSong);
 			},
-			"sDom": "<'row'<'col-xs-12 col-sm-6'l><'col-xs-12 col-sm-6'f>r>" + "t"+
-				"<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>",
+			"sDom": "<'row'<'col-xs-12 col-sm-6'l><'col-xs-12 col-sm-6'f>r>t<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>",
 				
 		});
 		return
@@ -117,8 +119,8 @@ MPD.plist = (function(self, $) {
 
 	function playSong(event) {
 		event.preventDefault()
-		var tr = $(this);
-		var id = tr.data("songid");
+		var tr = $(this),
+			id = tr.data("songid");
 		if (!id) {
 			tr = tr.closest('tr');
 			id = tr.data("songid");
@@ -152,8 +154,8 @@ MPD.plist = (function(self, $) {
 		if (!RPI.confirm()) {
 			return
 		}
-		var tr = $(this).closest('tr')
-		var id = tr.data("songid");
+		var tr = $(this).closest('tr'),
+			id = tr.data("songid");
 		showLoadingMessage();
 		$.ajax({
 			url: "/mpd/song/" + id  + "/remove",
@@ -173,10 +175,8 @@ MPD.plist = (function(self, $) {
 
 	function songInfo(event) {
 		event.preventDefault();
-		var link = $(this);
-		var p = link.data("uri");
 		var opt = {params: {
-				uri: p,
+				uri: $(this).data("uri"),
 			},
 		};
 		Messi.load('/mpd/service/song-info', opt);

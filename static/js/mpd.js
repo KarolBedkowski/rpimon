@@ -10,8 +10,8 @@ MPD.status = (function(self, $) {
 			Current: {},
 		},
 		mpdControlUrl = "/mpd/control",
-		mpdServiceInfoUrl = "/mpd/service/info";
-	var connectingMessage = null;
+		mpdServiceInfoUrl = "/mpd/service/info",
+		connectingMessage = null;
 
 	function onError(errormsg) {
 		$("div.mpd-buttons-sect").hide();
@@ -19,9 +19,12 @@ MPD.status = (function(self, $) {
 		new Messi(errormsg, {
 			title: 'Error',
 			titleClass: 'anim warning',
-			buttons: [
-				{id: 1, label: "Reconnect", val: "R", class: 'btn-success'},
-			],
+			buttons: [{
+				"id": 1, 
+				"label": "Reconnect", 
+				"val": "R", 
+				"class": 'btn-success'
+			}],
 			callback: function(val) {
 				if (val == "R") {
 					refresh();
@@ -35,8 +38,8 @@ MPD.status = (function(self, $) {
 		if (ts > 0) {
 			var seconds = Math.floor(ts % 60);
 			ts = Math.floor(ts / 60);
-			var minutes = ts % 60;
-			var hours = Math.floor(ts / 60);
+			var minutes = ts % 60,
+				hours = Math.floor(ts / 60);
 			return [hours,
 				(minutes < 10) ? ("0" + minutes) : minutes,
 				(seconds < 10) ? ("0" + seconds) : seconds].join(":");
@@ -55,7 +58,10 @@ MPD.status = (function(self, $) {
 			} else {
 				$("div.mpd-buttons-sect").show();
 				$("div.mpd-info-section").show();
-				var current = msg["Current"];
+				var current = msg["Current"],
+					status = msg["Status"],
+					volume = status["volume"],
+					songTime = current["Time"];
 				$('#curr-name').text(current["Name"]);
 				$('#curr-artist').text(current["Artist"]);
 				$('#curr-title').text(current["Title"]);
@@ -64,7 +70,6 @@ MPD.status = (function(self, $) {
 				$('#curr-date').text(current["Date"]);
 				$('#curr-genre').text(current["Genre"]);
 				$('#curr-file').text(current["file"]);
-				var status = msg["Status"];
 				$("#st-time").text(ts2str(status["elapsed"]));
 				$("#st-audio").text(status["audio"]);
 				$("#st-bitrate").text(status["bitrate"]);
@@ -101,23 +106,19 @@ MPD.status = (function(self, $) {
 				$("#st-playlistlength").text(status["playlistlength"]);
 				$("#st-state").text(status["state"]);
 				$("#st-error").text(status["error"]);
-				var volume = status["volume"];
 				$("#st-volume").text(volume);
 				if (!changingVol) {
-					var currVol = $("#slider-volume").slider("value");
-					if (currVol != volume) {
+					if ($("#slider-volume").slider("value") != volume) {
 						$("#slider-volume").slider("value", volume);
 					}
 				}
-				var songTime = current["Time"];
 				$("#curr-time").text(ts2str(songTime));
 				if (!changingPos) {
 					if (songTime) {
 						songTime = parseInt(songTime);
-						var pos = parseInt(status["elapsed"])
 						$("#slider-song-pos").slider("option", "disabled", false);
 						$("#slider-song-pos").slider("option", "max", songTime);
-						$("#slider-song-pos").slider("value", pos);
+						$("#slider-song-pos").slider("value", parseInt(status["elapsed"]));
 					} else {
 						$("#slider-song-pos").slider("value", 0);
 						$("#slider-song-pos").slider("option", "disabled", true);
@@ -151,8 +152,7 @@ MPD.status = (function(self, $) {
 
 	function doAction(event) {
 		event.preventDefault();
-		var btn = $(this);
-		var act = btn.data("action");
+		var act = $(this).data("action");
 		$.get(mpdControlUrl + "/" + act)
 	};
 
@@ -164,7 +164,7 @@ MPD.status = (function(self, $) {
 		$.get(mpdControlUrl + "/seek", {time: value});
 	};
 
-	self.init = function initF(mpdControlUrl_, mpdServiceInfoUrl_) {
+	self.init = function(mpdControlUrl_, mpdServiceInfoUrl_) {
 		mpdControlUrl = mpdControlUrl_
 		mpdServiceInfoUrl = mpdServiceInfoUrl_
 		connectingMessage = new Messi('Connecting...', {

@@ -2,8 +2,8 @@
 var MPD = MPD || {};
 
 MPD.library = (function(self, $) {
-	var mpdControlUrl = null;
-	var mpdServiceInfoUrl = null;
+	var mpdControlUrl = null,
+		mpdServiceInfoUrl = null;
 
 	self.init = function initF(mpdControlUrl_, mpdServiceInfoUrl_) {
 		mpdControlUrl = mpdControlUrl_
@@ -24,13 +24,12 @@ MPD.library = (function(self, $) {
 
 		$("a.action").on("click", function(event) {
 			event.preventDefault();
-			var link = $(this);
-			var p = link.data("path");
-			var lmessage = new Messi('Adding...', {
-				closeButton: false,
-				modal: true,
-				width: 'auto',
-			});
+			var link = $(this),
+				lmessage = new Messi('Adding...', {
+					closeButton: false,
+					modal: true,
+					width: 'auto',
+				});
 			$.ajax({
 				type: "PUT",
 				data: {
@@ -53,10 +52,8 @@ MPD.library = (function(self, $) {
 		});
 		$("a.action-info").on("click", function(event) {
 			event.preventDefault();
-			var link = $(this);
-			var p = link.data("uri");
 			var opt = {params: {
-					uri: p,
+					uri: $(this).data("uri"),
 				},
 			};
 			Messi.load('/mpd/service/song-info', opt);
