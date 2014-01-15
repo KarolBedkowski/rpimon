@@ -193,3 +193,9 @@ span.col-album {
 span.col-title {
 	font-weight: bold;
 }
+
+@media(max-width:767px) {
+	span.x-hidden-xs {
+		display: none !important;
+	}
+}

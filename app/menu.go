@@ -6,6 +6,7 @@ type MenuItem struct {
 	Href    string
 	ID      string
 	Submenu []*MenuItem
+	Icon    string
 }
 
 // NewMenuItem create new MenuItem structure
@@ -28,6 +29,12 @@ func (item *MenuItem) SetID(ID string) *MenuItem {
 // AddQuery to menu item href
 func (item *MenuItem) AddQuery(query string) *MenuItem {
 	item.Href += query
+	return item
+}
+
+// SetIcon for menu item
+func (item *MenuItem) SetIcon(icon string) *MenuItem {
+	item.Icon = icon
 	return item
 }
 

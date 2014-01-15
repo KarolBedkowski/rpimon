@@ -76,7 +76,11 @@
 				{{$currentl := .BasePageContext.CurrentLocalMenuPos}}
 				{{range .BasePageContext.LocalMenu}}
 				<li{{if eq .ID $currentl}} class="active"{{end}}>
-					<a href="{{.Href}}" >{{.Title}}</a>
+					{{if .Icon}}
+					<a href="{{.Href}}"><span class="{{.Icon}}"></span><span class="x-hidden-xs">&nbsp;{{.Title}}</span></a>
+					{{else}}
+					<a href="{{.Href}}">{{.Title}}</a>
+					{{end}}
 				</li>
 				{{end}}
 			</ul>
