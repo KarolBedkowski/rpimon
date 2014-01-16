@@ -194,8 +194,22 @@ span.col-title {
 	font-weight: bold;
 }
 
+
+table#table-files-browser,
+table#table-mpd-library,
+table#table-mpd-playlist,
+table#table-mpd-playlists {
+	min-width: 75%;
+}
+
 @media(max-width:767px){
 	span.x-hidden-xs {
 		display: none !important;
+	}
+	table#table-files-browser,
+	table#table-mpd-library,
+	table#table-mpd-playlist,
+	table#table-mpd-playlists {
+		width: 100%;
 	}
 }
