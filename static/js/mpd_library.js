@@ -22,7 +22,7 @@ MPD.library = (function(self, $) {
 		});
 
 
-		$("a.action").on("click", function(event) {
+		$("a.ajax-action").on("click", function(event) {
 			event.preventDefault();
 			var link = $(this),
 				lmessage = new Messi('Adding...', {

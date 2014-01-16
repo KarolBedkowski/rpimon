@@ -65,7 +65,6 @@ MPD.plist = (function(self, $) {
 	self.refresh = function refreshF() {
 		table = $('table').dataTable({
 			"bAutoWidth": false,
-			"bStateSave": true,
 			"bSort": false,
 			"sPaginationType": "bootstrap",		
 			"bProcessing": true,

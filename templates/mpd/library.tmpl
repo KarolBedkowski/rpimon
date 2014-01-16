@@ -13,7 +13,7 @@
 	{{end}}
 	</ol>
 	<div class="">
-		<table class="table-hover table-bordered table-condensed">
+		<table class="table-hover table-bordered table-condensed" id="table-mpd-library">
 			<thead>
 				<tr>
 					<th>Name</th>
@@ -25,9 +25,9 @@
 				<tr>
 					<td><span class="glyphicon glyphicon-folder-close"></span><a href="{{$ml}}?p={{$path}}/{{.}}">&nbsp;{{.}}</a></td>
 					<td>
-						<a href="#" class="action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
+						<a href="#" class="ajax-action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
 						&nbsp; 
-						<a href="#" class="action" data-action="replace" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-play" title="Replace"></a>
+						<a href="#" class="ajax-action" data-action="replace" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-play" title="Replace"></a>
 					</td>
 				</tr>
 			{{end}}
@@ -35,8 +35,8 @@
 				<tr>
 					<td><span class="glyphicon glyphicon-file"></span>&nbsp;{{.}}</td>
 					<td>
-						<a href="#" class="action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
-						<a href="#" class="action" data-action="replace" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-play" title="Replace"></a>
+						<a href="#" class="ajax-action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
+						<a href="#" class="ajax-action" data-action="replace" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-play" title="Replace"></a>
 						<a href="#" class="action-info" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-info-sign" title="Info"></a>
 					</td>
 				</tr>
@@ -50,11 +50,11 @@
 	<section>
 		<p>
 			<div class="btn-group btn-group-sm">
-				<a class="btn btn-success action" data-action="add" data-uri="{{.Path}}" role="button">
+				<a class="btn btn-success ajax-action" data-action="add" data-uri="{{.Path}}" role="button">
 					<span class="glyphicon glyphicon-plus"></span>
 					Add this folder
 				</a>
-				<a class="btn btn-warning action" data-action="replace" data-uri="{{.Path}}" role="button">Clear playlist and this folder</a>
+				<a class="btn btn-warning ajax-action" data-action="replace" data-uri="{{.Path}}" role="button">Clear playlist and this folder</a>
 				&nbsp;
 				<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" onclick="return RPI.confirm()" role="button">
 					<span class="glyphicon glyphicon-refresh"></span>

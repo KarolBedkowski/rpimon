@@ -62,14 +62,16 @@ MPD.status = (function(self, $) {
 					status = msg["Status"],
 					volume = status["volume"],
 					songTime = current["Time"];
-				$('#curr-name').text(current["Name"]);
-				$('#curr-artist').text(current["Artist"]);
-				$('#curr-title').text(current["Title"]);
-				$('#curr-album').text(current["Album"]);
-				$('#curr-track').text(current["Track"]);
-				$('#curr-date').text(current["Date"]);
-				$('#curr-genre').text(current["Genre"]);
-				$('#curr-file').text(current["file"]);
+				if (lastState.Current.Id != current.Id) {
+					$('#curr-name').text(current["Name"]);
+					$('#curr-artist').text(current["Artist"]);
+					$('#curr-title').text(current["Title"]);
+					$('#curr-album').text(current["Album"]);
+					$('#curr-track').text(current["Track"]);
+					$('#curr-date').text(current["Date"]);
+					$('#curr-genre').text(current["Genre"]);
+					$('#curr-file').text(current["file"]);
+				}
 				$("#st-time").text(ts2str(status["elapsed"]));
 				$("#st-audio").text(status["audio"]);
 				$("#st-bitrate").text(status["bitrate"]);
@@ -173,7 +175,6 @@ MPD.status = (function(self, $) {
 		});
 		$("div.mpd-buttons-sect").hide();
 		$("div.mpd-info-section").hide();
-		$("a.btn").on("click", doAction);
 		$("a.ajax-action").on("click", doAction);
 		$("#slider-volume").slider({
 			min: 0,
