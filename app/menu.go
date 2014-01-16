@@ -46,15 +46,15 @@ func SetMainMenu(ctx *BasePageContext) {
 		if user.HasPermission("admin") {
 			sysMI := NewMenuItem("System", "").SetIcon("glyphicon glyphicon-wrench")
 			sysMI.Submenu = []*MenuItem{
-				NewMenuItemFromRoute("Live view", "main-system").SetID("system"),
+				NewMenuItemFromRoute("Live view", "main-system").SetID("system").SetIcon("glyphicon glyphicon-dashboard"),
 				NewMenuItem("-", ""),
-				NewMenuItemFromRoute("Network", "net-index").SetID("net"),
-				NewMenuItemFromRoute("Storage", "storage-index").SetID("storage"),
-				NewMenuItemFromRoute("Logs", "logs-index").SetID("logs"),
-				NewMenuItemFromRoute("Process", "process-index").SetID("process"),
-				NewMenuItemFromRoute("Users", "users-index").SetID("users"),
+				NewMenuItemFromRoute("Network", "net-index").SetID("net").SetIcon("glyphicon glyphicon-transfer"),
+				NewMenuItemFromRoute("Storage", "storage-index").SetID("storage").SetIcon("glyphicon glyphicon-hdd"),
+				NewMenuItemFromRoute("Logs", "logs-index").SetID("logs").SetIcon("glyphicon glyphicon-eye-open"),
+				NewMenuItemFromRoute("Process", "process-index").SetID("process").SetIcon("glyphicon glyphicon-cog"),
+				NewMenuItemFromRoute("Users", "users-index").SetID("users").SetIcon("glyphicon glyphicon-user"),
 				NewMenuItem("-", ""),
-				NewMenuItemFromRoute("Utilities", "utils-index").SetID("utils")}
+				NewMenuItemFromRoute("Utilities", "utils-index").SetID("utils").SetIcon("glyphicon glyphicon-wrench")}
 			ctx.MainMenu = append(ctx.MainMenu, sysMI)
 		}
 		if user.HasPermission("mpd") {
