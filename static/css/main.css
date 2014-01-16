@@ -196,6 +196,7 @@ span.col-title {
 
 
 table#table-files-browser,
+table#table-services,
 table#table-mpd-library,
 table#table-mpd-playlist,
 table#table-mpd-playlists {
@@ -207,9 +208,14 @@ table#table-mpd-playlists {
 		display: none !important;
 	}
 	table#table-files-browser,
+	table#table-services,
 	table#table-mpd-library,
 	table#table-mpd-playlist,
 	table#table-mpd-playlists {
 		width: 100%;
 	}
+}
+
+table#table-services tr.active {
+	font-weight: bold;
 }

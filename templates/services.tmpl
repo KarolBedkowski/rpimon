@@ -3,7 +3,7 @@
 
 <div class="container">
 	<div class="table-responsive">
-		<table class="table-hover table-bordered table-condensed" id="services">
+		<table class="table-hover table-bordered table-condensed" id="table-services">
 			<thead>
 				<tr>
 					<th>Service</th>
@@ -13,7 +13,7 @@
 			</thead>
 			<tbody>
 			{{range $key, $val := .Services}}
-				<tr {{if eq $val "+"}}class="active"{{end}}>
+				<tr{{if eq $val "+"}} class="active"{{end}}>
 					<td>{{$key}}</td>
 					<td>{{if eq $val "+"}}running{{else}}{{if eq $val "-"}}stoped{{else}}{{$val}}{{end}}{{end}}</td>
 					<td><a href="services/{{$key | urlquery}}/start" title="Start"><span class="glyphicon glyphicon-play"></span></a> 
@@ -45,7 +45,7 @@
 			"iDisplayLength": 15,
 			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
 		});
-		$('table#services a').on("click", function() {
+		$('table#table-services a').on("click", function() {
 			return RPI.confirm();
 		});
 	});
