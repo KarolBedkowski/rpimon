@@ -76,8 +76,15 @@ MPD.status = (function(self, $) {
 					$('#curr-date').text(current.Date);
 					$('#curr-genre').text(current.Genre);
 					$('#curr-file').text(current.file);
+					$("#curr-time").text(ts2str(songTime));
+					if (songTime) {
+						songTime = parseInt(songTime);
+						$("#slider-song-pos").slider("enable").slider("option", "max", songTime);
+					} else {
+						$("#slider-song-pos").slider("disable").slider("value", 0);
+					}
 				}
-				$("#st-time").text(ts2str(status.elapsed));
+				//$("#st-time").text(ts2str(status.elapsed));
 				$("#st-audio").text(status.audio);
 				$("#st-bitrate").text(status.bitrate);
 				if (status.random != lastState.Status.random) {
@@ -113,23 +120,14 @@ MPD.status = (function(self, $) {
 				$("#st-playlistlength").text(status.song + "/" + status.playlistlength);
 				$("#st-state").text(status.state);
 				$("#st-error").text(status.error);
-				$("#st-volume").text(volume);
+				//$("#st-volume").text(volume);
 				if (!changingVol) {
 					if ($("#slider-volume").slider("value") != volume) {
 						$("#slider-volume").slider("value", volume);
 					}
 				}
-				$("#curr-time").text(ts2str(songTime));
 				if (!changingPos) {
-					if (songTime) {
-						songTime = parseInt(songTime);
-						$("#slider-song-pos").slider("option", "disabled", false);
-						$("#slider-song-pos").slider("option", "max", songTime);
-						$("#slider-song-pos").slider("value", parseInt(status.elapsed));
-					} else {
-						$("#slider-song-pos").slider("value", 0);
-						$("#slider-song-pos").slider("option", "disabled", true);
-					}
+					$("#slider-song-pos").slider("value", parseInt(status.elapsed));
 				}
 				if (status.state != lastState.Status.state) {
 					if (status.state == "play") {
@@ -192,7 +190,15 @@ MPD.status = (function(self, $) {
 			stop: function(event, ui) {
 				changingVol = false;
 				setVolume(ui.value);
-			}
+			},
+			slide:  function(event, ui) {
+				$("#st-volume").text(ui.value);
+			},
+			change: function(event, ui) {
+				if (!changingVol) {
+					$("#st-volume").text(ui.value);
+				}
+			},
 		});
 		$("#slider-song-pos").slider({
 			disabled: true,
@@ -204,7 +210,15 @@ MPD.status = (function(self, $) {
 			stop: function(event, ui) {
 				changingPos = false;
 				seek(ui.value);
-			}
+			},
+			slide:  function(event, ui) {
+				$("#st-time").text(ts2str(ui.value));
+			},
+			change: function(event, ui) {
+				if (!changingPos) {
+					$("#st-time").text(ts2str(ui.value));
+				}
+			},
 		});
 
 		$("a#action-info").on("click", function(event) {
