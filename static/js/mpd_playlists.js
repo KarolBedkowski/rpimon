@@ -1,8 +1,15 @@
+/* jshint strict: true */
+/* jshint undef: true, unused: true */
+/* global Messi: false */
+/* global jQuery: false */
+
+"use strict";
 
 var MPD = MPD || {};
+var RPI = RPI || {};
 
 MPD.plists = (function(self, $) {
-	action = function(event) {
+	function action(event) {
 		event.preventDefault();
 		var message = new Messi('Loading...', {
 			closeButton: false,
@@ -12,10 +19,10 @@ MPD.plists = (function(self, $) {
 		$.ajax({
 			url: this.href,
 			type: "PUT",
-		}).done(function(msg) {
-			message.hide()
+		}).done(function() { //msg) {
+			message.hide();
 		}).fail(function(jqXHR, textStatus) {
-			message.hide()
+			message.hide();
 			new Messi(textStatus, {
 				title: 'Error',
 				titleClass: 'anim warning',
@@ -24,7 +31,7 @@ MPD.plists = (function(self, $) {
 				}]
 			});
 		});
-	};
+	}
 
 	self.init = function initF() {
 		$('table').dataTable({

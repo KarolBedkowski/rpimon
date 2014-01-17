@@ -1,5 +1,13 @@
+/* jshint strict: true */
+/* jshint undef: true, unused: true */
+/* global Messi: false */
+/* global jQuery: false */
+/* global window: false */
+
+"use strict";
 
 var MPD = MPD || {};
+var RPI = RPI || {};
 
 MPD.plist = (function(self, $) {
 	var msg_loading = null,
@@ -22,7 +30,7 @@ MPD.plist = (function(self, $) {
 		}).fail(function(jqXHR, result) {
 			showError(result);
 		});
-	};
+	}
 
 	function showLoadingMessage() {
 		if (msg_loading) {
@@ -33,18 +41,18 @@ MPD.plist = (function(self, $) {
 			modal: true,
 			width: 'auto',
 		});
-	};
+	}
 
 	function hideLoadingMessage() {
 		if (msg_loading) {
 			msg_loading.hide();
 			msg_loading = null;
 		}
-	};
+	}
 
 	function showError(errormsg) {
 		hideLoadingMessage();
-		console.log(errormsg);
+		window.console.log(errormsg);
 		new Messi(errormsg, {
 			title: 'Error',
 			titleClass: 'anim warning',
@@ -56,11 +64,11 @@ MPD.plist = (function(self, $) {
 			}],
 			callback: function(val) {
 				if (val == "R") {
-					location.reload();
+					window.location.reload();
 				}
 			},	
 		});
-	};
+	}
 
 	self.refresh = function refreshF() {
 		table = $('table').dataTable({
@@ -97,14 +105,14 @@ MPD.plist = (function(self, $) {
 					},
 				}
 			],
-			"fnRowCallback": function(row, aData, iDisplayIndex, iDisplayIndexFull) {
+			"fnRowCallback": function(row, aData) { //, iDisplayIndex, iDisplayIndexFull) {
 				$(row).data("songid", aData[4]);
 				if (aData[4] == currentSongId) {
 					// mark current song
 					$(row).addClass("playlist-current-song active");
 				}
 			},
-			"fnDrawCallback": function( oSettings ) {
+			"fnDrawCallback": function() { //oSettings) {
 				$("a.play-song-action").on("click", playSong);
 				$("a.remove-song-action").on("click", removeSong);
 				$("a.action-info").on("click", songInfo);
@@ -113,11 +121,11 @@ MPD.plist = (function(self, $) {
 			"sDom": "<'row'<'col-xs-12 col-sm-6'l><'col-xs-12 col-sm-6'f>r>t<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>",
 				
 		});
-		return
+		return;
 	};
 
 	function playSong(event) {
-		event.preventDefault()
+		event.preventDefault();
 		var tr = $(this),
 			id = tr.data("songid");
 		if (!id) {
@@ -129,29 +137,29 @@ MPD.plist = (function(self, $) {
 			url: "/mpd/song/" + id  + "/play",
 			method: "PUT"
 		}).done(function(result) {
-			if (result.Error == "") {
+			if (result.Error === "") {
 				$("tr.active").removeClass("active").removeClass("playlist-current-song");
 				currentSongId = result.Status.songid;
 				if (currentSongId != id) {
 					// $('tr[data-songid=... not work on dynamic created data
 					tr = $('tr').filter(function() {
-					    return $(this).data('songid') == currentSongId;
+						return $(this).data('songid') == currentSongId;
 					}).first();
 				}
 				tr.addClass("playlist-current-song active");
-				hideLoadingMessage()
+				hideLoadingMessage();
 			} else {
 				showError(result.error);
 			}
 		}).fail(function(jqXHR, result) {
 			showError(result);
 		});
-	};
+	}
 
 	function removeSong(event) {
-		event.preventDefault()
+		event.preventDefault();
 		if (!RPI.confirm()) {
-			return
+			return;
 		}
 		var tr = $(this).closest('tr'),
 			id = tr.data("songid");
@@ -160,8 +168,8 @@ MPD.plist = (function(self, $) {
 			url: "/mpd/song/" + id  + "/remove",
 			method: "PUT"
 		}).done(function(result) {
-			hideLoadingMessage()
-			if (result.Error == "") {
+			hideLoadingMessage();
+			if (result.Error === "") {
 				// redraw table on success
 				table.fnDraw();
 			} else {
@@ -170,7 +178,7 @@ MPD.plist = (function(self, $) {
 		}).fail(function(jqXHR, result) {
 			showError(result);
 		});
-	};
+	}
 
 	function songInfo(event) {
 		event.preventDefault();
@@ -179,7 +187,7 @@ MPD.plist = (function(self, $) {
 			},
 		};
 		Messi.load('/mpd/service/song-info', opt);
-	};
+	}
 
 	self.init = function initF() {
 		showLoadingMessage();

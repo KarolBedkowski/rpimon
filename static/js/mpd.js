@@ -1,6 +1,11 @@
+/* jshint strict: true */
+/* jshint undef: true, unused: true */
+/* global window: false */
+/* global Messi: false */
+/* global jQuery: false */
 
+"use strict";
 var MPD = MPD || {};
-
 
 MPD.status = (function(self, $) {
 	var changingPos = false,
@@ -31,7 +36,7 @@ MPD.status = (function(self, $) {
 				}
 			},
 		});
-	};
+	}
 
 	function ts2str(ts) {
 		ts = Math.floor(parseFloat(ts));
@@ -45,7 +50,7 @@ MPD.status = (function(self, $) {
 				(seconds < 10) ? ("0" + seconds) : seconds].join(":");
 			}
 		return "";
-	};
+	}
 
 	function refresh() {
 		$.ajax({
@@ -53,30 +58,30 @@ MPD.status = (function(self, $) {
 			cache: false,
 			dataType: 'json'
 		}).done(function(msg) {
-			if (msg["Error"]) {
-				onError(msg["Error"]);
+			if (msg.Error) {
+				onError(msg.Error);
 			} else {
 				$("div.mpd-buttons-sect").show();
 				$("div.mpd-info-section").show();
-				var current = msg["Current"],
-					status = msg["Status"],
-					volume = status["volume"],
-					songTime = current["Time"];
+				var current = msg.Current,
+					status = msg.Status,
+					volume = status.volume,
+					songTime = current.Time;
 				if (lastState.Current.Id != current.Id) {
-					$('#curr-name').text(current["Name"]);
-					$('#curr-artist').text(current["Artist"]);
-					$('#curr-title').text(current["Title"]);
-					$('#curr-album').text(current["Album"]);
-					$('#curr-track').text(current["Track"]);
-					$('#curr-date').text(current["Date"]);
-					$('#curr-genre').text(current["Genre"]);
-					$('#curr-file').text(current["file"]);
+					$('#curr-name').text(current.Name);
+					$('#curr-artist').text(current.Artist);
+					$('#curr-title').text(current.Title);
+					$('#curr-album').text(current.Album);
+					$('#curr-track').text(current.Track);
+					$('#curr-date').text(current.Date);
+					$('#curr-genre').text(current.Genre);
+					$('#curr-file').text(current.file);
 				}
-				$("#st-time").text(ts2str(status["elapsed"]));
-				$("#st-audio").text(status["audio"]);
-				$("#st-bitrate").text(status["bitrate"]);
-				if (status["random"] != lastState["Status"]["random"]) {
-					if (status["random"] == "1") {
+				$("#st-time").text(ts2str(status.elapsed));
+				$("#st-audio").text(status.audio);
+				$("#st-bitrate").text(status.bitrate);
+				if (status.random != lastState.Status.random) {
+					if (status.random == "1") {
 						$('a[data-action="toggle_random"]')
 							.addClass("active")
 							.attr("title", "Random ON");
@@ -90,8 +95,8 @@ MPD.status = (function(self, $) {
 							.text("off");
 					}
 				}
-				if (status["repeat"] != lastState["Status"]["repeat"]) {
-					if (status["repeat"] == "1") {
+				if (status.repeat != lastState.Status.repeat) {
+					if (status.repeat == "1") {
 						$('a[data-action="toggle_repeat"]')
 							.addClass("active")
 							.attr("title", "Repeat ON");
@@ -105,9 +110,9 @@ MPD.status = (function(self, $) {
 							.text("off");
 					}
 				}
-				$("#st-playlistlength").text(status["playlistlength"]);
-				$("#st-state").text(status["state"]);
-				$("#st-error").text(status["error"]);
+				$("#st-playlistlength").text(status.playlistlength);
+				$("#st-state").text(status.state);
+				$("#st-error").text(status.error);
 				$("#st-volume").text(volume);
 				if (!changingVol) {
 					if ($("#slider-volume").slider("value") != volume) {
@@ -120,21 +125,21 @@ MPD.status = (function(self, $) {
 						songTime = parseInt(songTime);
 						$("#slider-song-pos").slider("option", "disabled", false);
 						$("#slider-song-pos").slider("option", "max", songTime);
-						$("#slider-song-pos").slider("value", parseInt(status["elapsed"]));
+						$("#slider-song-pos").slider("value", parseInt(status.elapsed));
 					} else {
 						$("#slider-song-pos").slider("value", 0);
 						$("#slider-song-pos").slider("option", "disabled", true);
 					}
 				}
-				if (status["state"] != lastState["Status"]["state"]) {
-					if (status["state"] == "play") {
+				if (status.state != lastState.Status.state) {
+					if (status.state == "play") {
 						$('a[data-action="play"]').hide();
 						$('a[data-action="pause"]').show();
 					} else {
 						$('a[data-action="play"]').show();
 						$('a[data-action="pause"]').hide();
 					}
-					if (status["state"] == "stop") {
+					if (status.state == "stop") {
 						$('a[data-action="stop"]').addClass("active");
 					} else {
 						$('a[data-action="stop"]').removeClass("active");
@@ -145,30 +150,30 @@ MPD.status = (function(self, $) {
 					connectingMessage.hide();
 					connectingMessage = null;
 				}
-				setTimeout(refresh, 1000);
+				window.setTimeout(refresh, 1000);
 			}
 		}).fail(function(jqXHR, textStatus) {
 			onError(textStatus);
 		});
-	};
+	}
 
 	function doAction(event) {
 		event.preventDefault();
 		var act = $(this).data("action");
-		$.get(mpdControlUrl + "/" + act)
-	};
+		$.get(mpdControlUrl + "/" + act);
+	}
 
 	function setVolume(value) {
 		$.get(mpdControlUrl + "/volume", {vol: value});
-	};
+	}
 
 	function seek(value) {
 		$.get(mpdControlUrl + "/seek", {time: value});
-	};
+	}
 
 	self.init = function(mpdControlUrl_, mpdServiceInfoUrl_) {
-		mpdControlUrl = mpdControlUrl_
-		mpdServiceInfoUrl = mpdServiceInfoUrl_
+		mpdControlUrl = mpdControlUrl_;
+		mpdServiceInfoUrl = mpdServiceInfoUrl_;
 		connectingMessage = new Messi('Connecting...', {
 			closeButton: false,
 			width: 'auto',
@@ -181,7 +186,7 @@ MPD.status = (function(self, $) {
 			max: 100,
 			range: "min",
 			// slide
-			start: function(event, ui) {
+			start: function() {//event, ui) {
 				changingVol = true;
 			},
 			stop: function(event, ui) {
@@ -193,7 +198,7 @@ MPD.status = (function(self, $) {
 			disabled: true,
 			min: 0,
 			range: "min",
-			start: function(event, ui) {
+			start: function() { // event, ui) {
 				changingPos = true;
 			},
 			stop: function(event, ui) {
@@ -213,7 +218,7 @@ MPD.status = (function(self, $) {
 			}
 		});
 
-		setTimeout(refresh, 50);
+		window.setTimeout(refresh, 50);
 	};
 
 	return self;

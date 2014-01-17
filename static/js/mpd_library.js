@@ -1,3 +1,10 @@
+/* jshint strict: true */
+/* jshint undef: true, unused: true */
+/* global Messi: false */
+/* global jQuery: false */
+/* global console: false */
+
+"use strict";
 
 var MPD = MPD || {};
 
@@ -6,8 +13,8 @@ MPD.library = (function(self, $) {
 		mpdServiceInfoUrl = null;
 
 	self.init = function initF(mpdControlUrl_, mpdServiceInfoUrl_) {
-		mpdControlUrl = mpdControlUrl_
-		mpdServiceInfoUrl = mpdServiceInfoUrl_
+		mpdControlUrl = mpdControlUrl_;
+		mpdServiceInfoUrl = mpdServiceInfoUrl_;
 
 		$('table').dataTable({
 			"bAutoWidth": false,
@@ -36,11 +43,11 @@ MPD.library = (function(self, $) {
 					a: link.data("action"),
 					u: link.data("uri"),
 				}
-			}).done(function(msg) {
-				lmessage.hide()
+			}).done(function() {
+				lmessage.hide();
 			}).fail(function(jqXHR, textStatus) {
 				console.log(textStatus);
-				lmessage.hide()
+				lmessage.hide();
 				new Messi(textStatus, {
 					title: 'Error',
 					titleClass: 'anim warning',
