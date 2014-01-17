@@ -12,6 +12,7 @@ var RPI = RPI || {};
 MPD.plist = (function(self, $) {
 	var msg_loading = null,
 		table = null,
+		currentSong = "",
 		currentSongId = -1;
 
 	function processServerData(sSource, aoData, fnCallback) {
@@ -24,6 +25,7 @@ MPD.plist = (function(self, $) {
 				showError(response.error);
 			}
 			else {
+				currentSong = response.stat.song;
 				currentSongId = response.stat.songid;
 				fnCallback(response);
 			}
@@ -192,6 +194,13 @@ MPD.plist = (function(self, $) {
 	self.init = function initF() {
 		showLoadingMessage();
 		self.refresh();
+	};
+
+	self.gotoCurrentSong = function gotoCurrentSongF() {
+		if (currentSong) {
+			var page = Math.floor(parseInt(currentSong) / table.fnSettings()._iDisplayLength);
+			table.fnPageChange(page);
+		}
 	};
 
 	return self;
