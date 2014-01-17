@@ -32,7 +32,7 @@ MPD.status = (function(self, $) {
 			}],
 			callback: function(val) {
 				if (val == "R") {
-					refresh();
+					window.location.reload();
 				}
 			},
 		});
@@ -110,7 +110,7 @@ MPD.status = (function(self, $) {
 							.text("off");
 					}
 				}
-				$("#st-playlistlength").text(status.playlistlength);
+				$("#st-playlistlength").text(status.song + "/" + status.playlistlength);
 				$("#st-state").text(status.state);
 				$("#st-error").text(status.error);
 				$("#st-volume").text(volume);
