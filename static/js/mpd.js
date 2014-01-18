@@ -16,7 +16,14 @@ MPD.status = (function(self, $) {
 		},
 		mpdControlUrl = "/mpd/control",
 		mpdServiceInfoUrl = "/mpd/service/info",
-		connectingMessage = null;
+		connectingMessage = null,
+		a_toggle_random = $('a[data-action="toggle_random"]'),
+		a_toggle_random_label = $('a[data-action="toggle_random"] span.button-label'),
+		a_toggle_repeat = $('a[data-action="toggle_repeat"]'),
+		a_toggle_repeat_label = $('a[data-action="toggle_repeat"] span.button-label'),
+		a_play = $('a[data-action="play"]'),
+		a_pause = $('a[data-action="pause"]'),
+		a_stop = $('a[data-action="stop"]');
 
 	function onError(errormsg) {
 		$("div.mpd-buttons-sect").hide();
@@ -89,32 +96,20 @@ MPD.status = (function(self, $) {
 				$("#st-bitrate").text(status.bitrate);
 				if (status.random != lastState.Status.random) {
 					if (status.random == "1") {
-						$('a[data-action="toggle_random"]')
-							.addClass("active")
-							.attr("title", "Random ON");
-						$('a[data-action="toggle_random"] span.button-label')
-							.text("ON");
+						a_toggle_random.addClass("active").attr("title", "Random ON");
+						a_toggle_random_label.text("ON");
 					} else {
-						$('a[data-action="toggle_random"]')
-							.removeClass("active")
-							.attr("title", "Random OFF");
-						$('a[data-action="toggle_random"] span.button-label')
-							.text("off");
+						a_toggle_random.removeClass("active").attr("title", "Random OFF");
+						a_toggle_random_label.text("off");
 					}
 				}
 				if (status.repeat != lastState.Status.repeat) {
 					if (status.repeat == "1") {
-						$('a[data-action="toggle_repeat"]')
-							.addClass("active")
-							.attr("title", "Repeat ON");
-						$('a[data-action="toggle_repeat"] span.button-label')
-							.text("ON");
+						a_toggle_repeat.addClass("active").attr("title", "Repeat ON");
+						a_toggle_repeat_label.text("ON");
 					} else {
-						$('a[data-action="toggle_repeat"]')
-							.removeClass("active")
-							.attr("title", "Repeat OFF");
-						$('a[data-action="toggle_repeat"] span.button-label')
-							.text("off");
+						a_toggle_repeat.removeClass("active").attr("title", "Repeat OFF");
+						a_toggle_repeat_label.text("off");
 					}
 				}
 				$("#st-playlistlength").text(status.song + "/" + status.playlistlength);
@@ -131,16 +126,16 @@ MPD.status = (function(self, $) {
 				}
 				if (status.state != lastState.Status.state) {
 					if (status.state == "play") {
-						$('a[data-action="play"]').hide();
-						$('a[data-action="pause"]').show();
+						a_play.hide();
+						a_pause.show();
 					} else {
-						$('a[data-action="play"]').show();
-						$('a[data-action="pause"]').hide();
+						a_play.show();
+						a_pause.hide();
 					}
 					if (status.state == "stop") {
-						$('a[data-action="stop"]').addClass("active");
+						a_stop.addClass("active");
 					} else {
-						$('a[data-action="stop"]').removeClass("active");
+						a_stop.removeClass("active");
 					}
 				}
 				lastState = msg;
