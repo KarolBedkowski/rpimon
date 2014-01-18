@@ -38,15 +38,14 @@
 				</div>
 				<div class="navbar-collapse collapse">
 					<ul class="nav navbar-nav">
-						{{$current := .BasePageContext.CurrentMainMenuPos}}
 						{{range .BasePageContext.MainMenu}}
 						{{if .Submenu}}
-						<li class="dropdown">
+						<li class="dropdown {{if .Active}}active{{end}}">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown">{{if .Icon}}<span class="{{.Icon}}"></span>&nbsp;{{end}}{{.Title}} <b class="caret"></b></a>
 							<ul class="dropdown-menu">
 							{{range .Submenu}}
 								{{if .Href}}
-								<li {{if eq .ID $current}}class="active"{{end}}>
+								<li {{if .Active}}class="active"{{end}}>
 									<a class="" href="{{.Href}}">{{if .Icon}}<span class="{{.Icon}}"></span>&nbsp;{{end}}{{.Title}}</a>
 								</li>
 								{{else}}
@@ -56,7 +55,7 @@
 							</ul>
 						</li>
 						{{else}}
-						<li class="{{if eq .ID $current}}active{{end}}">
+						<li class="{{if .Active}}active{{end}}">
 							<a class="" href="{{.Href}}">{{if .Icon}}<span class="{{.Icon}}"></span>&nbsp;{{end}}{{.Title}}</a>
 						</li>
 						{{end}}

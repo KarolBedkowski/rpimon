@@ -7,6 +7,7 @@ type MenuItem struct {
 	ID      string
 	Submenu []*MenuItem
 	Icon    string
+	Active  bool
 }
 
 // NewMenuItem create new MenuItem structure
@@ -38,6 +39,21 @@ func (item *MenuItem) SetIcon(icon string) *MenuItem {
 	return item
 }
 
+// SetActive set active flag or menu or submenu item when activeID match item.ID.
+func (item *MenuItem) SetActive(activeID string) (active bool) {
+	if item.ID == activeID {
+		item.Active = true
+		return true
+	}
+	for _, subitem := range item.Submenu {
+		if subitem.SetActive(activeID) {
+			item.Active = true
+			return true
+		}
+	}
+	return false
+}
+
 // SetMainMenu - fill MainMenu in BasePageContext
 func SetMainMenu(ctx *BasePageContext) {
 	if ctx.CurrentUser != "" {
@@ -64,6 +80,11 @@ func SetMainMenu(ctx *BasePageContext) {
 		if user.HasPermission("files") {
 			ctx.MainMenu = append(ctx.MainMenu,
 				NewMenuItemFromRoute("Files", "files-index").SetID("files").SetIcon("glyphicon glyphicon-hdd"))
+		}
+	}
+	for _, item := range ctx.MainMenu {
+		if item.SetActive(ctx.CurrentMainMenuPos) {
+			break
 		}
 	}
 }
