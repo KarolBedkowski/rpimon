@@ -138,7 +138,7 @@
 		$("span.pie").peity("pie");
 		$("span.chart-line").peity("line");
 		$("span.chart-line-load").peity("bar", {
-			fill: function(val) {
+			colours: function(val) {
 				val = parseFloat(val)
 				var red = Math.round(val * colorDiv)
 				if (red > 255) {

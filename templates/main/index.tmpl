@@ -23,7 +23,7 @@
 			<table class="table">
 				<tr>
 					<th>Load:</th>
-					<td><span class="pie" data-diameter="32" data-fill='["red", "#f0f0f0"]'>{{.LoadTrucated}}/{{.MaxAcceptableLoad}}</span>
+					<td><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.LoadTrucated}}/{{.MaxAcceptableLoad}}</span>
 					<span>&nbsp;{{.Load.Load1}}, {{.Load.Load5}}, {{.Load.Load15}}</span></td>
 				</tr>
 				<tr>
@@ -38,12 +38,12 @@
 			<table class="table">
 				<tr>
 					<th>Usage</th>
-					<td><span class="pie" data-diameter="32" data-fill='["red", "orange", "yellow", "#f0f0f0"]'>{{.CPUUsage.User}},{{.CPUUsage.System}},{{.CPUUsage.IoWait}},{{.CPUUsage.Idle}}</span>
+					<td><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.CPUUsage.User}},{{.CPUUsage.System}},{{.CPUUsage.IoWait}},{{.CPUUsage.Idle}}</span>
 						<span>&nbsp;{{.CPUUsage.Usage}}% total used</span></td>
 				</tr>
 				<tr>
 					<th>Temp</th>
-					<td><span class="pie" data-diameter="32" data-fill='["red", "#f0f0f0"]'>{{.CPUInfo.Temp}}/100</span>
+					<td><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.CPUInfo.Temp}}/100</span>
 						<span>&nbsp;{{.CPUInfo.Temp}}°C</span></td>
 				</tr>
 			</table>
@@ -54,12 +54,12 @@
 			<table class="table">
 				<tr>
 					<th>RAM</th>
-					<td><span class="pie" data-diameter="32" data-fill='["red", "orange", "yellow", "#f0f0f0"]'>{{.MemInfo.UsedPerc}},{{.MemInfo.BuffersPerc}},{{.MemInfo.CachePerc}},{{.MemInfo.FreePerc}}</span>
+					<td><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.MemInfo.UsedPerc}},{{.MemInfo.BuffersPerc}},{{.MemInfo.CachePerc}},{{.MemInfo.FreePerc}}</span>
 						<span>&nbsp;{{.MemInfo.FreeUserPerc}}% available</span></td>
 				</tr>
 				<tr>
 					<th>SWAP</th>
-					<td><span class="pie" data-diameter="32" data-fill='["red", "#f0f0f0"]'>{{.MemInfo.SwapUsedPerc}}/100</span>
+					<td><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.MemInfo.SwapUsedPerc}}/100</span>
 						<span>&nbsp;{{.MemInfo.SwapFreePerc}}% available</span></td>
 				</tr>
 			</table>
@@ -71,7 +71,7 @@
 				{{range .Filesystems}}
 				<tr>
 					<th>{{.MountPoint}}</th>
-					<td><span class="pie" data-diameter="32" data-fill='["red", "#f0f0f0"]'>{{.UsedPerc}}/100</span>
+					<td><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.UsedPerc}}/100</span>
 						&nbsp;{{.UsedPerc}}% used</td>
 				</tr>
 				{{end}}

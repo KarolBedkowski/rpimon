@@ -46,11 +46,11 @@ var SYSTEM = (function(self, $) {
 			});
 			// fs
 			fstablebody.text("");
-			msg.fs.forEach(function(entry) {
-				fstablebody.append(["<tr><td>", entry.MountPoint, "</td><td>",
-					"<span class=\"pie\" data-diameter=\"32\" data-fill='[\"red\", \"#f0f0f0\"]'>", 
-					entry.UsedPerc, "/100</span></td><td>",
-					entry.UsedPerc, "%</td></tr>"].join(""));
+			msg["fs"].forEach(function(entry) {
+				fstablebody.append(["<tr><td>", entry["MountPoint"], "</td><td>",
+					"<span class=\"pie\" data-diameter=\"32\" data-colours='[\"red\", \"#f0f0f0\"]'>", 
+					entry["UsedPerc"], "/100</span></td><td>",
+					entry["UsedPerc"], "%</td></tr>"].join(""));
 
 			});
 			$('#uptime-uptime').text(uptime.Uptime);
@@ -59,7 +59,6 @@ var SYSTEM = (function(self, $) {
 			connectingMessage.hide();
 			window.setTimeout(getHistory, 5000);
 		}).fail(function(jqXHR, textStatus) {
-			window.console.log(textStatus);
 			connectingMessage.show();
 			window.setTimeout(getHistory, 10000);
 		});
