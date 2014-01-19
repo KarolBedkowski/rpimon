@@ -97,12 +97,14 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// show dir
-	l.Debug("files: serve dir %s", abspath)
-	if files, err := ioutil.ReadDir(abspath); err == nil {
-		ctx.Files = files
-	} else {
-		http.Error(w, "Error "+err.Error(), http.StatusBadRequest)
-	}
+	/*
+		l.Debug("files: serve dir %s", abspath)
+		if files, err := ioutil.ReadDir(abspath); err == nil {
+			ctx.Files = files
+		} else {
+			http.Error(w, "Error "+err.Error(), http.StatusBadRequest)
+		}
+	*/
 
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "files/browser.tmpl", "flash.tmpl")
 }
@@ -269,6 +271,13 @@ func serviceDirsHandler(w http.ResponseWriter, r *http.Request) {
 	var children []dirInfo
 	if files, err := ioutil.ReadDir(abspath); err == nil {
 		for _, file := range files {
+			if file.Mode()&os.ModeSymlink == os.ModeSymlink {
+				// Folow symlinks
+				file, err = os.Stat(filepath.Join(relpath, file.Name()))
+				if err != nil {
+					continue
+				}
+			}
 			if file.IsDir() {
 				ipath := filepath.Join(relpath, file.Name())
 				children = append(children, dirInfo{dir2ID(ipath), file.Name(), true, nil})
@@ -311,6 +320,13 @@ func serviceFilesHandler(w http.ResponseWriter, r *http.Request) {
 	children := make([][]interface{}, 0)
 	if files, err := ioutil.ReadDir(abspath); err == nil {
 		for _, file := range files {
+			if file.Mode()&os.ModeSymlink == os.ModeSymlink {
+				// Folow symlinks
+				file, err = os.Stat(filepath.Join(relpath, file.Name()))
+				if err != nil {
+					continue
+				}
+			}
 			if !file.IsDir() {
 				ipath := filepath.Join(relpath, file.Name())
 				finfo := []interface{}{
