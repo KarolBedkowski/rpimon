@@ -11,31 +11,34 @@
 	{{end}}
 	</ol>
 
-	<div class="table-responsive">
-		<table class="table-hover table-bordered table-condensed" id="table-files-browser">
-			<thead>
-				<tr>
-					<th>Filename</th>
-					<th>Size</th>
-					<th>Date</th>
-				</tr>
-			</thead>
-			<tbody>
-			{{range .Files}}
-				<tr>
-					<td><span class="glyphicon {{if .IsDir}}glyphicon-folder-close{{else}}glyphicon-file{{end}}"></span>
-					&nbsp;
-					<a href="?p={{$ctx.GetFullPath .Name | urlquery}}">{{.Name}}</a></td>
-					<td>{{if .IsDir}}[dir]{{else}}{{.Size}}{{end}}</td>
-					<td>{{formatDate .ModTime ""}}</td>
-				</tr>
-			{{end}}
-			</tbody>
-		</table>
+	<div class="row row-centered">
+		<div class="col-xs-12 col-sm-4">
+			<div id="jstree_div"></div>
+		</div>
+		<div class="col-xs-12 col-sm-8">
+			<table class="table-hover table-bordered table-condensed" id="table-files-browser">
+				<thead>
+					<tr>
+						<th>Filename</th>
+						<th>Size</th>
+						<th>Date</th>
+					</tr>
+				</thead>
+				<tbody>
+				{{range .Files}}
+					<tr>
+						<td><span class="glyphicon {{if .IsDir}}glyphicon-folder-close{{else}}glyphicon-file{{end}}"></span>
+						&nbsp;
+						<a href="?p={{$ctx.GetFullPath .Name | urlquery}}">{{.Name}}</a></td>
+						<td>{{if .IsDir}}[dir]{{else}}{{.Size}}{{end}}</td>
+						<td>{{formatDate .ModTime ""}}</td>
+					</tr>
+				{{end}}
+				</tbody>
+			</table>
+		</div>
 	</div>
-</div>
 
-<div class="container">
 	<div class="row">
 		<div class="col-md-6">
 			<h2>Upload</h2>
@@ -58,6 +61,7 @@
 	</div>
 </div>
 
+<script src="/static/lib/jquery/jstree.js" type="text/javascript" ></script>
 <script src="/static/lib/jquery/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/static/lib/dataTables.bootstrap.js" type="text/javascript"></script>
 <script type="text/javascript">
@@ -70,6 +74,19 @@
 			"iDisplayLength": 15,
 			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
 		});
+		$('#jstree_div').jstree({
+			'core' : {
+				'data' : {
+					'url' : function (node) {
+						return 'serv/dirs';
+					},
+					'data' : function (node) {
+						return { 'id' : node.id };
+					}
+				}
+			}
+		}).on("select_node.jstree", function (e, data) {
+		}).jstree("open_node", "dt--root");
 	});
 </script>
 {{end}}

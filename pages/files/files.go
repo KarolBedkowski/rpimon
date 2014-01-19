@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
 	"io"
@@ -10,6 +11,7 @@ import (
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,6 +30,9 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/upload",
 		app.VerifyPermission(verifyAccess(uploadPageHandler), "files")).Methods(
 		"POST").Name("files-upload")
+	subRouter.HandleFunc("/serv/dirs",
+		app.VerifyPermission(serviceDirsHandler, "files")).Name(
+		"files-serv-dirs")
 }
 
 type BreadcrumbItem struct {
@@ -210,4 +215,64 @@ func isDir(filename string) (bool, error) {
 		return false, errors.New("not found")
 	}
 	return d.IsDir(), nil
+}
+
+type dirInfo struct {
+	ID       string      `json:"id"`
+	Text     string      `json:"text"`
+	Children interface{} `json:"children"`
+}
+
+func id2Dir(id string) string {
+	if id == "dt--root" {
+		return "."
+	}
+	path, _ := url.QueryUnescape(id)
+	if strings.Index(path, "dt-") == 0 {
+		return path[3:]
+	}
+	return ""
+}
+
+func dir2ID(path string) string {
+	if path == "." {
+		return "dt--root"
+	}
+	return "dt-" + url.QueryEscape(path)
+}
+
+func serviceDirsHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	id, ok := r.Form["id"]
+	if !ok {
+		http.Error(w, "missing id", http.StatusBadRequest)
+		return
+	}
+
+	path := id[0]
+	if path == "" || path == "#" {
+		path = "."
+	} else {
+		path = id2Dir(path)
+	}
+
+	abspath, relpath, err := isPathValid(path)
+	if err != nil {
+		return
+	}
+
+	var children []dirInfo
+	if files, err := ioutil.ReadDir(abspath); err == nil {
+		for _, file := range files {
+			if file.IsDir() {
+				ipath := filepath.Join(relpath, file.Name())
+				children = append(children, dirInfo{dir2ID(ipath), file.Name(), true})
+			}
+		}
+	}
+
+	result := &dirInfo{dir2ID(relpath), filepath.Base(relpath), children}
+	encoded, _ := json.Marshal(result)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(encoded)
 }
