@@ -52,8 +52,10 @@ FILES.browser = (function(self, $) {
 			"bAutoWidth": false,
 			"bStateSave": true,
 			"sPaginationType": "bootstrap",		
-			"iDisplayLength": 15,
-			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
+			"bFilter": false,
+			"iDisplayLength": 50,
+			"bLengthChange": false,
+			//"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
 			"aoColumnDefs": [
 				{
 					"aTargets": [0],
