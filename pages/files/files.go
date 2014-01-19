@@ -93,6 +93,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	// Serve file
 	if !isDirectory {
 		l.Debug("files: serve file %s", abspath)
+		w.Header().Set("Content-Disposition", "attachment; filename=\""+filepath.Base(abspath)+"\"")
 		http.ServeFile(w, r, abspath)
 		return
 	}
