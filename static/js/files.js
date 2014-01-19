@@ -75,7 +75,11 @@ FILES.browser = (function(self, $) {
 					'data' : function (node) {
 						return { 'id' : node.id };
 					}
-				}
+				},
+				"themes" : {
+					"variant": "small",
+					"responsive": false,
+				},
 			}
 		}).on("select_node.jstree", function (e, data) {
 			selectPath(data.selected[0]);
