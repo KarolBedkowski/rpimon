@@ -16,10 +16,10 @@ var cacheItems = map[string]*template.Template{}
 
 var funcMap = template.FuncMap{
 	"namedurl":   GetNamedURL,
-	"formatDate": formatDate,
+	"formatDate": FormatDate,
 }
 
-func formatDate(date time.Time, format string) string {
+func FormatDate(date time.Time, format string) string {
 	if format == "" {
 		format = "2006-01-02 15:04:05"
 	}

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
 	"io"
@@ -10,6 +11,7 @@ import (
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,6 +30,12 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/upload",
 		app.VerifyPermission(verifyAccess(uploadPageHandler), "files")).Methods(
 		"POST").Name("files-upload")
+	subRouter.HandleFunc("/serv/dirs",
+		app.VerifyPermission(serviceDirsHandler, "files")).Name(
+		"files-serv-dirs")
+	subRouter.HandleFunc("/serv/files",
+		app.VerifyPermission(serviceFilesHandler, "files")).Name(
+		"files-serv-files")
 }
 
 type BreadcrumbItem struct {
@@ -85,16 +93,19 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	// Serve file
 	if !isDirectory {
 		l.Debug("files: serve file %s", abspath)
+		w.Header().Set("Content-Disposition", "attachment; filename=\""+filepath.Base(abspath)+"\"")
 		http.ServeFile(w, r, abspath)
 		return
 	}
 	// show dir
-	l.Debug("files: serve dir %s", abspath)
-	if files, err := ioutil.ReadDir(abspath); err == nil {
-		ctx.Files = files
-	} else {
-		http.Error(w, "Error "+err.Error(), http.StatusBadRequest)
-	}
+	/*
+		l.Debug("files: serve dir %s", abspath)
+		if files, err := ioutil.ReadDir(abspath); err == nil {
+			ctx.Files = files
+		} else {
+			http.Error(w, "Error "+err.Error(), http.StatusBadRequest)
+		}
+	*/
 
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "files/browser.tmpl", "flash.tmpl")
 }
@@ -210,4 +221,126 @@ func isDir(filename string) (bool, error) {
 		return false, errors.New("not found")
 	}
 	return d.IsDir(), nil
+}
+
+type dirInfo struct {
+	ID       string          `json:"id"`
+	Text     string          `json:"text"`
+	Children interface{}     `json:"children"`
+	State    map[string]bool `json:"state"`
+}
+
+func id2Dir(id string) string {
+	if id == "dt--root" {
+		return "."
+	}
+	path, _ := url.QueryUnescape(id)
+	if strings.Index(path, "dt-") == 0 {
+		return path[3:]
+	}
+	return ""
+}
+
+func dir2ID(path string) string {
+	if path == "." {
+		return "dt--root"
+	}
+	return "dt-" + url.QueryEscape(path)
+}
+
+func serviceDirsHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	id, ok := r.Form["id"]
+	if !ok {
+		http.Error(w, "missing id", http.StatusBadRequest)
+		return
+	}
+
+	path := id[0]
+	if path == "" || path == "#" {
+		path = "."
+	} else {
+		path = id2Dir(path)
+	}
+
+	abspath, relpath, err := isPathValid(path)
+	if err != nil {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+
+	var children []dirInfo
+	if files, err := ioutil.ReadDir(abspath); err == nil {
+		for _, file := range files {
+			if file.Mode()&os.ModeSymlink == os.ModeSymlink {
+				// Folow symlinks
+				file, err = os.Stat(filepath.Join(relpath, file.Name()))
+				if err != nil {
+					continue
+				}
+			}
+			if file.IsDir() {
+				ipath := filepath.Join(relpath, file.Name())
+				children = append(children, dirInfo{dir2ID(ipath), file.Name(), true, nil})
+			}
+		}
+	}
+
+	name := "Root"
+	if relpath != "." {
+		name = filepath.Base(relpath)
+	}
+
+	result := &dirInfo{dir2ID(relpath), name, children, nil}
+	if relpath == "." {
+		result.State = map[string]bool{"opened": true, "selected": true}
+	}
+	encoded, _ := json.Marshal(result)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(encoded)
+}
+
+func serviceFilesHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	id, ok := r.Form["id"]
+	if !ok {
+		http.Error(w, "missing id", http.StatusBadRequest)
+		return
+	}
+	path := id[0]
+	if path == "" || path == "#" {
+		path = "."
+	} else {
+		path = id2Dir(path)
+	}
+	abspath, relpath, err := isPathValid(path)
+	if err != nil {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+	children := make([][]interface{}, 0)
+	if files, err := ioutil.ReadDir(abspath); err == nil {
+		for _, file := range files {
+			if file.Mode()&os.ModeSymlink == os.ModeSymlink {
+				// Folow symlinks
+				file, err = os.Stat(filepath.Join(relpath, file.Name()))
+				if err != nil {
+					continue
+				}
+			}
+			if !file.IsDir() {
+				ipath := filepath.Join(relpath, file.Name())
+				finfo := []interface{}{
+					file.Name(),
+					file.Size(),
+					app.FormatDate(file.ModTime(), ""),
+					ipath,
+				}
+				children = append(children, finfo)
+			}
+		}
+	}
+	encoded, _ := json.Marshal(children)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(encoded)
 }
