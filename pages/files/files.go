@@ -238,7 +238,7 @@ func id2Dir(id string) string {
 	if strings.Index(path, "dt-") == 0 {
 		return path[3:]
 	}
-	return ""
+	return id
 }
 
 func dir2ID(path string) string {
@@ -310,8 +310,6 @@ func serviceFilesHandler(w http.ResponseWriter, r *http.Request) {
 	path := id[0]
 	if path == "" || path == "#" {
 		path = "."
-	} else {
-		path = id2Dir(path)
 	}
 	abspath, relpath, err := isPathValid(path)
 	if err != nil {

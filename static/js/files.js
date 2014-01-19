@@ -31,6 +31,8 @@ FILES.browser = (function(self, $) {
 
 	function selectPath(path) {
 		showLoadingMessage();
+		path = (path == "dt--root") ? "." : path.substring(3, path.length);
+		$('input[name=p]').val(path);
 		$.ajax({
 			url: "serv/files",
 			data: {
