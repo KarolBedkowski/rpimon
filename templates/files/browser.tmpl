@@ -1,22 +1,12 @@
 {{define "body"}}
 {{$ctx := . }}
 <div class="container">
-	<ol class="breadcrumb">
-	{{range .Breadcrumb}}
-		{{if .Active}}
-		<li class="active"><a href="?p={{.Href}}">{{.Title}}</a></li>
-		{{else}}
-		<li>{{.Title}}</li>
-		{{end}}
-	{{end}}
-	</ol>
-
 	<div class="row row-centered">
 		<div class="col-xs-12 col-sm-4">
 			<div id="jstree_div"></div>
 		</div>
 		<div class="col-xs-12 col-sm-8">
-			<table class="table-hover table-bordered table-condensed" id="table-files-browser">
+			<table class="table table-hover table-bordered table-condensed" id="table-files-browser">
 				<thead>
 					<tr>
 						<th>Filename</th>
@@ -25,15 +15,6 @@
 					</tr>
 				</thead>
 				<tbody>
-				{{range .Files}}
-					<tr>
-						<td><span class="glyphicon {{if .IsDir}}glyphicon-folder-close{{else}}glyphicon-file{{end}}"></span>
-						&nbsp;
-						<a href="?p={{$ctx.GetFullPath .Name | urlquery}}">{{.Name}}</a></td>
-						<td>{{if .IsDir}}[dir]{{else}}{{.Size}}{{end}}</td>
-						<td>{{formatDate .ModTime ""}}</td>
-					</tr>
-				{{end}}
 				</tbody>
 			</table>
 		</div>
@@ -67,13 +48,38 @@
 <script type="text/javascript">
 
 	$(function() {
-		$('table').dataTable({
+		var table = $('table').dataTable({
 			"bAutoWidth": false,
 			"bStateSave": true,
 			"sPaginationType": "bootstrap",		
 			"iDisplayLength": 15,
 			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
+			"aoColumnDefs": [
+				{
+					"aTargets": [0],
+					"mData": null,
+					"mRender": function(data, type, full) {
+						return ['<span class="glyphicon glyphicon-file"></span>',
+							'<a href="?p=', full[3], '">', full[0], '</a>'].join("");
+					},
+				},
+			],
 		});
+
+		function selectPath(path) {
+			$.ajax({
+				url: "serv/files",
+				data: {
+					id: path,
+				},
+				cache: true,
+				dataType: "json"
+			}).done(function(msg) {
+				table.fnClearTable();
+				table.fnAddData(msg);
+			});
+		}
+
 		$('#jstree_div').jstree({
 			'core' : {
 				'data' : {
@@ -86,7 +92,10 @@
 				}
 			}
 		}).on("select_node.jstree", function (e, data) {
-		}).jstree("open_node", "dt--root");
+			selectPath(data.selected[0]);
+		});
+
+		selectPath("dt--root");
 	});
 </script>
 {{end}}

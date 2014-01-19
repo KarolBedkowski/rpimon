@@ -33,6 +33,9 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/serv/dirs",
 		app.VerifyPermission(serviceDirsHandler, "files")).Name(
 		"files-serv-dirs")
+	subRouter.HandleFunc("/serv/files",
+		app.VerifyPermission(serviceFilesHandler, "files")).Name(
+		"files-serv-files")
 }
 
 type BreadcrumbItem struct {
@@ -218,9 +221,10 @@ func isDir(filename string) (bool, error) {
 }
 
 type dirInfo struct {
-	ID       string      `json:"id"`
-	Text     string      `json:"text"`
-	Children interface{} `json:"children"`
+	ID       string          `json:"id"`
+	Text     string          `json:"text"`
+	Children interface{}     `json:"children"`
+	State    map[string]bool `json:"state"`
 }
 
 func id2Dir(id string) string {
@@ -258,6 +262,7 @@ func serviceDirsHandler(w http.ResponseWriter, r *http.Request) {
 
 	abspath, relpath, err := isPathValid(path)
 	if err != nil {
+		http.Error(w, "invalid id", http.StatusBadRequest)
 		return
 	}
 
@@ -266,13 +271,59 @@ func serviceDirsHandler(w http.ResponseWriter, r *http.Request) {
 		for _, file := range files {
 			if file.IsDir() {
 				ipath := filepath.Join(relpath, file.Name())
-				children = append(children, dirInfo{dir2ID(ipath), file.Name(), true})
+				children = append(children, dirInfo{dir2ID(ipath), file.Name(), true, nil})
 			}
 		}
 	}
 
-	result := &dirInfo{dir2ID(relpath), filepath.Base(relpath), children}
+	name := "Root"
+	if relpath != "." {
+		name = filepath.Base(relpath)
+	}
+
+	result := &dirInfo{dir2ID(relpath), name, children, nil}
+	if relpath == "." {
+		result.State = map[string]bool{"opened": true, "selected": true}
+	}
 	encoded, _ := json.Marshal(result)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(encoded)
+}
+
+func serviceFilesHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	id, ok := r.Form["id"]
+	if !ok {
+		http.Error(w, "missing id", http.StatusBadRequest)
+		return
+	}
+	path := id[0]
+	if path == "" || path == "#" {
+		path = "."
+	} else {
+		path = id2Dir(path)
+	}
+	abspath, relpath, err := isPathValid(path)
+	if err != nil {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+	children := make([][]interface{}, 0)
+	if files, err := ioutil.ReadDir(abspath); err == nil {
+		for _, file := range files {
+			if !file.IsDir() {
+				ipath := filepath.Join(relpath, file.Name())
+				finfo := []interface{}{
+					file.Name(),
+					file.Size(),
+					app.FormatDate(file.ModTime(), ""),
+					ipath,
+				}
+				children = append(children, finfo)
+			}
+		}
+	}
+	encoded, _ := json.Marshal(children)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(encoded)
 }
