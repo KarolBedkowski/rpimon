@@ -81,6 +81,34 @@ FILES.browser = (function(self, $) {
 		});
 	}
 
+	function removePath(event) {
+		event.preventDefault();
+		var p = $(this).closest('tr').data("p");
+		if (!p) {
+			return
+		}
+		new Messi("Delete " + p + "?", {
+			title: 'Delete',
+			titleClass: 'anim warning',
+			buttons: [{
+				"id": 1,
+				"label": "Cancel",
+				"val": "C",
+			},
+			{
+				"id": 2,
+				"label": "Delete",
+				"val": "D",
+				"class": 'btn-danger'
+			}],
+			callback: function(val) {
+				if (val == "R") {
+					alert("delete");
+				}
+			},
+		});
+	}
+
 	self.init = function initF() {
 		showLoadingMessage();
 
@@ -110,8 +138,18 @@ FILES.browser = (function(self, $) {
 						if (full[0] == 'file') {
 							return ['<a href="?p=', full[4], '">', data, '</a>'].join("");
 						} else {
-							return ['<a class="ajax-action" href="#">', data, '</a>'].join("");
+							return ['<a class="ajax-action-open" href="#">', data, '</a>'].join("");
 						}
+					},
+				},
+				{
+					"aTargets": [4],
+					"mData": 1,
+					"mRender": function(data, type, full) {
+						if (data != "..") {
+							return '<a href="#" class="ajax-action-del"><span class="glyphicon glyphicon-remove" title="Remove"></span></a>';
+				  		}
+						return "";
 					},
 				},
 			],
@@ -119,7 +157,8 @@ FILES.browser = (function(self, $) {
 				$(row).data("p", aData[4]);
 			},
 			"fnDrawCallback": function() { //oSettings) {
-				$("table a.ajax-action").on("click", gotoPath);
+				$("table a.ajax-action-open").on("click", gotoPath);
+				$("table a.ajax-action-del").on("click", removePath);
 			},
 		});
 
