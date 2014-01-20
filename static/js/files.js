@@ -29,6 +29,33 @@ FILES.browser = (function(self, $) {
 		}
 	}
 
+	function gotoPath(event) {
+		event.preventDefault();
+		selectPath($(this).data("p"));
+	}
+
+	function updateBreadcrumb(path) {
+		var bc = $("#breadcrumb"),
+			pathParts = path.split("/"),
+			idx;
+		if (!path || path == ".") {
+			bc.html("<li>[Root]</li>");
+			return
+		}
+		bc.html('<li class="active"><a href="#" data-p=".">[Root]</a></li>');
+		var lpath = "";
+		for (idx = 0; idx < pathParts.length - 1; ++idx) {
+			if (lpath) {
+				lpath = lpath + "/";
+			}
+			lpath = lpath + pathParts[idx];
+			$(['<li class="active"><a href="#" data-p="', lpath, '">',
+				pathParts[idx], '</a></li>'].join('')).appendTo(bc);
+		}
+		$(['<li>', pathParts[pathParts.length - 1], '</li>'].join('')).appendTo(bc);
+		$("#breadcrumb a").on("click", gotoPath);
+	};
+
 	function selectPath(path) {
 		showLoadingMessage();
 		$('input[name=p]').val(path);
@@ -44,6 +71,7 @@ FILES.browser = (function(self, $) {
 			window.history.pushState({ path: new_location }, window.title, new_location);
 			table.fnClearTable();
 			table.fnAddData(msg);
+			updateBreadcrumb(path);
 			hideLoadingMessage();
 		});
 	}
@@ -54,7 +82,7 @@ FILES.browser = (function(self, $) {
 		table = $('table').dataTable({
 			"bAutoWidth": false,
 			"bStateSave": true,
-			"sPaginationType": "bootstrap",		
+			"sPaginationType": "bootstrap",
 			"bFilter": false,
 			"iDisplayLength": 50,
 			"bLengthChange": false,
@@ -83,28 +111,24 @@ FILES.browser = (function(self, $) {
 				},
 			],
 			"fnDrawCallback": function() { //oSettings) {
-				$("table a[href=#]").on("click", function(event) {
-					event.preventDefault();
-					var path = $(this).data("p");
-					selectPath(path);
-				});
+				$("table a[href=#]").on("click", gotoPath);
 			},
 		});
 
-		$(window).bind('popstate', function(event) {	
+		$(window).bind('popstate', function(event) {
 			var location = window.location.search;
 			if (location && location.startsWith("?p=")) {
 				location = location.substr(3, location.length);
 				location = decodeURIComponent(location);
 				selectPath(location || ".");
-			} 
+			}
 		});
 
 		var location = window.location.search;
 		if (location && location.startsWith("?p=")) {
 			location = location.substr(3, location.length);
 			location = decodeURIComponent(location);
-		} 
+		}
 		selectPath(location || ".");
 	};
 
