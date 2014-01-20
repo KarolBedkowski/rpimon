@@ -31,7 +31,6 @@ FILES.browser = (function(self, $) {
 
 	function selectPath(path) {
 		showLoadingMessage();
-		path = (path == "dt--root") ? "." : path.substring(3, path.length);
 		$('input[name=p]').val(path);
 		$.ajax({
 			url: "serv/files",
@@ -41,6 +40,8 @@ FILES.browser = (function(self, $) {
 			cache: true,
 			dataType: "json"
 		}).done(function(msg) {
+			var new_location = "#"+path;
+			window.history.pushState({ path: new_location }, window.title, new_location);
 			table.fnClearTable();
 			table.fnAddData(msg);
 			hideLoadingMessage();
@@ -57,43 +58,52 @@ FILES.browser = (function(self, $) {
 			"bFilter": false,
 			"iDisplayLength": 50,
 			"bLengthChange": false,
-			//"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
 			"aoColumnDefs": [
 				{
 					"aTargets": [0],
-					"mData": null,
+					"mData": 0,
 					"mRender": function(data, type, full) {
-						return ['<span class="glyphicon glyphicon-file"></span>',
-							'<a href="?p=', full[3], '">', full[0], '</a>'].join("");
+						if (data == 'file') {
+							return '<span class="glyphicon glyphicon-file"></span>';
+						} else {
+							return '<span class="glyphicon glyphicon-folder-close"></span>';
+						}
+					},
+				},
+				{
+					"aTargets": [1],
+					"mData": 1,
+					"mRender": function(data, type, full) {
+						if (full[0] == 'file') {
+							return ['<a href="?p=', full[4], '">', data, '</a>'].join("");
+						} else {
+							return ['<a href="#" data-kind="' + full[0] + '" data-p="', full[4], '">', data, '</a>'].join("");
+						}
 					},
 				},
 			],
+			"fnDrawCallback": function() { //oSettings) {
+				$("table a[href=#]").on("click", function(event) {
+					event.preventDefault();
+					var path = $(this).data("p");
+					selectPath(path);
+				});
+			},
 		});
 
-		$('#jstree_div').jstree({
-			'core' : {
-				'data' : {
-					'url' : function () {
-						return 'serv/dirs';
-					},
-					'data' : function (node) {
-						return { 'id' : node.id };
-					}
-				},
-				"themes" : {
-					"variant": "small",
-					"responsive": false,
-				},
-			}
-		}).on("select_node.jstree", function (e, data) {
-			selectPath(data.selected[0]);
-		}).on("loaded.jstree", function() {
-			selectPath("dt--root");
-		}).on("loading.jstree", function() {
-			showLoadingMessage();
-		}).on("ready.jstree", function() {
-			hideLoadingMessage();
+		$(window).bind('popstate', function(event) {	
+			var location = window.location.hash;
+			if (location && location[0] == "#") {
+				location = location.substr(1, location.length);
+				selectPath(location || ".");
+			} 
 		});
+
+		var location = window.location.hash;
+		if (location && location[0] == "#") {
+			location = location.substr(1, location.length);
+		} 
+		selectPath(location || ".");
 	};
 
 	return self;

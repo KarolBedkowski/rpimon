@@ -317,6 +317,15 @@ func serviceFilesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	children := make([][]interface{}, 0)
+	if path != "." {
+		children = append(children, []interface{}{
+			"folder",
+			"..",
+			"",
+			"",
+			filepath.Join(relpath, ".."),
+		})
+	}
 	if files, err := ioutil.ReadDir(abspath); err == nil {
 		for _, file := range files {
 			if file.Mode()&os.ModeSymlink == os.ModeSymlink {
@@ -326,16 +335,19 @@ func serviceFilesHandler(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 			}
-			if !file.IsDir() {
-				ipath := filepath.Join(relpath, file.Name())
-				finfo := []interface{}{
-					file.Name(),
-					file.Size(),
-					app.FormatDate(file.ModTime(), ""),
-					ipath,
-				}
-				children = append(children, finfo)
+			kind := "file"
+			if file.IsDir() {
+				kind = "dir"
 			}
+			ipath := filepath.Join(relpath, file.Name())
+			finfo := []interface{}{
+				kind,
+				file.Name(),
+				file.Size(),
+				app.FormatDate(file.ModTime(), ""),
+				ipath,
+			}
+			children = append(children, finfo)
 		}
 	}
 	encoded, _ := json.Marshal(children)
