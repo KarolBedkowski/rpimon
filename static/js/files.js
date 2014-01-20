@@ -31,7 +31,12 @@ FILES.browser = (function(self, $) {
 
 	function gotoPath(event) {
 		event.preventDefault();
-		selectPath($(this).data("p"));
+		var obj = $(this),
+			p = obj.data("p");
+		if (!p) {
+			p = obj.closest('tr').data("p");
+		}
+		selectPath(p);
 	}
 
 	function updateBreadcrumb(path) {
@@ -105,13 +110,16 @@ FILES.browser = (function(self, $) {
 						if (full[0] == 'file') {
 							return ['<a href="?p=', full[4], '">', data, '</a>'].join("");
 						} else {
-							return ['<a href="#" data-kind="' + full[0] + '" data-p="', full[4], '">', data, '</a>'].join("");
+							return ['<a class="ajax-action" href="#">', data, '</a>'].join("");
 						}
 					},
 				},
 			],
+			"fnRowCallback": function(row, aData) { //, iDisplayIndex, iDisplayIndexFull) {
+				$(row).data("p", aData[4]);
+			},
 			"fnDrawCallback": function() { //oSettings) {
-				$("table a[href=#]").on("click", gotoPath);
+				$("table a.ajax-action").on("click", gotoPath);
 			},
 		});
 
