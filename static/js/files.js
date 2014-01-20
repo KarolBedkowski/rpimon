@@ -40,7 +40,7 @@ FILES.browser = (function(self, $) {
 			cache: true,
 			dataType: "json"
 		}).done(function(msg) {
-			var new_location = "#"+path;
+			var new_location = "?p="+path;
 			window.history.pushState({ path: new_location }, window.title, new_location);
 			table.fnClearTable();
 			table.fnAddData(msg);
@@ -92,16 +92,18 @@ FILES.browser = (function(self, $) {
 		});
 
 		$(window).bind('popstate', function(event) {	
-			var location = window.location.hash;
-			if (location && location[0] == "#") {
-				location = location.substr(1, location.length);
+			var location = window.location.search;
+			if (location && location.startsWith("?p=")) {
+				location = location.substr(3, location.length);
+				location = decodeURIComponent(location);
 				selectPath(location || ".");
 			} 
 		});
 
-		var location = window.location.hash;
-		if (location && location[0] == "#") {
-			location = location.substr(1, location.length);
+		var location = window.location.search;
+		if (location && location.startsWith("?p=")) {
+			location = location.substr(3, location.length);
+			location = decodeURIComponent(location);
 		} 
 		selectPath(location || ".");
 	};
