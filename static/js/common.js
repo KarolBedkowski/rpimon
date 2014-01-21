@@ -17,7 +17,7 @@ var RPI = (function(self, $) {
 			$("#dialog-confirm #dialog-confirm-cancel").hide();
 		}
 		if (params.btnSuccess != "none") {
-			$("#dialog-confirm #dialog-confirm-success")	
+			$("#dialog-confirm #dialog-confirm-success")
 				.html(params.btnSuccess || "Yes")
 				.addClass(params.btnSuccessClass || "btn-primary");
 		} else {
@@ -41,12 +41,16 @@ var RPI = (function(self, $) {
 	self.showLoadingMsg = function showLoadingMsgF() {
 		var top = ($(document).height() - $("#loading-box .loading-wrapper").height()) / 3
 			+  $(window).scrollTop();
-		$("#loading-box .loading-wrapper").css("top", top + "px");
-		$("#loading-box").fadeTo(200, 0.5);
+		var left = ($(document).width() - $("#loading-box .loading-wrapper").width()) / 2
+			+  $(window).scrollLeft();
+		$("#loading-box .loading-wrapper").css("top", top + "px").css("left", left + "px");
+		$("#loading-box").css("z-index", 990).fadeTo(200, 0.5);
 	};
 
 	self.hideLoadingMsg = function hideLoadingMsgF() {
-		$("#loading-box").fadeOut(300);
+		$("#loading-box").fadeOut(300, function() {
+			$("#loading-box").css("z-index", -990);
+		});
 	};
 
 	self.hideLoadingMsg();
