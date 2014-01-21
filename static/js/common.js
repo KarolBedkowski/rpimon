@@ -38,5 +38,18 @@ var RPI = (function(self, $) {
 		};
 	};
 
+	self.showLoadingMsg = function showLoadingMsgF() {
+		var top = ($(document).height() - $("#loading-box .loading-wrapper").height()) / 3
+			+  $(window).scrollTop();
+		$("#loading-box .loading-wrapper").css("top", top + "px");
+		$("#loading-box").fadeTo(200, 0.5);
+	};
+
+	self.hideLoadingMsg = function hideLoadingMsgF() {
+		$("#loading-box").fadeOut(300);
+	};
+
+	self.hideLoadingMsg();
+
 	return self;
 }(RPI || {}, jQuery));
