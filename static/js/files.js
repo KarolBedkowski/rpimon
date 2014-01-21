@@ -2,14 +2,19 @@
 /* jshint undef: true, unused: true */
 /* global Messi: false */
 /* global jQuery: false */
+/* global window: false */
 
-"use strict";
+
 
 var FILES = FILES || {};
 
 FILES.browser = (function(self, $) {
+	"use strict";
+
 	var msg_loading = null,
-		table = null;
+		table = null,
+		dlgDirTreeSelection = null
+		;
 
 	function showLoadingMessage() {
 		if (msg_loading) {
@@ -45,7 +50,7 @@ FILES.browser = (function(self, $) {
 			idx;
 		if (!path || path == ".") {
 			bc.html("<li>[Root]</li>");
-			return
+			return;
 		}
 		bc.html('<li class="active"><a href="#" data-p=".">[Root]</a></li>');
 		var lpath = "";
@@ -59,7 +64,7 @@ FILES.browser = (function(self, $) {
 		}
 		$(['<li>', pathParts[pathParts.length - 1], '</li>'].join('')).appendTo(bc);
 		$("#breadcrumb a").on("click", gotoPath);
-	};
+	}
 
 	function selectPath(path) {
 		showLoadingMessage();
@@ -97,8 +102,61 @@ FILES.browser = (function(self, $) {
 		}).open();
 	}
 
+	function moveObj(event) {
+		event.preventDefault();
+		var p = $(this).closest('tr').data("p");
+		if (!p) {
+			return;
+		}
+		createTree();
+		$("#dialog-dirtree #dialog-dirtree-label").html("Move destination");
+		$("#dialog-dirtree #dialog-dirtree-msg").html("Move " + p + " to:");
+		$("#dialog-dirtree").modal("show");
+		$("#dialog-dirtree #dialog-dirtree-success").on("click", function() {
+			$("#dialog-dirtree").modal("hide");
+			if (p != dlgDirTreeSelection) {
+				window.location.href = "action?action=move&p=" + p + "&d=" + dlgDirTreeSelection;
+			}
 		});
 	}
+
+	function createTree() {
+		$('#dialog-dirtree #dialog-dirtree-tree').jstree({
+			'core' : {
+				'data' : {
+					'url' : function () {
+						return 'serv/dirs';
+					},
+					'data' : function (node) {
+						return { 'id' : node.id };
+					}
+				},
+				"themes" : {
+					"variant": "small",
+					"responsive": false,
+				},
+			}
+		}).on("select_node.jstree", function (e, data) {
+			var path = data.selected[0];
+			dlgDirTreeSelection = (path == "dt--root") ? "." : path.substr(3, path.length);
+		}).on("loaded.jstree", function() {
+		}).on("loading.jstree", function() {
+			showLoadingMessage();
+		}).on("ready.jstree", function() {
+			hideLoadingMessage();
+		});
+	}
+
+	jQuery.fn.dataTableExt.oSort['data-asc']  = function(a,b) {
+		var x = parseInt($(a).data("sortval"))
+		var y = parseInt($(b).data("sortval"))
+		return ((x < y) ? -1 : ((x > y) ?  1 : 0));
+	};
+	jQuery.fn.dataTableExt.oSort['data-desc']  = function(a,b) {
+		var x = parseInt($(a).data("sortval"))
+		var y = parseInt($(b).data("sortval"))
+		return ((x < y) ? 1 : ((x > y) ?  -1 : 0));
+	};
 
 	self.init = function initF() {
 		showLoadingMessage();
@@ -116,11 +174,13 @@ FILES.browser = (function(self, $) {
 					"mData": 0,
 					"mRender": function(data, type, full) {
 						if (data == 'file') {
-							return '<span class="glyphicon glyphicon-file"></span>';
+							return '<span class="glyphicon glyphicon-file" data-sortval="1" ></span>';
 						} else {
-							return '<span class="glyphicon glyphicon-folder-close"></span>';
+							return '<span class="glyphicon glyphicon-folder-close" data-sortval="0"></span>';
 						}
 					},
+					"sType": "data",
+					"aDataSort": [ 0, 1 ],
 				},
 				{
 					"aTargets": [1],
@@ -132,24 +192,29 @@ FILES.browser = (function(self, $) {
 							return ['<a class="ajax-action-open" href="#">', data, '</a>'].join("");
 						}
 					},
+					"aDataSort": [ 1, 0 ],
 				},
 				{
 					"aTargets": [4],
 					"mData": 1,
+					"bSortable": false,
 					"mRender": function(data, type, full) {
 						if (data != "..") {
-							return '<a href="#" class="ajax-action-del"><span class="glyphicon glyphicon-remove" title="Remove"></span></a>';
-				  		}
+							return '<a href="#" class="ajax-action-del"><span class="glyphicon glyphicon-remove" title="Remove"></span></a>'+
+							' <a href="#" class="ajax-action-move"><span class="glyphicon glyphicon-share-alt" title="Move"></span></a>';
+						}
 						return "";
 					},
 				},
 			],
+			"aaSorting": [[0,'asc'], [1,'asc']],
 			"fnRowCallback": function(row, aData) { //, iDisplayIndex, iDisplayIndexFull) {
 				$(row).data("p", aData[4]);
 			},
 			"fnDrawCallback": function() { //oSettings) {
 				$("table a.ajax-action-open").on("click", gotoPath);
 				$("table a.ajax-action-del").on("click", removePath);
+				$("table a.ajax-action-move").on("click", moveObj);
 			},
 		});
 

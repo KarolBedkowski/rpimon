@@ -36,6 +36,9 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/serv/files",
 		app.VerifyPermission(serviceFilesHandler, "files")).Name(
 		"files-serv-files")
+	subRouter.HandleFunc("/action",
+		app.VerifyPermission(verifyAccess(actionHandler), "files")).Name(
+		"files-serv-files")
 }
 
 type BreadcrumbItem struct {
@@ -172,6 +175,65 @@ func uploadPageHandler(w http.ResponseWriter, r *http.Request) {
 	out := bufio.NewWriter(file)
 	io.Copy(out, f)
 	out.Flush()
+	http.Redirect(w, r,
+		app.GetNamedURL("files-index")+h.BuildQuery("p", relpath),
+		http.StatusFound)
+}
+
+func actionHandler(w http.ResponseWriter, r *http.Request) {
+	var relpath, abspath = "", ""
+	if relpathd, ok := r.Form["REL_PATH"]; ok {
+		relpath = relpathd[0]
+	}
+	if abspathd, ok := r.Form["ABS_PATH"]; ok {
+		abspath = abspathd[0]
+	}
+	if relpath == "" || abspath == "" {
+		http.Error(w, "Error: missing path ", http.StatusBadRequest)
+		return
+	}
+	var action string
+	if actiond, ok := r.Form["action"]; ok && actiond[0] != "" {
+		action = actiond[0]
+	} else {
+		http.Error(w, "Error: missing action", http.StatusBadRequest)
+		return
+	}
+
+	session := app.GetSessionStore(w, r)
+	switch action {
+	case "delete":
+		l.Debug("Delete ", abspath)
+		err := os.Remove(abspath)
+		if err == nil {
+			session.AddFlash(abspath + " deleted")
+		} else {
+			session.AddFlash(err.Error())
+		}
+		relpath = filepath.Dir(relpath)
+	case "move":
+		l.Debug("Move %v ->", abspath)
+		if destP, ok := r.Form["d"]; ok && destP[0] != "" {
+			if adest, rdest, err := isPathValid(destP[0]); err == nil {
+				adest = filepath.Join(adest, filepath.Base(relpath))
+				l.Debug("Move -> %v", adest)
+				if rdest == relpath {
+					return
+				}
+				err = os.Rename(abspath, adest)
+				if err == nil {
+					session.AddFlash(relpath + " moved to " + rdest)
+				} else {
+					session.AddFlash(err.Error())
+				}
+				relpath = rdest
+			}
+		}
+	default:
+		http.Error(w, "Error: invalid action", http.StatusBadRequest)
+		return
+	}
+	session.Save(r, w)
 	http.Redirect(w, r,
 		app.GetNamedURL("files-index")+h.BuildQuery("p", relpath),
 		http.StatusFound)
