@@ -11,8 +11,7 @@ var FILES = FILES || {};
 FILES.browser = (function(self, $) {
 	"use strict";
 
-	var msg_loading = null,
-		table = null,
+	var table = null,
 		dlgDirTreeSelection = null,
 		urls = {
 			"service-dirs": "serv/dirs",
@@ -21,23 +20,6 @@ FILES.browser = (function(self, $) {
 		}
 		;
 
-	function showLoadingMessage() {
-		if (msg_loading) {
-			return;
-		}
-		msg_loading = new Messi('Loading...', {
-			closeButton: false,
-			modal: true,
-			width: 'auto',
-		});
-	}
-
-	function hideLoadingMessage() {
-		if (msg_loading) {
-			msg_loading.hide();
-			msg_loading = null;
-		}
-	}
 
 	function gotoPath(event) {
 		event.preventDefault();
@@ -72,7 +54,7 @@ FILES.browser = (function(self, $) {
 	}
 
 	function selectPath(path) {
-		showLoadingMessage();
+		RPI.showLoadingMsg();
 		$('input[name=p]').val(path);
 		$.ajax({
 			url: urls["service-files"],
@@ -87,7 +69,7 @@ FILES.browser = (function(self, $) {
 			table.fnClearTable();
 			table.fnAddData(msg);
 			updateBreadcrumb(path);
-			hideLoadingMessage();
+			RPI.hideLoadingMsg();
 		});
 	}
 
@@ -146,9 +128,9 @@ FILES.browser = (function(self, $) {
 			dlgDirTreeSelection = (path == "dt--root") ? "." : path.substr(3, path.length);
 		}).on("loaded.jstree", function() {
 		}).on("loading.jstree", function() {
-			showLoadingMessage();
+			RPI.showLoadingMsg();
 		}).on("ready.jstree", function() {
-			hideLoadingMessage();
+			RPI.hideLoadingMsg();
 		});
 	}
 
@@ -164,7 +146,7 @@ FILES.browser = (function(self, $) {
 	};
 
 	self.init = function initF(params) {
-		showLoadingMessage();
+		RPI.showLoadingMsg();
 
 		urls = $.extend(urls, params.urls || {});
 
@@ -183,7 +165,11 @@ FILES.browser = (function(self, $) {
 						if (data == 'file') {
 							return '<span class="glyphicon glyphicon-file" data-sortval="1" ></span>';
 						} else {
-							return '<span class="glyphicon glyphicon-folder-close" data-sortval="0"></span>';
+							if (full[1] == '..') {
+								return '<span class="glyphicon glyphicon-folder-close" data-sortval="-1"></span>';
+							} else {
+								return '<span class="glyphicon glyphicon-folder-close" data-sortval="0"></span>';
+							}
 						}
 					},
 					"sType": "data",
