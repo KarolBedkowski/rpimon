@@ -4,10 +4,11 @@
 /* global Messi: false */
 /* global jQuery: false */
 
-"use strict";
 var MPD = MPD || {};
 
 MPD.status = (function(self, $) {
+	"use strict";
+
 	var changingPos = false,
 		changingVol = false,
 		lastState = {
@@ -28,21 +29,11 @@ MPD.status = (function(self, $) {
 	function onError(errormsg) {
 		$("div.mpd-buttons-sect").hide();
 		$("div.mpd-info-section").hide();
-		new Messi(errormsg, {
-			title: 'Error',
-			titleClass: 'anim warning',
-			buttons: [{
-				"id": 1, 
-				"label": "Reconnect", 
-				"val": "R", 
-				"class": 'btn-success'
-			}],
-			callback: function(val) {
-				if (val == "R") {
-					window.location.reload();
-				}
-			},
-		});
+		$("#main-alert-error").text(errormsg);
+		$("#main-alert").show();
+		if (connectingMessage) {
+			connectingMessage.hide();
+		}
 	}
 
 	function ts2str(ts) {

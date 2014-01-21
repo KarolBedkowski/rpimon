@@ -4,12 +4,13 @@
 /* global jQuery: false */
 /* global window: false */
 
-"use strict";
 
 var MPD = MPD || {};
 var RPI = RPI || {};
 
 MPD.plist = (function(self, $) {
+	"use strict";
+
 	var msg_loading = null,
 		table = null,
 		currentSong = "",
@@ -55,21 +56,9 @@ MPD.plist = (function(self, $) {
 	function showError(errormsg) {
 		hideLoadingMessage();
 		window.console.log(errormsg);
-		new Messi(errormsg, {
-			title: 'Error',
-			titleClass: 'anim warning',
-			buttons: [{
-				"id": 1, 
-				"label": "Reload", 
-				"val": "R", 
-				"class": 'btn-success'
-			}],
-			callback: function(val) {
-				if (val == "R") {
-					window.location.reload();
-				}
-			},	
-		});
+		$("#main-alert-error").text(errormsg);
+		$("#main-alert").show();
+		$("div.playlist-data").hide();
 	}
 
 	self.refresh = function refreshF() {
@@ -184,11 +173,18 @@ MPD.plist = (function(self, $) {
 
 	function songInfo(event) {
 		event.preventDefault();
-		var opt = {params: {
+		$.ajax({
+			url: '/mpd/service/song-info',
+			type: "GET",
+			data: {
 				uri: $(this).data("uri"),
 			},
-		};
-		Messi.load('/mpd/service/song-info', opt);
+		}).done(function(data) {
+			RPI.confirmDialog(data, {
+				title: "Song info",
+				btnSuccess: "none",
+			}).open();
+		});
 	}
 
 	self.init = function initF() {

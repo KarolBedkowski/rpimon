@@ -2,13 +2,15 @@
 /* jshint undef: true, unused: true */
 /* global Messi: false */
 /* global jQuery: false */
-/* global console: false */
+/* global window: false */
+/* global RPI: false */
 
-"use strict";
 
 var MPD = MPD || {};
 
 MPD.library = (function(self, $) {
+	"use strict";
+
 	var mpdControlUrl = null,
 		mpdServiceInfoUrl = null;
 
@@ -46,24 +48,26 @@ MPD.library = (function(self, $) {
 			}).done(function() {
 				lmessage.hide();
 			}).fail(function(jqXHR, textStatus) {
-				console.log(textStatus);
+				window.console.log(textStatus);
 				lmessage.hide();
-				new Messi(textStatus, {
-					title: 'Error',
-					titleClass: 'anim warning',
-					buttons: [{
-						id: 0, label: 'Close', val: 'X'
-					}]
-				});
+				window.alert(textStatus);
 			});
 		});
+
 		$("a.action-info").on("click", function(event) {
 			event.preventDefault();
-			var opt = {params: {
+			$.ajax({
+				url: '/mpd/service/song-info',
+				type: "GET",
+				data: {
 					uri: $(this).data("uri"),
 				},
-			};
-			Messi.load('/mpd/service/song-info', opt);
+			}).done(function(data) {
+				RPI.confirmDialog(data, {
+					title: "Song info",
+					btnSuccess: "none",
+				}).open();
+			});
 		});
 	};
 

@@ -2,13 +2,15 @@
 /* jshint undef: true, unused: true */
 /* global Messi: false */
 /* global jQuery: false */
+/* global window: false */
 
-"use strict";
 
 var MPD = MPD || {};
 var RPI = RPI || {};
 
 MPD.plists = (function(self, $) {
+	"use strict";
+
 	function action(event) {
 		event.preventDefault();
 		var message = new Messi('Loading...', {
@@ -23,13 +25,7 @@ MPD.plists = (function(self, $) {
 			message.hide();
 		}).fail(function(jqXHR, textStatus) {
 			message.hide();
-			new Messi(textStatus, {
-				title: 'Error',
-				titleClass: 'anim warning',
-				buttons: [{
-					id: 0, label: 'Close', val: 'X'
-				}]
-			});
+			window.alert(textStatus);
 		});
 	}
 

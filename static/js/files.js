@@ -85,27 +85,18 @@ FILES.browser = (function(self, $) {
 		event.preventDefault();
 		var p = $(this).closest('tr').data("p");
 		if (!p) {
-			return
+			return;
 		}
-		new Messi("Delete " + p + "?", {
-			title: 'Delete',
-			titleClass: 'anim warning',
-			buttons: [{
-				"id": 1,
-				"label": "Cancel",
-				"val": "C",
-			},
-			{
-				"id": 2,
-				"label": "Delete",
-				"val": "D",
-				"class": 'btn-danger'
-			}],
-			callback: function(val) {
-				if (val == "R") {
-					alert("delete");
-				}
-			},
+		window.RPI.confirmDialog("Delete " + p + "?", {
+			title: "Confirm delete",
+			btnSuccess: "Delete",
+			btnSuccessClass: "btn-warning",
+			onSuccess: function() {
+				window.location.href = "action?action=delete&p=" + p;
+			}
+		}).open();
+	}
+
 		});
 	}
 

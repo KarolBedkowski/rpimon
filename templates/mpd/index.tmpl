@@ -1,5 +1,12 @@
 {{define "body"}}
 
+<div class="container">
+	<div class="alert alert-danger" id="main-alert">
+		<p>Error loading data: <em id="main-alert-error"></em></p>
+		<a href="#" class="alert-link" onclick="location.reload()">Reload</a>
+	</div>
+</div>
+
 <div class="container mpd-info-section center-block" id="song-box">
 	<div id="curr-name"></div>
 	<div id="curr-artist"></div>
@@ -112,6 +119,7 @@
 
 <script type="text/javascript">
 	$(function() {
+		$("#main-alert").hide();
 		var ctrlUrl = "{{namedurl "mpd-control" "action" "-"}}";
 		ctrlUrl = ctrlUrl.substring(0, ctrlUrl.length - 2);
 		MPD.status.init(ctrlUrl, "{{namedurl "mpd-service-info"}}");
