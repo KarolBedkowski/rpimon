@@ -1,6 +1,5 @@
 /* jshint strict: true */
 /* jshint undef: true, unused: true */
-/* global Messi: false */
 /* global jQuery: false */
 /* global window: false */
 /* global RPI: false */
@@ -33,12 +32,8 @@ MPD.library = (function(self, $) {
 
 		$("a.ajax-action").on("click", function(event) {
 			event.preventDefault();
-			var link = $(this),
-				lmessage = new Messi('Adding...', {
-					closeButton: false,
-					modal: true,
-					width: 'auto',
-				});
+			var link = $(this);
+			RPI.showLoadingMsg();
 			$.ajax({
 				type: "PUT",
 				data: {
@@ -46,10 +41,10 @@ MPD.library = (function(self, $) {
 					u: link.data("uri"),
 				}
 			}).done(function() {
-				lmessage.hide();
+				RPI.hideLoadingMsg();
 			}).fail(function(jqXHR, textStatus) {
 				window.console.log(textStatus);
-				lmessage.hide();
+				RPI.hideLoadingMsg();
 				window.alert(textStatus);
 			});
 		});

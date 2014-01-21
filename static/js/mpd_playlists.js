@@ -1,6 +1,5 @@
 /* jshint strict: true */
 /* jshint undef: true, unused: true */
-/* global Messi: false */
 /* global jQuery: false */
 /* global window: false */
 
@@ -13,18 +12,14 @@ MPD.plists = (function(self, $) {
 
 	function action(event) {
 		event.preventDefault();
-		var message = new Messi('Loading...', {
-			closeButton: false,
-			modal: true,
-			width: 'auto',
-		});
+		RPI.showLoadingMsg();
 		$.ajax({
 			url: this.href,
 			type: "PUT",
 		}).done(function() { //msg) {
-			message.hide();
+			RPI.hideLoadingMsg();
 		}).fail(function(jqXHR, textStatus) {
-			message.hide();
+			RPI.hideLoadingMsg();
 			window.alert(textStatus);
 		});
 	}

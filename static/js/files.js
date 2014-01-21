@@ -1,6 +1,5 @@
 /* jshint strict: true */
 /* jshint undef: true, unused: true */
-/* global Messi: false */
 /* global jQuery: false */
 /* global window: false */
 

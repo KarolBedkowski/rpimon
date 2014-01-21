@@ -1,14 +1,12 @@
 /* jshint strict: true */
 /* jshint undef: true, unused: true */
 /* global window: false */
-/* global Messi: false */
 /* global jQuery: false */
 
 "use strict";
 
 var SYSTEM = (function(self, $) {
 	var infoUrl = "/main/info",
-		connectingMessage = null;
 
 	function getHistory() {
 		$.ajax({
@@ -56,20 +54,17 @@ var SYSTEM = (function(self, $) {
 			$('#uptime-uptime').text(uptime.Uptime);
 			$('#uptime-users').text(uptime.Users);
 			$("span.pie").peity("pie");
-			connectingMessage.hide();
+			RPI.hideLoadingMsg();
 			window.setTimeout(getHistory, 5000);
 		}).fail(function(jqXHR, textStatus) {
-			connectingMessage.show();
+			RPI.showLoadingMsg();
 			window.setTimeout(getHistory, 10000);
 		});
 	}
 
 	self.init = function init(infoUrl_) {
 		infoUrl = infoUrl_;
-		connectingMessage = new Messi('Connecting...', {
-			closeButton: false,
-			width: 'auto',
-		});
+		RPI.showLoadingMsg();
 		getHistory();
 	};
 

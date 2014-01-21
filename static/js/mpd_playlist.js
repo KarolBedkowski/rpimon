@@ -1,6 +1,5 @@
 /* jshint strict: true */
 /* jshint undef: true, unused: true */
-/* global Messi: false */
 /* global jQuery: false */
 /* global window: false */
 
@@ -21,7 +20,7 @@ MPD.plist = (function(self, $) {
 			url: sSource,
 			data: aoData || {},
 		}).done(function(response) {
-			hideLoadingMessage();
+			RPI.hideLoadingMsg();
 			if (response.error) {
 				showError(response.error);
 			}
@@ -35,26 +34,8 @@ MPD.plist = (function(self, $) {
 		});
 	}
 
-	function showLoadingMessage() {
-		if (msg_loading) {
-			return;
-		}
-		msg_loading = new Messi('Loading...', {
-			closeButton: false,
-			modal: true,
-			width: 'auto',
-		});
-	}
-
-	function hideLoadingMessage() {
-		if (msg_loading) {
-			msg_loading.hide();
-			msg_loading = null;
-		}
-	}
-
 	function showError(errormsg) {
-		hideLoadingMessage();
+		RPI.hideLoadingMsg();
 		window.console.log(errormsg);
 		$("#main-alert-error").text(errormsg);
 		$("#main-alert").show();
@@ -123,7 +104,7 @@ MPD.plist = (function(self, $) {
 			tr = tr.closest('tr');
 			id = tr.data("songid");
 		}
-		showLoadingMessage();
+		RPI.showLoadingMsg();
 		$.ajax({
 			url: "/mpd/song/" + id  + "/play",
 			method: "PUT"
@@ -138,7 +119,7 @@ MPD.plist = (function(self, $) {
 					}).first();
 				}
 				tr.addClass("playlist-current-song active");
-				hideLoadingMessage();
+				RPI.hideLoadingMsg();
 			} else {
 				showError(result.error);
 			}
@@ -154,12 +135,12 @@ MPD.plist = (function(self, $) {
 		}
 		var tr = $(this).closest('tr'),
 			id = tr.data("songid");
-		showLoadingMessage();
+		RPI.showLoadingMsg();
 		$.ajax({
 			url: "/mpd/song/" + id  + "/remove",
 			method: "PUT"
 		}).done(function(result) {
-			hideLoadingMessage();
+			RPI.hideLoadingMsg();
 			if (result.Error === "") {
 				// redraw table on success
 				table.fnDraw();
@@ -188,7 +169,7 @@ MPD.plist = (function(self, $) {
 	}
 
 	self.init = function initF() {
-		showLoadingMessage();
+		RPI.showLoadingMsg();
 		self.refresh();
 	};
 
