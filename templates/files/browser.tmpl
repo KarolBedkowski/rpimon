@@ -5,7 +5,7 @@
 		<div class="col-xs-12 col-md-8">
 			<ol class="breadcrumb" id="breadcrumb"></ol>
 		</div>
-		<div class="col-xs-12 col-md-4">
+		<div class="col-xs-12 col-md-4 text-right">
 			<div class="btn-group btn-group-sm">
 				<button class="btn btn-default" data-toggle="modal" data-target="#create-folder-dlg">Create directory</button>
 				<button class="btn btn-default" data-toggle="modal" data-target="#upload-dlg">Upload</button>
@@ -106,7 +106,13 @@
 <script type="text/javascript">
 
 	$(function() {
-		FILES.browser.init();
+		FILES.browser.init({
+			urls: {
+				"service-dirs": "{{namedurl "files-serv-dirs"}}",
+				"service-files": "{{namedurl "files-serv-files"}}",
+				"file-action": "{{namedurl "files-file-action"}}",
+			},
+		});
 	});
 </script>
 {{end}}

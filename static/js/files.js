@@ -13,7 +13,12 @@ FILES.browser = (function(self, $) {
 
 	var msg_loading = null,
 		table = null,
-		dlgDirTreeSelection = null
+		dlgDirTreeSelection = null,
+		urls = {
+			"service-dirs": "serv/dirs",
+			"service-files": "serv/files",
+			"file-action": "action",
+		}
 		;
 
 	function showLoadingMessage() {
@@ -70,7 +75,7 @@ FILES.browser = (function(self, $) {
 		showLoadingMessage();
 		$('input[name=p]').val(path);
 		$.ajax({
-			url: "serv/files",
+			url: urls["service-files"],
 			data: {
 				id: path,
 			},
@@ -97,7 +102,7 @@ FILES.browser = (function(self, $) {
 			btnSuccess: "Delete",
 			btnSuccessClass: "btn-warning",
 			onSuccess: function() {
-				window.location.href = "action?action=delete&p=" + p;
+				window.location.href = urls["file-action"] + "?action=delete&p=" + p;
 			}
 		}).open();
 	}
@@ -125,7 +130,7 @@ FILES.browser = (function(self, $) {
 			'core' : {
 				'data' : {
 					'url' : function () {
-						return 'serv/dirs';
+						return urls["service-dirs"];
 					},
 					'data' : function (node) {
 						return { 'id' : node.id };
@@ -147,19 +152,21 @@ FILES.browser = (function(self, $) {
 		});
 	}
 
-	jQuery.fn.dataTableExt.oSort['data-asc']  = function(a,b) {
+	$.fn.dataTableExt.oSort['data-asc']  = function(a,b) {
 		var x = parseInt($(a).data("sortval"))
 		var y = parseInt($(b).data("sortval"))
 		return ((x < y) ? -1 : ((x > y) ?  1 : 0));
 	};
-	jQuery.fn.dataTableExt.oSort['data-desc']  = function(a,b) {
+	$.fn.dataTableExt.oSort['data-desc']  = function(a,b) {
 		var x = parseInt($(a).data("sortval"))
 		var y = parseInt($(b).data("sortval"))
 		return ((x < y) ? 1 : ((x > y) ?  -1 : 0));
 	};
 
-	self.init = function initF() {
+	self.init = function initF(params) {
 		showLoadingMessage();
+
+		urls = $.extend(urls, params.urls || {});
 
 		table = $('table').dataTable({
 			"bAutoWidth": false,

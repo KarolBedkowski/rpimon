@@ -38,36 +38,15 @@ func CreateRoutes(parentRoute *mux.Route) {
 		"files-serv-files")
 	subRouter.HandleFunc("/action",
 		app.VerifyPermission(verifyAccess(actionHandler), "files")).Name(
-		"files-serv-files")
-}
-
-type BreadcrumbItem struct {
-	Title  string
-	Href   string
-	Active bool
+		"files-file-action")
 }
 
 type pageCtx struct {
 	*app.BasePageContext
-	CurrentPage   string
-	Configuration configuration
-	Files         []os.FileInfo
-	Path          string
-	Breadcrumb    []BreadcrumbItem
-}
-
-func (ctx pageCtx) GetFullPath(path string) string {
-	return filepath.Join(ctx.Path, path)
-}
-
-func newPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Files", "files", w, r)}
-	ctx.Configuration = config
-	return ctx
 }
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := newPageCtx(w, r)
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Files", "files", w, r)}
 	r.ParseForm()
 	var relpath, abspath = ".", config.BaseDir
 
@@ -77,17 +56,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	if abspathd, ok := r.Form["ABS_PATH"]; ok {
 		abspath = abspathd[0]
 	}
-	ctx.Breadcrumb = append(ctx.Breadcrumb, BreadcrumbItem{"[Root]", "", false})
-	ctx.Path = relpath
-	if relpath != "" && relpath != "." {
-		prevPath := ""
-		for idx, pElem := range strings.Split(relpath, "/") {
-			ctx.Breadcrumb[idx].Active = true
-			prevPath = filepath.Join(prevPath, pElem)
-			ctx.Breadcrumb = append(ctx.Breadcrumb, BreadcrumbItem{pElem, prevPath, false})
-		}
-	}
-
+	l.Debug("mainPageHandler: %v", relpath)
 	isDirectory, err := isDir(abspath)
 	if err != nil {
 		http.Error(w, "Error: "+err.Error(), http.StatusNotFound)
@@ -96,19 +65,11 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	// Serve file
 	if !isDirectory {
 		l.Debug("files: serve file %s", abspath)
-		w.Header().Set("Content-Disposition", "attachment; filename=\""+filepath.Base(abspath)+"\"")
+		w.Header().Set("Content-Disposition",
+			"attachment; filename=\""+filepath.Base(abspath)+"\"")
 		http.ServeFile(w, r, abspath)
 		return
 	}
-	// show dir
-	/*
-		l.Debug("files: serve dir %s", abspath)
-		if files, err := ioutil.ReadDir(abspath); err == nil {
-			ctx.Files = files
-		} else {
-			http.Error(w, "Error "+err.Error(), http.StatusBadRequest)
-		}
-	*/
 
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "files/browser.tmpl", "flash.tmpl")
 }
