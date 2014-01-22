@@ -6,7 +6,7 @@
 "use strict";
 
 var SYSTEM = (function(self, $) {
-	var infoUrl = "/main/info",
+	var infoUrl = "/main/info";
 
 	function getHistory() {
 		$.ajax({
