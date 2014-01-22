@@ -39,12 +39,10 @@ var RPI = (function(self, $) {
 	};
 
 	self.showLoadingMsg = function showLoadingMsgF() {
-		var top = ($(document).height() - $("#loading-box .loading-wrapper").height()) / 3
-			+  $(window).scrollTop();
-		var left = ($(document).width() - $("#loading-box .loading-wrapper").width()) / 2
-			+  $(window).scrollLeft();
-		$("#loading-box .loading-wrapper").css("top", top + "px").css("left", left + "px");
-		$("#loading-box").css("z-index", 990).fadeTo(200, 0.5);
+		var dwidth = $(document).width(),
+			left = (dwidth - $("#loading-box .loading-wrapper").width()) / 2 +  $(window).scrollLeft();
+		$("#loading-box .loading-wrapper").css("left", left + "px");
+		$("#loading-box").css("z-index", 990).fadeTo(200, 0.3);
 	};
 
 	self.hideLoadingMsg = function hideLoadingMsgF() {
