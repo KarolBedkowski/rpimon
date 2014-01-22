@@ -21,7 +21,7 @@ FILES.browser = (function(self, $) {
 		;
 
 
-	function gotoPath(event) {
+	function gotoAction(event) {
 		event.preventDefault();
 		var obj = $(this),
 			p = obj.data("p");
@@ -50,7 +50,7 @@ FILES.browser = (function(self, $) {
 				pathParts[idx], '</a></li>'].join('')).appendTo(bc);
 		}
 		$(['<li>', pathParts[pathParts.length - 1], '</li>'].join('')).appendTo(bc);
-		$("#breadcrumb a").on("click", gotoPath);
+		$("#breadcrumb a").on("click", gotoAction);
 	}
 
 	function selectPath(path) {
@@ -74,7 +74,7 @@ FILES.browser = (function(self, $) {
 		});
 	}
 
-	function removePath(event) {
+	function deleteAction(event) {
 		event.preventDefault();
 		var p = $(this).closest('tr').data("p");
 		if (!p) {
@@ -85,25 +85,59 @@ FILES.browser = (function(self, $) {
 			btnSuccess: "Delete",
 			btnSuccessClass: "btn-warning",
 			onSuccess: function() {
-				window.location.href = urls["file-action"] + "?action=delete&p=" + p;
+				RPI.showLoadingMsg();
+				$.ajax({
+					method: "PUT",
+					url: urls["file-action"],
+					data: {
+						"action": "delete",
+						"p": p,
+					},
+				}).fail(function(msg) {
+					RPI.hideLoadingMsg();
+					window.console.log(msg);
+					RPI.alert(msg.responseText).open();
+				}).done(function(msg) {
+					RPI.hideLoadingMsg();
+					window.console.log(msg);
+					selectPath(currentPath);
+				});
 			}
 		}).open();
 	}
 
-	function moveObj(event) {
+	function moveAction(event) {
 		event.preventDefault();
-		var p = $(this).closest('tr').data("p");
+		var p = $(this).closest('tr').data("p"),
+			dlg = $("div#dialog-dirtree");
 		if (!p) {
 			return;
 		}
 		createTree();
-		$("#dialog-dirtree #dialog-dirtree-label").html("Move destination");
-		$("#dialog-dirtree #dialog-dirtree-msg").html("Move " + p + " to:");
-		$("#dialog-dirtree").modal("show");
-		$("#dialog-dirtree #dialog-dirtree-success").on("click", function() {
-			$("#dialog-dirtree").modal("hide");
+		$("#dialog-dirtree-label", dlg).html("Move destination");
+		$("#dialog-dirtree-msg", dlg).html("Move " + p + " to:");
+		dlg.modal("show");
+		$("#dialog-dirtree-success", dlg).on("click", function() {
+			dlg.modal("hide");
 			if (p != dlgDirTreeSelection) {
-				window.location.href = "action?action=move&p=" + p + "&d=" + dlgDirTreeSelection;
+				RPI.showLoadingMsg();
+				$.ajax({
+					method: "PUT",
+					url: urls["file-action"],
+					data: {
+						"action": "move",
+						"p": p,
+						"d": dlgDirTreeSelection,
+					},
+				}).fail(function(msg) {
+					RPI.hideLoadingMsg();
+					window.console.log(msg);
+					RPI.alert(msg.responseText).open();
+				}).done(function(msg) {
+					RPI.hideLoadingMsg();
+					window.console.log(msg);
+					selectPath(currentPath);
+				});
 			}
 		});
 	}
@@ -147,7 +181,7 @@ FILES.browser = (function(self, $) {
 			}
 		}).on("select_node.jstree", function (e, data) {
 			var path = data.selected[0];
-			dlgDirTreeSelection = (path == "dt--root") ? "." : path.substr(3, path.length);
+			dlgDirTreeSelection = (path == "dt--root") ? "." : decodeURIComponent(path.substr(3, path.length));
 		}).on("loaded.jstree", function() {
 		}).on("loading.jstree", function() {
 			RPI.showLoadingMsg();
@@ -169,9 +203,7 @@ FILES.browser = (function(self, $) {
 
 	self.init = function initF(params) {
 		RPI.showLoadingMsg();
-
 		urls = $.extend(urls, params.urls || {});
-
 		table = $('table').dataTable({
 			"bAutoWidth": false,
 			"bStateSave": true,
@@ -227,9 +259,9 @@ FILES.browser = (function(self, $) {
 				$(row).data("p", aData[4]);
 			},
 			"fnDrawCallback": function() { //oSettings) {
-				$("table a.ajax-action-open").on("click", gotoPath);
-				$("table a.ajax-action-del").on("click", removePath);
-				$("table a.ajax-action-move").on("click", moveObj);
+				$("table a.ajax-action-open").on("click", gotoAction);
+				$("table a.ajax-action-del").on("click", deleteAction);
+				$("table a.ajax-action-move").on("click", moveAction);
 			},
 		});
 

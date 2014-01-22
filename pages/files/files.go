@@ -127,28 +127,26 @@ func actionHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
 		http.Error(w, "Error: missing path ", http.StatusBadRequest)
 		return
 	}
-	var relpath, abspath = pctx.relpath, pctx.abspath
 	action, ok := h.GetParam(w, r, "action")
 	if !ok {
 		return
 	}
-	var result string
+	var relpath, abspath = pctx.relpath, pctx.abspath
 
 	switch action {
 	case "delete":
 		l.Debug("Delete ", abspath)
 		err := os.Remove(abspath)
 		if err == nil {
-			result = abspath + " deleted"
+			w.Write([]byte(abspath + " deleted"))
 		} else {
 			http.Error(w, "Error: "+err.Error(), http.StatusInternalServerError)
-			return
 		}
-		relpath = filepath.Dir(relpath)
+		return
 	case "move":
 		l.Debug("Move %v ->", abspath)
-		if destP, ok := r.Form["d"]; ok && destP[0] != "" {
-			if adest, rdest, err := isPathValid(destP[0]); err == nil {
+		if dest := r.FormValue("d"); dest != "" {
+			if adest, rdest, err := isPathValid(dest); err == nil {
 				adest = filepath.Join(adest, filepath.Base(relpath))
 				l.Debug("Move -> %v", adest)
 				if rdest == relpath {
@@ -156,19 +154,15 @@ func actionHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
 				}
 				err = os.Rename(abspath, adest)
 				if err == nil {
-					result = relpath + " moved to " + rdest
+					w.Write([]byte(relpath + " moved to " + rdest))
 				} else {
 					http.Error(w, "Error: "+err.Error(), http.StatusNotFound)
-					return
 				}
-				relpath = rdest
+				return
 			}
 		}
-	default:
-		http.Error(w, "Error: invalid action", http.StatusBadRequest)
-		return
 	}
-	w.Write([]byte(result))
+	http.Error(w, "Error: invalid action", http.StatusBadRequest)
 }
 
 type dirInfo struct {
