@@ -23,7 +23,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 		app.VerifyPermission(verifyAccess(mainPageHandler), "files")).Name("files-index")
 	subRouter.HandleFunc("/mkdir",
 		app.VerifyPermission(verifyAccess(mkdirPageHandler), "files")).Methods(
-		"POST", "PUT").Name("files-mkdir")
+		"POST").Name("files-mkdir")
 	subRouter.HandleFunc("/upload",
 		app.VerifyPermission(verifyAccess(uploadPageHandler), "files")).Methods(
 		"POST").Name("files-upload")
@@ -34,8 +34,8 @@ func CreateRoutes(parentRoute *mux.Route) {
 		app.VerifyPermission(serviceFilesHandler, "files")).Name(
 		"files-serv-files")
 	subRouter.HandleFunc("/action",
-		app.VerifyPermission(verifyAccess(actionHandler), "files")).Name(
-		"files-file-action")
+		app.VerifyPermission(verifyAccess(actionHandler), "files")).Methods(
+		"PUT").Name("files-file-action")
 }
 
 type pageCtx struct {
@@ -132,16 +132,17 @@ func actionHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
 	if !ok {
 		return
 	}
+	var result string
 
-	session := app.GetSessionStore(w, r)
 	switch action {
 	case "delete":
 		l.Debug("Delete ", abspath)
 		err := os.Remove(abspath)
 		if err == nil {
-			session.AddFlash(abspath + " deleted")
+			result = abspath + " deleted"
 		} else {
-			session.AddFlash(err.Error())
+			http.Error(w, "Error: "+err.Error(), http.StatusInternalServerError)
+			return
 		}
 		relpath = filepath.Dir(relpath)
 	case "move":
@@ -155,9 +156,10 @@ func actionHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
 				}
 				err = os.Rename(abspath, adest)
 				if err == nil {
-					session.AddFlash(relpath + " moved to " + rdest)
+					result = relpath + " moved to " + rdest
 				} else {
-					session.AddFlash(err.Error())
+					http.Error(w, "Error: "+err.Error(), http.StatusNotFound)
+					return
 				}
 				relpath = rdest
 			}
@@ -166,10 +168,7 @@ func actionHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
 		http.Error(w, "Error: invalid action", http.StatusBadRequest)
 		return
 	}
-	session.Save(r, w)
-	http.Redirect(w, r,
-		app.GetNamedURL("files-index")+h.BuildQuery("p", relpath),
-		http.StatusFound)
+	w.Write([]byte(result))
 }
 
 type dirInfo struct {

@@ -110,18 +110,22 @@ FILES.browser = (function(self, $) {
 
 	function createDirectory(event) {
 		event.preventDefault();
+		$('#create-folder-dlg button[type="submit"]').button('loading');
 		$.ajax({
-			method: "PUT",
+			method: "POST",
 			url: $(this).attr("action"),
 			data: $(this).serialize(),
 		}).done(function(msg) {
 			$("#create-folder-dlg").modal("hide");
 			window.console.log(msg);
 			selectPath(currentPath);
+			$('#create-folder-dlg input[name="name"]').val("");
+			$('#create-folder-dlg button[type="submit"]').button('reset');
 		}).fail(function(msg) {
 			window.console.log(msg);
 			$("#create-folder-dlg").modal("hide");
-			window.alert(msg.responseText);
+			$('#create-folder-dlg button[type="submit"]').button('reset');
+			RPI.alert(msg.responseText);
 		});
 	}
 
