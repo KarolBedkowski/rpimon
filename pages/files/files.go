@@ -26,7 +26,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 		app.VerifyPermission(verifyAccess(mainPageHandler), "files")).Name("files-index")
 	subRouter.HandleFunc("/mkdir",
 		app.VerifyPermission(verifyAccess(mkdirPageHandler), "files")).Methods(
-		"POST").Name("files-mkdir")
+		"POST", "PUT").Name("files-mkdir")
 	subRouter.HandleFunc("/upload",
 		app.VerifyPermission(verifyAccess(uploadPageHandler), "files")).Methods(
 		"POST").Name("files-upload")
@@ -97,8 +97,12 @@ func mkdirPageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error: creating directory "+err.Error(),
 			http.StatusNotFound)
 	}
-	http.Redirect(w, r, app.GetNamedURL("files-index")+
-		h.BuildQuery("p", relpath), http.StatusFound)
+	if r.Method == "PUT" {
+		w.Write([]byte("OK"))
+	} else {
+		http.Redirect(w, r, app.GetNamedURL("files-index")+
+			h.BuildQuery("p", relpath), http.StatusFound)
+	}
 }
 
 func uploadPageHandler(w http.ResponseWriter, r *http.Request) {

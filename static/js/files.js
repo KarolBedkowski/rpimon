@@ -12,6 +12,7 @@ FILES.browser = (function(self, $) {
 
 	var table = null,
 		dlgDirTreeSelection = null,
+		currentPath = null,
 		urls = {
 			"service-dirs": "serv/dirs",
 			"service-files": "serv/files",
@@ -53,6 +54,7 @@ FILES.browser = (function(self, $) {
 	}
 
 	function selectPath(path) {
+		currentPath = path;
 		RPI.showLoadingMsg();
 		$('input[name=p]').val(path);
 		$.ajax({
@@ -103,6 +105,23 @@ FILES.browser = (function(self, $) {
 			if (p != dlgDirTreeSelection) {
 				window.location.href = "action?action=move&p=" + p + "&d=" + dlgDirTreeSelection;
 			}
+		});
+	}
+
+	function createDirectory(event) {
+		event.preventDefault();
+		$.ajax({
+			method: "PUT",
+			url: $(this).attr("action"),
+			data: $(this).serialize(),
+		}).done(function(msg) {
+			$("#create-folder-dlg").modal("hide");
+			window.console.log(msg);
+			selectPath(currentPath);
+		}).fail(function(msg) {
+			window.console.log(msg);
+			$("#create-folder-dlg").modal("hide");
+			window.alert(msg.responseText);
 		});
 	}
 
@@ -218,6 +237,8 @@ FILES.browser = (function(self, $) {
 				selectPath(location || ".");
 			}
 		});
+
+		$("#create-folder-dlg form").submit(createDirectory);
 
 		var location = window.location.search;
 		if (location && location.startsWith("?p=")) {
