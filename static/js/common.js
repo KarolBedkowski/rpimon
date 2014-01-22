@@ -7,6 +7,7 @@ var RPI = (function(self, $) {
 
 	self.confirmDialog = function confirmDialogF(message, params) {
 		var dlg = $("#dialog-confirm");
+		params = params || {};
 		$("#dialog-confirm .modal-body").html(message);
 		$("#dialog-confirm .modal-title").html(params.title || "");
 		if (params.btnCancel != "none") {
@@ -24,6 +25,41 @@ var RPI = (function(self, $) {
 			$("#dialog-confirm #dialog-confirm-success").hide();
 		}
 		$("#dialog-confirm-success").on("click", function(event) {
+			dlg.modal("hide");
+			if (params.onSuccess) {
+				params.onSuccess(event);
+			}
+		});
+		return {
+			dlg: dlg,
+			open: function() {
+				dlg.modal('show');
+				return dlg;
+			},
+		};
+	};
+
+	self.alert = function alert(message, params) {
+		var dlg = $("#dialog-alert");
+		params = params || {};
+		$("#dialog-alert #dialog-alert-head").html(message);
+		$("#dialog-alert #dialog-alert-text").html(params.text || "");
+		$("#dialog-alert .modal-title").html(params.title || "");
+		if (params.btnCancel != "none") {
+			$("#dialog-alert #dialog-alert-cancel")
+				.html(params.btnCancel || "Close")
+				.addClass(params.btnCancelClass || "btn-default");
+		} else {
+			$("#dialog-alert #dialog-alert-cancel").hide();
+		}
+		if (params.btnSuccess) {
+			$("#dialog-alert #dialog-alert-success")
+				.html(params.btnSuccess || "Yes")
+				.addClass(params.btnSuccessClass || "btn-primary");
+		} else {
+			$("#dialog-alert #dialog-alert-success").hide();
+		}
+		$("#dialog-alert-success").on("click", function(event) {
 			dlg.modal("hide");
 			if (params.onSuccess) {
 				params.onSuccess(event);
