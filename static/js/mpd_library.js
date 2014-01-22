@@ -40,12 +40,19 @@ MPD.library = (function(self, $) {
 					a: link.data("action"),
 					u: link.data("uri"),
 				}
-			}).done(function() {
+			}).done(function(res) {
 				RPI.hideLoadingMsg();
+				if (res) {
+					RPI.alert(res, {
+						title: "Error",
+					}).open();
+				}
 			}).fail(function(jqXHR, textStatus) {
 				window.console.log(textStatus);
 				RPI.hideLoadingMsg();
-				window.alert(textStatus);
+				RPI.alert(textStatus, {
+					title: "Error",
+				}).open();
 			});
 		});
 

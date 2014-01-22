@@ -20,7 +20,9 @@ MPD.plists = (function(self, $) {
 			RPI.hideLoadingMsg();
 		}).fail(function(jqXHR, textStatus) {
 			RPI.hideLoadingMsg();
-			window.alert(textStatus);
+			RPI.alert(textStatus, {
+				title: "Error",
+			}).open();
 		});
 	}
 
