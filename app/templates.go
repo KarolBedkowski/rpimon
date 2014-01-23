@@ -46,6 +46,9 @@ func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenam
 		}
 		ctemplate = template.New(templateKey).Funcs(funcMap)
 		ctemplate = template.Must(ctemplate.ParseFiles(templates...))
+		if ctemplate.Lookup("scripts") == nil {
+			ctemplate, _ = ctemplate.Parse("{{define \"scripts\"}}{{end}}")
+		}
 		cacheItems[templateKey] = ctemplate
 	}
 	err := ctemplate.ExecuteTemplate(w, name, ctx)
