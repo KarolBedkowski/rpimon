@@ -4,73 +4,146 @@
 	<head>
 		<meta charset="utf-8">
 		<title>{{.Title}} - {{.BasePageContext.Hostname}} - Monitor</title>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link href="/static/css/tablesorter.css" rel="stylesheet">
-		<link rel="stylesheet" href="/static/css/pure-min.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="/static/css/main.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="/static/css/jquery.fs.naver.css" type="text/css" media="all" />
-		<script src="/static/lib/jquery/jquery-1.10.2.min.js" type="text/javascript" ></script>
-		<script src="/static/lib/jquery/jquery.fs.naver.min.js" type="text/javascript"></script>
+		<link rel="stylesheet" href="/static/css/bootstrap.css">
+		<!--<link rel="stylesheet" href="/static/css/bootstrap-theme.min.css">-->
+		<link rel="stylesheet" href="/static/css/flick/jquery-ui-1.10.3.custom.css" >
+		<link rel="stylesheet" href="/static/css/dataTables.bootstrap.css" type="text/css"  />
+		<link rel="stylesheet" href="/static/css/jstree/style.css" type="text/css"  />
+		<link rel="stylesheet" href="/static/css/main.css" type="text/css"  />
+		<!--[if lt IE 9]>
+		<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+		<script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+		<![endif]-->
 	</head>
 	<body>
-		<div class="pure-g-r" id="layout">
-			<div class="sidebar pure-u">
-				<header class="header">
-					<hgroup class="hgroup">
-						<h1><a class="pure-menu-heading" href="/">Monitor</a></h1>
-						<h2>{{.BasePageContext.Hostname}}</h2>
-					</hgroup>
-					<nav class="nav">
-						<ul class="nav-list">
-							{{$current := .BasePageContext.CurrentMainMenuPos}}
-							{{range .BasePageContext.MainMenu}}
-							<li class="nav-item{{if eq .ID $current}} nav-item-selected{{end}}">
-								<a class="" href="{{.Href}}">{{.Title}}</a>
-							</li>
-							{{end}}
-						</ul>
-					</nav>
-				</header>
-			</div><!-- end sidebar -->
-			<div class="pure-u-1">
-				<div class="content">
-					{{if .BasePageContext.LocalMenu}}
-					<div class="pure-u-1" id="local-menu">
-						<div class="pure-menu pure-menu-open pure-menu-horizontal">
-							<ul>
-								{{$currentl := .BasePageContext.CurrentLocalMenuPos}}
-								{{range .BasePageContext.LocalMenu}}
-									<li class="{{if eq .ID $currentl}}pure-menu-selected {{end}}">
-										<a href="{{.Href}}" >{{.Title}}</a>
-									</li>
+		<div class="navbar navbar-default navbar-static-top" role="navigation">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="#">Monitor <strong>{{.BasePageContext.Hostname}}</strong></a>
+				</div>
+				<div class="navbar-collapse collapse">
+					<ul class="nav navbar-nav">
+						{{range .BasePageContext.MainMenu}}
+						{{if .Submenu}}
+						<li class="dropdown {{if .Active}}active{{end}}">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">{{if .Icon}}<span class="{{.Icon}}"></span>&nbsp;{{end}}{{.Title}} <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+							{{range .Submenu}}
+								{{if .Href}}
+								<li {{if .Active}}class="active"{{end}}>
+									<a class="" href="{{.Href}}">{{if .Icon}}<span class="{{.Icon}}"></span>&nbsp;{{end}}{{.Title}}</a>
+								</li>
+								{{else}}
+								<li class="divider"></li>
 								{{end}}
+							{{end}}
 							</ul>
-						</div>
-					</div>
-					{{end}}
-					{{template "flash" .}}
-					<div class="pure-g-r content-ribbon">
-					{{template "body" .}}
-					</div>
+						</li>
+						{{else}}
+						<li class="{{if .Active}}active{{end}}">
+							<a class="" href="{{.Href}}">{{if .Icon}}<span class="{{.Icon}}"></span>&nbsp;{{end}}{{.Title}}</a>
+						</li>
+						{{end}}
+						{{end}}
+					</ul>
+					<ul class="nav navbar-nav navbar-right">
+						<li>
+							{{if .CurrentUser}}
+							<a class="" href="{{namedurl "auth-logoff"}}"><span class="glyphicon glyphicon-log-out"></span>&nbsp;Logoff</a>
+							{{else}}
+							<a class="" href="{{namedurl "auth-login"}}"><span class="glyphicon glyphicon-log-in"></span>&nbsp;Login</a>
+							{{end}}
+						</li>
+					</ul>
 				</div>
 			</div>
-			<div class="pure-u-1">
-				<footer class="footer">
-					<br/>
-					<hr/>
-					<p><small>{{.Now}} | {{.CurrentUser}} | RPIMON v0.3</small></p>
-				</footer>
+		</div>
+		{{if .BasePageContext.LocalMenu}}
+		<div class="container" id="local-menu">
+			<ul class="nav nav-tabs">
+				{{$currentl := .BasePageContext.CurrentLocalMenuPos}}
+				{{range .BasePageContext.LocalMenu}}
+				<li{{if eq .ID $currentl}} class="active"{{end}}>
+					{{if .Icon}}
+					<a href="{{.Href}}"><span class="{{.Icon}}"></span><span class="x-hidden-xs">&nbsp;{{.Title}}</span></a>
+					{{else}}
+					<a href="{{.Href}}">{{.Title}}</a>
+					{{end}}
+				</li>
+				{{end}}
+			</ul>
+		</div>
+		{{end}}
+		{{template "flash" .}}
+		{{template "body" .}}
+
+		<footer class="bs-footer footer" role="contentinfo">
+			<div class="container">
+				<p><small>{{.Now}} | {{.CurrentUser}} | RPIMON v0.4</small></p>
+			</div>
+		</footer>
+
+		<div class="modal fade" id="dialog-confirm" role="dialog" aria-labelledby="dialog-confirm-label" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="dialog-confirm-label">&nbsp;</h4>
+					</div>
+					<div class="modal-body"></div>
+					<div class="modal-footer">
+						<button type="button" class="btn" data-dismiss="modal" id="dialog-confirm-cancel">Close</button>
+						<button type="button" class="btn" id="dialog-confirm-success">Yes</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+
+		<div class="modal fade" id="dialog-alert" role="dialog" aria-labelledby="dialog-alert-label" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="dialog-alert-label">&nbsp;</h4>
+					</div>
+					<div class="modal-body">
+						<div class="alert alert-danger" id="dialog-alert-head"></div>
+						<p id="dialog-alert-text"></p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn" data-dismiss="modal" id="dialog-alert-cancel">Close</button>
+						<button type="button" class="btn" id="dialog-alert-success">Yes</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+
+		<div id="loading-box">
+			<div class="loading-wrapper">
+				<p>Loading...</p>
 			</div>
 		</div>
 	</body>
+
+	<script src="/static/lib/jquery/jquery-1.10.2.js" type="text/javascript" ></script>
+	<script src="/static/lib/jquery/jquery-ui-1.10.3.custom.js" type="text/javascript" ></script>
+	<script src="/static/lib/jquery/jquery.validate.js" type="text/javascript" ></script>
+	<script src="/static/lib/bootstrap.js" type="text/javascript"></script>
+	<script src="/static/js/common.js" type="text/javascript"></script>
 	<script type="text/javascript" charset="utf-8">
 		$(function() {
-			$("nav").naver({label: false});
-			$("#local-menu").naver();
-			$(window).on("resize", function(e) {
-			    $(".naver").trigger("close.naver");
-			});
 		});
 	</script>
+	<!-- START template scripts -->
+	{{template "scripts" .}}
+	<!-- END template scripts -->
 </html>
 {{end}}

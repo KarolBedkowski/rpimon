@@ -7,7 +7,7 @@ import (
 )
 
 // csrf tokens len
-const CSRFTOKENLEN = 64
+const csrftokenlen = 64
 
 // csrf tokens name in context
 const CONTEXTCSRFTOKEN = "csrf_token"
@@ -15,12 +15,15 @@ const CONTEXTCSRFTOKEN = "csrf_token"
 // csrf tokens name formms
 const FORMCSRFTOKEN = "BasePageContext.CsrfToken"
 
+// alternative csrf token name
+const FORMCSRFTOKEN2 = "CsrfToken"
+
 // CSRT Token middleware
 func csrfHandler(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session := GetSessionStore(w, r)
 		csrfToken := session.Values[CONTEXTCSRFTOKEN]
-		if r.Method == "POST" && r.FormValue(FORMCSRFTOKEN) != csrfToken {
+		if r.Method == "POST" && r.FormValue(FORMCSRFTOKEN) != csrfToken && r.FormValue(FORMCSRFTOKEN2) != csrfToken {
 			http.Error(w, "Fobidden/CSRF", http.StatusForbidden)
 			//h.ServeHTTP(w, r)
 		} else {
@@ -30,7 +33,7 @@ func csrfHandler(h http.Handler) http.HandlerFunc {
 }
 
 func createNewCsrfToken() string {
-	token := make([]byte, CSRFTOKENLEN)
+	token := make([]byte, csrftokenlen)
 	rand.Read(token)
 	csrfToken := base64.StdEncoding.EncodeToString(token)
 	return csrfToken

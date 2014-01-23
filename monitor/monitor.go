@@ -1,4 +1,4 @@
-// System monitoring
+// Package monitor - system monitoring
 package monitor
 
 import (
@@ -20,6 +20,7 @@ const uptimeInfoCacheTTL = 2
 const warningsCacheTTL = 5
 const cpuInfoCacheTTL = 5
 
+// Init monitor, start background go routine
 func Init(interval int) {
 	ticker := time.NewTicker(time.Duration(interval) * time.Second)
 	quit := make(chan struct{})
@@ -38,8 +39,7 @@ func Init(interval int) {
 	}()
 }
 
-// CPU
-
+// CPUUsageInfoStruct - information about cpu usage
 type CPUUsageInfoStruct struct {
 	User   int
 	Idle   int
@@ -60,6 +60,7 @@ var (
 	cpuHistory    = make([]string, 0)
 )
 
+// GetCPUUsageInfo - get last cpu usage information
 func GetCPUUsageInfo() *CPUUsageInfoStruct {
 	cpuUsageMutex.RLock()
 	defer cpuUsageMutex.RUnlock()
@@ -69,6 +70,7 @@ func GetCPUUsageInfo() *CPUUsageInfoStruct {
 	return lastCPUUsage
 }
 
+// GetCPUHistory - get cpu total usage information
 func GetCPUHistory() []string {
 	cpuUsageMutex.RLock()
 	defer cpuUsageMutex.RUnlock()
@@ -88,7 +90,7 @@ func gatherCPUUsageInfo() *CPUUsageInfoStruct {
 	cpuUsageMutex.Lock()
 	defer cpuUsageMutex.Unlock()
 
-	cUser, _ := strconv.Atoi(fields[1])
+	cUser, err := strconv.Atoi(fields[1])
 	cpuLastUser, cUser = cUser, cUser-cpuLastUser
 	cNice, _ := strconv.Atoi(fields[2])
 	cpuLastNice, cNice = cNice, cNice-cpuLastNice
@@ -113,8 +115,7 @@ func gatherCPUUsageInfo() *CPUUsageInfoStruct {
 	return cpuusage
 }
 
-// MEMORY
-
+// MemInfo - memory usage information
 type MemInfo struct {
 	Total        int
 	Free         int
@@ -138,6 +139,7 @@ var (
 	memHistory      = make([]string, 0)
 )
 
+// GetMemoryInfo - get last memory usage
 func GetMemoryInfo() *MemInfo {
 	memoryInfoMutex.RLock()
 	defer memoryInfoMutex.RUnlock()
@@ -147,6 +149,7 @@ func GetMemoryInfo() *MemInfo {
 	return lastMemInfo
 }
 
+// GetMemoryHistory get history of total memory usage
 func GetMemoryHistory() []string {
 	memoryInfoMutex.RLock()
 	defer memoryInfoMutex.RUnlock()
@@ -214,8 +217,7 @@ func getIntValueFromKeyVal(line string) int {
 	return res
 }
 
-// CPU INFO
-
+// CPUInfoStruct - information about frequency and temperature
 type CPUInfoStruct struct {
 	Freq int
 	Temp int
@@ -223,6 +225,7 @@ type CPUInfoStruct struct {
 
 var cpuInfoCache = h.NewSimpleCache(cpuInfoCacheTTL)
 
+// GetCPUInfo get last cpu information
 func GetCPUInfo() *CPUInfoStruct {
 	result := cpuInfoCache.Get(func() h.Value {
 		return gatherCPUInfo()
@@ -237,10 +240,11 @@ func gatherCPUInfo() *CPUInfoStruct {
 	return info
 }
 
-// LOAD
-
+// LoadInfoStruct information about system load
 type LoadInfoStruct struct {
-	Load []string
+	Load1  float64
+	Load5  float64
+	Load15 float64
 }
 
 var (
@@ -249,10 +253,21 @@ var (
 	loadHistory  = make([]string, 0)
 )
 
+// GetLoadHistory get history of system load
 func GetLoadHistory() []string {
 	loadMutex.RLock()
 	defer loadMutex.RUnlock()
 	return []string(loadHistory)
+}
+
+// GetLoadInfo get current load
+func GetLoadInfo() *LoadInfoStruct {
+	loadMutex.RLock()
+	defer loadMutex.RUnlock()
+	if lastLoadInfo == nil {
+		return new(LoadInfoStruct)
+	}
+	return lastLoadInfo
 }
 
 func gatherLoadInfo() (err error) {
@@ -263,32 +278,27 @@ func gatherLoadInfo() (err error) {
 			loadHistory = loadHistory[1:]
 		}
 		loadVal := strings.Fields(load)
-		lastLoadInfo = &LoadInfoStruct{loadVal}
+		load1, _ := strconv.ParseFloat(loadVal[0], 10)
+		load5, _ := strconv.ParseFloat(loadVal[1], 10)
+		load15, _ := strconv.ParseFloat(loadVal[2], 10)
+		lastLoadInfo = &LoadInfoStruct{load1, load5, load15}
 		loadHistory = append(loadHistory, loadVal[0])
 	}
 	return
 }
 
-func GetLoadInfo() *LoadInfoStruct {
-	loadMutex.RLock()
-	defer loadMutex.RUnlock()
-	if lastLoadInfo == nil {
-		return &LoadInfoStruct{[]string{"", "", ""}}
-	}
-	return lastLoadInfo
-}
-
-// NETWORK INTERFACES
-
+// InterfaceInfoStruct information about network interfaces
 type InterfaceInfoStruct struct {
 	Name    string
 	Address string
 }
 
+// InterfacesStruct informations about all interfaces
 type InterfacesStruct []InterfaceInfoStruct
 
 var interfacesInfoCache = h.NewSimpleCache(ifaceCacheTTL)
 
+// GetInterfacesInfo get current info about network interfaces
 func GetInterfacesInfo() *InterfacesStruct {
 	result := interfacesInfoCache.Get(func() h.Value {
 		ipres := h.ReadFromCommand("/sbin/ip", "addr")
@@ -320,8 +330,7 @@ func GetInterfacesInfo() *InterfacesStruct {
 	return result.(*InterfacesStruct)
 }
 
-// FILESYSTEM INFO
-
+// FsInfoStruct information about filesystem mount & usage
 type FsInfoStruct struct {
 	Name       string
 	Size       string
@@ -332,10 +341,12 @@ type FsInfoStruct struct {
 	FreePerc   int
 }
 
+// FilesystemsStruct list of FsInfoStruct
 type FilesystemsStruct []FsInfoStruct
 
 var fsInfoCache = h.NewSimpleCache(fsCacheTTL)
 
+// GetFilesystemsInfo returns information about all filesystems
 func GetFilesystemsInfo() *FilesystemsStruct {
 	result := fsInfoCache.Get(func() h.Value {
 		cmdout := h.ReadFromCommand("df", "-h", "-l", "-x", "tmpfs", "-x", "devtmpfs", "-x", "rootfs")
@@ -358,8 +369,7 @@ func GetFilesystemsInfo() *FilesystemsStruct {
 	return result.(*FilesystemsStruct)
 }
 
-// UPTIME
-
+// UptimeInfoStruct information about uptime & users
 type UptimeInfoStruct struct {
 	Uptime string
 	Users  string
@@ -367,6 +377,7 @@ type UptimeInfoStruct struct {
 
 var uptimeInfoCache = h.NewSimpleCache(uptimeInfoCacheTTL)
 
+// GetUptimeInfo get current info about uptime & users
 func GetUptimeInfo() *UptimeInfoStruct {
 	result := uptimeInfoCache.Get(func() h.Value {
 		cmdout := h.ReadFromCommand("uptime")
@@ -385,6 +396,7 @@ func GetUptimeInfo() *UptimeInfoStruct {
 
 var warningsCache = h.NewSimpleCache(warningsCacheTTL)
 
+// GetWarnings return current warnings to show
 func GetWarnings() []string {
 	result := warningsCache.Get(func() h.Value {
 		var warnings []string
@@ -402,18 +414,21 @@ func GetWarnings() []string {
 	return result
 }
 
+var netstatCache = h.NewSimpleCache(warningsCacheTTL)
+
 func checkIsServiceConnected(port string) (result bool) {
 	result = false
-	out := h.ReadFromCommand("netstat", "-pn", "--inet")
+	out := netstatCache.Get(func() h.Value {
+		return string(h.ReadFromCommand("netstat", "-pn", "--inet"))
+	}).(string)
 	if out == "" {
 		return
 	}
-	outstr := string(out)
 	lookingFor := ":" + port + " "
-	if !strings.Contains(outstr, lookingFor) {
+	if !strings.Contains(out, lookingFor) {
 		return false
 	}
-	lines := strings.Split(string(out), "\n")
+	lines := strings.Split(out, "\n")
 	for _, line := range lines {
 		if len(line) == 0 {
 			continue

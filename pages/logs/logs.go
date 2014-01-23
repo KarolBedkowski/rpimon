@@ -22,25 +22,19 @@ type pageCtx struct {
 	Data        string
 }
 
-var localMenu []app.MenuItem
+var localMenu []*app.MenuItem
 
-func createLocalMenu() []app.MenuItem {
+func createLocalMenu() []*app.MenuItem {
 	if localMenu == nil {
-		localMenu = []app.MenuItem{app.NewMenuItemFromRoute("Short", "logs-page", "page", "short").SetID("short"),
+		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("Short", "logs-page", "page", "short").SetID("short"),
 			app.NewMenuItemFromRoute("DMESG", "logs-page", "page", "dmesg").SetID("dmesg"),
 			app.NewMenuItemFromRoute("Syslog", "logs-page", "page", "syslog").SetID("syslog")}
 	}
 	return localMenu
 }
 
-func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("logs", "logs", w, r)}
-	ctx.LocalMenu = createLocalMenu()
-	return ctx
-}
-
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := newNetPageCtx(w, r)
+	data := app.NewSimpleDataPageCtx(w, r, "logs", "logs", "", createLocalMenu())
 	vars := mux.Vars(r)
 	page, ok := vars["page"]
 	if !ok {

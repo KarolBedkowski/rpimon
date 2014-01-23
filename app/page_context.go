@@ -18,8 +18,8 @@ type BasePageContext struct {
 	CsrfToken           string
 	Hostname            string
 	CurrentUser         string
-	MainMenu            []MenuItem
-	LocalMenu           []MenuItem
+	MainMenu            []*MenuItem
+	LocalMenu           []*MenuItem
 	CurrentMainMenuPos  string
 	CurrentLocalMenuPos string
 	Now                 string
@@ -28,8 +28,14 @@ type BasePageContext struct {
 
 var hostname string
 
+func init() {
+	file, err := ioutil.ReadFile("/etc/hostname")
+	helpers.CheckErr(err, "Load hostname error")
+	hostname = strings.Trim(string(file), " \n")
+}
+
 // NewBasePageContext create base page context for request
-func NewBasePageContext(title, mainMenuId string, w http.ResponseWriter, r *http.Request) *BasePageContext {
+func NewBasePageContext(title, mainMenuID string, w http.ResponseWriter, r *http.Request) *BasePageContext {
 
 	session := GetSessionStore(w, r)
 	csrfToken := session.Values[CONTEXTCSRFTOKEN]
@@ -40,19 +46,15 @@ func NewBasePageContext(title, mainMenuId string, w http.ResponseWriter, r *http
 	}
 
 	ctx := &BasePageContext{Title: title,
-		ResponseWriter: w,
-		Request:        r,
-		Session:        session,
-		CsrfToken:      csrfToken.(string)}
-	if hostname == "" {
-		file, err := ioutil.ReadFile("/etc/hostname")
-		helpers.CheckErr(err, "Load hostname error")
-		hostname = strings.Trim(string(file), " \n")
-	}
-	ctx.Hostname = hostname
-	ctx.CurrentUser = GetLoggedUserLogin(w, r)
-	ctx.Now = time.Now().Format("2006-01-02 15:04:05")
-	ctx.CurrentMainMenuPos = mainMenuId
+		ResponseWriter:     w,
+		Request:            r,
+		Session:            session,
+		CsrfToken:          csrfToken.(string),
+		Hostname:           hostname,
+		CurrentUser:        GetLoggedUserLogin(w, r),
+		Now:                time.Now().Format("2006-01-02 15:04:05"),
+		CurrentMainMenuPos: mainMenuID}
+
 	SetMainMenu(ctx)
 
 	if flashes := ctx.Session.Flashes(); len(flashes) > 0 {
@@ -85,4 +87,19 @@ func (ctx *BasePageContext) Get(key string) interface{} {
 // Save session by page context
 func (ctx *BasePageContext) Save() error {
 	return SaveSession(ctx.ResponseWriter, ctx.Request)
+}
+
+// SimpleDataPageCtx - context  with data (string) + title
+type SimpleDataPageCtx struct {
+	*BasePageContext
+	CurrentPage string
+	Data        string
+}
+
+// NewSimpleDataPageCtx create new simple context to show text data
+func NewSimpleDataPageCtx(w http.ResponseWriter, r *http.Request,
+	title string, mainMenuID string, cuurentPage string, localMenu []*MenuItem) *SimpleDataPageCtx {
+	ctx := &SimpleDataPageCtx{BasePageContext: NewBasePageContext(title, mainMenuID, w, r)}
+	ctx.LocalMenu = localMenu
+	return ctx
 }

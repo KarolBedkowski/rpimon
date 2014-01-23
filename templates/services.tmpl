@@ -1,44 +1,52 @@
-
 {{define "body"}}
 
-<div class="pure-u-1">
-	<section>
-		<h1>Services</h1>
-		<table class="pure-table">
+<div class="container">
+	<div class="table-responsive">
+		<table class="table-hover table-bordered table-condensed" id="table-services">
 			<thead>
 				<tr>
 					<th>Service</th>
 					<th>Status</th>
-					<th>Actions</th>
+					<th width="120px">Actions</th>
 				</tr>
 			</thead>
 			<tbody>
 			{{range $key, $val := .Services}}
-				<tr>
+				<tr{{if eq $val "+"}} class="active"{{end}}>
 					<td>{{$key}}</td>
-					<td>{{$val}}</td>
-					<td><a href="services/{{$key | urlquery}}/start" onclick="return lconfirm()">start</a> | 
-					<a href="services/{{$key | urlquery}}/stop" onclick="return lconfirm()">stop</a> | 
-					<a href="services/{{$key | urlquery}}/restart" onclick="return lconfirm()">restart</a> | 
-					<a href="services/{{$key | urlquery}}/reload" onclick="return lconfirm()">reload</a> | 
-					<a href="services/{{$key | urlquery}}/force-reload" onclick="return lconfirm()">force-reload</a> 
+					<td>{{if eq $val "+"}}running{{else}}{{if eq $val "-"}}stoped{{else}}{{$val}}{{end}}{{end}}</td>
+					<td><a href="services/{{$key | urlquery}}/start" title="Start"><span class="glyphicon glyphicon-play"></span></a> 
+					&nbsp;
+					<a href="services/{{$key | urlquery}}/stop" title="Stop"><span class="glyphicon glyphicon-stop"></span></a> 
+					&nbsp;
+					<a href="services/{{$key | urlquery}}/restart" title="Restart"><span class="glyphicon glyphicon-repeat"></span></a> 
+					&nbsp;
+					<a href="services/{{$key | urlquery}}/reload" title="Reload"><span class="glyphicon glyphicon-refresh"></span></a> 
+					&nbsp;
+					<a href="services/{{$key | urlquery}}/force-reload" title="Force Reload"><span class="glyphicon glyphicon-retweet"></span></a>
 					</td>
 				</tr>
 			{{end}}
 			</tbody>
 		</table>
-	</section>
+	</div>
 </div>
+{{end}}
 
-
-<script src="/static/lib/jquery/jquery.tablesorter.min.js" type="text/javascript"></script>
+{{define "scripts"}}
+<script src="/static/lib/jquery/jquery.dataTables.js" type="text/javascript"></script>
+<script src="/static/lib/dataTables.bootstrap.js" type="text/javascript"></script>
 <script type="text/javascript">
-	function lconfirm() {
-		return confirm('Are you sure?');
-	}
 	$(function() {
-		$('table').tablesorter({
-			ignoreCase: true,
+		$('table').dataTable({
+			"bAutoWidth": false,
+			"bStateSave": true,
+			"sPaginationType": "bootstrap",		
+			"iDisplayLength": 15,
+			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
+		});
+		$('table#table-services a').on("click", function() {
+			return RPI.confirm();
 		});
 	});
 </script>

@@ -7,12 +7,12 @@ import (
 )
 
 type utility struct {
-	Name    string `json:name`
-	Command string `json:command`
+	Name    string `json:"name"`
+	Command string `json:"command"`
 }
 
 type configuration struct {
-	Utils map[string]([]utility) `json:utils"`
+	Utils map[string]([]utility) `json:"utils"`
 }
 
 var config configuration

@@ -1,0 +1,93 @@
+{{define "body"}}
+
+{{if .Error}}
+<div class="container">
+	<div class="alert alert-danger" id="main-alert">
+		<p>Error loading library: <em>{{.Error}}</em></p>
+		<a href="#" class="alert-link" onclick="location.reload()">Reload</a>
+	</div>
+</div>
+
+{{else}}
+
+<div class="container">
+	{{$path := .Path}}
+	{{$ml := namedurl "mpd-library"}}
+	<ol class="breadcrumb">
+	{{range .Breadcrumb}}
+		{{if .Active}}
+		<li class="active"><a href="{{$ml}}?p={{.Href}}">{{.Title}}</a></li>
+		{{else}}
+		<li>{{.Title}}</li>
+		{{end}}
+	{{end}}
+	</ol>
+	<div class="">
+		<table class="table-hover table-bordered table-condensed" id="table-mpd-library">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th width="48px">&nbsp;</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{range .Folders}}
+				<tr>
+					<td><span class="glyphicon glyphicon-folder-close"></span><a href="{{$ml}}?p={{$path}}/{{.}}">&nbsp;{{.}}</a></td>
+					<td>
+						<a href="#" class="ajax-action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
+						&nbsp; 
+						<a href="#" class="ajax-action" data-action="replace" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-play" title="Replace"></a>
+					</td>
+				</tr>
+			{{end}}
+			{{range .Files}}
+				<tr>
+					<td><span class="glyphicon glyphicon-file"></span>&nbsp;{{.}}</td>
+					<td>
+						<a href="#" class="ajax-action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
+						<a href="#" class="ajax-action" data-action="replace" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-play" title="Replace"></a>
+						<a href="#" class="action-info" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-info-sign" title="Info"></a>
+					</td>
+				</tr>
+			{{end}}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<div class="container">
+	<section>
+		<p>
+			<div class="btn-group btn-group-sm">
+				<a class="btn btn-success ajax-action" data-action="add" data-uri="{{.Path}}" role="button">
+					<span class="glyphicon glyphicon-plus"></span>
+					Add this folder
+				</a>
+				<a class="btn btn-warning ajax-action" data-action="replace" data-uri="{{.Path}}" role="button">Clear playlist and this folder</a>
+				&nbsp;
+				<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" onclick="return RPI.confirm()" role="button">
+					<span class="glyphicon glyphicon-refresh"></span>
+					Update Library
+				</a>
+			</div>
+		</p>
+	</section>
+</div>
+{{end}}
+{{end}}
+
+{{define "scripts"}}
+<script src="/static/lib/jquery/jquery.dataTables.js" type="text/javascript"></script>
+<script src="/static/lib/dataTables.bootstrap.js" type="text/javascript"></script>
+<script src="/static/js/mpd_library.js" type="text/javascript" ></script>
+<script type="text/javascript">
+	$(function() {
+		var ctrlUrl = "{{namedurl "mpd-control" "action" "-"}}";
+		ctrlUrl = ctrlUrl.substring(0, ctrlUrl.length - 2);
+		MPD.library.init(ctrlUrl, "{{namedurl "mpd-service-info"}}");
+	});
+</script>
+
+{{end}}
+

@@ -1,17 +1,30 @@
 package app
 
 import (
+	"html/template"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
-	"text/template"
+	"time"
 )
 
 var cacheLock sync.Mutex
 var cacheItems = map[string]*template.Template{}
+
+var funcMap = template.FuncMap{
+	"namedurl":   GetNamedURL,
+	"formatDate": FormatDate,
+}
+
+func FormatDate(date time.Time, format string) string {
+	if format == "" {
+		format = "2006-01-02 15:04:05"
+	}
+	return date.Format(format)
+}
 
 // RenderTemplate - render given template
 func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenames ...string) {
@@ -19,8 +32,8 @@ func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenam
 	cacheLock.Lock()
 	defer cacheLock.Unlock()
 
-	templatePath := strings.Join(filenames, "|")
-	ctemplate, ok := cacheItems[templatePath]
+	templateKey := strings.Join(filenames, "|")
+	ctemplate, ok := cacheItems[templateKey]
 	if !ok || Configuration.Debug {
 		templates := []string{}
 		for _, filename := range filenames {
@@ -31,8 +44,12 @@ func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenam
 			}
 			templates = append(templates, fullPath)
 		}
-		ctemplate = template.Must(template.ParseFiles(templates...))
-		cacheItems[templatePath] = ctemplate
+		ctemplate = template.New(templateKey).Funcs(funcMap)
+		ctemplate = template.Must(ctemplate.ParseFiles(templates...))
+		if ctemplate.Lookup("scripts") == nil {
+			ctemplate, _ = ctemplate.Parse("{{define \"scripts\"}}{{end}}")
+		}
+		cacheItems[templateKey] = ctemplate
 	}
 	err := ctemplate.ExecuteTemplate(w, name, ctx)
 	if err != nil {

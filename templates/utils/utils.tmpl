@@ -1,25 +1,14 @@
 {{define "body"}}
-<div class="pure-u-1">
-	<section>
-		<h1>Utils</h1>
-		<div class="pure-menu pure-menu-open">
-			<ul>
-			{{range $key, $elements := .Configuration.Utils}}
-				<li class="pure-menu-heading"><strong>{{$key}}</strong></li>
-				{{range $idx, $ele := $elements}}
-				<li><a href="/utils/{{$key | urlquery}}/{{$idx | urlquery}}" onclick="return lconfirm()">{{$ele.Name}}</a></li>
-				{{end}}
-			{{end}}
-			</ul>
-		</div>
-	</section>
+<div class="container">
+	<h1>Utils</h1>
+	{{range $key, $elements := .Configuration.Utils}}
+	<h2>{{$key}}</h2>
+	<ul>
+		{{range $idx, $ele := $elements}}
+		<li><a href="/utils/{{$key | urlquery}}/{{$idx | urlquery}}" onclick="return RPI.confirm()">{{$ele.Name}}</a></li>
+		{{end}}
+	</ul>
+	{{end}}
 </div>
-
-<script type="text/javascript">
-		function lconfirm() {
-				return confirm('Are you sure?');
-		}
-</script>
-
 
 {{end}}

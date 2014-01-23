@@ -9,10 +9,10 @@
   "LogFilename": "app.log",
   "SslKey": "key.pem",
   "SslCert": "cert.pem",
-  "HttpAddress": ":8000",
-  "HttpsAddress": "",
+  "http_address": ":8000",
+  "https_address": "",
   "BrowserConf": "./browser.json",
   "SessionStoreDir": "./temp",
   "StaticDir": "./static",
-  "MpdHost": "pi:6600"
+  "MpdHost": "localhost:6600"
 }

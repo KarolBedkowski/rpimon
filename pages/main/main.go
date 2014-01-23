@@ -6,6 +6,7 @@ import (
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	"k.prv/rpimon/monitor"
+	"k.prv/rpimon/pages/mpd"
 	"net/http"
 	"runtime"
 	"strings"
@@ -17,8 +18,12 @@ var subRouter *mux.Router
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", mainPageHanler).Name("main-index")
-	subRouter.HandleFunc("/system", app.VerifyPermission(systemPageHanler, "admin")).Name("main-system")
-	subRouter.HandleFunc("/info", app.VerifyPermission(infoHandler, "admin"))
+	subRouter.HandleFunc("/system",
+		app.VerifyPermission(systemPageHanler, "admin")).Name(
+		"main-system")
+	subRouter.HandleFunc("/info",
+		app.VerifyPermission(infoHandler, "admin")).Name(
+		"main-serv-info")
 }
 
 type fsInfo struct {
@@ -40,8 +45,10 @@ type pageCtx struct {
 	MemInfo           *monitor.MemInfo
 	Filesystems       *monitor.FilesystemsStruct
 	Interfaces        *monitor.InterfacesStruct
+	MpdStatus         map[string]string
 	Warnings          []string
 	MaxAcceptableLoad int
+	LoadTrucated      float64
 }
 
 func mainPageHanler(w http.ResponseWriter, r *http.Request) {
@@ -55,7 +62,15 @@ func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 	ctx.Load = monitor.GetLoadInfo()
 	ctx.Interfaces = monitor.GetInterfacesInfo()
 	ctx.Filesystems = monitor.GetFilesystemsInfo()
-	ctx.MaxAcceptableLoad = runtime.NumCPU()
+	ctx.MaxAcceptableLoad = runtime.NumCPU() * 2
+	if ctx.Load.Load1 > float64(ctx.MaxAcceptableLoad) {
+		ctx.LoadTrucated = float64(ctx.MaxAcceptableLoad)
+	} else {
+		ctx.LoadTrucated = ctx.Load.Load1
+	}
+	if mpdStatus, err := mpd.GetShortStatus(); err == nil {
+		ctx.MpdStatus = mpdStatus
+	}
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/index.tmpl", "flash.tmpl")
 }
 
@@ -69,7 +84,7 @@ func systemPageHanler(w http.ResponseWriter, r *http.Request) {
 	ctx := &pageSystemCtx{BasePageContext: app.NewBasePageContext(
 		"System", "system", w, r),
 		Warnings: monitor.GetWarnings()}
-	ctx.MaxAcceptableLoad = runtime.NumCPU()
+	ctx.MaxAcceptableLoad = runtime.NumCPU() * 2
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/system.tmpl", "flash.tmpl")
 }
 
@@ -90,5 +105,6 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 		encoded, _ := json.Marshal(res)
 		return encoded
 	}).([]byte)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(data)
 }

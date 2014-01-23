@@ -7,21 +7,22 @@ import (
 	l "k.prv/rpimon/helpers/logging"
 	gzip "k.prv/rpimon/lib/gziphander"
 	"net/http"
-	nurl "net/url"
 )
 
 // App main router
 var Router = mux.NewRouter()
 
 // Init - Initialize application
-func Init(appConfFile string, debug bool) *AppConfiguration {
+func Init(appConfFile string, debug int) *AppConfiguration {
 
 	conf := LoadConfiguration(appConfFile)
-	if debug {
+	if debug == 0 {
+		conf.Debug = false
+	} else if debug == 1 {
 		conf.Debug = true
-	}
-	l.Init(conf.LogFilename, conf.Debug)
+	} // other: use value from config
 
+	l.Init(conf.LogFilename, conf.Debug)
 	l.Print("Debug=", conf.Debug)
 
 	initSessionStore(conf)
@@ -29,7 +30,6 @@ func Init(appConfFile string, debug bool) *AppConfiguration {
 
 	http.Handle("/static/", http.StripPrefix("/static",
 		gzip.FileServer(http.Dir(conf.StaticDir))))
-	//http.FileServer(http.Dir(conf.StaticDir))))
 	http.Handle("/", logHandler(csrfHandler(context.ClearHandler(Router))))
 	return conf
 }
@@ -41,29 +41,15 @@ func Close() {
 
 // GetNamedURL - Return url for named route and parameters
 func GetNamedURL(name string, pairs ...string) (url string) {
-	url = ""
-	rurl, err := Router.Get(name).URL(pairs...)
+	route := Router.Get(name)
+	if route == nil {
+		l.Error("GetNamedURL %s error", name)
+		return ""
+	}
+	rurl, err := route.URL(pairs...)
 	if err != nil {
-		l.Warn("GetNamedURL error %s", err)
-		return
+		l.Error("GetNamedURL %s error %s", name, err)
+		return ""
 	}
-	url = rurl.String()
-	return
-}
-
-func PairsToQuery(pairs ...string) (query string) {
-	query = ""
-	pairsLen := len(pairs)
-	if pairsLen == 0 {
-		return
-	}
-	if pairsLen%2 != 0 {
-		l.Warn("GetNamedURL error - wron number of argiments")
-		return
-	}
-	query += "?"
-	for idx := 0; idx < pairsLen; idx += 2 {
-		query += pairs[idx] + "=" + nurl.QueryEscape(pairs[idx+1])
-	}
-	return
+	return rurl.String()
 }

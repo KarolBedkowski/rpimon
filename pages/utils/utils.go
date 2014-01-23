@@ -20,14 +20,14 @@ func CreateRoutes(parentRoute *mux.Route) {
 }
 
 type pageCtx struct {
-	*app.BasePageContext
+	*app.SimpleDataPageCtx
 	CurrentPage   string
 	Configuration configuration
 	Data          string
 }
 
 func newPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Utils", "utils", w, r)}
+	ctx := &pageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Utils", "utils", "", nil)}
 	ctx.Configuration = config
 	return ctx
 }

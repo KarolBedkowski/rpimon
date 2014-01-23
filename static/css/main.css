@@ -1,149 +1,13 @@
-
-* {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
+body {
+	font-size: 10pt;
 }
-
-html {
-	font-size: 12pt;
-}
-
-a {
-    text-decoration: none;
-    color: rgb(142, 142, 214);
-}
-a:hover,
-a:focus {
-    text-decoration: underline;
-}
-
-/* LAYOUT CSS */
-#layout {
-    padding-left: 15%; /* "left col (nav + list)" width */
-    position: relative;
-}
-
-.sidebar {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    width: 15%;
-    margin-left: -15%;
-    background: rgb(24, 33, 61);
-    color: #fff;
-}
-
-.header {
-    margin: 50% 2em 0;
-    text-align: right;
-}
-
-.brand-title,
-.brand-tagline {
-    margin: 0;
-}
-.brand-title {
-    text-transform: uppercase;
-}
-.brand-tagline {
-    font-weight: 300;
-    color: rgb(142, 142, 214);
-}
-
-.nav-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-.nav-item {
-    zoom: 1;
-    margin-top: 1em ;
-    margin-bottom: 1em;
-}
-
-.nav-item a {
-    color: #fff;
-	padding: 0.2em;
-}
-.nav-item a:hover,
-.nav-item a:focus {
-    color: rgb(142, 142, 214);
-    text-decoration: none;
-}
-
-.nav-item-selected a {
-    color: #fff;
-    font-weight: bold;
-}
-	
-
-.content-subhead {
-    text-transform: uppercase;
-    color: #aaa;
-    border-bottom: 1px solid #eee;
-    padding: 0.4em 0;
-    font-size: 80%;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-}
-
-.content {
-    padding: 2em 3em 0;
-}
-
-
-.footer {
-    text-align: center;
-    padding: 1em 0;
-}
-.footer a {
-    color: #ccc;
-    font-size: 80%;
-}
-.footer .pure-menu a:hover,
-.footer .pure-menu a:focus {
-    background: none;
-}
-
-
-body .primary-button {
-    background: #afafff;
-}
-
 
 pre {
 	background: #fafafa;
 	border: 1px solid #eee;
 	padding: 0.5em;
 	white-space: pre;
-}
-
-div.warnings {
-	background: #ffff55;
-	padding: 0.3em 1em;
-	border-radius: 3px 3px 3px 3px;
-	margin: 1em;
-}
-
-div.errors {
-	background: #f00;
-	padding: 0.3em 1em;
-	border-radius: 3px 3px 3px 3px;
-	margin: 1em;
-}
-
-div.info {
-	background: #1F8DD6;
-	color: white;
-	padding: 1em;
-	border-radius: 3px 3px 3px 3px;
-	margin: 1em;
-}
-
-div.info  div.infoheader {
-	font-weight: bold;
-	text-align: right;
+	font-size: 9pt;
 }
 
 
@@ -152,14 +16,7 @@ label {
 }
 
 
-div.pure-menu-horizontal {
-    border-bottom: 1px solid #bbb !important;
-    margin-bottom: 1.5em;
-    float: clear;
-}
-
 .playlist-current-song {
-    background-color: yellow;
     font-weight: bold;
 }
 
@@ -197,70 +54,9 @@ table.table-left-align th {
     text-align: left;
 }
 
-table tr:nth-of-type(even) {
-    background: #f5f5ff;
-}
-
-
-
-@media (max-width: 767px) {
-    .sidebar {
-        width: 100%;
-        position: relative;
-        margin: 0;
-    }
-
-    .header {
-        text-align: center;
-        top: auto;
-        margin: 0;
-        positionstatic;
-		padding: 1em;
-    }
-
-	.header .hgroup {
-		float: left;
-		margin-right: 1em;
-	}
-
-	.header h1 {
-		margin-top: 0;
-	}
-
-    #layout {
-        padding: 0;
-    }
-
-	.header .nav-list {
-		text-align: right;
-	}
-
-	.nav-item {
-	    display: inline-block;
-	    *display: inline;
-		zoom: 1;
-	    margin-left: 0.1em ;
-    	margin-right: 0.1em;
-	}
-
-	span.naver-handle {
-		display: inline;
-	}	
-}
-
-@media (max-width: 480px) {
-    .content {
-        padding: 2em 1em 0;
-    }
-}
-
 hr {
 	color: #eee;
 	margin: 1em 5em;
-}
-dl.inline-dl {
-	display: block;
-	float: clear;
 }
 
 dl.inline-dl dt {
@@ -269,7 +65,7 @@ dl.inline-dl dt {
 }
 
 dl.inline-dl dd {
-	float: clear;
+	float: none;
 	margin-bottom: 2em;
 	margin-left: 7em;
 	display: block;
@@ -279,4 +75,184 @@ dl.inline-dl dd {
 div.big-chart {
 	float: left;
 	margin-right: 1em;
+}
+
+div.chart-box {
+	border: 1px solid #e0e0e0;
+	width: 282px;
+	height: 52px;
+	margin: 10px auto;
+	padding: 1px;
+}
+
+
+div.mpd-buttons-sect,
+div.mpd-info-section {
+	margin: 2em auto;
+	text-align: center;
+}
+
+
+#song-box #curr-name {
+	font-size: 20pt;
+	font-weight: bold;
+}
+
+#song-box #curr-artist {
+	font-size: 16pt;
+	font-weight: bold;
+}
+
+#song-box #curr-title {
+	font-size: 20pt;
+	font-weight: bold;
+}
+
+#song-box #curr-genre,
+#song-box #curr-date {
+	font-size: 9pt;
+}
+
+#mpd-sliders-pos #pos-info,
+#mpd-sliders-vol #volume {
+	margin: 0 auto;
+	width: 75%;
+	font-size: 10pt;
+}
+
+#mpd-sliders-vol #volume #st-volume,
+#mpd-sliders-pos #pos-info #curr-time {
+	float: right;
+	text-align: right;
+}
+#mpd-sliders-vol #volume #volume-label,
+#mpd-sliders-pos #pos-info #st-time {
+	float: left;
+	text-align: left;
+}
+
+div#additional-info {
+	font-size: 9pt;
+	text-align: left;
+	margin: 6em auto;
+}
+
+.btn .button-label {
+	font-size: 8pt;
+}
+
+footer {
+	margin-top: 30px;
+	padding-top: 10px;
+	color: #777;
+	border-top: 1px solid #e5e5e5;
+}
+
+.row div.col-xs-12 {
+	margin-bottom: 20px;
+}
+
+div.pager input {
+	border: none;
+	width: 60px;
+	text-align: center;
+}
+
+table {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.alert {
+	font-size: 11pt;
+	font-weight: bold;
+}
+
+#local-menu {
+	margin-bottom: 20px;
+}
+
+.dataTables_wrapper table {
+	clear: both;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+	font-size: 8pt;
+}
+
+span.col-track,
+span.col-album {
+	font-size: 80%;
+}
+span.col-title {
+	font-weight: bold;
+}
+
+
+table#table-files-browser,
+table#table-services,
+table#table-mpd-library,
+table#table-mpd-playlist,
+table#table-mpd-playlists {
+	min-width: 75%;
+}
+
+@media(max-width:767px){
+	span.x-hidden-xs {
+		display: none !important;
+	}
+	table#table-files-browser,
+	table#table-services,
+	table#table-mpd-library,
+	table#table-mpd-playlist,
+	table#table-mpd-playlists {
+		width: 100%;
+	}
+}
+
+table#table-services tr.active {
+	font-weight: bold;
+}
+
+div#loading-box {
+	position: absolute;
+	overflow: hidden;
+	opacity: 0;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: -990;
+	background-color: #000;
+}
+
+div#loading-box .loading-wrapper {
+	position: absolute;
+	overflow: hidden;
+	top: 100px;
+	width: 150px;
+	height: auto;
+	margin-left: auto;
+	margin-right: auto;
+	opacity: 1;
+	background-color: white;
+	box-shadow: 0 0 5px #444;
+//	z-index: 1000;
+	border-radius: 5px;
+	border-width: 2px;
+	border-style: solid;
+	border-color: #c0c0c0;
+	text-align: center;
+}
+
+div#loading-box p {
+	overflow: hidden;
+	font-size: 150%;
+	color: black;
+	font-weight: bold;
+	z-index: 1001;
+	opacity: 1;
+	margin: 1em;
 }

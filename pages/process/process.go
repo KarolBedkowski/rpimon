@@ -20,31 +20,19 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("process-page")
 }
 
-type pageCtx struct {
-	*app.BasePageContext
-	CurrentPage string
-	Data        string
-}
+var localMenu []*app.MenuItem
 
-var localMenu []app.MenuItem
-
-func createLocalMenu() []app.MenuItem {
+func createLocalMenu() []*app.MenuItem {
 	if localMenu == nil {
-		localMenu = []app.MenuItem{app.NewMenuItemFromRoute("PS AXL", "process-page", "page", "psaxl").SetID("psaxl"),
+		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("PS AXL", "process-page", "page", "psaxl").SetID("psaxl"),
 			app.NewMenuItemFromRoute("TOP", "process-page", "page", "top").SetID("top"),
 			app.NewMenuItemFromRoute("Services", "process-page", "page", "services").SetID("services")}
 	}
 	return localMenu
 }
 
-func newNetPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Process", "process", w, r)}
-	ctx.LocalMenu = createLocalMenu()
-	return ctx
-}
-
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := newNetPageCtx(w, r)
+	data := app.NewSimpleDataPageCtx(w, r, "Process", "process", "", createLocalMenu())
 	vars := mux.Vars(r)
 	page, ok := vars["page"]
 	if !ok {
@@ -52,9 +40,9 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	switch page {
 	case "psaxl":
-		data.Data = h.ReadFromCommand("ps", "axl")
+		data.Data = h.ReadFromCommand("ps", "axlww")
 	case "top":
-		data.Data = h.ReadFromCommand("top", "-b", "-n 1")
+		data.Data = h.ReadFromCommand("top", "-b", "-n", "1", "-w", "1024")
 	}
 	data.CurrentLocalMenuPos = page
 	data.CurrentPage = page
@@ -62,12 +50,13 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type sevicesPageCtx struct {
-	*pageCtx
+	*app.SimpleDataPageCtx
 	Services map[string]string
 }
 
 func servicesPageHangler(w http.ResponseWriter, r *http.Request) {
-	ctx := &sevicesPageCtx{pageCtx: newNetPageCtx(w, r)}
+	ctx := &sevicesPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(
+		w, r, "Process", "process", "", createLocalMenu())}
 	ctx.Services = make(map[string]string)
 	lines := strings.Split(h.ReadFromCommand("service", "--status-all"), "\n")
 	for _, line := range lines {

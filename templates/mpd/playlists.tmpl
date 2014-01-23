@@ -1,42 +1,49 @@
 {{define "body"}}
 
-<div class="pure-u-1">
-	<section>
-		<h1>MPD Current Playlists</h1>
+{{if .Error}}
+<div class="container">
+	<div class="alert alert-danger" id="main-alert">
+		<p>Error loading playlists: <em id="main-alert-error">{{.Error}}</em></p>
+		<a href="#" class="alert-link" onclick="location.reload()">Reload</a>
+	</div>
+</div>
 
-		{{if .Error}}
-		<div class="warnings">
-			<p>Connection error:<br/>{{.Error}}</p>
-		</div>
-		{{else}}
-		<table class="pure-table">
+{{else}}
+
+<div class="container">
+	<div class="">
+		<table class="table-hover table-condensed table-bordered" id="table-mpd-playlists">
 			<thead>
 				<tr>
 					<th>Name</th>
-					<th>Actions</th>
+					<th>&nbsp;</th>
 				</tr>
 			</thead>
 			<tbody>
 			{{range .Playlists}}
 				<tr>
 					<td>{{.playlist}}</td>
-					<td><a href="/mpd/playlist/{{.playlist}}/play">Play</a> 
+					<td><a href="{{namedurl "mpd-pls-action" "plist" .playlist "action" "play"}}" title="Play" class="ajax-action"><span class="glyphicon glyphicon-play">
+					<a href="{{namedurl "mpd-pls-action" "plist" .playlist "action" "remove"}}" title="Remove" class="action-confirm"><span class="glyphicon glyphicon-remove"></a>
 					</td>
 				</tr>
 			{{end}}
 			</tbody>
 		</table>
-		{{end}}
-	</section>
+	</div>
 </div>
+{{end}}
+{{end}}
 
-<script src="/static/lib/jquery/jquery.tablesorter.min.js" type="text/javascript"></script>
+{{define "scripts"}}
+<script src="/static/lib/jquery/jquery.dataTables.js" type="text/javascript"></script>
+<script src="/static/lib/dataTables.bootstrap.js" type="text/javascript"></script>
+<script src="/static/js/mpd_playlists.js" type="text/javascript"></script>
 <script type="text/javascript">
 	$(function() {
-		$('table').tablesorter({
-			ignoreCase: true,
-		});
+		MPD.plists.init();
 	});
 </script>
 
 {{end}}
+

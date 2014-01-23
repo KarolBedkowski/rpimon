@@ -17,16 +17,22 @@ import (
 	"log"
 	"net/http"
 	// _ "net/http/pprof" // /debug/pprof/
+	"runtime"
 	//"time"
 )
 
 func main() {
 	configFilename := flag.String("conf", "./config.json", "Configuration filename")
-	debug := flag.Bool("debug", false, "Run in debug mode")
+	debug := flag.Int("debug", -1, "Run in debug mode (1) or normal (0)")
 	flag.Parse()
 
 	conf := app.Init(*configFilename, *debug)
 	defer app.Close()
+
+	if !conf.Debug {
+		log.Printf("NumCPU: %d", runtime.NumCPU())
+		runtime.GOMAXPROCS(runtime.NumCPU())
+	}
 
 	app.Router.HandleFunc("/", handleHome)
 	auth.CreateRoutes(app.Router.PathPrefix("/auth"))
@@ -63,26 +69,26 @@ func main() {
 
 	monitor.Init(conf.MonitorUpdateInterval)
 
-	if conf.HttpsAddress != "" {
-		log.Printf("Listen: %s", conf.HttpsAddress)
-		if conf.HttpAddress != "" {
+	if conf.HTTPSAddress != "" {
+		log.Printf("Listen: %s", conf.HTTPSAddress)
+		if conf.HTTPAddress != "" {
 			go func() {
-				if err := http.ListenAndServeTLS(conf.HttpsAddress,
+				if err := http.ListenAndServeTLS(conf.HTTPSAddress,
 					conf.SslCert, conf.SslKey, nil); err != nil {
 					log.Fatalf("Error listening https, %v", err)
 				}
 			}()
 		} else {
-			if err := http.ListenAndServeTLS(conf.HttpsAddress,
+			if err := http.ListenAndServeTLS(conf.HTTPSAddress,
 				conf.SslCert, conf.SslKey, nil); err != nil {
 				log.Fatalf("Error listening https, %v", err)
 			}
 		}
 	}
 
-	if conf.HttpAddress != "" {
-		log.Printf("Listen: %s", conf.HttpAddress)
-		if err := http.ListenAndServe(conf.HttpAddress, nil); err != nil {
+	if conf.HTTPAddress != "" {
+		log.Printf("Listen: %s", conf.HTTPAddress)
+		if err := http.ListenAndServe(conf.HTTPAddress, nil); err != nil {
 			log.Fatalf("Error listening http, %v", err)
 		}
 	}

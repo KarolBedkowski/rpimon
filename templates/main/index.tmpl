@@ -2,8 +2,8 @@
 
 
 {{if .Warnings}}
-<div class="pure-u-1">
-	<div class="warnings">
+<div class="container">
+	<div class="alert alert-warning">
 		<section>
 			<h1>Warning</h1>
 			<ul>
@@ -16,68 +16,96 @@
 </div>
 {{end}}
 
+<div class="container">
+	<div class="row row-centered">
+		<div class="col-xs-12 col-sm-6 col-md-4">
+			<h1>System</h1>
+			<table class="table">
+				<tr>
+					<th>Load:</th>
+					<td><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.LoadTrucated}}/{{.MaxAcceptableLoad}}</span>
+					<span>&nbsp;{{.Load.Load1}}, {{.Load.Load5}}, {{.Load.Load15}}</span></td>
+				</tr>
+				<tr>
+					<th>Uptime:</th>
+					<td>{{.Uptime.Uptime}}</td>
+				</tr>
+			</table>
+		</div>
 
-<div class="pure-u-1-2">
-	<h1>System</h1>
-	<dl class="inline-dl">
-		<dt><label>Load:</label></dt>
-		<dd><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{index .Load.Load 0}}/{{.MaxAcceptableLoad}}</span>
-		<span>&nbsp;{{index .Load.Load 0}}, {{index .Load.Load 1}}, {{index .Load.Load 2}}</span></dd>
-		<dt><label>Uptime:</label></dt>
-		<dd>{{.Uptime.Uptime}}</dd>
-	</dl>
-</div>
+		<div class="col-xs-12 col-sm-6 col-md-4">
+			<h1>CPU</h1>
+			<table class="table">
+				<tr>
+					<th>Usage</th>
+					<td><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.CPUUsage.User}},{{.CPUUsage.System}},{{.CPUUsage.IoWait}},{{.CPUUsage.Idle}}</span>
+						<span>&nbsp;{{.CPUUsage.Usage}}% total used</span></td>
+				</tr>
+				<tr>
+					<th>Temp</th>
+					<td><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.CPUInfo.Temp}}/100</span>
+						<span>&nbsp;{{.CPUInfo.Temp}}°C</span></td>
+				</tr>
+			</table>
+		</div>
 
-<div class="pure-u-1-2">
-	<h1>CPU</h1>
-	<dl class="inline-dl">
-		<dt>Usage</dt>
-		<dd><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.CPUUsage.User}},{{.CPUUsage.System}},{{.CPUUsage.IoWait}},{{.CPUUsage.Idle}}</span>
-			<span>&nbsp;{{.CPUUsage.Usage}}% total used</span></dd>
-		<dt>Temp</dt>
-		<dd><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.CPUInfo.Temp}}/100</span>
-			<span>&nbsp;{{.CPUInfo.Temp}}°C</span></dd>
-	</dl>
-</div>
+		<div class="col-xs-12 col-sm-6 col-md-4">
+			<h1>Memory</h1>
+			<table class="table">
+				<tr>
+					<th>RAM</th>
+					<td><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.MemInfo.UsedPerc}},{{.MemInfo.BuffersPerc}},{{.MemInfo.CachePerc}},{{.MemInfo.FreePerc}}</span>
+						<span>&nbsp;{{.MemInfo.FreeUserPerc}}% available</span></td>
+				</tr>
+				<tr>
+					<th>SWAP</th>
+					<td><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.MemInfo.SwapUsedPerc}}/100</span>
+						<span>&nbsp;{{.MemInfo.SwapFreePerc}}% available</span></td>
+				</tr>
+			</table>
+		</div>
 
-<div class="pure-u-1-2">
-	<h1>Memory</h1>
-	<dl class="inline-dl">
-		<dt>RAM</dt>
-		<dd><span class="pie" data-diameter="32" data-colours='["red", "orange", "yellow", "#f0f0f0"]'>{{.MemInfo.UsedPerc}},{{.MemInfo.BuffersPerc}},{{.MemInfo.CachePerc}},{{.MemInfo.FreePerc}}</span>
-			<span>&nbsp;{{.MemInfo.FreeUserPerc}}% available</span></dd>
-		<dt>SWAP</dt>
-		<dd><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.MemInfo.SwapUsedPerc}}/100</span>
-			<span>&nbsp;{{.MemInfo.SwapFreePerc}}% available</span></dd>
-	</dl>
-</div>
+		<div class="col-xs-12 col-sm-6 col-md-4">
+			<h1>Filesystem</h1>
+			<table class="table">
+				{{range .Filesystems}}
+				<tr>
+					<th>{{.MountPoint}}</th>
+					<td><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.UsedPerc}}/100</span>
+						&nbsp;{{.UsedPerc}}% used</td>
+				</tr>
+				{{end}}
+			</table>
+		</div>
 
-<div class="pure-u-1-2">
-	<h1>Filesystem</h1>
-	<dl class="inline-dl">
-		{{range .Filesystems}}
-		<dt>{{.MountPoint}}</dt>
-		<dd><span class="pie" data-diameter="32" data-colours='["red", "#f0f0f0"]'>{{.UsedPerc}}/100</span>
-			&nbsp;{{.UsedPerc}}% used</dd>
-		{{end}}
-	</dl>
-</div>
-
-<div class="pure-u-1-2">
-	<h1>Network</h1>
-	<dl class="inline-dl">
-		{{range .Interfaces}}
-			{{if ne .Address "-"}}
-			<dt>{{.Name}}</dt>
-			<dd>{{.Address}}</dd>
+		<div class="col-xs-12 col-sm-6 col-md-4">
+			<h1>Network</h1>
+			<table class="table">
+				{{range .Interfaces}}{{if ne .Address "-"}}
+				<tr><th>{{.Name}}</th><td>{{.Address}}</td></tr>
+				{{end}}{{end}}
+			</table>
+		</div>
+		
+		<div class="col-xs-12 col-sm-6 col-md-4">
+			<h1>MPD</h1>
+			{{if .MpdStatus}}
+			<table class="table">
+				<tr>
+					<th>State:</th>
+					<td>{{.MpdStatus.state}}</td>
+				</tr>
+			</table>
+			{{else}}
+			<p>Missing data</p>
 			{{end}}
-		{{end}}
-	</dl>
+		</div>
+	</div>
 </div>
+{{end}}
 
-
-
-<script src="/static/lib/jquery/jquery.peity.min.js" type="text/javascript" ></script>
+{{define "scripts"}}
+<script src="/static/lib/jquery/jquery.peity.js" type="text/javascript" ></script>
 
 <script type="text/javascript">
 	function refresh() {
@@ -86,7 +114,7 @@
 
 	$(function() {
 		$("span.pie").peity("pie")
-		setTimeout(refresh, 60000);
+		//setTimeout(refresh, 60000);
 	});
 </script>
 
