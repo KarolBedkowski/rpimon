@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"k.prv/rpimon/helpers/logging"
+	"net/http"
 	nurl "net/url"
 	"os"
 )
@@ -35,6 +36,20 @@ func BuildQuery(pairs ...string) (query string) {
 	query += "?"
 	for idx := 0; idx < pairsLen; idx += 2 {
 		query += pairs[idx] + "=" + nurl.QueryEscape(pairs[idx+1])
+	}
+	return
+}
+
+func GetParam(w http.ResponseWriter, r *http.Request, param string) (value string, ok bool) {
+	var paramL []string
+	if paramL, ok = r.Form[param]; ok {
+		value = paramL[0]
+		if value != "" {
+			ok = true
+		}
+	}
+	if !ok {
+		http.Error(w, "missing id", http.StatusBadRequest)
 	}
 	return
 }

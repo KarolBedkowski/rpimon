@@ -1,14 +1,15 @@
 /* jshint strict: true */
 /* jshint undef: true, unused: true */
-/* global Messi: false */
 /* global jQuery: false */
-/* global console: false */
+/* global window: false */
+/* global RPI: false */
 
-"use strict";
 
 var MPD = MPD || {};
 
 MPD.library = (function(self, $) {
+	"use strict";
+
 	var mpdControlUrl = null,
 		mpdServiceInfoUrl = null;
 
@@ -31,39 +32,44 @@ MPD.library = (function(self, $) {
 
 		$("a.ajax-action").on("click", function(event) {
 			event.preventDefault();
-			var link = $(this),
-				lmessage = new Messi('Adding...', {
-					closeButton: false,
-					modal: true,
-					width: 'auto',
-				});
+			var link = $(this);
+			RPI.showLoadingMsg();
 			$.ajax({
 				type: "PUT",
 				data: {
 					a: link.data("action"),
 					u: link.data("uri"),
 				}
-			}).done(function() {
-				lmessage.hide();
+			}).done(function(res) {
+				RPI.hideLoadingMsg();
+				if (res) {
+					RPI.alert(res, {
+						title: "Error",
+					}).open();
+				}
 			}).fail(function(jqXHR, textStatus) {
-				console.log(textStatus);
-				lmessage.hide();
-				new Messi(textStatus, {
-					title: 'Error',
-					titleClass: 'anim warning',
-					buttons: [{
-						id: 0, label: 'Close', val: 'X'
-					}]
-				});
+				window.console.log(textStatus);
+				RPI.hideLoadingMsg();
+				RPI.alert(textStatus, {
+					title: "Error",
+				}).open();
 			});
 		});
+
 		$("a.action-info").on("click", function(event) {
 			event.preventDefault();
-			var opt = {params: {
+			$.ajax({
+				url: '/mpd/service/song-info',
+				type: "GET",
+				data: {
 					uri: $(this).data("uri"),
 				},
-			};
-			Messi.load('/mpd/service/song-info', opt);
+			}).done(function(data) {
+				RPI.confirmDialog(data, {
+					title: "Song info",
+					btnSuccess: "none",
+				}).open();
+			});
 		});
 	};
 

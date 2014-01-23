@@ -1,13 +1,13 @@
 /* jshint strict: true */
 /* jshint undef: true, unused: true */
 /* global window: false */
-/* global Messi: false */
 /* global jQuery: false */
 
-"use strict";
 var MPD = MPD || {};
 
 MPD.status = (function(self, $) {
+	"use strict";
+
 	var changingPos = false,
 		changingVol = false,
 		lastState = {
@@ -16,7 +16,6 @@ MPD.status = (function(self, $) {
 		},
 		mpdControlUrl = "/mpd/control",
 		mpdServiceInfoUrl = "/mpd/service/info",
-		connectingMessage = null,
 		a_toggle_random = $('a[data-action="toggle_random"]'),
 		a_toggle_random_label = $('a[data-action="toggle_random"] span.button-label'),
 		a_toggle_repeat = $('a[data-action="toggle_repeat"]'),
@@ -28,21 +27,9 @@ MPD.status = (function(self, $) {
 	function onError(errormsg) {
 		$("div.mpd-buttons-sect").hide();
 		$("div.mpd-info-section").hide();
-		new Messi(errormsg, {
-			title: 'Error',
-			titleClass: 'anim warning',
-			buttons: [{
-				"id": 1, 
-				"label": "Reconnect", 
-				"val": "R", 
-				"class": 'btn-success'
-			}],
-			callback: function(val) {
-				if (val == "R") {
-					window.location.reload();
-				}
-			},
-		});
+		$("#main-alert-error").text(errormsg);
+		$("#main-alert").show();
+		RPI.hideLoadingMsg();
 	}
 
 	function ts2str(ts) {
@@ -139,10 +126,7 @@ MPD.status = (function(self, $) {
 					}
 				}
 				lastState = msg;
-				if (connectingMessage) {
-					connectingMessage.hide();
-					connectingMessage = null;
-				}
+				RPI.hideLoadingMsg();
 				window.setTimeout(refresh, 1000);
 			}
 		}).fail(function(jqXHR, textStatus) {
@@ -167,10 +151,7 @@ MPD.status = (function(self, $) {
 	self.init = function(mpdControlUrl_, mpdServiceInfoUrl_) {
 		mpdControlUrl = mpdControlUrl_;
 		mpdServiceInfoUrl = mpdServiceInfoUrl_;
-		connectingMessage = new Messi('Connecting...', {
-			closeButton: false,
-			width: 'auto',
-		});
+		RPI.showLoadingMsg();
 		$("div.mpd-buttons-sect").hide();
 		$("div.mpd-info-section").hide();
 		$("a.ajax-action").on("click", doAction);
@@ -219,11 +200,18 @@ MPD.status = (function(self, $) {
 		$("a#action-info").on("click", function(event) {
 			event.preventDefault();
 			if (lastState.Current && lastState.Current.file) {
-				var opt = {params: {
+				$.ajax({
+					url: '/mpd/service/song-info',
+					type: "GET",
+					data: {
 						uri: lastState.Current.file,
 					},
-				};
-				Messi.load('/mpd/service/song-info', opt);
+				}).done(function(data) {
+					RPI.confirmDialog(data, {
+						title: "Song info",
+						btnSuccess: "none",
+					}).open();
+				});
 			}
 		});
 

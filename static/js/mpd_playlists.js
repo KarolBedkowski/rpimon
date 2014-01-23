@@ -1,35 +1,28 @@
 /* jshint strict: true */
 /* jshint undef: true, unused: true */
-/* global Messi: false */
 /* global jQuery: false */
+/* global window: false */
 
-"use strict";
 
 var MPD = MPD || {};
 var RPI = RPI || {};
 
 MPD.plists = (function(self, $) {
+	"use strict";
+
 	function action(event) {
 		event.preventDefault();
-		var message = new Messi('Loading...', {
-			closeButton: false,
-			modal: true,
-			width: 'auto',
-		});
+		RPI.showLoadingMsg();
 		$.ajax({
 			url: this.href,
 			type: "PUT",
 		}).done(function() { //msg) {
-			message.hide();
+			RPI.hideLoadingMsg();
 		}).fail(function(jqXHR, textStatus) {
-			message.hide();
-			new Messi(textStatus, {
-				title: 'Error',
-				titleClass: 'anim warning',
-				buttons: [{
-					id: 0, label: 'Close', val: 'X'
-				}]
-			});
+			RPI.hideLoadingMsg();
+			RPI.alert(textStatus, {
+				title: "Error",
+			}).open();
 		});
 	}
 

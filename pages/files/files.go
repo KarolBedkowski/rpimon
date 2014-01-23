@@ -3,7 +3,6 @@ package utils
 import (
 	"bufio"
 	"encoding/json"
-	"errors"
 	"github.com/gorilla/mux"
 	"io"
 	"io/ioutil"
@@ -11,10 +10,8 @@ import (
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 var subRouter *mux.Router
@@ -36,55 +33,25 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/serv/files",
 		app.VerifyPermission(serviceFilesHandler, "files")).Name(
 		"files-serv-files")
-}
-
-type BreadcrumbItem struct {
-	Title  string
-	Href   string
-	Active bool
+	subRouter.HandleFunc("/action",
+		app.VerifyPermission(verifyAccess(actionHandler), "files")).Methods(
+		"PUT").Name("files-file-action")
 }
 
 type pageCtx struct {
 	*app.BasePageContext
-	CurrentPage   string
-	Configuration configuration
-	Files         []os.FileInfo
-	Path          string
-	Breadcrumb    []BreadcrumbItem
 }
 
-func (ctx pageCtx) GetFullPath(path string) string {
-	return filepath.Join(ctx.Path, path)
-}
-
-func newPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Files", "files", w, r)}
-	ctx.Configuration = config
-	return ctx
-}
-
-func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := newPageCtx(w, r)
 	r.ParseForm()
 	var relpath, abspath = ".", config.BaseDir
-
-	if relpathd, ok := r.Form["REL_PATH"]; ok {
-		relpath = relpathd[0]
-	}
-	if abspathd, ok := r.Form["ABS_PATH"]; ok {
-		abspath = abspathd[0]
-	}
-	ctx.Breadcrumb = append(ctx.Breadcrumb, BreadcrumbItem{"[Root]", "", false})
-	ctx.Path = relpath
-	if relpath != "" && relpath != "." {
-		prevPath := ""
-		for idx, pElem := range strings.Split(relpath, "/") {
-			ctx.Breadcrumb[idx].Active = true
-			prevPath = filepath.Join(prevPath, pElem)
-			ctx.Breadcrumb = append(ctx.Breadcrumb, BreadcrumbItem{pElem, prevPath, false})
-		}
+	if pctx != nil {
+		relpath = pctx.relpath
+		abspath = pctx.abspath
 	}
 
+	l.Debug("mainPageHandler: %v", relpath)
 	isDirectory, err := isDir(abspath)
 	if err != nil {
 		http.Error(w, "Error: "+err.Error(), http.StatusNotFound)
@@ -93,62 +60,40 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	// Serve file
 	if !isDirectory {
 		l.Debug("files: serve file %s", abspath)
-		w.Header().Set("Content-Disposition", "attachment; filename=\""+filepath.Base(abspath)+"\"")
+		w.Header().Set("Content-Disposition",
+			"attachment; filename=\""+filepath.Base(abspath)+"\"")
 		http.ServeFile(w, r, abspath)
 		return
 	}
-	// show dir
-	/*
-		l.Debug("files: serve dir %s", abspath)
-		if files, err := ioutil.ReadDir(abspath); err == nil {
-			ctx.Files = files
-		} else {
-			http.Error(w, "Error "+err.Error(), http.StatusBadRequest)
-		}
-	*/
 
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "files/browser.tmpl", "flash.tmpl")
 }
 
-func mkdirPageHandler(w http.ResponseWriter, r *http.Request) {
-	var relpath, abspath = "", ""
-	if relpathd, ok := r.Form["REL_PATH"]; ok {
-		relpath = relpathd[0]
-	}
-	if abspathd, ok := r.Form["ABS_PATH"]; ok {
-		abspath = abspathd[0]
-	}
-	if relpath == "" || abspath == "" {
+func mkdirPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
+	if pctx == nil {
 		http.Error(w, "Error: missing path ", http.StatusBadRequest)
 		return
 	}
-	dirnamel, ok := r.Form["name"]
+	var _, abspath = pctx.relpath, pctx.abspath
+	dirname, ok := h.GetParam(w, r, "name")
 	if !ok {
-		http.Error(w, "Error: missing dir name", http.StatusNotFound)
+		return
 	}
-	dirname := dirnamel[0]
 	dirpath := filepath.Join(abspath, dirname)
 	l.Debug("files: create dir %s", dirpath)
 	if err := os.MkdirAll(dirpath, os.ModePerm|0770); err != nil {
 		http.Error(w, "Error: creating directory "+err.Error(),
 			http.StatusNotFound)
 	}
-	http.Redirect(w, r, app.GetNamedURL("files-index")+
-		h.BuildQuery("p", relpath), http.StatusFound)
+	w.Write([]byte("OK"))
 }
 
-func uploadPageHandler(w http.ResponseWriter, r *http.Request) {
-	var relpath, abspath = "", ""
-	if relpathd, ok := r.Form["REL_PATH"]; ok {
-		relpath = relpathd[0]
-	}
-	if abspathd, ok := r.Form["ABS_PATH"]; ok {
-		abspath = abspathd[0]
-	}
-	if relpath == "" || abspath == "" {
+func uploadPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
+	if pctx == nil {
 		http.Error(w, "Error: missing path ", http.StatusBadRequest)
 		return
 	}
+	var relpath, abspath = pctx.relpath, pctx.abspath
 	if isDirectory, err := isDir(abspath); !isDirectory || err != nil {
 		http.Error(w, "Error: wrong path "+err.Error(), http.StatusBadRequest)
 		return
@@ -177,50 +122,47 @@ func uploadPageHandler(w http.ResponseWriter, r *http.Request) {
 		http.StatusFound)
 }
 
-func isPathValid(inputPath string) (abspath, relpath string, err error) {
-	abspath, err = filepath.Abs(filepath.Clean(
-		filepath.Join(config.BaseDir, inputPath)))
-	if err != nil {
-		return "", "", err
+func actionHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
+	if pctx == nil {
+		http.Error(w, "Error: missing path ", http.StatusBadRequest)
+		return
 	}
-	if !strings.HasPrefix(abspath, config.BaseDir) {
-		return "", "", errors.New("wrong path")
+	action, ok := h.GetParam(w, r, "action")
+	if !ok {
+		return
 	}
-	if relpath, err = filepath.Rel(config.BaseDir, abspath); err != nil {
-		return "", "", err
-	}
-	err = nil
-	return
-}
+	var relpath, abspath = pctx.relpath, pctx.abspath
 
-func verifyAccess(h http.HandlerFunc) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.ParseForm()
-		pathD, ok := r.Form["p"]
-		if ok {
-			abspath, relpath, err := isPathValid(pathD[0])
-			if err != nil {
-				http.Error(w, "Fobidden/wrong path "+err.Error(), http.StatusForbidden)
+	switch action {
+	case "delete":
+		l.Debug("Delete ", abspath)
+		err := os.Remove(abspath)
+		if err == nil {
+			w.Write([]byte(abspath + " deleted"))
+		} else {
+			http.Error(w, "Error: "+err.Error(), http.StatusInternalServerError)
+		}
+		return
+	case "move":
+		l.Debug("Move %v ->", abspath)
+		if dest := r.FormValue("d"); dest != "" {
+			if adest, rdest, err := isPathValid(dest); err == nil {
+				adest = filepath.Join(adest, filepath.Base(relpath))
+				l.Debug("Move -> %v", adest)
+				if rdest == relpath {
+					return
+				}
+				err = os.Rename(abspath, adest)
+				if err == nil {
+					w.Write([]byte(relpath + " moved to " + rdest))
+				} else {
+					http.Error(w, "Error: "+err.Error(), http.StatusNotFound)
+				}
 				return
 			}
-			r.Form["ABS_PATH"] = []string{abspath}
-			r.Form["REL_PATH"] = []string{relpath}
 		}
-		h(w, r)
-	})
-}
-
-func isDir(filename string) (bool, error) {
-	f, err := os.Open(filename)
-	if err != nil {
-		return false, errors.New("not found")
 	}
-	defer f.Close()
-	d, err1 := f.Stat()
-	if err1 != nil {
-		return false, errors.New("not found")
-	}
-	return d.IsDir(), nil
+	http.Error(w, "Error: invalid action", http.StatusBadRequest)
 }
 
 type dirInfo struct {
@@ -230,38 +172,14 @@ type dirInfo struct {
 	State    map[string]bool `json:"state"`
 }
 
-func id2Dir(id string) string {
-	if id == "dt--root" {
-		return "."
-	}
-	path, _ := url.QueryUnescape(id)
-	if strings.Index(path, "dt-") == 0 {
-		return path[3:]
-	}
-	return id
-}
-
-func dir2ID(path string) string {
-	if path == "." {
-		return "dt--root"
-	}
-	return "dt-" + url.QueryEscape(path)
-}
-
 func serviceDirsHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	id, ok := r.Form["id"]
+	path, ok := h.GetParam(w, r, "id")
 	if !ok {
-		http.Error(w, "missing id", http.StatusBadRequest)
 		return
 	}
 
-	path := id[0]
-	if path == "" || path == "#" {
-		path = "."
-	} else {
-		path = id2Dir(path)
-	}
+	path = id2Dir(path)
 
 	abspath, relpath, err := isPathValid(path)
 	if err != nil {
@@ -302,14 +220,9 @@ func serviceDirsHandler(w http.ResponseWriter, r *http.Request) {
 
 func serviceFilesHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	id, ok := r.Form["id"]
+	path, ok := h.GetParam(w, r, "id")
 	if !ok {
-		http.Error(w, "missing id", http.StatusBadRequest)
 		return
-	}
-	path := id[0]
-	if path == "" || path == "#" {
-		path = "."
 	}
 	abspath, relpath, err := isPathValid(path)
 	if err != nil {
@@ -317,6 +230,15 @@ func serviceFilesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	children := make([][]interface{}, 0)
+	if path != "." {
+		children = append(children, []interface{}{
+			"folder",
+			"..",
+			"",
+			"",
+			filepath.Join(relpath, ".."),
+		})
+	}
 	if files, err := ioutil.ReadDir(abspath); err == nil {
 		for _, file := range files {
 			if file.Mode()&os.ModeSymlink == os.ModeSymlink {
@@ -326,16 +248,19 @@ func serviceFilesHandler(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 			}
-			if !file.IsDir() {
-				ipath := filepath.Join(relpath, file.Name())
-				finfo := []interface{}{
-					file.Name(),
-					file.Size(),
-					app.FormatDate(file.ModTime(), ""),
-					ipath,
-				}
-				children = append(children, finfo)
+			kind := "file"
+			if file.IsDir() {
+				kind = "dir"
 			}
+			ipath := filepath.Join(relpath, file.Name())
+			finfo := []interface{}{
+				kind,
+				file.Name(),
+				file.Size(),
+				app.FormatDate(file.ModTime(), ""),
+				ipath,
+			}
+			children = append(children, finfo)
 		}
 	}
 	encoded, _ := json.Marshal(children)
