@@ -2,6 +2,7 @@
 /* jshint undef: true, unused: true */
 /* global jQuery: false */
 /* global window: false */
+/* global RPI: false */
 
 
 
@@ -191,13 +192,13 @@ FILES.browser = (function(self, $) {
 	}
 
 	$.fn.dataTableExt.oSort['data-asc']  = function(a,b) {
-		var x = parseInt($(a).data("sortval"))
-		var y = parseInt($(b).data("sortval"))
+		var x = parseInt($(a).data("sortval"));
+		var y = parseInt($(b).data("sortval"));
 		return ((x < y) ? -1 : ((x > y) ?  1 : 0));
 	};
 	$.fn.dataTableExt.oSort['data-desc']  = function(a,b) {
-		var x = parseInt($(a).data("sortval"))
-		var y = parseInt($(b).data("sortval"))
+		var x = parseInt($(a).data("sortval"));
+		var y = parseInt($(b).data("sortval"));
 		return ((x < y) ? 1 : ((x > y) ?  -1 : 0));
 	};
 
@@ -217,12 +218,12 @@ FILES.browser = (function(self, $) {
 					"mData": 0,
 					"mRender": function(data, type, full) {
 						if (data == 'file') {
-							return '<span class="glyphicon glyphicon-file" data-sortval="1" ></span>';
+							return '<a class="ajax-action-open" href="#" data-sortval="1"><span class="glyphicon glyphicon-file"></span></a>';
 						} else {
 							if (full[1] == '..') {
-								return '<span class="glyphicon glyphicon-folder-close" data-sortval="-1"></span>';
+								return '<a class="ajax-action-open" href="#" data-sortval="-1"><span class="glyphicon glyphicon-folder-close"></span></a>';
 							} else {
-								return '<span class="glyphicon glyphicon-folder-close" data-sortval="0"></span>';
+								return '<a class="ajax-action-open" href="#" data-sortval="0"><span class="glyphicon glyphicon-folder-close"></span></a>';
 							}
 						}
 					},
@@ -256,7 +257,7 @@ FILES.browser = (function(self, $) {
 			],
 			"aaSorting": [[0,'asc'], [1,'asc']],
 			"fnRowCallback": function(row, aData) { //, iDisplayIndex, iDisplayIndexFull) {
-				$(row).data("p", aData[4]);
+				$(row).data("p", aData[4]); //.on("click", gotoAction);
 			},
 			"fnDrawCallback": function() { //oSettings) {
 				$("table a.ajax-action-open").on("click", gotoAction);
