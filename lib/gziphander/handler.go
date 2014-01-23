@@ -52,6 +52,7 @@ func serveFile(w http.ResponseWriter, r *http.Request, fs http.FileSystem,
 			name = name[:len(name)-3]
 			setContentType(w, name, file)
 			w.Header().Set("Content-Encoding", "gzip")
+			w.Header().Set("Cache-Control", "must_revalidate, private, max-age=604800")
 			http.ServeContent(w, r, name, stat.ModTime(), file)
 			return
 		}
@@ -61,6 +62,7 @@ func serveFile(w http.ResponseWriter, r *http.Request, fs http.FileSystem,
 	if file != nil {
 		defer file.Close()
 		if !stat.IsDir() {
+			w.Header().Set("Cache-Control", "must_revalidate, private, max-age=604800")
 			http.ServeContent(w, r, stat.Name(), stat.ModTime(), file)
 		}
 		return
