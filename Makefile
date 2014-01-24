@@ -17,16 +17,18 @@ compress:
 	find ./static -iname '*.css' -exec gzip -f -k {} ';'
 	find ./static -iname '*.js' -exec gzip -f -k {} ';'
 
-install: build build_static
-	cp *.json dist/
-	cp rpimon dist/
-
-install_pi: build_pi build_static
+copy_pi:
 	cp rpi/* dist/
 	cp rpimon dist/
 	ssh k@pi sudo service k_rpimon stop
 	rsync -arv --delete dist/* k@pi:rpimon/
 	ssh k@pi sudo service k_rpimon start
+
+install: build build_static
+	cp *.json dist/
+	cp rpimon dist/
+
+install_pi: build_pi build_static copy_pi
 
 run: clean
 	mkdir temp
