@@ -33,7 +33,7 @@
 			<tbody>
 			{{range .Folders}}
 				<tr>
-					<td><span class="glyphicon glyphicon-folder-close"></span><a href="{{$ml}}?p={{$path}}/{{.}}">&nbsp;{{.}}</a></td>
+					<td><a href="{{$ml}}?p={{$path}}/{{.}}"><span class="glyphicon glyphicon-folder-close"></span>&nbsp;{{.}}</a></td>
 					<td>
 						<a href="#" class="ajax-action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
 						&nbsp; 
