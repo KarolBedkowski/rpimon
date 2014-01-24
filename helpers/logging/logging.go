@@ -35,8 +35,8 @@ func Print(v ...interface{}) {
 }
 
 // Printf - wrapper on logger.Print
-func Printf(v ...interface{}) {
-	logger.Print(v...)
+func Printf(format string, v ...interface{}) {
+	logger.Printf(format, v...)
 }
 
 // Debug display message with "DEBUG" prefix when debug=true

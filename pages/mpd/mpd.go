@@ -256,7 +256,6 @@ type songInfoCtx struct {
 
 func songInfoHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	l.Printf(r.Form)
 	ctx := songInfoCtx{}
 	if songUri, ok := r.Form["uri"]; ok && songUri[0] != "" {
 		uri, _ := url.QueryUnescape(songUri[0])
