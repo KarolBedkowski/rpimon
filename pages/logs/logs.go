@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
+	l "k.prv/rpimon/helpers/logging"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -28,16 +28,18 @@ type pageCtx struct {
 	CurrentPage string
 	Data        string
 	Files       []string
+	Logs        []string
+	LogsGroup   logsGroup
+	LogsDef     logsDef
 }
 
 var localMenu []*app.MenuItem
 
 func createLocalMenu() []*app.MenuItem {
 	if localMenu == nil {
-		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("Short", "logs-page", "page", "short").SetID("short"),
-			app.NewMenuItemFromRoute("DMESG", "logs-page", "page", "dmesg").SetID("dmesg"),
-			app.NewMenuItemFromRoute("Syslog", "logs-page", "page", "syslog").SetID("syslog"),
-			app.NewMenuItemFromRoute("Samba", "logs-page", "page", "samba").SetID("samba"),
+		for _, group := range config.Groups {
+			localMenu = append(localMenu,
+				app.NewMenuItemFromRoute(group.Name, "logs-page", "page", group.Name).SetID(group.Name))
 		}
 	}
 	return localMenu
@@ -49,20 +51,37 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	page, ok := vars["page"]
 	if !ok {
-		page = "short"
+		page = config.Groups[0].Name
 	}
 
-	switch page {
-	case "syslog":
-		ctx.Files = findFiles("/var/log/", "syslog")
-	case "samba":
-		ctx.Files = findFiles("/var/log/samba", "log")
+	logname := r.FormValue("log")
+
+	logs, group, err := findGroup(page, logname)
+	if err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
 	}
+
+	ctx.LogsGroup = group
+	ctx.LogsDef = logs
+
+	for _, logsdef := range group.Logs {
+		ctx.Logs = append(ctx.Logs, logsdef.Name)
+	}
+
 	file := r.FormValue("file")
-	if file == "" && ctx.Files != nil && len(ctx.Files) > 0 {
-		file = ctx.Files[0]
+	ctx.Files = findFiles(logs)
+
+	if file == "" {
+		if logs.Filename != "" {
+			file = logs.Filename
+		} else {
+			if ctx.Files != nil && len(ctx.Files) > 0 {
+				file = ctx.Files[0]
+			}
+		}
 	}
-	if data, err := getLog(page, file, 100); err == nil {
+	if data, err := getLog(logs, file, 100); err == nil {
 		ctx.Data = data
 	} else {
 		ctx.Data = err.Error()
@@ -74,7 +93,14 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func servLogHandler(w http.ResponseWriter, r *http.Request) {
 	file := r.FormValue("file")
+	logname := r.FormValue("log")
 	page := r.FormValue("page")
+
+	logs, _, err := findGroup(page, logname)
+	if err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
 
 	linelimit := 100
 	if lines := r.FormValue("lines"); lines != "" {
@@ -83,7 +109,7 @@ func servLogHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, err := getLog(page, file, linelimit)
+	data, err := getLog(logs, file, linelimit)
 	if err != nil {
 		data = err.Error()
 	}
@@ -94,27 +120,13 @@ func servLogHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(data))
 }
 
-func getLogPath(filename string) (string, error) {
-	abspath, err := filepath.Abs(filepath.Clean(filepath.Join("/var/log/", filename)))
-	if !strings.HasPrefix(abspath, "/var/log/") {
-		return "", errors.New("wrong path " + filename)
+func findFiles(log logsDef) (result []string) {
+	if log.Dir == "" {
+		return
 	}
-	f, err := os.Open(abspath)
-	if err != nil {
-		return "", errors.New("not found " + abspath)
-	}
-	defer f.Close()
-	d, err1 := f.Stat()
-	if err1 != nil || d.IsDir() {
-		return "", errors.New("not found " + abspath)
-	}
-	return abspath, err
-}
-
-func findFiles(dir, prefix string) (result []string) {
-	if files, err := ioutil.ReadDir(dir); err == nil {
+	if files, err := ioutil.ReadDir(log.Dir); err == nil {
 		for _, file := range files {
-			if strings.HasPrefix(file.Name(), prefix) && !file.IsDir() {
+			if strings.HasPrefix(file.Name(), log.Prefix) && !file.IsDir() {
 				result = append(result, file.Name())
 			}
 		}
@@ -122,31 +134,34 @@ func findFiles(dir, prefix string) (result []string) {
 	return
 }
 
-func getLog(page, file string, lines int) (result string, err error) {
+func getLog(log logsDef, file string, lines int) (result string, err error) {
+	l.Debug("getLog %v %s %d", log, file, lines)
 	if strings.HasSuffix(file, ".gz") {
 		lines = -1
+	} else if log.Limit > 0 {
+		lines = log.Limit
+	} else if lines == 0 {
+		lines = 50
 	}
-	switch page {
-	case "short":
-		result, err = h.ReadFromFileLastLines("/var/log/syslog", 20)
-	case "dmesg":
-		result, err = h.ReadFromCommand("dmesg"), nil
-	case "syslog":
-		path, err := getLogPath(file)
-		if err != nil {
-			return "", err
+
+	if log.Command != "" {
+		result = h.ReadFromCommand(log.Command)
+	} else {
+		var logpath string
+		if log.Dir == "" {
+			logpath = log.Filename
+		} else {
+			logpath, err = filepath.Abs(filepath.Clean(filepath.Join(log.Dir, file)))
+			if err != nil {
+				return "", err
+			}
+			if !strings.HasPrefix(logpath, log.Dir) {
+				return "", errors.New("Invalid path")
+			}
 		}
-		result, err = h.ReadFromFileLastLines(path, lines)
-	case "samba":
-		path, err := getLogPath("samba/" + file)
-		if err != nil {
-			return "", err
-		}
-		result, err = h.ReadFromFileLastLines(path, lines)
-	default:
-		return "", errors.New("Invalid request")
+		result, err = h.ReadFromFileLastLines(logpath, lines)
 	}
-	if result == "" {
+	if result == "" && err == nil {
 		result = "<EMPTY FILE>"
 	}
 	return result, nil

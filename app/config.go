@@ -24,6 +24,7 @@ type AppConfiguration struct {
 	SslCert               string
 	SslKey                string
 	MonitorUpdateInterval int
+	Logs                  string
 }
 
 // Configuration - main app configuration instance

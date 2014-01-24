@@ -1,10 +1,21 @@
 {{define "body"}}
-{{if .Files}}
+{{$ctx := .}}
 <div class="container">
 	<form class="form-inline"  role="form">
+		{{if .Logs}}
 		<div class="form-group">
-			<label for="log-select">File: </label>
+			<label for="log-select">Log: </label>
 			<select id="log-select">
+			{{range .Logs}}
+				<option value="{{.}}" {{if eq $ctx.LogsDef.Name .}}selected="selected"{{end}}>{{.}}</option>
+			{{end}}
+			</select>
+		</div>
+		{{end}}
+		{{if .Files}}
+		<div class="form-group">
+			<label for="file-select">File: </label>
+			<select id="file-select">
 			{{range .Files}}
 				<option value="{{.}}">{{.}}</option>
 			{{end}}
@@ -18,9 +29,9 @@
 				<option value="-1">All</option>
 			</select>
 		</div>
+		{{end}}
 	</form>
 </div>
-{{end}}
 
 <div class="container">
 	<pre id="data">{{.Data}}</pre>
@@ -31,8 +42,8 @@
 {{if .Files}}
 <script type="text/javascript">
 	$(function() {
-		$('select').on("change", function(event) {
-			var file = $('#log-select').val();
+		$('#file-select,#log-maxlines').on("change", function(event) {
+			var file = $('#file-select').val();
 			$('#log-maxlines').prop('disabled', file.indexOf('.gz') > 1 ? 'disabled' : false);
 			$.ajax({
 				url: {{namedurl "logs-serv"}},
@@ -46,7 +57,10 @@
 				$('#data').text(result);
 			});
 		});
-		$('#log-maxlines').prop('disabled', $('#log-select').val().indexOf('.gz') > 1 ? 'disabled' : false);
+		$('#log-maxlines').prop('disabled', $('#file-select').val().indexOf('.gz') > 1 ? 'disabled' : false);
+		$("#log-select").on("change", function() {
+			window.location.href="?log=" + $(this).val();
+		});
 	});
 </script>
 {{end}}

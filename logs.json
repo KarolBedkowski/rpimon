@@ -1,0 +1,49 @@
+{
+  "groups": [
+    {
+      "name": "Short",
+      "logs": [
+        {
+          "name": "syslog",
+          "filename": "/var/log/syslog",
+          "limit": 25
+        }
+      ]
+    },
+    {
+      "name": "Syslog",
+      "logs": [
+        {
+          "name": "syslog",
+          "filename": "syslog",
+          "dir": "/var/log/",
+          "prefix": "syslog"
+        }
+      ]
+    },
+    {
+      "name": "Dmesg",
+      "logs": [
+        {
+          "name": "dmesg",
+          "command": "dmesg"
+        }
+      ]
+    },
+    {
+      "name": "Samba",
+      "logs": [
+        {
+          "name": "smbd",
+          "dir": "/var/log/samba",
+          "prefix": "log.smbd"
+        },
+        {
+          "name": "nmbd",
+          "dir": "/var/log/samba",
+          "prefix": "log.nmbd"
+        }
+      ]
+    }
+  ]
+}
