@@ -1,23 +1,44 @@
 {{define "body"}}
-
 <div class="container">
-	<pre>{{.Data}}</pre>
+	<table class="table-hover table-condensed table-bordered" id="table-mpd-playlists">
+		<thead>
+			<tr>
+				<th>Mount point</th>
+				<th>Device</th>
+				<th>Type</th>
+				<th>Options</th>
+			</tr>
+		</thead>
+		<tbody>
+		{{range .Mounted}}
+			<tr>
+				<td>{{.Mpoint}}</td><td>{{.Device}}</td><td>{{.Type}}</td><td>{{.Options}}</td>
+				<td><a href="{{namedurl "storage-umount" }}?fs={{.Mpoint}}" onclick="return RPI.confirm()" title="Umount"><span class="glyphicon glyphicon-eject"></span></a></td>
+			</tr>
+		{{end}}
+		</tbody>
+	</table>
 </div>
+{{end}}
 
-<div class="container">
-	<h2>Umount</h2>
-	<form action="{{namedurl "storage-umount"}}" method="POST" class="form-inline">
-		<fieldset>
-			<label for="fs">File system: </label>
-			<select name="fs" id="fs">
-			{{range .Mounted}}
-				<option value="{{.Mpoint}}">{{.Mpoint}} ({{.Device}}, {{.Type}})</option>
-			{{end}}
-			</select>
-			<button type="submit" class="btn btn-primary btn-sm">Umount</button>
-			<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
-		</fieldset>
-	</form>
-</div>
 
+{{define "scripts"}}
+<script src="/static/lib/jquery/jquery.dataTables.js" type="text/javascript"></script>
+<script src="/static/lib/dataTables.bootstrap.js" type="text/javascript"></script>
+<script type="text/javascript">
+	$(function() {
+		$('table').dataTable({
+			"bAutoWidth": false,
+			"bStateSave": true,
+			"bFilter": false,
+			"sPaginationType": "bootstrap",
+			"iDisplayLength": 15,
+			"bLengthChange": false,
+			"aoColumnDefs": [{
+				"aTargets": [4],
+				"bSortable": false,
+			}],
+		});
+	});
+</script>
 {{end}}

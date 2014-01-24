@@ -15,7 +15,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("storage-index")
 	subRouter.HandleFunc("/mount", app.VerifyPermission(mountPageHandler, "admin")).Name("storage-mount")
-	subRouter.HandleFunc("/umount", app.VerifyPermission(umountPageHandler, "admin")).Name("storage-umount").Methods("POST")
+	subRouter.HandleFunc("/umount", app.VerifyPermission(umountPageHandler, "admin")).Name("storage-umount")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("storage-page")
 }
 
@@ -59,9 +59,10 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type mountPoint struct {
-	Mpoint string
-	Device string
-	Type   string
+	Mpoint  string
+	Device  string
+	Type    string
+	Options string
 }
 
 type mountPageCtx struct {
@@ -86,7 +87,7 @@ func mountCmdToMountPoints(data string) (res []*mountPoint) {
 			break
 		}
 		fields := strings.Fields(line)
-		res = append(res, &mountPoint{fields[2], fields[0], fields[4]})
+		res = append(res, &mountPoint{fields[2], fields[0], fields[4], fields[5]})
 	}
 	return
 }
