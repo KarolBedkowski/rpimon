@@ -48,7 +48,7 @@ build_static:
 	mkdir "dist" || true
 	cp -r static templates dist/
 	find dist -name *.css -print -exec yui-compressor -v -o "{}.tmp" "{}" ';' -exec  mv "{}.tmp" "{}" ';'
-	find dist -name *.js -print -exec google-compiler --language_in ECMASCRIPT5 --js_output_file "{}.tmp" --js "{}" ';' -exec  mv "{}.tmp" "{}" ';'
+	find dist -name *.js -print -exec closure-compiler --language_in ECMASCRIPT5 --js_output_file "{}.tmp" --js "{}" ';' -exec  mv "{}.tmp" "{}" ';'
 	find dist -iname '*.css' -exec gzip -f --best -k {} ';'
 	find dist -iname '*.js' -exec gzip -f --best -k {} ';'
 
