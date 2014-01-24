@@ -274,7 +274,12 @@ FILES.browser = (function(self, $) {
 				selectPath(location || ".");
 			}
 		});
-
+		$('#create-folder-dlg').on('shown.bs.modal', function() {
+			$('#folder-name').focus();
+		});
+		$('#upload-dlg').on('shown.bs.modal', function() {
+			$('#upload-dlg input[type="file"]').focus();
+		});
 		$("#create-folder-dlg form").submit(createDirectory);
 
 		var location = window.location.search;
