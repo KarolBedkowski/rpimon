@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -61,7 +62,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	if file == "" && ctx.Files != nil && len(ctx.Files) > 0 {
 		file = ctx.Files[0]
 	}
-	if data, err := getLog(page, file); err == nil {
+	if data, err := getLog(page, file, 100); err == nil {
 		ctx.Data = data
 	} else {
 		ctx.Data = err.Error()
@@ -75,7 +76,14 @@ func servLogHandler(w http.ResponseWriter, r *http.Request) {
 	file := r.FormValue("file")
 	page := r.FormValue("page")
 
-	data, err := getLog(page, file)
+	linelimit := 100
+	if lines := r.FormValue("lines"); lines != "" {
+		if limit, err := strconv.Atoi(lines); err == nil {
+			linelimit = limit
+		}
+	}
+
+	data, err := getLog(page, file, linelimit)
 	if err != nil {
 		data = err.Error()
 	}
@@ -114,7 +122,10 @@ func findFiles(dir, prefix string) (result []string) {
 	return
 }
 
-func getLog(page, file string) (result string, err error) {
+func getLog(page, file string, lines int) (result string, err error) {
+	if strings.HasSuffix(file, ".gz") {
+		lines = -1
+	}
 	switch page {
 	case "short":
 		result, err = h.ReadFromFileLastLines("/var/log/syslog", 20)
@@ -125,13 +136,13 @@ func getLog(page, file string) (result string, err error) {
 		if err != nil {
 			return "", err
 		}
-		result, err = h.ReadFromFileLastLines(path, 500)
+		result, err = h.ReadFromFileLastLines(path, lines)
 	case "samba":
 		path, err := getLogPath("samba/" + file)
 		if err != nil {
 			return "", err
 		}
-		result, err = h.ReadFromFileLastLines(path, 500)
+		result, err = h.ReadFromFileLastLines(path, lines)
 	default:
 		return "", errors.New("Invalid request")
 	}

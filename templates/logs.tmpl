@@ -1,11 +1,24 @@
 {{define "body"}}
 {{if .Files}}
 <div class="container">
-	<select id="log-select" style="width:400px;">
-	{{range .Files}}
-		<option value="{{.}}">{{.}}</option>
-	{{end}}
-	</select>
+	<form class="form-inline"  role="form">
+		<div class="form-group">
+			<label for="log-select">File: </label>
+			<select id="log-select">
+			{{range .Files}}
+				<option value="{{.}}">{{.}}</option>
+			{{end}}
+			</select>
+		</div>
+		<div class="form-group">
+			<label for="log-maxlines">maxlines: </label>
+			<select id="log-maxlines">
+				<option value="100">100</option>
+				<option value="500">500</option>
+				<option value="-1">All</option>
+			</select>
+		</div>
+	</form>
 </div>
 {{end}}
 
@@ -15,20 +28,26 @@
 {{end}}
 
 {{define "scripts"}}
+{{if .Files}}
 <script type="text/javascript">
 	$(function() {
-		$('#log-select').on("change", function(event) {
+		$('select').on("change", function(event) {
+			var file = $('#log-select').val();
+			$('#log-maxlines').prop('disabled', file.indexOf('.gz') > 1 ? 'disabled' : false);
 			$.ajax({
 				url: {{namedurl "logs-serv"}},
 				type: "GET",
 				data: {
-					"file": $(this).val(),
+					"file": file,
+					"lines": $('#log-maxlines').val(),
 					"page": {{.CurrentPage}}
 				},
 			}).done(function(result) {
 				$('#data').text(result);
 			});
 		});
+		$('#log-maxlines').prop('disabled', $('#log-select').val().indexOf('.gz') > 1 ? 'disabled' : false);
 	});
 </script>
+{{end}}
 {{end}}
