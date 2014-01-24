@@ -14,5 +14,6 @@
   "BrowserConf": "./browser.json",
   "SessionStoreDir": "./temp",
   "StaticDir": "./static",
-  "MpdHost": "localhost:6600"
+  "MpdHost": "localhost:6600",
+	"Logs": "logs.json"
 }

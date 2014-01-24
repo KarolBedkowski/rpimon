@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"bufio"
+	"io/ioutil"
 	l "k.prv/rpimon/helpers/logging"
 	"os"
 	"os/exec"
@@ -45,6 +46,10 @@ func ReadIntFromFile(filename string) int {
 
 // ReadFromFileLastLines read last n lines from file
 func ReadFromFileLastLines(filename string, limit int) (string, error) {
+	if limit < 0 {
+		lines, err := ioutil.ReadFile(filename)
+		return string(lines), err
+	}
 	file, err := os.Open(filename)
 	if err != nil {
 		l.Warn("ReadLineFromFile Error", filename, err)

@@ -43,6 +43,7 @@ func main() {
 	putils.CreateRoutes(app.Router.PathPrefix("/utils"))
 	pmpd.Init(conf.MpdHost)
 	pmpd.CreateRoutes(app.Router.PathPrefix("/mpd"))
+	plogs.Init(conf.Logs)
 	plogs.CreateRoutes(app.Router.PathPrefix("/logs"))
 	pusers.CreateRoutes(app.Router.PathPrefix("/users"))
 	pproc.CreateRoutes(app.Router.PathPrefix("/process"))
