@@ -1,0 +1,34 @@
+{{define "body"}}
+{{if .Files}}
+<div class="container">
+	<select id="log-select" style="width:400px;">
+	{{range .Files}}
+		<option value="{{.}}">{{.}}</option>
+	{{end}}
+	</select>
+</div>
+{{end}}
+
+<div class="container">
+	<pre id="data">{{.Data}}</pre>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script type="text/javascript">
+	$(function() {
+		$('#log-select').on("change", function(event) {
+			$.ajax({
+				url: {{namedurl "logs-serv"}},
+				type: "GET",
+				data: {
+					"file": $(this).val(),
+					"page": {{.CurrentPage}}
+				},
+			}).done(function(result) {
+				$('#data').text(result);
+			});
+		});
+	});
+</script>
+{{end}}
