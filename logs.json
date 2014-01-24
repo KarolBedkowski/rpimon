@@ -1,16 +1,6 @@
 {
   "groups": [
     {
-      "name": "Short",
-      "logs": [
-        {
-          "name": "syslog",
-          "filename": "/var/log/syslog",
-          "limit": 25
-        }
-      ]
-    },
-    {
       "name": "Syslog",
       "logs": [
         {
@@ -42,6 +32,15 @@
           "name": "nmbd",
           "dir": "/var/log/samba",
           "prefix": "log.nmbd"
+        }
+      ]
+    },
+    {
+      "name": "RPIMON",
+      "logs": [
+        {
+          "name": "RPIMON",
+          "filename": "./app.log"
         }
       ]
     }
