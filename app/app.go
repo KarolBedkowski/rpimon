@@ -30,6 +30,7 @@ func Init(appConfFile string, debug int) *AppConfiguration {
 
 	http.Handle("/static/", http.StripPrefix("/static",
 		gzip.FileServer(http.Dir(conf.StaticDir))))
+	http.Handle("/favicon.ico", gzip.FileServer(http.Dir(conf.StaticDir)))
 	http.Handle("/", logHandler(csrfHandler(context.ClearHandler(Router))))
 	return conf
 }
