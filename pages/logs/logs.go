@@ -35,7 +35,9 @@ func createLocalMenu() []*app.MenuItem {
 	if localMenu == nil {
 		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("Short", "logs-page", "page", "short").SetID("short"),
 			app.NewMenuItemFromRoute("DMESG", "logs-page", "page", "dmesg").SetID("dmesg"),
-			app.NewMenuItemFromRoute("Syslog", "logs-page", "page", "syslog").SetID("syslog")}
+			app.NewMenuItemFromRoute("Syslog", "logs-page", "page", "syslog").SetID("syslog"),
+			app.NewMenuItemFromRoute("Samba", "logs-page", "page", "samba").SetID("samba"),
+		}
 	}
 	return localMenu
 }
@@ -48,16 +50,21 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		page = "short"
 	}
-	file := r.FormValue("file")
 
+	switch page {
+	case "syslog":
+		ctx.Files = findFiles("/var/log/", "syslog")
+	case "samba":
+		ctx.Files = findFiles("/var/log/samba", "log")
+	}
+	file := r.FormValue("file")
+	if file == "" && ctx.Files != nil && len(ctx.Files) > 0 {
+		file = ctx.Files[0]
+	}
 	if data, err := getLog(page, file); err == nil {
 		ctx.Data = data
 	} else {
 		ctx.Data = err.Error()
-	}
-	switch page {
-	case "syslog":
-		ctx.Files = findFiles("syslog")
 	}
 	ctx.CurrentLocalMenuPos = page
 	ctx.CurrentPage = page
@@ -82,22 +89,22 @@ func servLogHandler(w http.ResponseWriter, r *http.Request) {
 func getLogPath(filename string) (string, error) {
 	abspath, err := filepath.Abs(filepath.Clean(filepath.Join("/var/log/", filename)))
 	if !strings.HasPrefix(abspath, "/var/log/") {
-		return "", errors.New("wrong path")
+		return "", errors.New("wrong path " + filename)
 	}
 	f, err := os.Open(abspath)
 	if err != nil {
-		return "", errors.New("not found")
+		return "", errors.New("not found " + abspath)
 	}
 	defer f.Close()
 	d, err1 := f.Stat()
 	if err1 != nil || d.IsDir() {
-		return "", errors.New("not found")
+		return "", errors.New("not found " + abspath)
 	}
 	return abspath, err
 }
 
-func findFiles(prefix string) (result []string) {
-	if files, err := ioutil.ReadDir("/var/log/"); err == nil {
+func findFiles(dir, prefix string) (result []string) {
+	if files, err := ioutil.ReadDir(dir); err == nil {
 		for _, file := range files {
 			if strings.HasPrefix(file.Name(), prefix) && !file.IsDir() {
 				result = append(result, file.Name())
@@ -107,21 +114,29 @@ func findFiles(prefix string) (result []string) {
 	return
 }
 
-func getLog(page, file string) (string, error) {
+func getLog(page, file string) (result string, err error) {
 	switch page {
 	case "short":
-		return h.ReadFromFileLastLines("/var/log/syslog", 20)
+		result, err = h.ReadFromFileLastLines("/var/log/syslog", 20)
 	case "dmesg":
-		return h.ReadFromCommand("dmesg"), nil
+		result, err = h.ReadFromCommand("dmesg"), nil
 	case "syslog":
-		if file == "" {
-			file = "syslog"
-		}
 		path, err := getLogPath(file)
-		if err == nil {
-			return h.ReadFromFileLastLines(path, 500)
+		if err != nil {
+			return "", err
 		}
-		return "", err
+		result, err = h.ReadFromFileLastLines(path, 500)
+	case "samba":
+		path, err := getLogPath("samba/" + file)
+		if err != nil {
+			return "", err
+		}
+		result, err = h.ReadFromFileLastLines(path, 500)
+	default:
+		return "", errors.New("Invalid request")
 	}
-	return "", errors.New("Invalid request")
+	if result == "" {
+		result = "<EMPTY FILE>"
+	}
+	return result, nil
 }
