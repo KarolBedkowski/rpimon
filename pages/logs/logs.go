@@ -65,8 +65,12 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx.LogsGroup = group
 	ctx.LogsDef = logs
 
+	var loglist []string
 	for _, logsdef := range group.Logs {
-		ctx.Logs = append(ctx.Logs, logsdef.Name)
+		loglist = append(loglist, logsdef.Name)
+	}
+	if len(loglist) > 1 {
+		ctx.Logs = loglist
 	}
 
 	file := r.FormValue("file")

@@ -39,9 +39,9 @@
 {{end}}
 
 {{define "scripts"}}
-{{if .Files}}
 <script type="text/javascript">
 	$(function() {
+		{{if .Files}}
 		$('#file-select,#log-maxlines').on("change", function(event) {
 			var file = $('#file-select').val();
 			$('#log-maxlines').prop('disabled', file.indexOf('.gz') > 1 ? 'disabled' : false);
@@ -58,10 +58,10 @@
 			});
 		});
 		$('#log-maxlines').prop('disabled', $('#file-select').val().indexOf('.gz') > 1 ? 'disabled' : false);
+		{{end}}
 		$("#log-select").on("change", function() {
 			window.location.href="?log=" + $(this).val();
 		});
 	});
 </script>
-{{end}}
 {{end}}
