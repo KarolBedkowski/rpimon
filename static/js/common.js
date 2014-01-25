@@ -88,6 +88,9 @@ var RPI = (function(self, $) {
 	};
 
 	self.showFlash = function showFlashF(kind, message, timeout) {
+		if (!message) {
+			return;
+		}
 		var div = $("#flash-" + kind),
 			ul = $("ul", div);
 		$("<li>").html(message).appendTo(ul);
