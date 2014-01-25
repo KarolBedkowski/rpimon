@@ -105,7 +105,7 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	sess := app.GetSessionStore(w, r)
-	sess.AddFlash("Umounted " + fs[0])
+	sess.AddFlash("Umounted "+fs[0], "success")
 	sess.Save(r, w)
 
 	http.Redirect(w, r, app.GetNamedURL("storage-mount"), 302)

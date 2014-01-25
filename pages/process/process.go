@@ -88,7 +88,7 @@ func serviceActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	result := h.ReadFromCommand("sudo", "service", service, action)
 	l.Info("process serviceActionPageHandler %s %s res=%s", service, action, result)
 	session := app.GetSessionStore(w, r)
-	session.AddFlash(result)
+	session.AddFlash(result, "info")
 	session.Save(r, w)
 	http.Redirect(w, r, "/process/services", http.StatusFound)
 }
