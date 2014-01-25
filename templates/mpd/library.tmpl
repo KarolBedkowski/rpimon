@@ -36,7 +36,7 @@
 					<td><a href="{{$ml}}?p={{$path}}/{{.}}"><span class="glyphicon glyphicon-folder-close"></span>&nbsp;{{.}}</a></td>
 					<td>
 						<a href="#" class="ajax-action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
-						&nbsp; 
+						&nbsp;
 						<a href="#" class="ajax-action" data-action="replace" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-play" title="Replace"></a>
 					</td>
 				</tr>
@@ -66,7 +66,7 @@
 				</a>
 				<a class="btn btn-warning ajax-action" data-action="replace" data-uri="{{.Path}}" role="button">Clear playlist and this folder</a>
 				&nbsp;
-				<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" onclick="return RPI.confirm()" role="button">
+				<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" role="button" id="action-update">
 					<span class="glyphicon glyphicon-refresh"></span>
 					Update Library
 				</a>
@@ -83,11 +83,12 @@
 <script src="/static/js/mpd_library.js" type="text/javascript" ></script>
 <script type="text/javascript">
 	$(function() {
-		var ctrlUrl = "{{namedurl "mpd-control" "action" "-"}}";
-		ctrlUrl = ctrlUrl.substring(0, ctrlUrl.length - 2);
-		MPD.library.init(ctrlUrl, "{{namedurl "mpd-service-info"}}");
+		MPD.library.init({
+			"urls": {
+				"mpd-service-song-info" : {{namedurl "mpd-service-song-info"}},
+			},
+		});
 	});
 </script>
 
 {{end}}
-

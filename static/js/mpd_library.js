@@ -10,12 +10,12 @@ var MPD = MPD || {};
 MPD.library = (function(self, $) {
 	"use strict";
 
-	var mpdControlUrl = null,
-		mpdServiceInfoUrl = null;
+	var urls = {
+			"mpd-service-song-info": "",
+		}
 
-	self.init = function initF(mpdControlUrl_, mpdServiceInfoUrl_) {
-		mpdControlUrl = mpdControlUrl_;
-		mpdServiceInfoUrl = mpdServiceInfoUrl_;
+	self.init = function initF(params) {
+		urls = $.extend(urls, params.urls || {});
 
 		$('table').dataTable({
 			"bAutoWidth": false,
@@ -54,7 +54,7 @@ MPD.library = (function(self, $) {
 		$("a.action-info").on("click", function(event) {
 			event.preventDefault();
 			$.ajax({
-				url: '/mpd/service/song-info',
+				url: urls["mpd-service-song-info"],
 				type: "GET",
 				data: {
 					uri: $(this).data("uri"),
@@ -66,8 +66,27 @@ MPD.library = (function(self, $) {
 				}).open();
 			});
 		});
+
+		$("a#action-update").on("click", function(event) {
+			event.preventDefault();
+			var url = $(this).attr("href");
+			RPI.confirmDialog("Start updating library?", {
+				title: "Library",
+				btnSuccess: "Update",
+				onSuccess: function() {
+					RPI.showLoadingMsg();
+					$.get(url
+					).always(function() {
+						RPI.hideLoadingMsg();
+					}).done(function() {
+						RPI.showFlash("success", "Library update started", 5);
+					}).fail(function(jqXHR, textStatus) {
+						RPI.showFlash("error", textStatus);
+					});
+				},
+			}).open();
+		});
 	};
 
 	return self;
 }(MPD.library || {}, jQuery));
-

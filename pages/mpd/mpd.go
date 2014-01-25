@@ -3,6 +3,7 @@ package mpd
 import (
 	"code.google.com/p/gompd/mpd"
 	"encoding/json"
+	"errors"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
@@ -111,31 +112,41 @@ func controlHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r.ParseForm()
+	err := errors.New("Invalid request")
 	switch action {
 	case "volume":
 		if vol := r.Form["vol"][0]; vol != "" {
 			volInt, ok := strconv.Atoi(vol)
 			if ok == nil {
-				setVolume(volInt)
-				return
+				err = setVolume(volInt)
 			}
 		}
 	case "seek":
 		if time := r.Form["time"][0]; time != "" {
 			timeInt, ok := strconv.Atoi(time)
 			if ok == nil {
-				seekPos(-1, timeInt)
+				err = seekPos(-1, timeInt)
 				return
 			}
 		}
 	default:
-		mpdAction(action)
+		err = mpdAction(action)
 	}
+
 	switch action {
-	case "update":
-		http.Redirect(w, r, app.GetNamedURL("mpd-index"), http.StatusFound)
 	case "playlist-clear":
+		if err != nil {
+			sess := app.GetSessionStore(w, r)
+			sess.AddFlash(err.Error(), "error")
+			app.SaveSession(w, r)
+		}
 		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+	default:
+		if err == nil {
+			w.Write([]byte("OK"))
+		} else {
+			w.Write([]byte(err.Error()))
+		}
 	}
 }
 
