@@ -100,7 +100,7 @@ FILES.browser = (function(self, $) {
 					RPI.alert(msg.responseText).open();
 				}).done(function(msg) {
 					RPI.hideLoadingMsg();
-					window.console.log(msg);
+					RPI.showFlash("success", "File deleted", 1);
 					selectPath(currentPath);
 				});
 			}
@@ -136,7 +136,7 @@ FILES.browser = (function(self, $) {
 					RPI.alert(msg.responseText).open();
 				}).done(function(msg) {
 					RPI.hideLoadingMsg();
-					window.console.log(msg);
+					RPI.showFlash("success", "File moved", 1);
 					selectPath(currentPath);
 				});
 			}
@@ -152,7 +152,7 @@ FILES.browser = (function(self, $) {
 			data: $(this).serialize(),
 		}).done(function(msg) {
 			$("#create-folder-dlg").modal("hide");
-			window.console.log(msg);
+			RPI.showFlash("success", "Directory created", 1);
 			selectPath(currentPath);
 			$('#create-folder-dlg input[name="name"]').val("");
 			$('#create-folder-dlg button[type="submit"]').button('reset');
