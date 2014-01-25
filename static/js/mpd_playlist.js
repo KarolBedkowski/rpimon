@@ -46,7 +46,7 @@ MPD.plist = (function(self, $) {
 		table = $('table').dataTable({
 			"bAutoWidth": false,
 			"bSort": false,
-			"sPaginationType": "bootstrap",		
+			"sPaginationType": "bootstrap",
 			"bProcessing": true,
 			"bServerSide": true,
 			"sAjaxSource": "/mpd/playlist/serv/info",
@@ -72,7 +72,7 @@ MPD.plist = (function(self, $) {
 					"mData": null,
 					"bSortable": false,
 					"mRender": function(data, type, full) {
-						return '<a href="#" class="play-song-action"><span class="glyphicon glyphicon-play" title="Play"></span></a> <a href="#" class="remove-song-action"><span class="glyphicon glyphicon-remove" title="Remove"></span></a> ' + 
+						return '<a href="#" class="play-song-action"><span class="glyphicon glyphicon-play" title="Play"></span></a> <a href="#" class="remove-song-action"><span class="glyphicon glyphicon-remove" title="Remove"></span></a> ' +
 							'<a href="#" class="action-info" data-uri="' + full[5] + '"><span class="glyphicon glyphicon-info-sign" title="Info"></a>';
 					},
 				}
@@ -91,7 +91,7 @@ MPD.plist = (function(self, $) {
 				$("tr").on("click",  playSong);
 			},
 			"sDom": "<'row'<'col-xs-12 col-sm-6'l><'col-xs-12 col-sm-6'f>r>t<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>",
-				
+
 		});
 		return;
 	};
@@ -168,8 +168,46 @@ MPD.plist = (function(self, $) {
 		});
 	}
 
+	function playlistAjaxAction(dialog, event, refresh) {
+		event.preventDefault();
+		$('button[type="submit"]', dialog).button('loading');
+		var form = $("form", dialog);
+		$.ajax({
+			method: "POST",
+			url: form.attr("action"),
+			data: form.serialize(),
+		}).done(function(msg) {
+			dialog.modal("hide");
+			RPI.showFlash("success", msg, 1);
+			$('input[type="text"]', dialog).val("");
+			$('button[type="submit"]', dialog).button('reset');
+			if (refresh) {
+				table.fnDraw();
+			}
+		}).fail(function(msg) {
+			dialog.modal("hide");
+			$('button[type="submit"]', dialog).button('reset');
+			RPI.alert(msg.responseText).open();
+		});
+	}
+
 	self.init = function initF() {
 		RPI.showLoadingMsg();
+
+		$('div.modal').on('shown.bs.modal', function() {
+			var inputs = $('input:first-of-type');
+			if (inputs) {
+				inputs.focus();
+			}
+		});
+
+		$("#save-playlist-dlg form").submit(function(event) {
+			playlistAjaxAction($("#save-playlist-dlg"), event);
+		});
+		$("#add-custom-dlg form").submit(function(event) {
+			playlistAjaxAction($("#add-custom-dlg"), event, true);
+		});
+
 		self.refresh();
 	};
 

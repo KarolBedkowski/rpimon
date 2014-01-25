@@ -93,18 +93,14 @@ func playlistSavePageHandler(w http.ResponseWriter, r *http.Request) {
 	form := &savePlaylistForm{}
 	decoder.Decode(form, r.Form)
 	if form.Name == "" {
-		handleError("Missing name", w, r)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+		http.Error(w, "Missing name", http.StatusBadRequest)
 		return
 	}
 	if err := playlistSave(form.Name); err != nil {
-		handleError("Saving playlist error: "+err.Error(), w, r)
+		http.Error(w, "Saving playlist error: "+err.Error(), http.StatusInternalServerError)
 	} else {
-		session := app.GetSessionStore(w, r)
-		session.AddFlash("Playlist saved", "success")
-		session.Save(r, w)
+		w.Write([]byte("Playlist saved"))
 	}
-	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 }
 
 func handleError(msg string, w http.ResponseWriter, r *http.Request) {
@@ -123,18 +119,14 @@ func addToPlaylistPageHandler(w http.ResponseWriter, r *http.Request) {
 	form := &addToPlaylistForm{}
 	decoder.Decode(form, r.Form)
 	if form.Uri == "" {
-		handleError("Missing uri", w, r)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+		http.Error(w, "Missing URI", http.StatusBadRequest)
 		return
 	}
 	if err := addToPlaylist(form.Uri); err != nil {
-		handleError("Adding to playlist error "+err.Error(), w, r)
+		http.Error(w, "Adding to playlist error: "+err.Error(), http.StatusInternalServerError)
 	} else {
-		session := app.GetSessionStore(w, r)
-		session.AddFlash("Added to playlist", "success")
-		session.Save(r, w)
+		w.Write([]byte("URI added"))
 	}
-	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 }
 
 var mpdPlaylistCache = h.NewSimpleCache(10)
