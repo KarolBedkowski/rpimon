@@ -40,7 +40,7 @@ certs:
 
 debug: clean
 	go build -gcflags "-N -l" server.go
-	gdb ./server
+	gdb -tui ./server -d $GOROOT
 
 
 build_static:
