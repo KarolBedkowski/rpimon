@@ -21,15 +21,15 @@ var RPI = (function(self, $) {
 			$("#dialog-confirm #dialog-confirm-success")
 				.html(params.btnSuccess || "Yes")
 				.addClass(params.btnSuccessClass || "btn-primary");
+			$("#dialog-confirm-success").on("click", function(event) {
+				dlg.modal("hide");
+				if (params.onSuccess) {
+					params.onSuccess(event);
+				}
+			});
 		} else {
 			$("#dialog-confirm #dialog-confirm-success").hide();
 		}
-		$("#dialog-confirm-success").on("click", function(event) {
-			dlg.modal("hide");
-			if (params.onSuccess) {
-				params.onSuccess(event);
-			}
-		});
 		return {
 			dlg: dlg,
 			open: function() {
@@ -56,15 +56,15 @@ var RPI = (function(self, $) {
 			$("#dialog-alert #dialog-alert-success")
 				.html(params.btnSuccess || "Yes")
 				.addClass(params.btnSuccessClass || "btn-primary");
+			$("#dialog-alert-success").on("click", function(event) {
+				dlg.modal("hide");
+				if (params.onSuccess) {
+					params.onSuccess(event);
+				}
+			});
 		} else {
 			$("#dialog-alert #dialog-alert-success").hide();
 		}
-		$("#dialog-alert-success").on("click", function(event) {
-			dlg.modal("hide");
-			if (params.onSuccess) {
-				params.onSuccess(event);
-			}
-		});
 		return {
 			dlg: dlg,
 			open: function() {
@@ -103,9 +103,11 @@ var RPI = (function(self, $) {
 
 	self.hideFlash = function hideFlashF(div, timeout) {
 		setTimeout(function() {
-			div.fadeOut(300, function() {
-				$("ul", div).html("");
-			});
+			if (div) {
+				div.fadeOut(300, function() {
+					$("ul", div).html("");
+				});
+			}
 		}, (timeout || 5) * 1000);
 	}
 
