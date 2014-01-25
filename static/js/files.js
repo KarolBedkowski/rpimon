@@ -160,7 +160,7 @@ FILES.browser = (function(self, $) {
 			window.console.log(msg);
 			$("#create-folder-dlg").modal("hide");
 			$('#create-folder-dlg button[type="submit"]').button('reset');
-			RPI.alert(msg.responseText);
+			RPI.alert(msg.responseText).open();
 		});
 	}
 
@@ -274,12 +274,14 @@ FILES.browser = (function(self, $) {
 				selectPath(location || ".");
 			}
 		});
-		$('#create-folder-dlg').on('shown.bs.modal', function() {
-			$('#folder-name').focus();
+
+		$('div.modal').on('shown.bs.modal', function() {
+			var inputs = $('input:first-of-type');
+			if (inputs) {
+				inputs.focus();
+			}
 		});
-		$('#upload-dlg').on('shown.bs.modal', function() {
-			$('#upload-dlg input[type="file"]').focus();
-		});
+
 		$("#create-folder-dlg form").submit(createDirectory);
 
 		var location = window.location.search;
