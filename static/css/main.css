@@ -256,3 +256,11 @@ div#loading-box p {
 	opacity: 1;
 	margin: 1em;
 }
+
+#flash-container {
+	overflow: none;
+	z-index: 11;
+	position:  absolute;
+	padding-left: 10%;
+	padding-right: 10%;
+}

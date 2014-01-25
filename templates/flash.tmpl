@@ -1,17 +1,37 @@
 {{define "flash"}}
-
 {{$flash := .GetFlashMessage}}
-{{if $flash}}
 <div class="container">
-	<div class="alert alert-info alert-dismissable" id="flash-info"> 
-		<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-		<ul>
-		{{range $flash}}
-			<li>{{.}}</li>
-		{{end}}
-		</ul>
+	<div id="flash-container" class="container">
+		<div class="alert alert-error alert-dismissable" id="flash-error" {{if not $flash.error}} style="display: none;"{{end}}> 
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			<ul>
+			{{if $flash.error}}
+			{{range $flash.error}}
+				<li>{{.}}</li>
+			{{end}}
+			{{end}}
+			</ul>
+		</div>
+		<div class="alert alert-info alert-dismissable" id="flash-info"{{if not $flash.info}} style="display: none;"{{end}}> 
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			<ul>
+			{{if $flash.info}}
+			{{range $flash.info}}
+				<li>{{.}}</li>
+			{{end}}
+			{{end}}
+			</ul>
+		</div>
+		<div class="alert alert-success alert-dismissable" id="flash-success"{{if not $flash.success}} style="display: none;"{{end}}> 
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			<ul>
+			{{if $flash.success}}
+			{{range $flash.success}}
+				<li>{{.}}</li>
+			{{end}}
+			{{end}}
+			</ul>
+		</div>
 	</div>
 </div>
-{{end}}
-
 {{end}}

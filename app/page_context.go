@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/sessions"
 	"io/ioutil"
 	"k.prv/rpimon/helpers"
+	//	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"strings"
 	"time"
@@ -23,7 +24,7 @@ type BasePageContext struct {
 	CurrentMainMenuPos  string
 	CurrentLocalMenuPos string
 	Now                 string
-	FlashMessages       []interface{}
+	FlashMessages       map[string][]interface{}
 }
 
 var hostname string
@@ -33,6 +34,8 @@ func init() {
 	helpers.CheckErr(err, "Load hostname error")
 	hostname = strings.Trim(string(file), " \n")
 }
+
+var FlashKind = []string{"error", "info", "success"}
 
 // NewBasePageContext create base page context for request
 func NewBasePageContext(title, mainMenuID string, w http.ResponseWriter, r *http.Request) *BasePageContext {
@@ -53,25 +56,33 @@ func NewBasePageContext(title, mainMenuID string, w http.ResponseWriter, r *http
 		Hostname:           hostname,
 		CurrentUser:        GetLoggedUserLogin(w, r),
 		Now:                time.Now().Format("2006-01-02 15:04:05"),
-		CurrentMainMenuPos: mainMenuID}
+		CurrentMainMenuPos: mainMenuID,
+		FlashMessages:      make(map[string][]interface{}),
+	}
 
 	SetMainMenu(ctx)
 
-	if flashes := ctx.Session.Flashes(); len(flashes) > 0 {
-		ctx.FlashMessages = flashes
-		ctx.Save()
+	for _, kind := range FlashKind {
+		if flashes := ctx.Session.Flashes(kind); flashes != nil && len(flashes) > 0 {
+			ctx.FlashMessages[kind] = flashes
+		}
 	}
+	ctx.Save()
 	return ctx
 }
 
 // GetFlashMessage for current context
-func (ctx *BasePageContext) GetFlashMessage() []interface{} {
+func (ctx *BasePageContext) GetFlashMessage() map[string][]interface{} {
 	return ctx.FlashMessages
 }
 
 // AddFlashMessage to context
-func (ctx *BasePageContext) AddFlashMessage(msg interface{}) {
-	ctx.Session.AddFlash(msg)
+func (ctx *BasePageContext) AddFlashMessage(msg interface{}, kind ...string) {
+	if len(kind) > 0 {
+		ctx.Session.AddFlash(msg, kind...)
+	} else {
+		ctx.Session.AddFlash(msg, "info")
+	}
 }
 
 // Set value in session
