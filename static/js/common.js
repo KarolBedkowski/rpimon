@@ -87,7 +87,32 @@ var RPI = (function(self, $) {
 		});
 	};
 
+	self.showFlash = function showFlashF(kind, message, timeout) {
+		var div = $("#flash-" + kind),
+			ul = $("ul", div);
+		$("<li>").html(message).appendTo(ul);
+		$("#flash-" + kind).fadeIn(200, function() {
+			if (timeout) {
+				self.hideFlash(div, timeout);
+			}
+		});
+	};
+
+	self.hideFlash = function hideFlashF(div, timeout) {
+		setTimeout(function() {
+			div.fadeOut(300, function() {
+				$("ul", div).html("");
+			});
+		}, (timeout || 5) * 1000);
+	}
+
 	self.hideLoadingMsg();
+
+	$("#flash-container div.alert:visible").each(function(index, elem) {
+		self.hideFlash($(elem), 2);
+	});
+
+	setTimeout(self.hideFlash, 2000);
 
 	return self;
 }(RPI || {}, jQuery));
