@@ -1,11 +1,11 @@
 {{define "body"}}
 {{$ctx := .}}
 <div class="container">
-	<form class="form-inline"  role="form">
+	<form class="form-inline" role="form">
 		{{if .Logs}}
 		<div class="form-group">
 			<label for="log-select">Log: </label>
-			<select id="log-select">
+			<select id="log-select" style="margin-right: 1em; margin-left: 0.5em;">
 			{{range .Logs}}
 				<option value="{{.}}" {{if eq $ctx.LogsDef.Name .}}selected="selected"{{end}}>{{.}}</option>
 			{{end}}
@@ -15,15 +15,15 @@
 		{{if .Files}}
 		<div class="form-group">
 			<label for="file-select">File: </label>
-			<select id="file-select">
+			<select id="file-select" style="margin-right: 1em; margin-left: 0.5em;">
 			{{range .Files}}
 				<option value="{{.}}">{{.}}</option>
 			{{end}}
 			</select>
 		</div>
 		<div class="form-group">
-			<label for="log-maxlines">maxlines: </label>
-			<select id="log-maxlines">
+			<label for="log-maxlines">Max lines: </label>
+			<select id="log-maxlines" style="margin-right: 1em; margin-left: 0.5em;">
 				<option value="100">100</option>
 				<option value="500">500</option>
 				<option value="-1">All</option>
