@@ -66,7 +66,7 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		if err != nil {
 			session := app.GetSessionStore(w, r)
-			session.AddFlash(err.Error())
+			session.AddFlash(err.Error(), "error")
 			session.Save(r, w)
 		}
 		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
@@ -101,7 +101,7 @@ func playlistSavePageHandler(w http.ResponseWriter, r *http.Request) {
 		handleError("Saving playlist error: "+err.Error(), w, r)
 	} else {
 		session := app.GetSessionStore(w, r)
-		session.AddFlash("Playlist saved")
+		session.AddFlash("Playlist saved", "success")
 		session.Save(r, w)
 	}
 	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
@@ -109,7 +109,7 @@ func playlistSavePageHandler(w http.ResponseWriter, r *http.Request) {
 
 func handleError(msg string, w http.ResponseWriter, r *http.Request) {
 	session := app.GetSessionStore(w, r)
-	session.AddFlash(msg)
+	session.AddFlash(msg, "error")
 	session.Save(r, w)
 }
 
@@ -131,7 +131,7 @@ func addToPlaylistPageHandler(w http.ResponseWriter, r *http.Request) {
 		handleError("Adding to playlist error "+err.Error(), w, r)
 	} else {
 		session := app.GetSessionStore(w, r)
-		session.AddFlash("Added to playlist")
+		session.AddFlash("Added to playlist", "success")
 		session.Save(r, w)
 	}
 	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)

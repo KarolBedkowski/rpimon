@@ -16,8 +16,9 @@ MPD.plists = (function(self, $) {
 		$.ajax({
 			url: this.href,
 			type: "PUT",
-		}).done(function() { //msg) {
+		}).done(function(msg) {
 			RPI.hideLoadingMsg();
+			RPI.showFlash("success", msg, 1);
 		}).fail(function(jqXHR, textStatus) {
 			RPI.hideLoadingMsg();
 			RPI.alert(textStatus, {
@@ -31,7 +32,7 @@ MPD.plists = (function(self, $) {
 			"bAutoWidth": false,
 			"bStateSave": true,
 			"bFilter": false,
-			"sPaginationType": "bootstrap",		
+			"sPaginationType": "bootstrap",
 			"iDisplayLength": 15,
 			"bLengthChange": false,
 			"aoColumnDefs": [{
@@ -39,7 +40,7 @@ MPD.plists = (function(self, $) {
 				"bSortable": false,
 			}],
 //			"sDom": "t"+
-//				"<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>" 
+//				"<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>"
 		});
 		$('a.action-confirm').on("click", function() {
 			return RPI.confirm();

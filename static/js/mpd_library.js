@@ -20,7 +20,7 @@ MPD.library = (function(self, $) {
 		$('table').dataTable({
 			"bAutoWidth": false,
 			"bStateSave": true,
-			"sPaginationType": "bootstrap",		
+			"sPaginationType": "bootstrap",
 			"aoColumnDefs": [{
 				"aTargets": [1],
 				"bSortable": false,
@@ -28,7 +28,6 @@ MPD.library = (function(self, $) {
 			"sDom": "<'row'<'col-xs-12 col-sm-6'l><'col-xs-12 col-sm-6'f>r>" + "t"+
 				"<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>",
 		});
-
 
 		$("a.ajax-action").on("click", function(event) {
 			event.preventDefault();
@@ -42,11 +41,7 @@ MPD.library = (function(self, $) {
 				}
 			}).done(function(res) {
 				RPI.hideLoadingMsg();
-				if (res) {
-					RPI.alert(res, {
-						title: "Error",
-					}).open();
-				}
+				RPI.showFlash("success", res, 2);
 			}).fail(function(jqXHR, textStatus) {
 				window.console.log(textStatus);
 				RPI.hideLoadingMsg();

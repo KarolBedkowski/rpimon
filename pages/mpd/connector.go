@@ -2,6 +2,7 @@ package mpd
 
 import (
 	"code.google.com/p/gompd/mpd"
+	"errors"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"strconv"
@@ -134,10 +135,10 @@ func mpdGetPlaylists() (playlists []mpd.Attrs, err error) {
 	return
 }
 
-func mpdPlaylistsAction(playlist, action string) error {
+func mpdPlaylistsAction(playlist, action string) (string, error) {
 	conn, err := mpd.Dial("tcp", host)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer conn.Close()
 
@@ -146,15 +147,22 @@ func mpdPlaylistsAction(playlist, action string) error {
 		conn.Clear()
 		conn.PlaylistLoad(playlist, -1, -1)
 		conn.Play(-1)
+		return "Plylist loaded", nil
 	case "add":
 		conn.PlaylistLoad(playlist, -1, -1)
 		conn.Play(-1)
+		return "Plylist added", nil
 	case "remove":
-		return conn.PlaylistRemove(playlist)
+		err := conn.PlaylistRemove(playlist)
+		if err == nil {
+			return "Plylist removed", nil
+		} else {
+			return "", err
+		}
 	default:
 		l.Warn("page.mpd mpdAction: wrong action ", action)
 	}
-	return nil
+	return "", errors.New("Invalid action")
 }
 
 func setVolume(volume int) error {

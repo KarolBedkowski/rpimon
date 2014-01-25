@@ -205,27 +205,21 @@ func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
 	if action, ok := r.Form["a"]; ok {
 		switch {
 		case action[0] == "add" || action[0] == "replace":
-			if uriL, ok := r.Form["u"]; ok {
-				uri := strings.TrimLeft(uriL[0], "/")
-				uri, _ = url.QueryUnescape(uri)
-				err := addFileToPlaylist(uri, action[0] == "replace")
-				if err == nil {
-					if r.Method == "GET" {
-						if action[0] == "add" {
-							ctx.AddFlashMessage("Added " + uri)
-						} else {
-							ctx.AddFlashMessage("Playlist cleared and added " + uri)
-						}
-						ctx.Save()
-						http.Redirect(w, r, app.GetNamedURL("mpd-library")+
-							h.BuildQuery("p", ctx.Path), http.StatusFound)
+			if r.Method == "PUT" {
+				if uriL, ok := r.Form["u"]; ok {
+					uri := strings.TrimLeft(uriL[0], "/")
+					uri, _ = url.QueryUnescape(uri)
+					err := addFileToPlaylist(uri, action[0] == "replace")
+					if err == nil {
+						w.Write([]byte("Added to playlist"))
 					} else {
-						w.Write([]byte("OK"))
+						http.Error(w, err.Error(), http.StatusBadRequest)
 					}
 					return
 				}
-				ctx.Error = err.Error()
 			}
+			http.Error(w, "Invalid method for add/replace action", http.StatusBadRequest)
+			return
 		case action[0] == "up":
 			if ctx.Path != "" {
 				idx := strings.LastIndex(ctx.Path, "/")
@@ -237,16 +231,12 @@ func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	if r.Method == "GET" {
-		var err error
-		ctx.Folders, ctx.Files, err = getFiles(ctx.Path)
-		if err != nil {
-			ctx.Error = err.Error()
-		}
-		app.RenderTemplate(w, ctx, "base", "base.tmpl", "mpd/library.tmpl", "flash.tmpl")
-	} else {
-		w.Write([]byte(ctx.Error))
+	var err error
+	ctx.Folders, ctx.Files, err = getFiles(ctx.Path)
+	if err != nil {
+		ctx.Error = err.Error()
 	}
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "mpd/library.tmpl", "flash.tmpl")
 }
 
 type songInfoCtx struct {

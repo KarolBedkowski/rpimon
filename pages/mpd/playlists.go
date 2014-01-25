@@ -6,7 +6,7 @@ import (
 	"code.google.com/p/gompd/mpd"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	l "k.prv/rpimon/helpers/logging"
+	//	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 )
 
@@ -37,25 +37,18 @@ func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	action, ok := vars["action"]
 	if !ok || action == "" {
-		l.Warn("page.mpd playlistsActionPageHandler: missing action ", vars)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
+		http.Error(w, "missing action", http.StatusBadRequest)
 		return
 	}
 	playlist, ok := vars["plist"]
 	if !ok || playlist == "" {
-		l.Warn("page.mpd playlistsActionPageHandler: missing songID ", vars)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
+		http.Error(w, "missing songid", http.StatusBadRequest)
 		return
 	}
-	err := mpdPlaylistsAction(playlist, action)
-	if err != nil {
-		session := app.GetSessionStore(w, r)
-		session.AddFlash(err.Error())
-		session.Save(r, w)
-	}
-	if r.Method == "GET" {
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
+	status, err := mpdPlaylistsAction(playlist, action)
+	if err == nil {
+		w.Write([]byte(status))
 	} else {
-		w.Write([]byte("OK"))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
