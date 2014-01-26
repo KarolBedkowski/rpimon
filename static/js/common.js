@@ -95,8 +95,11 @@ var RPI = (function(self, $) {
 			return;
 		}
 		var div = $("#flash-" + kind),
-			ul = $("ul", div);
+			ul = $("ul", div),
+			top = $(window).scrollTop();
+		top = top + (top > 50 ? 20 : 70 - top);
 		$("<li>").html(message).appendTo(ul);
+		$("#flash-container").css("top", top + "px");
 		$("#flash-" + kind).fadeIn(100, function() {
 			if (timeout) {
 				self.hideFlash(div, timeout);

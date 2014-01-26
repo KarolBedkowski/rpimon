@@ -259,7 +259,7 @@ div#loading-box p {
 
 #flash-container {
 	overflow: none;
-	z-index: 11;
+	z-index: 1100;
 	position:  absolute;
 	padding-left: 10%;
 	padding-right: 10%;
