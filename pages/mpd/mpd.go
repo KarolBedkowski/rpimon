@@ -64,6 +64,9 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/library",
 		app.VerifyPermission(libraryPageHandler, "mpd")).Name(
 		"mpd-library")
+	subRouter.HandleFunc("/library/content",
+		app.VerifyPermission(libraryContentService, "mpd")).Name(
+		"mpd-library-content")
 	subRouter.HandleFunc("/library/action",
 		app.VerifyPermission(libraryActionHandler, "mpd")).Methods(
 		"PUT", "POST").Name("mpd-library-action")

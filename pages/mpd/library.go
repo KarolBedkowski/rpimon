@@ -1,6 +1,7 @@
 package mpd
 
 import (
+	"encoding/json"
 	"k.prv/rpimon/app"
 	//	h "k.prv/rpimon/helpers"
 	//	l "k.prv/rpimon/helpers/logging"
@@ -71,4 +72,29 @@ func libraryActionHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	http.Error(w, "Invalid request", http.StatusBadRequest)
+}
+
+type libraryContenet struct {
+	Path  string     `json:"path"`
+	Error string     `json:"error"`
+	Items [][]string `json:"items"`
+}
+
+func libraryContentService(w http.ResponseWriter, r *http.Request) {
+	path, _ := url.QueryUnescape(strings.TrimLeft(r.FormValue("p"), "/"))
+	result := libraryContenet{Path: path}
+	folders, files, err := getFiles(path)
+	if err != nil {
+		result.Error = err.Error()
+	} else {
+		for _, folder := range folders {
+			result.Items = append(result.Items, []string{"0", folder})
+		}
+		for _, file := range files {
+			result.Items = append(result.Items, []string{"1", file})
+		}
+	}
+	encoded, _ := json.Marshal(result)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(encoded)
 }
