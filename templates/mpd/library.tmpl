@@ -32,22 +32,22 @@
 			</thead>
 			<tbody>
 			{{range .Folders}}
-				<tr>
+				<tr data-uri="{{$path}}/{{.}}">
 					<td><a href="{{$ml}}?p={{$path}}/{{.}}"><span class="glyphicon glyphicon-folder-close"></span>&nbsp;{{.}}</a></td>
 					<td>
-						<a href="#" class="ajax-action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
+						<a href="#" class="ajax-action" data-action="add"><span class="glyphicon glyphicon-plus" title="Add"></a>
 						&nbsp;
-						<a href="#" class="ajax-action" data-action="replace" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-play" title="Replace"></a>
+						<a href="#" class="ajax-action" data-action="replace"><span class="glyphicon glyphicon-play" title="Replace"></a>
 					</td>
 				</tr>
 			{{end}}
 			{{range .Files}}
-				<tr>
+				<tr data-uri="{{$path}}/{{.}}">
 					<td><span class="glyphicon glyphicon-file"></span>&nbsp;{{.}}</td>
 					<td>
-						<a href="#" class="ajax-action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
-						<a href="#" class="ajax-action" data-action="replace" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-play" title="Replace"></a>
-						<a href="#" class="action-info" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-info-sign" title="Info"></a>
+						<a href="#" class="ajax-action" data-action="add" ><span class="glyphicon glyphicon-plus" title="Add"></a>
+						<a href="#" class="ajax-action" data-action="replace"><span class="glyphicon glyphicon-play" title="Replace"></a>
+						<a href="#" class="action-info"><span class="glyphicon glyphicon-info-sign" title="Info"></a>
 					</td>
 				</tr>
 			{{end}}

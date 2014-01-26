@@ -33,15 +33,13 @@ MPD.library = (function(self, $) {
 
 		$("a.ajax-action").on("click", function(event) {
 			event.preventDefault();
-			var link = $(this);
+			var link = $(this),
+				uri = link.closest('tr').data("uri");
 			RPI.showLoadingMsg();
 			$.ajax({
 				url: urls["mpd-library-action"],
 				type: "PUT",
-				data: {
-					a: link.data("action"),
-					u: link.data("uri")
-				}
+				data: {a: link.data("action"), u: uri}
 			}).always(function() {
 				RPI.hideLoadingMsg();
 			}).done(function(res) {
@@ -54,13 +52,12 @@ MPD.library = (function(self, $) {
 		});
 
 		$("a.action-info").on("click", function(event) {
+			var uri = $(this).closest('tr').data("uri");
 			event.preventDefault();
 			$.ajax({
 				url: urls["mpd-service-song-info"],
 				type: "GET",
-				data: {
-					uri: $(this).data("uri")
-				}
+				data: {uri: uri}
 			}).done(function(data) {
 				RPI.confirmDialog(data, {
 					title: "Song info",
