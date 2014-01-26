@@ -1,6 +1,8 @@
 var RPI = (function(self, $) {
 	"use strict";
 
+	var alertTimers = {};
+
 	self.confirm = function confirmF() {
 		return confirm('Are you sure?');
 	};
@@ -35,7 +37,7 @@ var RPI = (function(self, $) {
 			open: function() {
 				dlg.modal('show');
 				return dlg;
-			},
+			}
 		};
 	};
 
@@ -70,7 +72,7 @@ var RPI = (function(self, $) {
 			open: function() {
 				dlg.modal('show');
 				return dlg;
-			},
+			}
 		};
 	};
 
@@ -95,7 +97,7 @@ var RPI = (function(self, $) {
 		var div = $("#flash-" + kind),
 			ul = $("ul", div);
 		$("<li>").html(message).appendTo(ul);
-		$("#flash-" + kind).fadeIn(200, function() {
+		$("#flash-" + kind).fadeIn(100, function() {
 			if (timeout) {
 				self.hideFlash(div, timeout);
 			}
@@ -103,9 +105,17 @@ var RPI = (function(self, $) {
 	};
 
 	self.hideFlash = function hideFlashF(div, timeout) {
-		setTimeout(function() {
+		if (!div) {
+			return;
+		}
+		var divid = div.prop("id"),
+			timer = alertTimers[divid];
+		if (timer) {
+			window.clearTimeout(timer);
+		}
+		alertTimers[divid] = window.setTimeout(function() {
 			if (div) {
-				div.fadeOut(300, function() {
+				div.fadeOut(150, function() {
 					$("ul", div).html("");
 				});
 			}
