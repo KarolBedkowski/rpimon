@@ -62,9 +62,9 @@ MPD.plist = (function(self, $) {
 					"mRender": function(data, type, full) {
 						var title = full[3] || full[5];
 						return ['<div class="row"><span class="col-title col-sm-6 col-xs-12 col-md-5">', title, '</span>' +
-							'<span class="col-artist col-sm-6 col-xs-12 col-md-4">', full[1], '</span>',
+							'<span class="col-artist col-sm-6 col-xs-12 col-md-3">', full[1], '</span>',
 							'<span class="col-track col-sm-2 col-xs-3 col-md-1">', full[2], '</span>',
-							'<span class="col-album col-sm-10 col-xs-9 col-md-2">', full[0], '</span></div>'].join("");
+							'<span class="col-album col-sm-10 col-xs-9 col-md-3">', full[0], '</span></div>'].join("");
 					}
 				},
 				{
