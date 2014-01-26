@@ -11,7 +11,8 @@ MPD.library = (function(self, $) {
 	"use strict";
 
 	var urls = {
-			"mpd-service-song-info": ""
+			"mpd-service-song-info": "",
+			"mpd-library-action": ""
 		};
 
 	self.init = function initF(params) {
@@ -35,6 +36,7 @@ MPD.library = (function(self, $) {
 			var link = $(this);
 			RPI.showLoadingMsg();
 			$.ajax({
+				url: urls["mpd-library-action"],
 				type: "PUT",
 				data: {
 					a: link.data("action"),
