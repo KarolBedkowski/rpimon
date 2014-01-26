@@ -11,8 +11,8 @@ MPD.library = (function(self, $) {
 	"use strict";
 
 	var urls = {
-			"mpd-service-song-info": "",
-		}
+			"mpd-service-song-info": ""
+		};
 
 	self.init = function initF(params) {
 		urls = $.extend(urls, params.urls || {});
@@ -23,10 +23,10 @@ MPD.library = (function(self, $) {
 			"sPaginationType": "bootstrap",
 			"aoColumnDefs": [{
 				"aTargets": [1],
-				"bSortable": false,
+				"bSortable": false
 			}],
 			"sDom": "<'row'<'col-xs-12 col-sm-6'l><'col-xs-12 col-sm-6'f>r>" + "t"+
-				"<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>",
+				"<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>"
 		});
 
 		$("a.ajax-action").on("click", function(event) {
@@ -37,16 +37,15 @@ MPD.library = (function(self, $) {
 				type: "PUT",
 				data: {
 					a: link.data("action"),
-					u: link.data("uri"),
+					u: link.data("uri")
 				}
-			}).done(function(res) {
+			}).always(function() {
 				RPI.hideLoadingMsg();
+			}).done(function(res) {
 				RPI.showFlash("success", res, 2);
 			}).fail(function(jqXHR, textStatus) {
-				window.console.log(textStatus);
-				RPI.hideLoadingMsg();
 				RPI.alert(textStatus, {
-					title: "Error",
+					title: "Error"
 				}).open();
 			});
 		});
@@ -57,12 +56,12 @@ MPD.library = (function(self, $) {
 				url: urls["mpd-service-song-info"],
 				type: "GET",
 				data: {
-					uri: $(this).data("uri"),
-				},
+					uri: $(this).data("uri")
+				}
 			}).done(function(data) {
 				RPI.confirmDialog(data, {
 					title: "Song info",
-					btnSuccess: "none",
+					btnSuccess: "none"
 				}).open();
 			});
 		});
@@ -83,7 +82,7 @@ MPD.library = (function(self, $) {
 					}).fail(function(jqXHR, textStatus) {
 						RPI.showFlash("error", textStatus);
 					});
-				},
+				}
 			}).open();
 		});
 	};

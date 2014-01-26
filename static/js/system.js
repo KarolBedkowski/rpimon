@@ -46,7 +46,7 @@ var SYSTEM = (function(self, $) {
 			fstablebody.text("");
 			msg["fs"].forEach(function(entry) {
 				fstablebody.append(["<tr><td>", entry["MountPoint"], "</td><td>",
-					"<span class=\"pie\" data-diameter=\"32\" data-colours='[\"red\", \"#f0f0f0\"]'>", 
+					"<span class=\"pie\" data-diameter=\"32\" data-colours='[\"red\", \"#f0f0f0\"]'>",
 					entry["UsedPerc"], "/100</span></td><td>",
 					entry["UsedPerc"], "%</td></tr>"].join(""));
 

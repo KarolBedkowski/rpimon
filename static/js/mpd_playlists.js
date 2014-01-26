@@ -15,14 +15,14 @@ MPD.plists = (function(self, $) {
 		RPI.showLoadingMsg();
 		$.ajax({
 			url: this.href,
-			type: "PUT",
+			type: "PUT"
 		}).done(function(msg) {
 			RPI.hideLoadingMsg();
 			RPI.showFlash("success", msg, 1);
 		}).fail(function(jqXHR, textStatus) {
 			RPI.hideLoadingMsg();
 			RPI.alert(textStatus, {
-				title: "Error",
+				title: "Error"
 			}).open();
 		});
 	}
@@ -37,8 +37,8 @@ MPD.plists = (function(self, $) {
 			"bLengthChange": false,
 			"aoColumnDefs": [{
 				"aTargets": [1],
-				"bSortable": false,
-			}],
+				"bSortable": false
+			}]
 //			"sDom": "t"+
 //				"<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>"
 		});

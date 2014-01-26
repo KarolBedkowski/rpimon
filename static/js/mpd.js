@@ -12,7 +12,7 @@ MPD.status = (function(self, $) {
 		changingVol = false,
 		lastState = {
 			Status: {},
-			Current: {},
+			Current: {}
 		},
 		mpdControlUrl = "/mpd/control",
 		mpdServiceInfoUrl = "/mpd/service/info",
@@ -174,7 +174,7 @@ MPD.status = (function(self, $) {
 				if (!changingVol) {
 					$("#st-volume").text(ui.value);
 				}
-			},
+			}
 		});
 		$("#slider-song-pos").slider({
 			disabled: true,
@@ -194,7 +194,7 @@ MPD.status = (function(self, $) {
 				if (!changingPos) {
 					$("#st-time").text(ts2str(ui.value));
 				}
-			},
+			}
 		});
 
 		$("a#action-info").on("click", function(event) {
@@ -204,12 +204,12 @@ MPD.status = (function(self, $) {
 					url: '/mpd/service/song-info',
 					type: "GET",
 					data: {
-						uri: lastState.Current.file,
-					},
+						uri: lastState.Current.file
+					}
 				}).done(function(data) {
 					RPI.confirmDialog(data, {
 						title: "Song info",
-						btnSuccess: "none",
+						btnSuccess: "none"
 					}).open();
 				});
 			}
