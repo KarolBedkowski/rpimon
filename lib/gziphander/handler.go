@@ -14,7 +14,8 @@ import (
 )
 
 type gzipFileHandler struct {
-	fs http.FileSystem
+	fs           http.FileSystem
+	cacheControl bool
 }
 
 func (h *gzipFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -23,26 +24,26 @@ func (h *gzipFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		p = "/" + p
 		r.URL.Path = p
 	}
-	serveFile(w, r, h.fs, path.Clean(p), true)
+	serveFile(w, r, h.fs, path.Clean(p), true, h.cacheControl)
 }
 
 // Similar to net.http.FileServer, but serves <file>.gz instead of <file> if
 // it exists, has a later modification time, and the request supports gzip
 // encoding. Also serves the .gz file if the original doesn't exist.
-func FileServer(root http.FileSystem) http.Handler {
-	return &gzipFileHandler{root}
+func FileServer(root http.FileSystem, cacheControl bool) http.Handler {
+	return &gzipFileHandler{root, cacheControl}
 }
 
 // Similar to net.http.ServeFile, but serves <file>.gz instead of <file> if
 // it exists, has a later modification time, and the request supports gzip
 // encoding. Also serves the .gz file if the original doesn't exist.
-func ServeFile(w http.ResponseWriter, r *http.Request, name string) {
+func ServeFile(w http.ResponseWriter, r *http.Request, name string, cacheControl bool) {
 	dir, file := filepath.Split(name)
-	serveFile(w, r, http.Dir(dir), file, false)
+	serveFile(w, r, http.Dir(dir), file, false, cacheControl)
 }
 
 func serveFile(w http.ResponseWriter, r *http.Request, fs http.FileSystem,
-	name string, redirect bool) {
+	name string, redirect bool, cacheControl bool) {
 
 	if !strings.HasSuffix(strings.ToLower(name), ".gz") && supportsGzip(r) {
 		file, stat := open(fs, name+".gz")
@@ -52,7 +53,9 @@ func serveFile(w http.ResponseWriter, r *http.Request, fs http.FileSystem,
 			name = name[:len(name)-3]
 			setContentType(w, name, file)
 			w.Header().Set("Content-Encoding", "gzip")
-			w.Header().Set("Cache-Control", "must_revalidate, private, max-age=604800")
+			if cacheControl {
+				w.Header().Set("Cache-Control", "must_revalidate, private, max-age=604800")
+			}
 			http.ServeContent(w, r, name, stat.ModTime(), file)
 			return
 		}
@@ -62,7 +65,9 @@ func serveFile(w http.ResponseWriter, r *http.Request, fs http.FileSystem,
 	if file != nil {
 		defer file.Close()
 		if !stat.IsDir() {
-			w.Header().Set("Cache-Control", "must_revalidate, private, max-age=604800")
+			if cacheControl {
+				w.Header().Set("Cache-Control", "must_revalidate, private, max-age=604800")
+			}
 			http.ServeContent(w, r, stat.Name(), stat.ModTime(), file)
 		}
 		return

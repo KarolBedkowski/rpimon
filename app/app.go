@@ -29,8 +29,8 @@ func Init(appConfFile string, debug int) *AppConfiguration {
 	database.Init(conf.Users, conf.Debug)
 
 	http.Handle("/static/", http.StripPrefix("/static",
-		gzip.FileServer(http.Dir(conf.StaticDir))))
-	http.Handle("/favicon.ico", gzip.FileServer(http.Dir(conf.StaticDir)))
+		gzip.FileServer(http.Dir(conf.StaticDir), !conf.Debug)))
+	http.Handle("/favicon.ico", gzip.FileServer(http.Dir(conf.StaticDir), !conf.Debug))
 	http.Handle("/", logHandler(csrfHandler(context.ClearHandler(Router))))
 	return conf
 }
