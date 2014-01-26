@@ -65,10 +65,15 @@
 					Add this folder
 				</a>
 				<a class="btn btn-warning ajax-action" data-action="replace" data-uri="{{.Path}}" role="button">Clear playlist and this folder</a>
-				&nbsp;
-				<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" role="button" id="action-update">
+			</div>
+			<div class="btn-group btn-group-sm">
+				<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" role="button" id="action-update" data-uri="">
 					<span class="glyphicon glyphicon-refresh"></span>
 					Update Library
+				</a>
+				<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" role="button" id="action-update" data-uri="{{.Path}}">
+					<span class="glyphicon glyphicon-refresh"></span>
+					Update this folder
 				</a>
 			</div>
 		</p>

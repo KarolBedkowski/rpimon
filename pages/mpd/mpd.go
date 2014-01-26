@@ -129,6 +129,9 @@ func controlHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
+	case "update":
+		err = mpdActionUpdate(r.FormValue("uri"))
+
 	default:
 		err = mpdAction(action)
 	}

@@ -85,6 +85,18 @@ func mpdAction(action string) error {
 	return nil
 }
 
+func mpdActionUpdate(uri string) error {
+	conn, err := mpd.Dial("tcp", host)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	_, err = conn.Update(uri)
+	mpdListFilesCache.Clear()
+	mpdLibraryCache.Clear()
+	return err
+}
+
 func mpdPlaylistInfo(start, end int) (playlist []mpd.Attrs, err error, stat mpd.Attrs) {
 	conn, err := mpd.Dial("tcp", host)
 	if err != nil {

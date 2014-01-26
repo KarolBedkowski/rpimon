@@ -21,6 +21,7 @@ MPD.library = (function(self, $) {
 			"bAutoWidth": false,
 			"bStateSave": true,
 			"sPaginationType": "bootstrap",
+			"iDisplayLength": 25,
 			"aoColumnDefs": [{
 				"aTargets": [1],
 				"bSortable": false
@@ -68,14 +69,15 @@ MPD.library = (function(self, $) {
 
 		$("a#action-update").on("click", function(event) {
 			event.preventDefault();
-			var url = $(this).attr("href");
-			RPI.confirmDialog("Start updating library?", {
+			var url = $(this).attr("href"),
+				uri = $(this).data("uri");
+			RPI.confirmDialog("Start updating " + (uri ? "folder?" : "library?"), {
 				title: "Library",
 				btnSuccess: "Update",
 				onSuccess: function() {
 					RPI.showLoadingMsg();
-					$.get(url
-					).always(function() {
+					$.get(url, {uri: uri
+					}).always(function() {
 						RPI.hideLoadingMsg();
 					}).done(function() {
 						RPI.showFlash("success", "Library update started", 5);
