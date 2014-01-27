@@ -23,7 +23,7 @@ var RPI = (function(self, $) {
 			$("#dialog-confirm #dialog-confirm-success")
 				.html(params.btnSuccess || "Yes")
 				.addClass(params.btnSuccessClass || "btn-primary");
-			$("#dialog-confirm-success").on("click", function(event) {
+			$("#dialog-confirm-success").off("click").on("click", function(event) {
 				dlg.modal("hide");
 				if (params.onSuccess) {
 					params.onSuccess(event);
@@ -58,7 +58,7 @@ var RPI = (function(self, $) {
 			$("#dialog-alert #dialog-alert-success")
 				.html(params.btnSuccess || "Yes")
 				.addClass(params.btnSuccessClass || "btn-primary");
-			$("#dialog-alert-success").on("click", function(event) {
+			$("#dialog-alert-success").off("click").on("click", function(event) {
 				dlg.modal("hide");
 				if (params.onSuccess) {
 					params.onSuccess(event);
