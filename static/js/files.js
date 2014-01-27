@@ -54,7 +54,7 @@ FILES.browser = (function(self, $) {
 		$("#breadcrumb a").on("click", gotoAction);
 	}
 
-	function selectPath(path) {
+	function selectPath(path, skipAppdendHistory) {
 		currentPath = path;
 		RPI.showLoadingMsg();
 		$('input[name=p]').val(path);
@@ -66,8 +66,10 @@ FILES.browser = (function(self, $) {
 			cache: true,
 			dataType: "json"
 		}).done(function(msg) {
-			var new_location = "?p="+path;
-			window.history.pushState({ path: new_location }, window.title, new_location);
+			if (!skipAppdendHistory) {
+				var new_location = "?p="+path;
+				window.history.pushState({"module": "files"}, window.title, new_location);
+			}
 			table.fnClearTable();
 			table.fnAddData(msg);
 			updateBreadcrumb(path);
@@ -266,14 +268,22 @@ FILES.browser = (function(self, $) {
 			}
 		});
 
-		$(window).bind('popstate', function(event) {
-			var location = window.location.search;
-			if (location && location.startsWith("?p=")) {
-				location = location.substr(3, location.length);
-				location = decodeURIComponent(location);
-				selectPath(location || ".");
+		function gotoLocation(event) {
+			var location = "";
+			if (event) {
+				var state = event.originalEvent.state;
+				if (state && state.module == "files") {
+					location = window.location.search;
+					if (location && location.startsWith("?p=")) {
+						location = location.substr(3, location.length);
+						location = decodeURIComponent(location);
+					}
+				}
 			}
-		});
+			selectPath(location || ".", true);
+		}
+
+		$(window).bind('popstate', gotoLocation);
 
 		$('div.modal').on('shown.bs.modal', function() {
 			var inputs = $('input:first-of-type');
@@ -284,12 +294,7 @@ FILES.browser = (function(self, $) {
 
 		$("#create-folder-dlg form").submit(createDirectory);
 
-		var location = window.location.search;
-		if (location && location.startsWith("?p=")) {
-			location = location.substr(3, location.length);
-			location = decodeURIComponent(location);
-		}
-		selectPath(location || ".");
+		gotoLocation();
 	};
 
 	return self;
