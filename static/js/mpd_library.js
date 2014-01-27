@@ -80,7 +80,7 @@ MPD.library = (function(self, $) {
 				updateBreadcrumb(currentPath);
 				if (!skipAppdendHistory) {
 					var new_location = "?p="  + currentPath;
-					window.history.spushState({"module": "mpd_library"}, window.title, new_location);
+					window.history.pushState({"module": "mpd_library"}, window.title, new_location);
 				}
 				table.fnClearTable();
 				table.fnAddData(response.items || []);
