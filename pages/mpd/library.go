@@ -81,9 +81,17 @@ type libraryContenet struct {
 }
 
 func libraryContentService(w http.ResponseWriter, r *http.Request) {
-	path, _ := url.QueryUnescape(strings.TrimLeft(r.FormValue("p"), "/"))
+	path, _ := url.QueryUnescape(r.FormValue("p"))
+	if len(path) > 0 {
+		if path[0] != '/' {
+			path = "/" + path
+		}
+		if path[len(path)-1] != '/' {
+			path = path + "/"
+		}
+	}
 	result := libraryContenet{Path: path}
-	folders, files, err := getFiles(path)
+	folders, files, err := getFiles(strings.Trim(path, "/"))
 	if err != nil {
 		result.Error = err.Error()
 	} else {

@@ -7,50 +7,21 @@
 		<a href="#" class="alert-link" onclick="location.reload()">Reload</a>
 	</div>
 </div>
-
 {{else}}
-
 <div class="container">
-	{{$path := .Path}}
-	{{$ml := namedurl "mpd-library"}}
-	<ol class="breadcrumb">
-	{{range .Breadcrumb}}
-		{{if .Active}}
-		<li class="active"><a href="{{$ml}}?p={{.Href}}">{{.Title}}</a></li>
-		{{else}}
-		<li>{{.Title}}</li>
-		{{end}}
-	{{end}}
-	</ol>
+	<div class="col-xs-12 col-md-8">
+		<ol class="breadcrumb" id="breadcrumb"></ol>
+	</div>
 	<div class="">
 		<table class="table-hover table-bordered table-condensed" id="table-mpd-library">
 			<thead>
 				<tr>
+					<th width="16px">&nbsp;</th>
 					<th>Name</th>
 					<th width="48px">&nbsp;</th>
 				</tr>
 			</thead>
 			<tbody>
-			{{range .Folders}}
-				<tr data-uri="{{$path}}/{{.}}">
-					<td><a href="{{$ml}}?p={{$path}}/{{.}}"><span class="glyphicon glyphicon-folder-close"></span>&nbsp;{{.}}</a></td>
-					<td>
-						<a href="#" class="ajax-action" data-action="add"><span class="glyphicon glyphicon-plus" title="Add"></a>
-						&nbsp;
-						<a href="#" class="ajax-action" data-action="replace"><span class="glyphicon glyphicon-play" title="Replace"></a>
-					</td>
-				</tr>
-			{{end}}
-			{{range .Files}}
-				<tr data-uri="{{$path}}/{{.}}">
-					<td><span class="glyphicon glyphicon-file"></span>&nbsp;{{.}}</td>
-					<td>
-						<a href="#" class="ajax-action" data-action="add" ><span class="glyphicon glyphicon-plus" title="Add"></a>
-						<a href="#" class="ajax-action" data-action="replace"><span class="glyphicon glyphicon-play" title="Replace"></a>
-						<a href="#" class="action-info"><span class="glyphicon glyphicon-info-sign" title="Info"></a>
-					</td>
-				</tr>
-			{{end}}
 			</tbody>
 		</table>
 	</div>
@@ -92,7 +63,8 @@
 			"urls": {
 				"mpd-service-song-info" : {{namedurl "mpd-service-song-info"}},
 				"mpd-library-action" : {{namedurl "mpd-library-action"}},
-			},
+				"mpd-library-content": {{namedurl "mpd-library-content"}}
+			}
 		});
 	});
 </script>
