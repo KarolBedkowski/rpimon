@@ -1,56 +1,18 @@
 {{define "body"}}
-
-{{if .Error}}
 <div class="container">
-	<div class="alert alert-danger" id="main-alert">
-		<p>Error loading library: <em>{{.Error}}</em></p>
-		<a href="#" class="alert-link" onclick="location.reload()">Reload</a>
+	<div class="col-xs-12 col-md-8">
+		<ol class="breadcrumb" id="breadcrumb"></ol>
 	</div>
-</div>
-
-{{else}}
-
-<div class="container">
-	{{$path := .Path}}
-	{{$ml := namedurl "mpd-library"}}
-	<ol class="breadcrumb">
-	{{range .Breadcrumb}}
-		{{if .Active}}
-		<li class="active"><a href="{{$ml}}?p={{.Href}}">{{.Title}}</a></li>
-		{{else}}
-		<li>{{.Title}}</li>
-		{{end}}
-	{{end}}
-	</ol>
 	<div class="">
 		<table class="table-hover table-bordered table-condensed" id="table-mpd-library">
 			<thead>
 				<tr>
+					<th width="16px">&nbsp;</th>
 					<th>Name</th>
 					<th width="48px">&nbsp;</th>
 				</tr>
 			</thead>
 			<tbody>
-			{{range .Folders}}
-				<tr>
-					<td><a href="{{$ml}}?p={{$path}}/{{.}}"><span class="glyphicon glyphicon-folder-close"></span>&nbsp;{{.}}</a></td>
-					<td>
-						<a href="#" class="ajax-action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
-						&nbsp;
-						<a href="#" class="ajax-action" data-action="replace" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-play" title="Replace"></a>
-					</td>
-				</tr>
-			{{end}}
-			{{range .Files}}
-				<tr>
-					<td><span class="glyphicon glyphicon-file"></span>&nbsp;{{.}}</td>
-					<td>
-						<a href="#" class="ajax-action" data-action="add" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-plus" title="Add"></a>
-						<a href="#" class="ajax-action" data-action="replace" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-play" title="Replace"></a>
-						<a href="#" class="action-info" data-uri="{{$path}}/{{.}}"><span class="glyphicon glyphicon-info-sign" title="Info"></a>
-					</td>
-				</tr>
-			{{end}}
 			</tbody>
 		</table>
 	</div>
@@ -60,26 +22,22 @@
 	<section>
 		<p>
 			<div class="btn-group btn-group-sm">
-				<a class="btn btn-success ajax-action" data-action="add" data-uri="{{.Path}}" role="button">
-					<span class="glyphicon glyphicon-plus"></span>
-					Add this folder
-				</a>
-				<a class="btn btn-warning ajax-action" data-action="replace" data-uri="{{.Path}}" role="button">Clear playlist and this folder</a>
+				<button class="btn btn-success ajax-action" data-action="add">
+					<span class="glyphicon glyphicon-plus"></span> Add this folder
+				</button>
+				<button class="btn btn-warning ajax-action" data-action="replace">Clear playlist and this folder</button>
 			</div>
 			<div class="btn-group btn-group-sm">
-				<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" role="button" id="action-update" data-uri="">
-					<span class="glyphicon glyphicon-refresh"></span>
-					Update Library
-				</a>
-				<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" role="button" id="action-update" data-uri="{{.Path}}">
-					<span class="glyphicon glyphicon-refresh"></span>
-					Update this folder
-				</a>
+				<button class="btn btn-default action-update" data-kind="lib">
+					<span class="glyphicon glyphicon-refresh"></span> Update Library
+				</button>
+				<button class="btn btn-default action-update" data-kind="">
+					<span class="glyphicon glyphicon-refresh"></span> Update this folder
+				</button>
 			</div>
 		</p>
 	</section>
 </div>
-{{end}}
 {{end}}
 
 {{define "scripts"}}
@@ -91,9 +49,10 @@
 		MPD.library.init({
 			"urls": {
 				"mpd-service-song-info" : {{namedurl "mpd-service-song-info"}},
-			},
+				"mpd-library-action" : {{namedurl "mpd-library-action"}},
+				"mpd-library-content": {{namedurl "mpd-library-content"}}
+			}
 		});
 	});
 </script>
-
 {{end}}

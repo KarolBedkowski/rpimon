@@ -10,9 +10,7 @@ import (
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"net/url"
-	"path/filepath"
 	"strconv"
-	"strings"
 )
 
 var subRouter *mux.Router
@@ -66,6 +64,12 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/library",
 		app.VerifyPermission(libraryPageHandler, "mpd")).Name(
 		"mpd-library")
+	subRouter.HandleFunc("/library/content",
+		app.VerifyPermission(libraryContentService, "mpd")).Name(
+		"mpd-library-content")
+	subRouter.HandleFunc("/library/action",
+		app.VerifyPermission(libraryActionHandler, "mpd")).Methods(
+		"PUT", "POST").Name("mpd-library-action")
 	// orher
 	subRouter.HandleFunc("/log",
 		app.VerifyPermission(mpdLogPageHandler, "mpd")).Name(
@@ -179,79 +183,6 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 const fakeResult = `{"Status":{"consume":"0","mixrampdb":"0.000000","mixrampdelay":"nan","nextsong":"1","nextsongid":"1","playlist":"2","playlistlength":"222","random":"0","repeat":"0","single":"0","song":"0","songid":"0","state":"stop","volume":"100","xfade":"0"},"Current":{"Album":"Café Del Mar - Classic I","Artist":"Jules Massenet","Date":"2002","Genre":"Baroque, Modern, Romantic, Classical","Id":"0","Last-Modified":"2013-09-27T06:14:59Z","Pos":"0","Time":"312","Title":"Meditation","Track":"01/12","file":"muzyka/mp3/cafe del mar/compilations/classics/2002, classic/01. jules massenet - meditation.mp3"},"Error":""}`
-
-type libraryPageCtx struct {
-	*app.BasePageContext
-	CurrentPage string
-	Path        string
-	Files       []string
-	Folders     []string
-	Error       string
-	Breadcrumb  []BreadcrumbItem
-}
-
-type BreadcrumbItem struct {
-	Title  string
-	Href   string
-	Active bool
-}
-
-func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &libraryPageCtx{BasePageContext: app.NewBasePageContext("Mpd", "mpd", w, r)}
-	ctx.LocalMenu = createLocalMenu()
-	ctx.CurrentLocalMenuPos = "mpd-library"
-	ctx.Path = ""
-	r.ParseForm()
-	if path, ok := r.Form["p"]; ok {
-		ctx.Path, _ = url.QueryUnescape(strings.TrimLeft(path[0], "/"))
-	}
-
-	ctx.Breadcrumb = append(ctx.Breadcrumb, BreadcrumbItem{"[Library]", "", false})
-	if ctx.Path != "" && ctx.Path != "." {
-		prevPath := ""
-		for idx, pElem := range strings.Split(ctx.Path, "/") {
-			ctx.Breadcrumb[idx].Active = true
-			prevPath = filepath.Join(prevPath, pElem)
-			ctx.Breadcrumb = append(ctx.Breadcrumb, BreadcrumbItem{pElem, prevPath, false})
-		}
-	}
-
-	if action, ok := r.Form["a"]; ok {
-		switch {
-		case action[0] == "add" || action[0] == "replace":
-			if r.Method == "PUT" {
-				if uriL, ok := r.Form["u"]; ok {
-					uri := strings.TrimLeft(uriL[0], "/")
-					uri, _ = url.QueryUnescape(uri)
-					err := addFileToPlaylist(uri, action[0] == "replace")
-					if err == nil {
-						w.Write([]byte("Added to playlist"))
-					} else {
-						http.Error(w, err.Error(), http.StatusBadRequest)
-					}
-					return
-				}
-			}
-			http.Error(w, "Invalid method for add/replace action", http.StatusBadRequest)
-			return
-		case action[0] == "up":
-			if ctx.Path != "" {
-				idx := strings.LastIndex(ctx.Path, "/")
-				if idx > 0 {
-					ctx.Path = ctx.Path[:idx]
-				} else {
-					ctx.Path = ""
-				}
-			}
-		}
-	}
-	var err error
-	ctx.Folders, ctx.Files, err = getFiles(ctx.Path)
-	if err != nil {
-		ctx.Error = err.Error()
-	}
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "mpd/library.tmpl", "flash.tmpl")
-}
 
 type songInfoCtx struct {
 	Error string
