@@ -66,7 +66,7 @@ MPD.library = (function(self, $) {
 		});
 	}
 
-	function selectPath(path) {
+	function selectPath(path, skipAppdendHistory) {
 		currentPath = path;
 		RPI.showLoadingMsg();
 		$.ajax({
@@ -75,12 +75,13 @@ MPD.library = (function(self, $) {
 		}).done(function(response) {
 			if (response.error) {
 				showError(response.error);
-			}
-			else {
+			} else {
 				currentPath = response.path;
 				updateBreadcrumb(currentPath);
-				var new_location = "?p="  + currentPath;
-				window.history.pushState({ path: new_location }, window.title, new_location);
+				if (!skipAppdendHistory) {
+					var new_location = "?p="  + currentPath;
+					window.history.spushState({"module": "mpd_library"}, window.title, new_location);
+				}
 				table.fnClearTable();
 				table.fnAddData(response.items || []);
 			}
@@ -197,26 +198,28 @@ MPD.library = (function(self, $) {
 			}).open();
 		});
 
+		function gotoLocation(event) {
+			if (event) {
+				var state = event.originalEvent.state;
+				if (!state || state.module != "mpd_library") {
+					return;
+				}
+			}
+			var location = window.location.search;
+			if (location && location.startsWith("?p=")) {
+				location = location.substr(3, location.length);
+				location = decodeURIComponent(location);
+			}
+			selectPath(location || "/", true);
+		}
+
 		$("button.ajax-action").on("click", function(event) {
 			event.preventDefault();
 			action({a: $(this).data("action"), u: currentPath});
 		});
 
-		$(window).bind('popstate', function(event) {
-			var location = window.location.search;
-			if (location && location.startsWith("?p=")) {
-				location = location.substr(3, location.length);
-				location = decodeURIComponent(location);
-				selectPath(location || "/");
-			}
-		});
-
-		var location = window.location.search;
-		if (location && location.startsWith("?p=")) {
-			location = location.substr(3, location.length);
-			location = decodeURIComponent(location);
-		}
-		selectPath(location || "/");
+		$(window).bind('popstate', gotoLocation);
+		gotoLocation();
 	};
 
 	return self;
