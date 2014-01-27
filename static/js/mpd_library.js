@@ -79,7 +79,7 @@ MPD.library = (function(self, $) {
 				currentPath = response.path;
 				updateBreadcrumb(currentPath);
 				if (!skipAppdendHistory) {
-					var new_location = "?p="  + currentPath;
+					var new_location = "?p="  + encodeURIComponent(currentPath);
 					window.history.pushState({"module": "mpd_library"}, window.title, new_location);
 				}
 				table.fnClearTable();
@@ -198,13 +198,7 @@ MPD.library = (function(self, $) {
 			}).open();
 		});
 
-		function gotoLocation(event) {
-			if (event) {
-				var state = event.originalEvent.state;
-				if (!state || state.module != "mpd_library") {
-					return;
-				}
-			}
+		function gotoLocation() {
 			var location = window.location.search;
 			if (location && location.startsWith("?p=")) {
 				location = location.substr(3, location.length);

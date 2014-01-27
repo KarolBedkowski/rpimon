@@ -67,7 +67,7 @@ FILES.browser = (function(self, $) {
 			dataType: "json"
 		}).done(function(msg) {
 			if (!skipAppdendHistory) {
-				var new_location = "?p="+path;
+				var new_location = "?p=" + encodeURIComponent(path);
 				window.history.pushState({"module": "files"}, window.title, new_location);
 			}
 			table.fnClearTable();
@@ -268,17 +268,11 @@ FILES.browser = (function(self, $) {
 			}
 		});
 
-		function gotoLocation(event) {
-			var location = "";
-			if (event) {
-				var state = event.originalEvent.state;
-				if (state && state.module == "files") {
-					location = window.location.search;
-					if (location && location.startsWith("?p=")) {
-						location = location.substr(3, location.length);
-						location = decodeURIComponent(location);
-					}
-				}
+		function gotoLocation() {
+			var location = window.location.search;
+			if (location && location.startsWith("?p=")) {
+				location = location.substr(3, location.length);
+				location = decodeURIComponent(location);
 			}
 			selectPath(location || ".", true);
 		}
