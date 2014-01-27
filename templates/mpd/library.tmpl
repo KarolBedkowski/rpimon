@@ -1,13 +1,4 @@
 {{define "body"}}
-
-{{if .Error}}
-<div class="container">
-	<div class="alert alert-danger" id="main-alert">
-		<p>Error loading library: <em>{{.Error}}</em></p>
-		<a href="#" class="alert-link" onclick="location.reload()">Reload</a>
-	</div>
-</div>
-{{else}}
 <div class="container">
 	<div class="col-xs-12 col-md-8">
 		<ol class="breadcrumb" id="breadcrumb"></ol>
@@ -31,18 +22,18 @@
 	<section>
 		<p>
 			<div class="btn-group btn-group-sm">
-				<a class="btn btn-success ajax-action" data-action="add" data-uri="{{.Path}}" role="button">
+				<a class="btn btn-success ajax-action" data-action="add" role="button">
 					<span class="glyphicon glyphicon-plus"></span>
 					Add this folder
 				</a>
-				<a class="btn btn-warning ajax-action" data-action="replace" data-uri="{{.Path}}" role="button">Clear playlist and this folder</a>
+				<a class="btn btn-warning ajax-action" data-action="replace" role="button">Clear playlist and this folder</a>
 			</div>
 			<div class="btn-group btn-group-sm">
-				<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" role="button" id="action-update" data-uri="">
+				<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" role="button" id="action-update" data-kind="lib">
 					<span class="glyphicon glyphicon-refresh"></span>
 					Update Library
 				</a>
-				<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" role="button" id="action-update" data-uri="{{.Path}}">
+				<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" role="button" id="action-update">
 					<span class="glyphicon glyphicon-refresh"></span>
 					Update this folder
 				</a>
@@ -50,7 +41,6 @@
 		</p>
 	</section>
 </div>
-{{end}}
 {{end}}
 
 {{define "scripts"}}
@@ -68,5 +58,4 @@
 		});
 	});
 </script>
-
 {{end}}

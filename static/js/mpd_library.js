@@ -116,6 +116,7 @@ MPD.library = (function(self, $) {
 				{
 					"aTargets": [2],
 					"mData": 0,
+					"bSortable": false,
 					"mRender": function(data, type, full) {
 						var res = ['<a href="#" class="ajax-action" data-action="add"><span class="glyphicon glyphicon-plus" title="Add"></a>',
 								'<a href="#" class="ajax-action" data-action="replace"><span class="glyphicon glyphicon-play" title="Replace"></a>'
@@ -136,7 +137,11 @@ MPD.library = (function(self, $) {
 				$("a.ajax-action").on("click", function(event) {
 					event.preventDefault();
 					var link = $(this),
-						uri = link.closest('tr').data("uri");
+						linkTr = link.closest('tr'),
+						uri = currentPath;
+					if (linkTr) {
+						uri = linkTr.data("uri") || currentPath;
+					}
 					RPI.showLoadingMsg();
 					$.ajax({
 						url: urls["mpd-library-action"],
@@ -173,8 +178,9 @@ MPD.library = (function(self, $) {
 		$("a#action-update").on("click", function(event) {
 			event.preventDefault();
 			var url = $(this).attr("href"),
-				uri = $(this).data("uri");
-			RPI.confirmDialog("Start updating " + (uri ? "folder?" : "library?"), {
+				kind = $(this).data("kind"),
+				uri = kind == "lib" ? "" : currentPath;
+			RPI.confirmDialog("Start updating " + (uri == "/" ? "folder?" : "library?"), {
 				title: "Library",
 				btnSuccess: "Update",
 				onSuccess: function() {
