@@ -261,6 +261,7 @@ div#loading-box p {
 	overflow: none;
 	z-index: 1100;
 	position:  absolute;
-	padding-left: 10%;
-	padding-right: 10%;
+	margin-left: 5%;
+	margin-right: 5%;
+	width: 90%;
 }
