@@ -22,21 +22,18 @@
 	<section>
 		<p>
 			<div class="btn-group btn-group-sm">
-				<a class="btn btn-success ajax-action" data-action="add" role="button">
-					<span class="glyphicon glyphicon-plus"></span>
-					Add this folder
-				</a>
-				<a class="btn btn-warning ajax-action" data-action="replace" role="button">Clear playlist and this folder</a>
+				<button class="btn btn-success ajax-action" data-action="add">
+					<span class="glyphicon glyphicon-plus"></span> Add this folder
+				</button>
+				<button class="btn btn-warning ajax-action" data-action="replace">Clear playlist and this folder</button>
 			</div>
 			<div class="btn-group btn-group-sm">
-				<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" role="button" id="action-update" data-kind="lib">
-					<span class="glyphicon glyphicon-refresh"></span>
-					Update Library
-				</a>
-				<a class="btn btn-default" href="{{namedurl "mpd-control" "action" "update"}}" role="button" id="action-update">
-					<span class="glyphicon glyphicon-refresh"></span>
-					Update this folder
-				</a>
+				<button class="btn btn-default action-update" data-kind="lib">
+					<span class="glyphicon glyphicon-refresh"></span> Update Library
+				</button>
+				<button class="btn btn-default action-update" data-kind="">
+					<span class="glyphicon glyphicon-refresh"></span> Update this folder
+				</button>
 			</div>
 		</p>
 	</section>

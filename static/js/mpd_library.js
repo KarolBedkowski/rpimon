@@ -49,6 +49,23 @@ MPD.library = (function(self, $) {
 		selectPath(p);
 	}
 
+	function action(data) {
+		RPI.showLoadingMsg();
+		$.ajax({
+			url: urls["mpd-library-action"],
+			type: "PUT",
+			data: {a: link.data("action"), u: currentPath}
+		}).always(function() {
+			RPI.hideLoadingMsg();
+		}).done(function(res) {
+			RPI.showFlash("success", res, 2);
+		}).fail(function(jqXHR, textStatus) {
+			RPI.alert(textStatus, {
+				title: "Error"
+			}).open();
+		});
+	}
+
 	function selectPath(path) {
 		currentPath = path;
 		RPI.showLoadingMsg();
@@ -132,35 +149,18 @@ MPD.library = (function(self, $) {
 				$(row).data("uri", currentPath + aData[1]);
 			},
 			"fnDrawCallback": function() { //oSettings) {
-				$("a.open-action").on("click", gotoAction);
+				$("a.open-action", table).on("click", gotoAction);
 
-				$("a.ajax-action").on("click", function(event) {
+				$("a.ajax-action", table).on("click", function(event) {
 					event.preventDefault();
 					var link = $(this),
-						linkTr = link.closest('tr'),
-						uri = currentPath;
-					if (linkTr) {
-						uri = linkTr.data("uri") || currentPath;
-					}
-					RPI.showLoadingMsg();
-					$.ajax({
-						url: urls["mpd-library-action"],
-						type: "PUT",
-						data: {a: link.data("action"), u: uri}
-					}).always(function() {
-						RPI.hideLoadingMsg();
-					}).done(function(res) {
-						RPI.showFlash("success", res, 2);
-					}).fail(function(jqXHR, textStatus) {
-						RPI.alert(textStatus, {
-							title: "Error"
-						}).open();
-					});
+						uri = link.closest('tr').data("uri");
+					action({a: $(this).data("action"), u: uri});
 				});
 
-				$("a.action-info").on("click", function(event) {
-					var uri = $(this).closest('tr').data("uri");
+				$("a.action-info", table).on("click", function(event) {
 					event.preventDefault();
+					var uri = $(this).closest('tr').data("uri");
 					$.ajax({
 						url: urls["mpd-service-song-info"],
 						type: "GET",
@@ -175,7 +175,7 @@ MPD.library = (function(self, $) {
 			}
 		});
 
-		$("a#action-update").on("click", function(event) {
+		$("button.action-update").on("click", function(event) {
 			event.preventDefault();
 			var url = $(this).attr("href"),
 				kind = $(this).data("kind"),
@@ -195,6 +195,11 @@ MPD.library = (function(self, $) {
 					});
 				}
 			}).open();
+		});
+
+		$("button.ajax-action").on("click", function(event) {
+			event.preventDefault();
+			action({a: $(this).data("action"), u: currentPath});
 		});
 
 		$(window).bind('popstate', function(event) {
