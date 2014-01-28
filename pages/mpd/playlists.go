@@ -4,9 +4,10 @@ package mpd
 
 import (
 	"code.google.com/p/gompd/mpd"
-	"github.com/gorilla/mux"
+	"encoding/json"
 	"k.prv/rpimon/app"
-	//	l "k.prv/rpimon/helpers/logging"
+	h "k.prv/rpimon/helpers"
+	//l "k.prv/rpimon/helpers/logging"
 	"net/http"
 )
 
@@ -25,24 +26,18 @@ func newPlaylistsPageCtx(w http.ResponseWriter, r *http.Request) *playlistsPageC
 }
 func playlistsPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := newPlaylistsPageCtx(w, r)
-	playlists, err := mpdGetPlaylists()
-	data.Playlists = playlists
-	if err != nil {
-		data.Error = err.Error()
-	}
 	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlists.tmpl", "flash.tmpl")
 }
 
 func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	action, ok := vars["action"]
-	if !ok || action == "" {
-		http.Error(w, "missing action", http.StatusBadRequest)
+	r.ParseForm()
+	//l.Debug("Form: %#v", r.Form)
+	action, ok := h.GetParam(w, r, "a")
+	if !ok {
 		return
 	}
-	playlist, ok := vars["plist"]
-	if !ok || playlist == "" {
-		http.Error(w, "missing songid", http.StatusBadRequest)
+	playlist, ok := h.GetParam(w, r, "p")
+	if !ok {
 		return
 	}
 	status, err := mpdPlaylistsAction(playlist, action)
@@ -51,4 +46,18 @@ func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func playlistsListService(w http.ResponseWriter, r *http.Request) {
+	result := map[string]interface{}{
+		"error": "",
+	}
+	if playlists, err := mpdGetPlaylists(); err != nil {
+		result["error"] = err.Error()
+	} else {
+		result["items"] = playlists
+	}
+	encoded, _ := json.Marshal(result)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(encoded)
 }

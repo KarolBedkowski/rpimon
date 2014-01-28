@@ -38,12 +38,8 @@ func CreateRoutes(parentRoute *mux.Route) {
 		"PUT").Name("files-file-action")
 }
 
-type pageCtx struct {
-	*app.BasePageContext
-}
-
 func mainPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Files", "files", w, r)}
+	ctx := app.NewBasePageContext("Files", "files", w, r)
 	r.ParseForm()
 	var relpath, abspath = ".", config.BaseDir
 	if pctx != nil {
@@ -74,18 +70,15 @@ func mkdirPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext)
 		http.Error(w, "Error: missing path ", http.StatusBadRequest)
 		return
 	}
-	var _, abspath = pctx.relpath, pctx.abspath
-	dirname, ok := h.GetParam(w, r, "name")
-	if !ok {
-		return
+	if dirname, ok := h.GetParam(w, r, "name"); ok {
+		dirpath := filepath.Join(pctx.abspath, dirname)
+		l.Debug("files: create dir %s", dirpath)
+		if err := os.MkdirAll(dirpath, os.ModePerm|0770); err != nil {
+			http.Error(w, "Error: creating directory "+err.Error(),
+				http.StatusNotFound)
+		}
+		w.Write([]byte("OK"))
 	}
-	dirpath := filepath.Join(abspath, dirname)
-	l.Debug("files: create dir %s", dirpath)
-	if err := os.MkdirAll(dirpath, os.ModePerm|0770); err != nil {
-		http.Error(w, "Error: creating directory "+err.Error(),
-			http.StatusNotFound)
-	}
-	w.Write([]byte("OK"))
 }
 
 func uploadPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
@@ -179,9 +172,7 @@ func serviceDirsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	path = id2Dir(path)
-
-	abspath, relpath, err := isPathValid(path)
+	abspath, relpath, err := isPathValid(id2Dir(path))
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
 		return
