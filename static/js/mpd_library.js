@@ -54,7 +54,7 @@ MPD.library = (function(self, $) {
 		$.ajax({
 			url: urls["mpd-library-action"],
 			type: "PUT",
-			data: {a: link.data("action"), u: currentPath}
+			data: data
 		}).always(function() {
 			RPI.hideLoadingMsg();
 		}).done(function(res) {
