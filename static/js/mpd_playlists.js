@@ -69,7 +69,13 @@ MPD.plists = (function(self, $) {
 			"bLengthChange": false,
 			"aoColumnDefs": [
 				{"aTargets": [0], "mData": "playlist"},
-				{"aTargets": [1], "mData": "Last-Modified"},
+				{
+					"aTargets": [1],
+					"mData": "Last-Modified",
+					"mRender": function(data) {
+						return data.replace("T", " ");
+					}
+				},
 				{
 					"aTargets": [2],
 					"mData": null,
