@@ -160,7 +160,7 @@ func getLog(log logsDef, file string, lines int) (result string, err error) {
 				return "", err
 			}
 			if !strings.HasPrefix(logpath, log.Dir) {
-				return "", errors.New("Invalid path")
+				return "", errors.New("invalid path")
 			}
 		}
 		result, err = h.ReadFromFileLastLines(logpath, lines)

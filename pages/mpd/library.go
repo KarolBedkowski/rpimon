@@ -15,11 +15,13 @@ type libraryPageCtx struct {
 	CurrentPage string
 }
 
+/*
 type BreadcrumbItem struct {
 	Title  string
 	Href   string
 	Active bool
 }
+*/
 
 func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &libraryPageCtx{BasePageContext: app.NewBasePageContext("Mpd", "mpd", w, r)}

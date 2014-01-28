@@ -40,6 +40,7 @@ func BuildQuery(pairs ...string) (query string) {
 	return
 }
 
+// GetParam return form value and ok=true when param is in request and != "" or generate http.Error
 func GetParam(w http.ResponseWriter, r *http.Request, param string) (value string, ok bool) {
 	var paramL []string
 	if paramL, ok = r.Form[param]; ok {

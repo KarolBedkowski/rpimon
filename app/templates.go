@@ -19,6 +19,7 @@ var funcMap = template.FuncMap{
 	"formatDate": FormatDate,
 }
 
+// FormatDate in template
 func FormatDate(date time.Time, format string) string {
 	if format == "" {
 		format = "2006-01-02 15:04:05"

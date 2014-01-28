@@ -168,13 +168,12 @@ func mpdPlaylistsAction(playlist, action string) (string, error) {
 		err := conn.PlaylistRemove(playlist)
 		if err == nil {
 			return "Plylist removed", nil
-		} else {
-			return "", err
 		}
+		return "", err
 	default:
 		l.Warn("page.mpd mpdAction: wrong action ", action)
 	}
-	return "", errors.New("Invalid action")
+	return "", errors.New("invalid action")
 }
 
 func setVolume(volume int) error {
@@ -307,6 +306,7 @@ func addToPlaylist(uri string) (err error) {
 
 var mpdShortStatusCache = h.NewSimpleCache(5)
 
+// GetShortStatus return cached MPD status
 func GetShortStatus() (map[string]string, error) {
 	if result, ok := mpdShortStatusCache.GetValue(); ok {
 		cachedValue := result.(mpd.Attrs)

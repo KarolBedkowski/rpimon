@@ -116,7 +116,7 @@ func controlHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r.ParseForm()
-	err := errors.New("Invalid request")
+	err := errors.New("invalid request")
 	switch action {
 	case "volume":
 		if vol := r.Form["vol"][0]; vol != "" {

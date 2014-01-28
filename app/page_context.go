@@ -35,6 +35,7 @@ func init() {
 	hostname = strings.Trim(string(file), " \n")
 }
 
+// Types of flashes
 var FlashKind = []string{"error", "info", "success"}
 
 // NewBasePageContext create base page context for request
