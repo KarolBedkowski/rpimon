@@ -13,11 +13,9 @@ import (
 	"strings"
 )
 
-var subRouter *mux.Router
-
 // CreateRoutes for /logs
 func CreateRoutes(parentRoute *mux.Route) {
-	subRouter = parentRoute.Subrouter()
+	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("logs-index")
 	subRouter.HandleFunc("/serv", app.VerifyPermission(servLogHandler, "admin")).Name("logs-serv")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("logs-page")

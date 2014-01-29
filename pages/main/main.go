@@ -12,11 +12,9 @@ import (
 	"strings"
 )
 
-var subRouter *mux.Router
-
 // CreateRoutes for /main
 func CreateRoutes(parentRoute *mux.Route) {
-	subRouter = parentRoute.Subrouter()
+	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", mainPageHanler).Name("main-index")
 	subRouter.HandleFunc("/system",
 		app.VerifyPermission(systemPageHanler, "admin")).Name(
@@ -24,16 +22,6 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/info",
 		app.VerifyPermission(infoHandler, "admin")).Name(
 		"main-serv-info")
-}
-
-type fsInfo struct {
-	Name       string
-	Size       string
-	Used       string
-	Available  string
-	UsedPerc   int
-	MountPoint string
-	FreePerc   int
 }
 
 type pageCtx struct {

@@ -9,11 +9,9 @@ import (
 	"strings"
 )
 
-var subRouter *mux.Router
-
 // CreateRoutes for /net
 func CreateRoutes(parentRoute *mux.Route) {
-	subRouter = parentRoute.Subrouter()
+	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("net-index")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("net-page")
 }
@@ -38,6 +36,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 		page = "ifconfig"
 	}
 	data := app.NewSimpleDataPageCtx(w, r, "Network", "net", page, createLocalMenu())
+	data.CurrentLocalMenuPos = page
 	switch page {
 	case "ifconfig":
 		data.Data = h.ReadFromCommand("ip", "addr")

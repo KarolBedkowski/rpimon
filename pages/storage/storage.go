@@ -8,11 +8,9 @@ import (
 	"strings"
 )
 
-var subRouter *mux.Router
-
 // CreateRoutes for /storage
 func CreateRoutes(parentRoute *mux.Route) {
-	subRouter = parentRoute.Subrouter()
+	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(dfPageHandler, "admin")).Name("storage-index")
 	subRouter.HandleFunc("/mount", app.VerifyPermission(mountPageHandler, "admin")).Name("storage-mount")
 	subRouter.HandleFunc("/umount", app.VerifyPermission(umountPageHandler, "admin")).Name("storage-umount")
@@ -59,16 +57,14 @@ type mountPoint struct {
 	Options string
 }
 
-type mountPageCtx struct {
-	*app.SimpleDataPageCtx
-	CurrentPage string
-	Data        string
-	Mounted     []*mountPoint
-}
-
 func mountPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &mountPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r,
-		"Storage", "storage", "storage", createLocalMenu())}
+	var ctx struct {
+		*app.SimpleDataPageCtx
+		CurrentPage string
+		Data        string
+		Mounted     []*mountPoint
+	}
+	ctx.SimpleDataPageCtx = app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", createLocalMenu())
 	ctx.CurrentLocalMenuPos = "mount"
 	ctx.Data = h.ReadFromCommand("sudo", "mount")
 	ctx.Mounted = mountCmdToMountPoints(ctx.Data)
@@ -103,12 +99,6 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 	sess.Save(r, w)
 
 	http.Redirect(w, r, app.GetNamedURL("storage-mount"), 302)
-}
-
-type dfPageCtx struct {
-	*app.SimpleDataPageCtx
-	CurrentPage string
-	Filesystems [][]string
 }
 
 func dfPageHandler(w http.ResponseWriter, r *http.Request) {

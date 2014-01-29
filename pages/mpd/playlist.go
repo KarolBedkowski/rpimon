@@ -19,7 +19,6 @@ var decoder = schema.NewDecoder()
 
 type playlistPageCtx struct {
 	*app.BasePageContext
-	CurrentPage   string
 	Playlist      []mpd.Attrs
 	CurrentSongID string
 	CurrentSong   string
@@ -132,13 +131,6 @@ func addToPlaylistPageHandler(w http.ResponseWriter, r *http.Request) {
 var mpdPlaylistCache = h.NewSimpleCache(10)
 var mpdStatusCache = h.NewSimpleCache(10)
 
-type sInfoParams struct {
-	Start  int    `schema:"iDisplayStart"`
-	End    int    `schema:"iDisplayLength"`
-	Echo   string `schema:"sEcho"`
-	Search string `schema:"sSearch"`
-}
-
 func getPlaylistStat() (playlist [][]string, stat mpd.Attrs, err error) {
 	if cachedPlaylist, ok := mpdPlaylistCache.GetValue(); ok {
 		playlist = cachedPlaylist.([][]string)
@@ -175,6 +167,13 @@ func filterPlaylist(playlist [][]string, filter string) (filtered [][]string) {
 		}
 	}
 	return
+}
+
+type sInfoParams struct {
+	Start  int    `schema:"iDisplayStart"`
+	End    int    `schema:"iDisplayLength"`
+	Echo   string `schema:"sEcho"`
+	Search string `schema:"sSearch"`
 }
 
 func sInfoPlaylistHandler(w http.ResponseWriter, r *http.Request) {

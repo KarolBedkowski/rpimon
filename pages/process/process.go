@@ -9,11 +9,9 @@ import (
 	"strings"
 )
 
-var subRouter *mux.Router
-
 // CreateRoutes for /process
 func CreateRoutes(parentRoute *mux.Route) {
-	subRouter = parentRoute.Subrouter()
+	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(psaxlPageHandler, "admin")).Name("process-index")
 	subRouter.HandleFunc("/services", app.VerifyPermission(servicesPageHangler, "admin")).Name("process-services")
 	subRouter.HandleFunc("/services/{service}/{action}", app.VerifyPermission(serviceActionPageHandler, "admin"))

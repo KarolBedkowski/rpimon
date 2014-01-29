@@ -10,11 +10,9 @@ import (
 	"strings"
 )
 
-var subRouter *mux.Router
-
 // CreateRoutes for /pages
 func CreateRoutes(parentRoute *mux.Route) {
-	subRouter = parentRoute.Subrouter()
+	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("utils-index")
 	subRouter.HandleFunc("/{group}/{command-id:[0-9]+}", app.VerifyPermission(commandPageHandler, "admin"))
 }

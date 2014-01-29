@@ -14,11 +14,9 @@ import (
 	"path/filepath"
 )
 
-var subRouter *mux.Router
-
 // CreateRoutes for /files
 func CreateRoutes(parentRoute *mux.Route) {
-	subRouter = parentRoute.Subrouter()
+	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/",
 		app.VerifyPermission(verifyAccess(mainPageHandler), "files")).Name("files-index")
 	subRouter.HandleFunc("/mkdir",

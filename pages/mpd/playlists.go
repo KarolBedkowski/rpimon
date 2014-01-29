@@ -24,6 +24,7 @@ func newPlaylistsPageCtx(w http.ResponseWriter, r *http.Request) *playlistsPageC
 	ctx.CurrentLocalMenuPos = "mpd-playlists"
 	return ctx
 }
+
 func playlistsPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := newPlaylistsPageCtx(w, r)
 	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlists.tmpl", "flash.tmpl")

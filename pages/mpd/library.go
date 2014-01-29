@@ -10,21 +10,8 @@ import (
 	"strings"
 )
 
-type libraryPageCtx struct {
-	*app.BasePageContext
-	CurrentPage string
-}
-
-/*
-type BreadcrumbItem struct {
-	Title  string
-	Href   string
-	Active bool
-}
-*/
-
 func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &libraryPageCtx{BasePageContext: app.NewBasePageContext("Mpd", "mpd", w, r)}
+	ctx := app.NewBasePageContext("Mpd", "mpd", w, r)
 	ctx.LocalMenu = createLocalMenu()
 	ctx.CurrentLocalMenuPos = "mpd-library"
 	app.RenderTemplate(w, ctx, "base", "base.tmpl", "mpd/library.tmpl", "flash.tmpl")
@@ -50,12 +37,6 @@ func libraryActionHandler(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Invalid request", http.StatusBadRequest)
 }
 
-type libraryContenet struct {
-	Path  string     `json:"path"`
-	Error string     `json:"error"`
-	Items [][]string `json:"items"`
-}
-
 func libraryContentService(w http.ResponseWriter, r *http.Request) {
 	path, _ := url.QueryUnescape(r.FormValue("p"))
 	if len(path) > 0 {
@@ -66,7 +47,13 @@ func libraryContentService(w http.ResponseWriter, r *http.Request) {
 			path = path + "/"
 		}
 	}
-	result := libraryContenet{Path: path}
+	var result struct {
+		Path  string     `json:"path"`
+		Error string     `json:"error"`
+		Items [][]string `json:"items"`
+	}
+
+	result.Path = path
 	folders, files, err := getFiles(strings.Trim(path, "/"))
 	if err != nil {
 		result.Error = err.Error()

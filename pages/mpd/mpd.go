@@ -13,11 +13,9 @@ import (
 	"strconv"
 )
 
-var subRouter *mux.Router
-
 // CreateRoutes for /mpd
 func CreateRoutes(parentRoute *mux.Route) {
-	subRouter = parentRoute.Subrouter()
+	subRouter := parentRoute.Subrouter()
 	// Main page
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "mpd"))
 	subRouter.HandleFunc("/main",
@@ -81,8 +79,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 
 type pageCtx struct {
 	*app.BasePageContext
-	CurrentPage string
-	Status      *mpdStatus
+	Status *mpdStatus
 }
 
 var localMenu []*app.MenuItem
@@ -187,14 +184,13 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 
 const fakeResult = `{"Status":{"consume":"0","mixrampdb":"0.000000","mixrampdelay":"nan","nextsong":"1","nextsongid":"1","playlist":"2","playlistlength":"222","random":"0","repeat":"0","single":"0","song":"0","songid":"0","state":"stop","volume":"100","xfade":"0"},"Current":{"Album":"Café Del Mar - Classic I","Artist":"Jules Massenet","Date":"2002","Genre":"Baroque, Modern, Romantic, Classical","Id":"0","Last-Modified":"2013-09-27T06:14:59Z","Pos":"0","Time":"312","Title":"Meditation","Track":"01/12","file":"muzyka/mp3/cafe del mar/compilations/classics/2002, classic/01. jules massenet - meditation.mp3"},"Error":""}`
 
-type songInfoCtx struct {
-	Error string
-	Info  []mpd.Attrs
-}
-
 func songInfoHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	ctx := songInfoCtx{}
+	var ctx struct {
+		Error string
+		Info  []mpd.Attrs
+	}
+
 	if songUri, ok := r.Form["uri"]; ok && songUri[0] != "" {
 		uri, _ := url.QueryUnescape(songUri[0])
 		result, err := getSongInfo(uri)
