@@ -13,9 +13,10 @@ var subRouter *mux.Router
 // CreateRoutes for /storage
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("storage-index")
+	subRouter.HandleFunc("/", app.VerifyPermission(dfPageHandler, "admin")).Name("storage-index")
 	subRouter.HandleFunc("/mount", app.VerifyPermission(mountPageHandler, "admin")).Name("storage-mount")
 	subRouter.HandleFunc("/umount", app.VerifyPermission(umountPageHandler, "admin")).Name("storage-umount")
+	subRouter.HandleFunc("/df", app.VerifyPermission(dfPageHandler, "admin")).Name("storage-df")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("storage-page")
 }
 
@@ -30,7 +31,7 @@ var localMenu []*app.MenuItem
 
 func createLocalMenu() []*app.MenuItem {
 	if localMenu == nil {
-		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("Disk Free", "storage-page", "page", "diskfree").SetID("diskfree"),
+		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("Disk Free", "storage-df").SetID("diskfree"),
 			app.NewMenuItemFromRoute("Mount", "storage-mount").SetID("mount"),
 			app.NewMenuItemFromRoute("Devices", "storage-page", "page", "devices").SetID("devices")}
 	}
@@ -39,16 +40,9 @@ func createLocalMenu() []*app.MenuItem {
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	page, ok := vars["page"]
-	if !ok {
-		page = "diskfree"
-	}
+	page, _ := vars["page"]
 	ctx := newPageCtx(w, r, page, "")
 	switch page {
-	case "diskfree":
-		ctx.Data = h.ReadFromCommand("df", "-h")
-	case "mount":
-		ctx.Data = h.ReadFromCommand("sudo", "mount")
 	case "devices":
 		ctx.Data = h.ReadFromCommand("lsblk")
 	default:
@@ -109,4 +103,24 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 	sess.Save(r, w)
 
 	http.Redirect(w, r, app.GetNamedURL("storage-mount"), 302)
+}
+
+type dfPageCtx struct {
+	*app.SimpleDataPageCtx
+	CurrentPage string
+	Filesystems [][]string
+}
+
+func dfPageHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := &dfPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r,
+		"Storage", "storage", "storage", createLocalMenu())}
+	ctx.CurrentLocalMenuPos = "diskfree"
+	ctx.Filesystems = make([][]string, 0)
+	lines := strings.Split(h.ReadFromCommand("df"), "\n")
+	for _, line := range lines[1:] {
+		if line != "" {
+			ctx.Filesystems = append(ctx.Filesystems, strings.Fields(line))
+		}
+	}
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "storage/df.tmpl", "flash.tmpl")
 }

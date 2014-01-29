@@ -14,39 +14,22 @@ var subRouter *mux.Router
 // CreateRoutes for /process
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("process-index")
+	subRouter.HandleFunc("/", app.VerifyPermission(psaxlPageHandler, "admin")).Name("process-index")
 	subRouter.HandleFunc("/services", app.VerifyPermission(servicesPageHangler, "admin")).Name("process-services")
 	subRouter.HandleFunc("/services/{service}/{action}", app.VerifyPermission(serviceActionPageHandler, "admin"))
-	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("process-page")
+	subRouter.HandleFunc("/psaxl", app.VerifyPermission(psaxlPageHandler, "admin")).Name("process-psaxl")
+	subRouter.HandleFunc("/top", app.VerifyPermission(topPageHandler, "admin")).Name("process-top")
 }
 
 var localMenu []*app.MenuItem
 
 func createLocalMenu() []*app.MenuItem {
 	if localMenu == nil {
-		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("PS AXL", "process-page", "page", "psaxl").SetID("psaxl"),
-			app.NewMenuItemFromRoute("TOP", "process-page", "page", "top").SetID("top"),
-			app.NewMenuItemFromRoute("Services", "process-page", "page", "services").SetID("services")}
+		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("PS AXL", "process-psaxl").SetID("psaxl"),
+			app.NewMenuItemFromRoute("TOP", "process-top").SetID("top"),
+			app.NewMenuItemFromRoute("Services", "process-services").SetID("services")}
 	}
 	return localMenu
-}
-
-func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := app.NewSimpleDataPageCtx(w, r, "Process", "process", "", createLocalMenu())
-	vars := mux.Vars(r)
-	page, ok := vars["page"]
-	if !ok {
-		page = "psaxl"
-	}
-	switch page {
-	case "psaxl":
-		data.Data = h.ReadFromCommand("ps", "axlww")
-	case "top":
-		data.Data = h.ReadFromCommand("top", "-b", "-n", "1", "-w", "1024")
-	}
-	data.CurrentLocalMenuPos = page
-	data.CurrentPage = page
-	app.RenderTemplate(w, data, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
 }
 
 type sevicesPageCtx struct {
@@ -91,4 +74,67 @@ func serviceActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	session.AddFlash(result, "info")
 	session.Save(r, w)
 	http.Redirect(w, r, "/process/services", http.StatusFound)
+}
+
+func psaxlPageHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := &sevicesPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(
+		w, r, "Process", "process", "", createLocalMenu())}
+	ctx.CurrentLocalMenuPos = "psaxl"
+
+	lines := h.ReadFromCommand("ps", "axlww")
+	var columns = 0
+	for idx, line := range strings.Split(lines, "\n") {
+		if line != "" {
+			fields := strings.Fields(line)
+			if idx == 0 {
+				ctx.THead = fields
+				columns = len(fields) - 1
+			} else {
+				if len(fields) > columns {
+					cmd := strings.Join(fields[columns:], " ")
+					fields = append(fields[:columns], cmd)
+				}
+				ctx.TData = append(ctx.TData, fields)
+			}
+		}
+	}
+
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "simple_data.tmpl", "flash.tmpl")
+}
+
+func topPageHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := &sevicesPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(
+		w, r, "Process", "process", "", createLocalMenu())}
+	ctx.CurrentLocalMenuPos = "top"
+
+	lines := strings.Split(h.ReadFromCommand("top", "-b", "-n", "1", "-w", "1024"), "\n")
+
+	var offset = 0
+	for idx, line := range lines {
+		if line == "" {
+			offset = idx
+			break
+		}
+	}
+	ctx.Data = strings.Join(lines[:offset], "\n")
+
+	var columns = 0
+	for idx, line := range lines[offset+1:] {
+		l.Debug("idx = %#v, cols=%v", idx, columns)
+		if line != "" {
+			fields := strings.Fields(line)
+			if idx == 0 {
+				ctx.THead = fields
+				columns = len(fields) - 1
+			} else {
+				if len(fields) > columns {
+					cmd := strings.Join(fields[columns:], " ")
+					fields = append(fields[:columns], cmd)
+				}
+				ctx.TData = append(ctx.TData, fields)
+			}
+		}
+	}
+
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "simple_data.tmpl", "flash.tmpl")
 }

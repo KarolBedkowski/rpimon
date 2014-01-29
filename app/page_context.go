@@ -106,6 +106,9 @@ type SimpleDataPageCtx struct {
 	*BasePageContext
 	CurrentPage string
 	Data        string
+
+	THead []string
+	TData [][]string
 }
 
 // NewSimpleDataPageCtx create new simple context to show text data
