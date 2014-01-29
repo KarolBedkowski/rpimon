@@ -112,15 +112,15 @@ type dfPageCtx struct {
 }
 
 func dfPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &dfPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r,
-		"Storage", "storage", "storage", createLocalMenu())}
+	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", createLocalMenu())
 	ctx.CurrentLocalMenuPos = "diskfree"
-	ctx.Filesystems = make([][]string, 0)
+	ctx.TData = make([][]string, 0)
+	ctx.THead = []string{"Filesystem", "Size", "Used", "Available", "Used %", "Mounted on"}
 	lines := strings.Split(h.ReadFromCommand("df"), "\n")
 	for _, line := range lines[1:] {
 		if line != "" {
-			ctx.Filesystems = append(ctx.Filesystems, strings.Fields(line))
+			ctx.TData = append(ctx.TData, strings.Fields(line))
 		}
 	}
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "storage/df.tmpl", "flash.tmpl")
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "data.tmpl", "flash.tmpl")
 }
