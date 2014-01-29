@@ -8,20 +8,18 @@
 
 {{if .TData}}
 <div class="container">
-	<div class="table-responsive">
-		<table class="table-hover table-bordered table-condensed" id="table-services">
-			<thead>
-				<tr>
-					{{range .THead}}<th>{{.}}</th>{{end}}
-				</tr>
-			</thead>
-			<tbody>
-			{{range .TData}}
-				<tr>{{range .}}<td>{{.}}</td>{{end}}</tr>
-			{{end}}
-			</tbody>
-		</table>
-	</div>
+	<table class="table-hover table-bordered table-condensed" id="table-services">
+		<thead>
+			<tr>
+				{{range .THead}}<th>{{.}}</th>{{end}}
+			</tr>
+		</thead>
+		<tbody>
+		{{range .TData}}
+			<tr>{{range .}}<td>{{.}}</td>{{end}}</tr>
+		{{end}}
+		</tbody>
+	</table>
 </div>
 {{end}}
 {{end}}
