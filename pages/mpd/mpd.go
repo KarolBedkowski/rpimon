@@ -170,7 +170,7 @@ func mpdLogPageHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		ctx.Data = lines
 	}
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "data.tmpl", "flash.tmpl")
 }
 
 var infoHandlerCache = h.NewSimpleCache(1)

@@ -4,7 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
-	l "k.prv/rpimon/helpers/logging"
+	//	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"strings"
 )
@@ -31,38 +31,26 @@ func createLocalMenu() []*app.MenuItem {
 	return localMenu
 }
 
-type networkPageCtx struct {
-	*app.BasePageContext
-	CurrentPage string
-	Data        string
-	Connections [][]string
-}
-
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := &networkPageCtx{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
-	data.LocalMenu = createLocalMenu()
 	vars := mux.Vars(r)
 	page, ok := vars["page"]
 	if !ok {
 		page = "ifconfig"
 	}
-	data.CurrentLocalMenuPos = page
-	data.CurrentPage = page
+	data := app.NewSimpleDataPageCtx(w, r, "Network", "net", page, createLocalMenu())
 	switch page {
 	case "ifconfig":
 		data.Data = h.ReadFromCommand("ip", "addr")
 	case "iptables":
 		data.Data = h.ReadFromCommand("sudo", "iptables", "-L", "-vn")
 	case "netstat":
-		data.Connections, _ = getConnections("sudo", "netstat", "-lpn", "--inet", "--inet6")
-		app.RenderTemplate(w, data, "base", "base.tmpl", "net/netstat.tmpl", "flash.tmpl")
-		return
+		data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
+		data.TData, _ = getConnections("sudo", "netstat", "-lpn", "--inet", "--inet6")
 	case "connenctions":
-		data.Connections, _ = getConnections("sudo", "netstat", "-pn", "--inet", "--inet6")
-		app.RenderTemplate(w, data, "base", "base.tmpl", "net/netstat.tmpl", "flash.tmpl")
-		return
+		data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
+		data.TData, _ = getConnections("sudo", "netstat", "-pn", "--inet", "--inet6")
 	}
-	app.RenderTemplate(w, data, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
+	app.RenderTemplate(w, data, "base", "base.tmpl", "data.tmpl", "flash.tmpl")
 }
 
 func getConnections(command string, args ...string) ([][]string, error) {
@@ -79,7 +67,6 @@ func getConnections(command string, args ...string) ([][]string, error) {
 		fields := strings.Fields(line)
 		laddressDiv := strings.LastIndex(fields[3], ":")
 		faddressDiv := strings.LastIndex(fields[4], ":")
-		l.Debug("%#v, %v %v", fields, laddressDiv, faddressDiv)
 		var state string
 		var pidcmd []string
 		pidcmdfield := fields[len(fields)-1]

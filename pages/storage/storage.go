@@ -49,7 +49,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, app.GetNamedURL("storage-index"), 302)
 		return
 	}
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "data.tmpl", "flash.tmpl")
 }
 
 type mountPoint struct {
@@ -94,7 +94,7 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 		data := h.ReadFromCommand("sudo", "umount", fs[0])
 		if data != "" {
 			ctx := newPageCtx(w, r, "mount", data)
-			app.RenderTemplate(w, ctx, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
+			app.RenderTemplate(w, ctx, "base", "base.tmpl", "data.tmpl", "flash.tmpl")
 			return
 		}
 	}

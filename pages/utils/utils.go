@@ -73,5 +73,5 @@ func commandPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := newPageCtx(w, r)
 	data.CurrentPage = "Utils " + groupName + ": " + group[commandID].Name
 	data.Data = h.ReadFromCommand(command[0], command[1:]...)
-	app.RenderTemplate(w, data, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
+	app.RenderTemplate(w, data, "base", "base.tmpl", "data.tmpl", "flash.tmpl")
 }

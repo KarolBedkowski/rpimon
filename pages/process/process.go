@@ -99,7 +99,7 @@ func psaxlPageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "simple_data.tmpl", "flash.tmpl")
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "data.tmpl", "flash.tmpl")
 }
 
 func topPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -136,5 +136,5 @@ func topPageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "simple_data.tmpl", "flash.tmpl")
+	app.RenderTemplate(w, ctx, "base", "base.tmpl", "data.tmpl", "flash.tmpl")
 }
