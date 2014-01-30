@@ -1,5 +1,7 @@
 package app
 
+import l "k.prv/rpimon/helpers/logging"
+
 // MenuItem - one position in menu
 type MenuItem struct {
 	Title   string
@@ -58,28 +60,31 @@ func (item *MenuItem) SetActive(activeID string) (active bool) {
 func SetMainMenu(ctx *BasePageContext) {
 	if ctx.CurrentUser != "" {
 		user := GetUser(ctx.CurrentUser)
-		ctx.MainMenu = []*MenuItem{NewMenuItemFromRoute("Home", "main-index").SetID("main").SetIcon("glyphicon glyphicon-home")}
-		if user.HasPermission("admin") {
-			sysMI := NewMenuItem("System", "").SetIcon("glyphicon glyphicon-wrench")
-			sysMI.Submenu = []*MenuItem{
-				NewMenuItemFromRoute("Live view", "main-system").SetID("system").SetIcon("glyphicon glyphicon-dashboard"),
-				NewMenuItem("-", ""),
-				NewMenuItemFromRoute("Network", "net-index").SetID("net").SetIcon("glyphicon glyphicon-transfer"),
-				NewMenuItemFromRoute("Storage", "storage-index").SetID("storage").SetIcon("glyphicon glyphicon-hdd"),
-				NewMenuItemFromRoute("Logs", "logs-index").SetID("logs").SetIcon("glyphicon glyphicon-eye-open"),
-				NewMenuItemFromRoute("Process", "process-index").SetID("process").SetIcon("glyphicon glyphicon-cog"),
-				NewMenuItemFromRoute("Users", "users-index").SetID("users").SetIcon("glyphicon glyphicon-user"),
-				NewMenuItem("-", ""),
-				NewMenuItemFromRoute("Utilities", "utils-index").SetID("utils").SetIcon("glyphicon glyphicon-wrench")}
-			ctx.MainMenu = append(ctx.MainMenu, sysMI)
-		}
-		if user.HasPermission("mpd") {
-			ctx.MainMenu = append(ctx.MainMenu,
-				NewMenuItemFromRoute("MPD", "mpd-index").SetID("mpd").SetIcon("glyphicon glyphicon-music"))
-		}
-		if user.HasPermission("files") {
-			ctx.MainMenu = append(ctx.MainMenu,
-				NewMenuItemFromRoute("Files", "files-index").SetID("files").SetIcon("glyphicon glyphicon-hdd"))
+		l.Info("user = %v", user)
+		if user != nil {
+			ctx.MainMenu = []*MenuItem{NewMenuItemFromRoute("Home", "main-index").SetID("main").SetIcon("glyphicon glyphicon-home")}
+			if user.HasPermission("admin") {
+				sysMI := NewMenuItem("System", "").SetIcon("glyphicon glyphicon-wrench")
+				sysMI.Submenu = []*MenuItem{
+					NewMenuItemFromRoute("Live view", "main-system").SetID("system").SetIcon("glyphicon glyphicon-dashboard"),
+					NewMenuItem("-", ""),
+					NewMenuItemFromRoute("Network", "net-index").SetID("net").SetIcon("glyphicon glyphicon-transfer"),
+					NewMenuItemFromRoute("Storage", "storage-index").SetID("storage").SetIcon("glyphicon glyphicon-hdd"),
+					NewMenuItemFromRoute("Logs", "logs-index").SetID("logs").SetIcon("glyphicon glyphicon-eye-open"),
+					NewMenuItemFromRoute("Process", "process-index").SetID("process").SetIcon("glyphicon glyphicon-cog"),
+					NewMenuItemFromRoute("Users", "users-index").SetID("users").SetIcon("glyphicon glyphicon-user"),
+					NewMenuItem("-", ""),
+					NewMenuItemFromRoute("Utilities", "utils-index").SetID("utils").SetIcon("glyphicon glyphicon-wrench")}
+				ctx.MainMenu = append(ctx.MainMenu, sysMI)
+			}
+			if user.HasPermission("mpd") {
+				ctx.MainMenu = append(ctx.MainMenu,
+					NewMenuItemFromRoute("MPD", "mpd-index").SetID("mpd").SetIcon("glyphicon glyphicon-music"))
+			}
+			if user.HasPermission("files") {
+				ctx.MainMenu = append(ctx.MainMenu,
+					NewMenuItemFromRoute("Files", "files-index").SetID("files").SetIcon("glyphicon glyphicon-hdd"))
+			}
 		}
 	}
 	for _, item := range ctx.MainMenu {
