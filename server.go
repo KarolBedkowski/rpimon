@@ -19,6 +19,9 @@ import (
 	// _ "net/http/pprof" // /debug/pprof/
 	"runtime"
 	//"time"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -27,12 +30,20 @@ func main() {
 	flag.Parse()
 
 	conf := app.Init(*configFilename, *debug)
-	defer app.Close()
 
 	if !conf.Debug {
 		log.Printf("NumCPU: %d", runtime.NumCPU())
 		runtime.GOMAXPROCS(runtime.NumCPU())
 	}
+
+	// cleanup
+	cleanChannel := make(chan os.Signal, 1)
+	signal.Notify(cleanChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGKILL)
+	go func() {
+		<-cleanChannel
+		app.Close()
+		os.Exit(1)
+	}()
 
 	app.Router.HandleFunc("/", handleHome)
 	auth.CreateRoutes(app.Router.PathPrefix("/auth"))
