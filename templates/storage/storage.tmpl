@@ -14,7 +14,7 @@
 		{{range .Mounted}}
 			<tr>
 				<td>{{.Mpoint}}</td><td>{{.Device}}</td><td>{{.Type}}</td><td>{{.Options}}</td>
-				<td><a href="{{namedurl "storage-umount" }}?fs={{.Mpoint}}" onclick="return RPI.confirm()" title="Umount"><span class="glyphicon glyphicon-eject"></span></a></td>
+				<td><a href="#" data-fs="{{.Mpoint}}" class="umount-action" title="Umount"><span class="glyphicon glyphicon-eject"></span></a></td>
 			</tr>
 		{{end}}
 		</tbody>
@@ -26,19 +26,13 @@
 {{define "scripts"}}
 <script src="/static/lib/jquery/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/static/lib/dataTables.bootstrap.js" type="text/javascript"></script>
+<script src="/static/js/storage.js" type="text/javascript"></script>
 <script type="text/javascript">
 	$(function() {
-		$('table').dataTable({
-			"bAutoWidth": false,
-			"bStateSave": true,
-			"bFilter": false,
-			"sPaginationType": "bootstrap",
-			"iDisplayLength": 15,
-			"bLengthChange": false,
-			"aoColumnDefs": [{
-				"aTargets": [4],
-				"bSortable": false,
-			}],
+		RPI.storage.init({
+			"urls": {
+				"storage-umount": {{namedurl "storage-umount" }}
+			}
 		});
 	});
 </script>
