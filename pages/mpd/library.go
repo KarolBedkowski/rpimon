@@ -14,7 +14,7 @@ func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := app.NewBasePageContext("Mpd", "mpd", w, r)
 	ctx.LocalMenu = createLocalMenu()
 	ctx.CurrentLocalMenuPos = "mpd-library"
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "mpd/library.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, ctx, "mpd/library.tmpl")
 }
 
 func libraryActionHandler(w http.ResponseWriter, r *http.Request) {

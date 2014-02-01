@@ -49,7 +49,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 		data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
 		data.TData, _ = getConnections("sudo", "netstat", "-pn", "--inet", "--inet6")
 	}
-	app.RenderTemplate(w, data, "base", "base.tmpl", "data.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, data, "data.tmpl")
 }
 
 func getConnections(command string, args ...string) ([][]string, error) {

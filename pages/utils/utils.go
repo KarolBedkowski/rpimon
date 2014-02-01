@@ -32,7 +32,7 @@ func newPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := newPageCtx(w, r)
-	app.RenderTemplate(w, data, "base", "base.tmpl", "utils/utils.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, data, "utils/utils.tmpl")
 }
 
 func commandPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -71,5 +71,5 @@ func commandPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := newPageCtx(w, r)
 	data.CurrentPage = "Utils " + groupName + ": " + group[commandID].Name
 	data.Data = h.ReadFromCommand(command[0], command[1:]...)
-	app.RenderTemplate(w, data, "base", "base.tmpl", "data.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, data, "data.tmpl")
 }

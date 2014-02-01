@@ -59,7 +59,7 @@ func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 	if mpdStatus, err := mpd.GetShortStatus(); err == nil {
 		ctx.MpdStatus = mpdStatus
 	}
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/index.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, ctx, "main/index.tmpl")
 }
 
 type pageSystemCtx struct {
@@ -73,7 +73,7 @@ func systemPageHanler(w http.ResponseWriter, r *http.Request) {
 		"System", "system", w, r),
 		Warnings: monitor.GetWarnings()}
 	ctx.MaxAcceptableLoad = runtime.NumCPU() * 2
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/system.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, ctx, "main/system.tmpl")
 }
 
 var infoHandlerCache = h.NewSimpleCache(1)

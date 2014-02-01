@@ -90,7 +90,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx.CurrentLocalMenuPos = page
 	ctx.CurrentPage = page
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "logs.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, ctx, "logs.tmpl")
 }
 
 func servLogHandler(w http.ResponseWriter, r *http.Request) {

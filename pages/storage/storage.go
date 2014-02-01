@@ -47,7 +47,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, app.GetNamedURL("storage-index"), 302)
 		return
 	}
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "data.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, ctx, "data.tmpl")
 }
 
 type mountPoint struct {
@@ -68,7 +68,7 @@ func mountPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx.CurrentLocalMenuPos = "mount"
 	ctx.Data = h.ReadFromCommand("sudo", "mount")
 	ctx.Mounted = mountCmdToMountPoints(ctx.Data)
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "storage/storage.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, ctx, "storage/storage.tmpl")
 }
 
 func mountCmdToMountPoints(data string) (res []*mountPoint) {
@@ -90,7 +90,7 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 		data := h.ReadFromCommand("sudo", "umount", fs[0])
 		if data != "" {
 			ctx := newPageCtx(w, r, "mount", data)
-			app.RenderTemplate(w, ctx, "base", "base.tmpl", "data.tmpl", "flash.tmpl")
+			app.RenderTemplateStd(w, ctx, "data.tmpl")
 			return
 		}
 	}
@@ -112,5 +112,5 @@ func dfPageHandler(w http.ResponseWriter, r *http.Request) {
 			ctx.TData = append(ctx.TData, strings.Fields(line))
 		}
 	}
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "data.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, ctx, "data.tmpl")
 }

@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 )
@@ -27,14 +26,15 @@ func FormatDate(date time.Time, format string) string {
 	return date.Format(format)
 }
 
-// RenderTemplate - render given template
-func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenames ...string) {
+// MainTemplateName contains name of main section in template (main template)
+const MainTemplateName = "base"
 
+// RenderTemplate - render given templates.
+func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenames ...string) {
 	cacheLock.Lock()
 	defer cacheLock.Unlock()
 
-	templateKey := strings.Join(filenames, "|")
-	ctemplate, ok := cacheItems[templateKey]
+	ctemplate, ok := cacheItems[name]
 	if !ok || Configuration.Debug {
 		templates := []string{}
 		for _, filename := range filenames {
@@ -45,18 +45,30 @@ func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenam
 			}
 			templates = append(templates, fullPath)
 		}
-		ctemplate = template.New(templateKey).Funcs(funcMap)
+		ctemplate = template.New(name).Funcs(funcMap)
 		ctemplate = template.Must(ctemplate.ParseFiles(templates...))
 		if ctemplate.Lookup("scripts") == nil {
 			ctemplate, _ = ctemplate.Parse("{{define \"scripts\"}}{{end}}")
 		}
-		cacheItems[templateKey] = ctemplate
+		cacheItems[name] = ctemplate
 	}
-	err := ctemplate.ExecuteTemplate(w, name, ctx)
+	err := ctemplate.ExecuteTemplate(w, MainTemplateName, ctx)
 	if err != nil {
 		l.Error("RenderTemplate execution failed: %s on %s (%s)", err,
 			name, filenames)
 	}
+}
+
+// StdTemplates contains list of templates included when rendering by RenderTemplateStd
+var StdTemplates = []string{"base.tmpl", "flash.tmpl"}
+
+// RenderTemplateStd render given templates + StdTemplates.
+// Main section in template must be named 'base'.
+// First template file name is used as template name.
+func RenderTemplateStd(w http.ResponseWriter, ctx interface{}, filenames ...string) {
+	filenames = append(filenames, StdTemplates...)
+	l.Debug("RenderTemplateStd; %v", filenames)
+	RenderTemplate(w, ctx, filenames[0], filenames...)
 }
 
 func fileExists(name string) bool {

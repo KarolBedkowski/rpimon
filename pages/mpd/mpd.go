@@ -105,7 +105,7 @@ func newPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := newPageCtx(w, r)
-	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/index.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, data, "mpd/index.tmpl")
 }
 
 func controlHandler(w http.ResponseWriter, r *http.Request) {
@@ -167,7 +167,7 @@ func mpdLogPageHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		ctx.Data = lines
 	}
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "data.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, ctx, "data.tmpl")
 }
 
 var infoHandlerCache = h.NewSimpleCache(1)

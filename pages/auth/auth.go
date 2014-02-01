@@ -43,7 +43,7 @@ func (ctx loginPageCtx) Validate() (err string) {
 func loginPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &loginPageCtx{app.NewBasePageContext("Login", "auth-login", w, r),
 		new(loginForm), ""}
-	app.RenderTemplate(w, ctx, "base", "login.tmpl", "flash.tmpl")
+	app.RenderTemplate(w, ctx, "login", "login.tmpl", "flash.tmpl")
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +76,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 func handleLoginError(message string, w http.ResponseWriter, ctx *loginPageCtx) {
 	ctx.Message = message
-	app.RenderTemplate(w, ctx, "base", "login.tmpl", "flash.tmpl")
+	app.RenderTemplate(w, ctx, "login", "login.tmpl", "flash.tmpl")
 }
 
 func logoffHandler(w http.ResponseWriter, r *http.Request) {

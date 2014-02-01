@@ -49,7 +49,7 @@ func servicesPageHangler(w http.ResponseWriter, r *http.Request) {
 
 	ctx.CurrentLocalMenuPos = "services"
 	ctx.CurrentPage = "services"
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "services.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, ctx, "services.tmpl")
 
 }
 
@@ -97,7 +97,7 @@ func psaxlPageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "data.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, ctx, "data.tmpl")
 }
 
 func topPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -134,5 +134,5 @@ func topPageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "data.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, ctx, "data.tmpl")
 }

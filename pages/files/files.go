@@ -60,7 +60,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) 
 		return
 	}
 
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "files/browser.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, ctx, "files/browser.tmpl")
 }
 
 func mkdirPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
