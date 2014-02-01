@@ -4,7 +4,11 @@
 <div class="container">
 	<div class="alert alert-warning">
 		<section>
-			<h1>Warning</h1>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Warning</h3>
+				</div>
+				<div class="panel-body">
 			<ul>
 			{{range .Warnings}}
 				<li>{{.}}</li>
@@ -19,113 +23,148 @@
 <div class="container">
 	<div class="row row-centered">
 		<div class="col-xs-12 col-sm-6 col-md-4">
-			<h1>Load:</h1>
-			<div class="chart-box">
-				<span id="load-chart" class="chart-line-load" data-width="280" data-height="50" data-min="0" data-max="{{.MaxAcceptableLoad}}">0</span>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Load</h3>
+				</div>
+				<div class="panel-body">
+					<div class="chart-box">
+						<span id="load-chart" class="chart-line-load" data-width="280" data-height="50" data-min="0" data-max="{{.MaxAcceptableLoad}}">0</span>
+					</div>
+					<table class="table-hover table-bordered table-condensed table-centered">
+						<thead>
+							<tr>
+								<th>1m</th>
+								<th>5m</th>
+								<th>15m</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><span id="load-load1"></span></td>
+								<td><span id="load-load5"></span></td>
+								<td><span id="load-load15"></span></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
 			</div>
-			<table class="table-hover table-bordered table-condensed table-centered">
-				<thead>
-					<tr>
-						<th>1m</th>
-						<th>5m</th>
-						<th>15m</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td><span id="load-load1"></span></td>
-						<td><span id="load-load5"></span></td>
-						<td><span id="load-load15"></span></td>
-					</tr>
-				</tbody>
-			</table>
 		</div>
 
 		<div class="col-xs-12 col-sm-6 col-md-4">
-			<h1>CPU</h1>
-
-			<div class="chart-box">
-				<span id="cpu-chart" class="chart-line" data-width="280" data-height="50" data-min="0" data-max="100">0</span>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">CPU</h3>
+				</div>
+				<div class="panel-body">
+					<div class="chart-box">
+						<span id="cpu-chart" class="chart-line" data-width="280" data-height="50" data-min="0" data-max="100">0</span>
+					</div>
+					<table class="table-hover table-bordered table-condensed table-centered">
+						<thead>
+							<tr>
+								<th>User</th>
+								<th>System</th>
+								<th>IO</th>
+								<th>Freq</th>
+								<th>Temp</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><span id="cpuusage-user"></span>%</td>
+								<td><span id="cpuusage-system"></span>%</td>
+								<td><span id="cpuusage-iowait"></span>%</td>
+								<td><span id="cpuinfo-freq"></span></td>
+								<td><span id="cpuinfo-temp"></span>°C</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
 			</div>
-			<table class="table-hover table-bordered table-condensed table-centered">
-				<thead>
-					<tr>
-						<th>User</th>
-						<th>System</th>
-						<th>IO</th>
-						<th>Freq</th>
-						<th>Temp</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td><span id="cpuusage-user"></span>%</td>
-						<td><span id="cpuusage-system"></span>%</td>
-						<td><span id="cpuusage-iowait"></span>%</td>
-						<td><span id="cpuinfo-freq"></span></td>
-						<td><span id="cpuinfo-temp"></span>°C</td>
-					</tr>
-				</tbody>
-			</table>
 		</div>
 
 		<div class="col-xs-12 col-sm-6 col-md-4">
-			<h1>Memory</h1>
-			<div class="chart-box">
-				<span id="mem-chart" class="chart-line" data-width="280" data-height="50" data-min="0" data-max="100">0</span>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Memory</h3>
+				</div>
+				<div class="panel-body">
+					<div class="chart-box">
+						<span id="mem-chart" class="chart-line" data-width="280" data-height="50" data-min="0" data-max="100">0</span>
+					</div>
+					<table class="table-hover table-bordered table-condensed table-centered">
+						<thead>
+							<tr>
+								<th>User</th>
+								<th>Buffers</th>
+								<th>Cache</th>
+								<th>Swap Used</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><span id="meminfo-used"></span>%</td>
+								<td><span id="meminfo-buff"></span>%</td>
+								<td><span id="meminfo-cach"></span>%</td>
+								<td><span id="meminfo-swap"></span>%</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
 			</div>
-			<table class="table-hover table-bordered table-condensed table-centered">
-				<thead>
-					<tr>
-						<th>User</th>
-						<th>Buffers</th>
-						<th>Cache</th>
-						<th>Swap Used</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td><span id="meminfo-used"></span>%</td>
-						<td><span id="meminfo-buff"></span>%</td>
-						<td><span id="meminfo-cach"></span>%</td>
-						<td><span id="meminfo-swap"></span>%</td>
-					</tr>
-				</tbody>
-			</table>
 		</div>
 
 		<div class="col-xs-12 col-sm-6 col-md-4">
-			<h1>Mount</h1>
-			<table class="table-hover table-bordered table-condensed">
-				<thead>
-					<tr>
-						<th>Filesystem</th>
-						<th colspan="2">Used</th>
-					</tr>
-				</thead>
-				<tbody id="fs-table">
-				</tbody>
-			</table>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Mount</h3>
+				</div>
+				<div class="panel-body">
+					<table class="table-hover table-bordered table-condensed">
+						<thead>
+							<tr>
+								<th>Filesystem</th>
+								<th colspan="2">Used</th>
+							</tr>
+						</thead>
+						<tbody id="fs-table">
+						</tbody>
+					</table>
+				</div>
+			</div>
 		</div>
 
 		<div class="col-xs-12 col-sm-6 col-md-4">
-			<h1>Network interfaces</h1>
-			<table class="table-hover table-bordered table-condensed">
-				<thead>
-					<tr>
-						<th>Interface</th>
-						<th>IP</th>
-					</tr>
-				</thead>
-				<tbody id="network-interfaces-table">
-				</tbody>
-			</table>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Network interfaces</h3>
+				</div>
+				<div class="panel-body">
+					<table class="table-hover table-bordered table-condensed">
+						<thead>
+							<tr>
+								<th>Interface</th>
+								<th>IP</th>
+							</tr>
+						</thead>
+						<tbody id="network-interfaces-table">
+						</tbody>
+					</table>
+				</div>
+			</div>
 		</div>
 
 		<div class="col-xs-12 col-sm-6 col-md-4">
-			<h1>Other</h1>
-			<p><label>Users:</label> <span id="uptime-users"></span></p>
-			<p><label>Uptime:</label> <span id="uptime-uptime"></span></p>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Other</h3>
+				</div>
+				<div class="panel-body">
+					<p><label>Users:</label> <span id="uptime-users"></span></p>
+					<p><label>Uptime:</label> <span id="uptime-uptime"></span></p>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>
