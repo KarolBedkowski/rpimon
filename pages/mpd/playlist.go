@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
-	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"strconv"
@@ -128,29 +127,16 @@ func addToPlaylistPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var mpdPlaylistCache = h.NewSimpleCache(10)
-var mpdStatusCache = h.NewSimpleCache(10)
-
 func getPlaylistStat() (playlist [][]string, stat mpd.Attrs, err error) {
-	if cachedPlaylist, ok := mpdPlaylistCache.GetValue(); ok {
-		playlist = cachedPlaylist.([][]string)
-	}
-	if cachedStat, ok := mpdStatusCache.GetValue(); ok {
-		stat = cachedStat.(mpd.Attrs)
-	}
-	if len(playlist) == 0 || len(stat) == 0 {
-		var lplaylist []mpd.Attrs
-		lplaylist, err, stat = mpdPlaylistInfo(-1, -1)
-		for _, item := range lplaylist {
-			l.Print(item)
-			if title, ok := item["Title"]; !ok || title == "" {
-				item["Title"] = item["file"]
-			}
-			playlist = append(playlist, []string{item["Album"],
-				item["Artist"], item["Track"], item["Title"],
-				item["Id"], item["file"],
-			})
+	lplaylist, err, stat := mpdPlaylistInfo()
+	for _, item := range lplaylist {
+		if title, ok := item["Title"]; !ok || title == "" {
+			item["Title"] = item["file"]
 		}
+		playlist = append(playlist, []string{item["Album"],
+			item["Artist"], item["Track"], item["Title"],
+			item["Id"], item["file"],
+		})
 	}
 	return
 }

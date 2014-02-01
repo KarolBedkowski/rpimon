@@ -15,16 +15,77 @@ type mpdStatus struct {
 	Error   string
 }
 
-var host string
+var (
+	host              string
+	watcher           *mpd.Watcher
+	playlistCache     = h.NewSimpleCache(600)
+	mpdListFilesCache = h.NewSimpleCache(600)
+	mpdLibraryCache   = h.NewKeyCache(600)
+)
 
 // Init MPD configuration
 func Init(mpdHost string) {
 	host = mpdHost
+	connectWatcher()
+}
+
+func Close() {
+	playlistCache.Clear()
+	mpdLibraryCache.Clear()
+	mpdListFilesCache.Clear()
+	if watcher != nil {
+		watcher.Close()
+		watcher = nil
+	}
+}
+
+func connectWatcher() {
+	if watcher != nil {
+		return
+	}
+	l.Info("Starting mpd watcher... %#v", watcher)
+	var err error
+	watcher, err = mpd.NewWatcher("tcp", host, "")
+	if err != nil {
+		l.Error(err.Error())
+		return
+	}
+	go func() {
+		for {
+			select {
+			case subsystem := <-watcher.Event:
+				l.Debug("MPD: changed subsystem:", subsystem)
+				switch subsystem {
+				case "playlist":
+					playlistCache.Clear()
+				case "database":
+					mpdListFilesCache.Clear()
+					mpdLibraryCache.Clear()
+				}
+			case err := <-watcher.Error:
+				l.Info("MPD; watcher error: %s", err.Error())
+				watcher.Close()
+				watcher = nil
+				return
+			}
+		}
+	}()
+}
+
+func connect() (client *mpd.Client, err error) {
+	client, err = mpd.Dial("tcp", host)
+	if err != nil {
+		l.Error("Mpd connect error: %s", err.Error())
+		Close()
+		return
+	}
+	connectWatcher()
+	return
 }
 
 func getStatus() (status *mpdStatus) {
 	status = new(mpdStatus)
-	conn, err := mpd.Dial("tcp", host)
+	conn, err := connect()
 	if err != nil {
 		status.Error = err.Error()
 		return
@@ -49,7 +110,7 @@ func getStatus() (status *mpdStatus) {
 }
 
 func mpdAction(action string) error {
-	conn, err := mpd.Dial("tcp", host)
+	conn, err := connect()
 	if err != nil {
 		return err
 	}
@@ -77,8 +138,6 @@ func mpdAction(action string) error {
 		conn.Repeat(stat["repeat"] == "0")
 	case "update":
 		conn.Update("")
-		mpdListFilesCache.Clear()
-		mpdLibraryCache.Clear()
 	default:
 		l.Warn("page.mpd mpdAction: wrong action ", action)
 	}
@@ -86,28 +145,31 @@ func mpdAction(action string) error {
 }
 
 func mpdActionUpdate(uri string) error {
-	conn, err := mpd.Dial("tcp", host)
+	conn, err := connect()
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 	_, err = conn.Update(uri)
-	mpdListFilesCache.Clear()
-	mpdLibraryCache.Clear()
 	return err
 }
 
-func mpdPlaylistInfo(start, end int) (playlist []mpd.Attrs, err error, stat mpd.Attrs) {
-	conn, err := mpd.Dial("tcp", host)
+// current playlist & status
+func mpdPlaylistInfo() (playlist []mpd.Attrs, err error, status mpd.Attrs) {
+	conn, err := connect()
 	if err != nil {
 		return
 	}
 	defer conn.Close()
-	playlist, err = conn.PlaylistInfo(start, end)
-	if err != nil {
-		l.Error(err.Error())
-	}
-	stat, err = conn.Status()
+	cachedPlaylist := playlistCache.Get(func() h.Value {
+		plist, err := conn.PlaylistInfo(-1, -1)
+		if err != nil {
+			l.Error(err.Error())
+		}
+		return plist
+	})
+	playlist = cachedPlaylist.([]mpd.Attrs)
+	status, err = conn.Status()
 	if err != nil {
 		l.Error(err.Error())
 	}
@@ -115,7 +177,7 @@ func mpdPlaylistInfo(start, end int) (playlist []mpd.Attrs, err error, stat mpd.
 }
 
 func mpdSongAction(songID int, action string) error {
-	conn, err := mpd.Dial("tcp", host)
+	conn, err := connect()
 	if err != nil {
 		return err
 	}
@@ -133,8 +195,7 @@ func mpdSongAction(songID int, action string) error {
 }
 
 func mpdGetPlaylists() (playlists []mpd.Attrs, err error) {
-	var conn *mpd.Client
-	conn, err = mpd.Dial("tcp", host)
+	conn, err := connect()
 	if err != nil {
 		l.Warn("mpdGetPlaylists error ", err.Error)
 		return
@@ -148,7 +209,7 @@ func mpdGetPlaylists() (playlists []mpd.Attrs, err error) {
 }
 
 func mpdPlaylistsAction(playlist, action string) (string, error) {
-	conn, err := mpd.Dial("tcp", host)
+	conn, err := connect()
 	if err != nil {
 		return "", err
 	}
@@ -177,7 +238,7 @@ func mpdPlaylistsAction(playlist, action string) (string, error) {
 }
 
 func setVolume(volume int) error {
-	conn, err := mpd.Dial("tcp", host)
+	conn, err := connect()
 	if err != nil {
 		return err
 	}
@@ -186,7 +247,7 @@ func setVolume(volume int) error {
 }
 
 func seekPos(pos, time int) error {
-	conn, err := mpd.Dial("tcp", host)
+	conn, err := connect()
 	if err != nil {
 		return err
 	}
@@ -196,15 +257,11 @@ func seekPos(pos, time int) error {
 	return conn.SeekId(sid, time)
 }
 
-var mpdLibraryCache = h.NewKeyCache(300)
-
 // LibraryDir keep subdirectories and files for one folder in library
 type LibraryDir struct {
 	Folders []string
 	Files   []string
 }
-
-var mpdListFilesCache = h.NewSimpleCache(300)
 
 func getFiles(path string) (folders []string, files []string, err error) {
 	if cached, ok := mpdLibraryCache.GetValue(path); ok {
@@ -216,7 +273,7 @@ func getFiles(path string) (folders []string, files []string, err error) {
 	if filesC, ok := mpdListFilesCache.GetValue(); ok {
 		mpdFiles = filesC.([]string)
 	} else {
-		conn, err := mpd.Dial("tcp", host)
+		conn, err := connect()
 		if err != nil {
 			return nil, nil, err
 		}
@@ -258,7 +315,7 @@ func getFiles(path string) (folders []string, files []string, err error) {
 }
 
 func addFileToPlaylist(uri string, clearPlaylist bool) error {
-	conn, err := mpd.Dial("tcp", host)
+	conn, err := connect()
 	if err != nil {
 		return err
 	}
@@ -274,7 +331,7 @@ func addFileToPlaylist(uri string, clearPlaylist bool) error {
 }
 
 func playlistAction(action string) (err error) {
-	conn, err := mpd.Dial("tcp", host)
+	conn, err := connect()
 	if err != nil {
 		return err
 	}
@@ -287,7 +344,7 @@ func playlistAction(action string) (err error) {
 }
 
 func playlistSave(name string) (err error) {
-	conn, err := mpd.Dial("tcp", host)
+	conn, err := connect()
 	if err != nil {
 		return err
 	}
@@ -296,7 +353,7 @@ func playlistSave(name string) (err error) {
 }
 
 func addToPlaylist(uri string) (err error) {
-	conn, err := mpd.Dial("tcp", host)
+	conn, err := connect()
 	if err != nil {
 		return err
 	}
@@ -312,7 +369,7 @@ func GetShortStatus() (map[string]string, error) {
 		cachedValue := result.(mpd.Attrs)
 		return map[string]string(cachedValue), nil
 	}
-	conn, err := mpd.Dial("tcp", host)
+	conn, err := connect()
 	if err != nil {
 		return nil, err
 	}
@@ -326,7 +383,7 @@ func GetShortStatus() (map[string]string, error) {
 }
 
 func getSongInfo(uri string) (info []mpd.Attrs, err error) {
-	conn, err := mpd.Dial("tcp", host)
+	conn, err := connect()
 	if err != nil {
 		return nil, err
 	}

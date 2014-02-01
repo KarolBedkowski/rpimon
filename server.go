@@ -42,6 +42,7 @@ func main() {
 	go func() {
 		<-cleanChannel
 		app.Close()
+		pmpd.Close()
 		os.Exit(1)
 	}()
 
