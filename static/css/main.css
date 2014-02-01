@@ -79,10 +79,10 @@ div.big-chart {
 
 div.chart-box {
 	border: 1px solid #e0e0e0;
-	width: 282px;
-	height: 52px;
-	margin: 10px auto;
-	padding: 1px;
+	width: 258px;
+	height: 51px;
+	margin: 5px auto;
+	padding: 0px;
 }
 
 
@@ -264,4 +264,9 @@ div#loading-box p {
 	margin-left: 5%;
 	margin-right: 5%;
 	width: 90%;
+}
+
+.panel-heading .panel-title a {
+	float: right;
+	display: block;
 }
