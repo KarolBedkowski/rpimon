@@ -265,3 +265,8 @@ div#loading-box p {
 	margin-right: 5%;
 	width: 90%;
 }
+
+.panel-heading .panel-title a {
+	float: right;
+	display: block;
+}

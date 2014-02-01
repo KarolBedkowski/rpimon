@@ -44,7 +44,9 @@
 		<div class="col-xs-12 col-sm-6 col-md-4">
 			<div class="panel panel-default">
 				<div class="panel-heading">
-					<h3 class="panel-title">CPU</h3>
+					<h3 class="panel-title">CPU
+						<a href="{{namedurl "process-index"}}"><span class="glyphicon glyphicon-cog"></span></a>
+					</h3>
 				</div>
 				<table class="table">
 					<tr>
@@ -84,7 +86,9 @@
 		<div class="col-xs-12 col-sm-6 col-md-4">
 			<div class="panel panel-default">
 				<div class="panel-heading">
-					<h3 class="panel-title">Filesystem</h3>
+					<h3 class="panel-title">Filesystem
+						<a href="{{namedurl "storage-index"}}"><span class="glyphicon glyphicon-cog"></span></a>
+					</h3>
 				</div>
 				<table class="table">
 					{{range .Filesystems}}
@@ -101,7 +105,9 @@
 		<div class="col-xs-12 col-sm-6 col-md-4">
 			<div class="panel panel-default">
 				<div class="panel-heading">
-					<h3 class="panel-title">Network</h3>
+					<h3 class="panel-title">Network
+						<a href="{{namedurl "net-index"}}"><span class="glyphicon glyphicon-cog"></span></a>
+					</h3>
 				</div>
 				<table class="table">
 					{{range .Interfaces}}{{if ne .Address "-"}}
@@ -114,7 +120,9 @@
 		<div class="col-xs-12 col-sm-6 col-md-4">
 			<div class="panel panel-default">
 				<div class="panel-heading">
-					<h3 class="panel-title">MPD</h3>
+					<h3 class="panel-title">MPD
+						<a href="{{namedurl "mpd-index"}}"><span class="glyphicon glyphicon-cog"></span></a>
+					</h3>
 				</div>
 				{{if not .MpdStatus}}
 				<div class="panel-body">
