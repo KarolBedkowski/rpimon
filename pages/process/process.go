@@ -118,7 +118,7 @@ func topPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	var columns = 0
 	for idx, line := range lines[offset+1:] {
-		l.Debug("idx = %#v, cols=%v", idx, columns)
+		//l.Debug("idx = %#v, cols=%v", idx, columns)
 		if line != "" {
 			fields := strings.Fields(line)
 			if idx == 0 {
