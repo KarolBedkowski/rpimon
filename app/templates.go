@@ -49,6 +49,9 @@ func getTemplate(name string, filenames ...string) (tmpl *template.Template) {
 		if ctemplate.Lookup("scripts") == nil {
 			ctemplate, _ = ctemplate.Parse("{{define \"scripts\"}}{{end}}")
 		}
+		if ctemplate.Lookup("header") == nil {
+			ctemplate, _ = ctemplate.Parse("{{define \"header\"}}{{end}}")
+		}
 		cacheItems[name] = ctemplate
 	}
 	return ctemplate
