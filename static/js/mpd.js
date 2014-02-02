@@ -99,7 +99,7 @@ MPD.status = (function(self, $) {
 						a_toggle_repeat_label.text("off");
 					}
 				}
-				$("#st-playlistlength").text(status.song + "/" + status.playlistlength);
+				$("#st-playlistlength").text((status.song + 1) + "/" + status.playlistlength);
 				$("#st-state").text(status.state);
 				$("#st-error").text(status.error);
 				//$("#st-volume").text(volume);
@@ -108,8 +108,13 @@ MPD.status = (function(self, $) {
 						$("#slider-volume").slider("value", volume);
 					}
 				}
-				if (!changingPos) {
-					$("#slider-song-pos").slider("value", parseInt(status.elapsed));
+				if (songTime) {
+					if (!changingPos) {
+						$("#slider-song-pos").slider("value", parseInt(status.elapsed));
+					}
+				} else {
+					// pokazywanie czasu gdy wskaźnik postępu jest wygaszony
+					$("#st-time").text(ts2str(status.elapsed));
 				}
 				if (status.state != lastState.Status.state) {
 					if (status.state == "play") {
