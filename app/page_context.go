@@ -47,7 +47,6 @@ func NewBasePageContext(title, mainMenuID string, w http.ResponseWriter, r *http
 	if csrfToken == nil {
 		csrfToken = createNewCsrfToken()
 		session.Values[CONTEXTCSRFTOKEN] = csrfToken
-		session.Save(r, w)
 	}
 
 	login, perms := GetLoggedUserInfo(w, r)
