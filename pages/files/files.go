@@ -164,6 +164,10 @@ type dirInfo struct {
 }
 
 func serviceDirsHandler(w http.ResponseWriter, r *http.Request) {
+	if config.BaseDir == "" {
+		http.Error(w, "Missing module configuration. Check browser.josm", http.StatusInternalServerError)
+		return
+	}
 	r.ParseForm()
 	path, ok := h.GetParam(w, r, "id")
 	if !ok {
@@ -208,6 +212,10 @@ func serviceDirsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func serviceFilesHandler(w http.ResponseWriter, r *http.Request) {
+	if config.BaseDir == "" {
+		http.Error(w, "Missing module configuration. Check browser.josm", http.StatusInternalServerError)
+		return
+	}
 	r.ParseForm()
 	path, ok := h.GetParam(w, r, "id")
 	if !ok {

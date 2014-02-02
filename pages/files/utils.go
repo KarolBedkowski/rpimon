@@ -18,6 +18,10 @@ type pathHandlerFunc func(w http.ResponseWriter, r *http.Request, pctx *pathCont
 
 func verifyAccess(h pathHandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if config.BaseDir == "" {
+			http.Error(w, "Missing module configuration. Check browser.josm", http.StatusInternalServerError)
+			return
+		}
 		r.ParseForm()
 		pathD, ok := r.Form["p"]
 		var ctx *pathContext
