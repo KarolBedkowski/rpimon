@@ -65,7 +65,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx.AddFlashMessage("User log in", "info")
-	app.LoginUser(w, r, user.Login)
+	app.LoginUser(w, r, user)
 	if back := r.FormValue("back"); back != "" {
 		l.Debug("Redirect to ", back)
 		http.Redirect(w, r, back, http.StatusFound)

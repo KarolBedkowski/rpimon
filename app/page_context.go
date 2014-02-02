@@ -19,6 +19,7 @@ type BasePageContext struct {
 	CsrfToken           string
 	Hostname            string
 	CurrentUser         string
+	CurrentUserPerms    []string
 	MainMenu            []*MenuItem
 	LocalMenu           []*MenuItem
 	CurrentMainMenuPos  string
@@ -49,13 +50,15 @@ func NewBasePageContext(title, mainMenuID string, w http.ResponseWriter, r *http
 		session.Save(r, w)
 	}
 
+	login, perms := GetLoggedUserInfo(w, r)
 	ctx := &BasePageContext{Title: title,
 		ResponseWriter:     w,
 		Request:            r,
 		Session:            session,
 		CsrfToken:          csrfToken.(string),
 		Hostname:           hostname,
-		CurrentUser:        GetLoggedUserLogin(w, r),
+		CurrentUser:        login,
+		CurrentUserPerms:   perms,
 		Now:                time.Now().Format("2006-01-02 15:04:05"),
 		CurrentMainMenuPos: mainMenuID,
 		FlashMessages:      make(map[string][]interface{}),
