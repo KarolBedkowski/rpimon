@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
+	l "k.prv/rpimon/helpers/logging"
 )
 
 // User structure
@@ -38,6 +39,10 @@ func (user *User) HasPermission(permission string) bool {
 
 // CheckPassword verify given password for user
 func (user *User) CheckPassword(candidatePassword string) bool {
+	l.Info("%#v %v", user, candidatePassword)
+	if user.Password == "" {
+		return candidatePassword == user.Login
+	}
 	hash := md5.New()
 	io.WriteString(hash, candidatePassword)
 	pass := fmt.Sprintf("%x", hash.Sum(nil))
