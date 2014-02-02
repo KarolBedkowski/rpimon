@@ -29,8 +29,7 @@ func FormatDate(date time.Time, format string) string {
 // MainTemplateName contains name of main section in template (main template)
 const MainTemplateName = "base"
 
-// RenderTemplate - render given templates.
-func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenames ...string) {
+func getTemplate(name string, filenames ...string) (tmpl *template.Template) {
 	cacheLock.Lock()
 	defer cacheLock.Unlock()
 
@@ -51,6 +50,15 @@ func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenam
 			ctemplate, _ = ctemplate.Parse("{{define \"scripts\"}}{{end}}")
 		}
 		cacheItems[name] = ctemplate
+	}
+	return ctemplate
+}
+
+// RenderTemplate - render given templates.
+func RenderTemplate(w http.ResponseWriter, ctx interface{}, name string, filenames ...string) {
+	ctemplate := getTemplate(name, filenames...)
+	if ctemplate == nil {
+		return
 	}
 	err := ctemplate.ExecuteTemplate(w, MainTemplateName, ctx)
 	if err != nil {
