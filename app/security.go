@@ -1,10 +1,7 @@
 package app
 
 import (
-	"crypto/md5"
-	"fmt"
 	"github.com/gorilla/context"
-	"io"
 	"k.prv/rpimon/database"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
@@ -62,14 +59,6 @@ func CheckUserLoggerOrRedirect(w http.ResponseWriter, r *http.Request) (login st
 	url += h.BuildQuery("back", r.URL.String())
 	http.Redirect(w, r, url, 302)
 	return
-}
-
-// ComparePassword check passwords in database and entered by user
-func ComparePassword(userPassword string, candidatePassword string) bool {
-	hash := md5.New()
-	io.WriteString(hash, candidatePassword)
-	pass := fmt.Sprintf("%x", hash.Sum(nil))
-	return pass == userPassword
 }
 
 // VerifyPermission check is user is logged and have given permission

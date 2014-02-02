@@ -60,7 +60,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := database.GetUserByLogin(ctx.Login)
-	if user == nil || !app.ComparePassword(user.Password, ctx.Password) {
+	if user == nil || !user.CheckPassword(ctx.Password) {
 		handleLoginError("Wrong user or password", w, ctx)
 		return
 	}
