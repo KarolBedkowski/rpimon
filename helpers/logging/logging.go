@@ -24,6 +24,7 @@ const (
 
 // Init logging
 func Init(filename string, debug bool) {
+	log.Printf("Logging to %s\n", filename)
 	debugLevel = debug
 	outFile, _ := os.Create(filename)
 	logger = log.New(io.MultiWriter(os.Stderr, outFile), "", log.LstdFlags)

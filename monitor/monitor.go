@@ -13,12 +13,15 @@ import (
 	"time"
 )
 
-const historyLimit = 30
-const ifaceCacheTTL = 5
-const fsCacheTTL = 10
-const uptimeInfoCacheTTL = 2
-const warningsCacheTTL = 5
-const cpuInfoCacheTTL = 5
+// Caches max TTL
+const (
+	historyLimit       = 30
+	ifaceCacheTTL      = 5
+	fsCacheTTL         = 10
+	uptimeInfoCacheTTL = 2
+	warningsCacheTTL   = 5
+	cpuInfoCacheTTL    = 5
+)
 
 // Init monitor, start background go routine
 func Init(interval int) {

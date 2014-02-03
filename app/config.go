@@ -35,12 +35,12 @@ func LoadConfiguration(filename string) *AppConfiguration {
 	log.Print("Loading configuration file ", filename)
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Fatal("Error: ", err.Error())
+		log.Fatal("app.LoadConfiguration error: ", err.Error())
 		return nil
 	}
 	err = json.Unmarshal(file, &Configuration)
 	if err != nil {
-		log.Fatal("Error: ", err.Error())
+		log.Fatal("app.LoadConfiguration error: ", err.Error())
 		return nil
 	}
 	return &Configuration

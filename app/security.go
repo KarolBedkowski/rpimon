@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/gorilla/context"
 	"k.prv/rpimon/database"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
@@ -14,12 +13,6 @@ import (
 const (
 	sessionLoginKey      = "USERID"
 	sessionPermissionKey = "USER_PERM"
-)
-
-// Context keys
-const (
-	usercontextkey           = "USER"
-	userPermissioncontextKey = "USER_PERM"
 )
 
 // Sessions settings
@@ -66,8 +59,6 @@ func VerifyPermission(h http.HandlerFunc, permission string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if login, perms := CheckUserLoggerOrRedirect(w, r); login != "" {
 			if CheckPermission(perms, permission) {
-				context.Set(r, usercontextkey, login)
-				context.Set(r, userPermissioncontextKey, perms)
 				h(w, r)
 				return
 			}
@@ -79,9 +70,7 @@ func VerifyPermission(h http.HandlerFunc, permission string) http.HandlerFunc {
 // VerifyLogged check only is user is logged
 func VerifyLogged(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if login, perms := CheckUserLoggerOrRedirect(w, r); login != "" {
-			context.Set(r, usercontextkey, login)
-			context.Set(r, userPermissioncontextKey, perms)
+		if login, _ := CheckUserLoggerOrRedirect(w, r); login != "" {
 			h(w, r)
 		}
 	})
