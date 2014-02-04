@@ -27,6 +27,8 @@ func csrfHandler(h http.Handler) http.HandlerFunc {
 			http.Error(w, "Fobidden/CSRF", http.StatusForbidden)
 			//h.ServeHTTP(w, r)
 		} else {
+			delete(r.Form, FORMCSRFTOKEN)
+			delete(r.Form, FORMCSRFTOKEN2)
 			h.ServeHTTP(w, r)
 		}
 	})
