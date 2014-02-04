@@ -24,6 +24,7 @@ func Init(filename string) error {
 	err = json.Unmarshal(file, &config)
 	if err != nil {
 		l.Error("pages.files: %s", err.Error())
+		return err
 	}
 
 	config.BaseDir, err = filepath.Abs(config.BaseDir)
