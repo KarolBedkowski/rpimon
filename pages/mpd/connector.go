@@ -391,3 +391,26 @@ func getSongInfo(uri string) (info []mpd.Attrs, err error) {
 	defer conn.Close()
 	return conn.ListAllInfo(uri)
 }
+
+func find(query string) ([]mpd.Attrs, error) {
+	l.Info("find: %v", query)
+	conn, err := connect()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	return conn.Find(query)
+}
+
+func mpdFileAction(uri, action string) error {
+	conn, err := connect()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	switch action {
+	case "add":
+		return conn.Add(uri)
+	}
+	return errors.New("Invalid action")
+}

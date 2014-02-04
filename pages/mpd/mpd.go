@@ -72,10 +72,18 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/library/action",
 		app.VerifyPermission(libraryActionHandler, "mpd")).Methods(
 		"PUT", "POST").Name("mpd-library-action")
-	// orher
+	// other
 	subRouter.HandleFunc("/log",
 		app.VerifyPermission(mpdLogPageHandler, "mpd")).Name(
 		"mpd-log")
+	// search
+	subRouter.HandleFunc("/search",
+		app.VerifyPermission(searchPageHandler, "mpd")).Name(
+		"mpd-search")
+	// files
+	subRouter.HandleFunc("/file",
+		app.VerifyPermission(filePageHandler, "mpd")).Name(
+		"mpd-file")
 	localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("Status", "mpd-index").SetIcon("glyphicon glyphicon-music"),
 		app.NewMenuItemFromRoute("Playlist", "mpd-playlist").SetIcon("glyphicon glyphicon-list"),
 		app.NewMenuItemFromRoute("Library", "mpd-library").SetIcon("glyphicon glyphicon-folder-open"),
@@ -196,4 +204,28 @@ func songInfoHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	app.RenderTemplate(w, ctx, "song-info", "mpd/songinfo.tmpl")
+}
+
+func filePageHandler(w http.ResponseWriter, r *http.Request) {
+	action := r.FormValue("action")
+	if action == "" {
+		l.Warn("page.mpd filePageHandler: missing action ", r.Form)
+		http.Error(w, "missing action", http.StatusBadRequest)
+		return
+	}
+	uri := r.FormValue("uri")
+	if uri == "" {
+		l.Warn("page.mpd filePageHandler: missing uri ", r.Form)
+		http.Error(w, "missing uri", http.StatusBadRequest)
+		return
+	}
+	uri, _ = url.QueryUnescape(uri)
+	err := mpdFileAction(uri, action)
+	if err == nil {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		encoded, _ := json.Marshal("OK")
+		w.Write(encoded)
+	} else {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
