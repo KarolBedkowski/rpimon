@@ -14,20 +14,13 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("net-index")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("net-page")
+	localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("IFConfig", "net-page", "page", "ifconfig").SetID("ifconfig"),
+		app.NewMenuItemFromRoute("IPTables", "net-page", "page", "iptables").SetID("iptables"),
+		app.NewMenuItemFromRoute("Netstat", "net-page", "page", "netstat").SetID("netstat"),
+		app.NewMenuItemFromRoute("Conenctions", "net-page", "page", "connenctions").SetID("connenctions")}
 }
 
 var localMenu []*app.MenuItem
-
-func createLocalMenu() []*app.MenuItem {
-	if localMenu == nil {
-
-		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("IFConfig", "net-page", "page", "ifconfig").SetID("ifconfig"),
-			app.NewMenuItemFromRoute("IPTables", "net-page", "page", "iptables").SetID("iptables"),
-			app.NewMenuItemFromRoute("Netstat", "net-page", "page", "netstat").SetID("netstat"),
-			app.NewMenuItemFromRoute("Conenctions", "net-page", "page", "connenctions").SetID("connenctions")}
-	}
-	return localMenu
-}
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -35,7 +28,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		page = "ifconfig"
 	}
-	data := app.NewSimpleDataPageCtx(w, r, "Network", "net", page, createLocalMenu())
+	data := app.NewSimpleDataPageCtx(w, r, "Network", "net", page, localMenu)
 	data.CurrentLocalMenuPos = page
 	switch page {
 	case "ifconfig":
@@ -44,15 +37,15 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 		data.Data = h.ReadFromCommand("sudo", "iptables", "-L", "-vn")
 	case "netstat":
 		data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
-		data.TData, _ = getConnections("sudo", "netstat", "-lpn", "--inet", "--inet6")
+		data.TData, _ = netstat("sudo", "netstat", "-lpn", "--inet", "--inet6")
 	case "connenctions":
 		data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
-		data.TData, _ = getConnections("sudo", "netstat", "-pn", "--inet", "--inet6")
+		data.TData, _ = netstat("sudo", "netstat", "-pn", "--inet", "--inet6")
 	}
 	app.RenderTemplateStd(w, data, "data.tmpl")
 }
 
-func getConnections(command string, args ...string) ([][]string, error) {
+func netstat(command string, args ...string) ([][]string, error) {
 	result := make([][]string, 0)
 	res := h.ReadFromCommand(command, args...)
 	lines := strings.Split(res, "\n")

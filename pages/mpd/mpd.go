@@ -75,6 +75,13 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/log",
 		app.VerifyPermission(mpdLogPageHandler, "mpd")).Name(
 		"mpd-log")
+	localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("Status", "mpd-index").SetIcon("glyphicon glyphicon-music"),
+		app.NewMenuItemFromRoute("Playlist", "mpd-playlist").SetIcon("glyphicon glyphicon-list"),
+		app.NewMenuItemFromRoute("Library", "mpd-library").SetIcon("glyphicon glyphicon-folder-open"),
+		app.NewMenuItemFromRoute("Search", "mpd-search").SetIcon("glyphicon glyphicon-search"),
+		app.NewMenuItemFromRoute("Playlists", "mpd-playlists").SetIcon("glyphicon glyphicon-floppy-open"),
+		app.NewMenuItemFromRoute("Log", "mpd-log").SetIcon("glyphicon glyphicon-wrench"),
+	}
 }
 
 type pageCtx struct {
@@ -84,21 +91,9 @@ type pageCtx struct {
 
 var localMenu []*app.MenuItem
 
-func createLocalMenu() []*app.MenuItem {
-	if localMenu == nil {
-		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("Status", "mpd-index").SetIcon("glyphicon glyphicon-music"),
-			app.NewMenuItemFromRoute("Playlist", "mpd-playlist").SetIcon("glyphicon glyphicon-list"),
-			app.NewMenuItemFromRoute("Library", "mpd-library").SetIcon("glyphicon glyphicon-folder-open"),
-			app.NewMenuItemFromRoute("Playlists", "mpd-playlists").SetIcon("glyphicon glyphicon-floppy-open"),
-			app.NewMenuItemFromRoute("Log", "mpd-log").SetIcon("glyphicon glyphicon-wrench"),
-		}
-	}
-	return localMenu
-}
-
 func newPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Mpd", "mpd", w, r)}
-	ctx.LocalMenu = createLocalMenu()
+	ctx.LocalMenu = localMenu
 	ctx.CurrentLocalMenuPos = "mpd-index"
 	return ctx
 }
@@ -158,9 +153,9 @@ func controlHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func mpdLogPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := app.NewSimpleDataPageCtx(w, r, "mpd", "mpd", "", createLocalMenu())
+	ctx := app.NewSimpleDataPageCtx(w, r, "mpd", "mpd", "", localMenu)
 	ctx.CurrentLocalMenuPos = "mpd-log"
-	ctx.LocalMenu = createLocalMenu()
+	ctx.LocalMenu = localMenu
 
 	if lines, err := h.ReadFromFileLastLines("/var/log/mpd/mpd.log", 25); err != nil {
 		ctx.Data = err.Error()

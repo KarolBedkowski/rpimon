@@ -19,6 +19,10 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("logs-index")
 	subRouter.HandleFunc("/serv", app.VerifyPermission(servLogHandler, "admin")).Name("logs-serv")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("logs-page")
+	for _, group := range config.Groups {
+		localMenu = append(localMenu,
+			app.NewMenuItemFromRoute(group.Name, "logs-page", "page", group.Name).SetID(group.Name))
+	}
 }
 
 type pageCtx struct {
@@ -33,19 +37,9 @@ type pageCtx struct {
 
 var localMenu []*app.MenuItem
 
-func createLocalMenu() []*app.MenuItem {
-	if localMenu == nil {
-		for _, group := range config.Groups {
-			localMenu = append(localMenu,
-				app.NewMenuItemFromRoute(group.Name, "logs-page", "page", group.Name).SetID(group.Name))
-		}
-	}
-	return localMenu
-}
-
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("logs", "logs", w, r)}
-	ctx.LocalMenu = createLocalMenu()
+	ctx.LocalMenu = localMenu
 	vars := mux.Vars(r)
 	page, ok := vars["page"]
 	if !ok {

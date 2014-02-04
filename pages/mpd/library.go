@@ -12,7 +12,7 @@ import (
 
 func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := app.NewBasePageContext("Mpd", "mpd", w, r)
-	ctx.LocalMenu = createLocalMenu()
+	ctx.LocalMenu = localMenu
 	ctx.CurrentLocalMenuPos = "mpd-library"
 	app.RenderTemplateStd(w, ctx, "mpd/library.tmpl")
 }

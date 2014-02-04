@@ -16,25 +16,19 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/umount", app.VerifyPermission(umountPageHandler, "admin")).Name("storage-umount")
 	subRouter.HandleFunc("/df", app.VerifyPermission(dfPageHandler, "admin")).Name("storage-df")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("storage-page")
+	localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("Disk Free", "storage-df").SetID("diskfree"),
+		app.NewMenuItemFromRoute("Mount", "storage-mount").SetID("mount"),
+		app.NewMenuItemFromRoute("Devices", "storage-page", "page", "devices").SetID("devices")}
 }
 
 func newPageCtx(w http.ResponseWriter, r *http.Request, localMenuPos string, data string) *app.SimpleDataPageCtx {
-	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", localMenuPos, createLocalMenu())
+	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", localMenuPos, localMenu)
 	ctx.CurrentLocalMenuPos = localMenuPos
 	ctx.Data = data
 	return ctx
 }
 
 var localMenu []*app.MenuItem
-
-func createLocalMenu() []*app.MenuItem {
-	if localMenu == nil {
-		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("Disk Free", "storage-df").SetID("diskfree"),
-			app.NewMenuItemFromRoute("Mount", "storage-mount").SetID("mount"),
-			app.NewMenuItemFromRoute("Devices", "storage-page", "page", "devices").SetID("devices")}
-	}
-	return localMenu
-}
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -64,7 +58,7 @@ func mountPageHandler(w http.ResponseWriter, r *http.Request) {
 		Data        string
 		Mounted     []*mountPoint
 	}
-	ctx.SimpleDataPageCtx = app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", createLocalMenu())
+	ctx.SimpleDataPageCtx = app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", localMenu)
 	ctx.CurrentLocalMenuPos = "mount"
 	ctx.Data = h.ReadFromCommand("sudo", "mount")
 	ctx.Mounted = mountCmdToMountPoints(ctx.Data)
@@ -102,7 +96,7 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func dfPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", createLocalMenu())
+	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", localMenu)
 	ctx.CurrentLocalMenuPos = "diskfree"
 	ctx.TData = make([][]string, 0)
 	ctx.THead = []string{"Filesystem", "Size", "Used", "Available", "Used %", "Mounted on"}

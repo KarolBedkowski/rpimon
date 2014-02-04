@@ -26,7 +26,7 @@ type playlistPageCtx struct {
 
 func newPlaylistPageCtx(w http.ResponseWriter, r *http.Request) *playlistPageCtx {
 	ctx := &playlistPageCtx{BasePageContext: app.NewBasePageContext("Mpd", "mpd", w, r)}
-	ctx.LocalMenu = createLocalMenu()
+	ctx.LocalMenu = localMenu
 	ctx.CurrentLocalMenuPos = "mpd-playlist"
 	return ctx
 }
