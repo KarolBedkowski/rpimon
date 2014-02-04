@@ -1,10 +1,11 @@
 package mpd
 
 import (
-	"code.google.com/p/gompd/mpd"
+	//"code.google.com/p/gompd/mpd"
 	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
+	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"

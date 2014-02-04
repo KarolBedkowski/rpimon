@@ -3,8 +3,9 @@ package mpd
 // MPD Playlists
 
 import (
-	"code.google.com/p/gompd/mpd"
+	//"code.google.com/p/gompd/mpd"
 	"encoding/json"
+	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	//l "k.prv/rpimon/helpers/logging"

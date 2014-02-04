@@ -1,8 +1,9 @@
 package mpd
 
 import (
-	"code.google.com/p/gompd/mpd"
+	//"code.google.com/p/gompd/mpd"
 	"errors"
+	"github.com/turbowookie/gompd/mpd"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"strconv"

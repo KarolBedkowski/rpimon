@@ -3,10 +3,11 @@ package mpd
 // MPD current playlist
 
 import (
-	"code.google.com/p/gompd/mpd"
+	//"code.google.com/p/gompd/mpd"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
+	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
