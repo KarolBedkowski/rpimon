@@ -20,12 +20,20 @@ var SYSTEM = (function(self, $) {
 				load = msg.loadinfo,
 				nettablebody = $('tbody#network-interfaces-table'),
 				fstablebody = $('tbody#fs-table'),
-				uptime = msg.uptime;
+				uptime = msg.uptime,
+				netuseInput = msg.netusage.Input,
+				netuseOutput = msg.netusage.Output;
 			$('#load-chart').text(msg.load).change();
 			$('#cpu-chart').text(msg.cpu).change();
 			$('#mem-chart').text(msg.mem).change();
-			$("#net-in-chart").text(msg.netusage.Input.join(",")).change();
-			$("#net-out-chart").text(msg.netusage.Output.join(",")).change();
+			$("#net-in-chart").text(netuseInput.join(",")).change();
+			$("#net-out-chart").text(netuseOutput.join(",")).change();
+			if (netuseInput) {
+				$("#network-download").text(Math.round(netuseInput[netuseInput.length-1] / 1024) + " kB/s");
+			}
+			if (netuseOutput) {
+				$("#network-upload").text(Math.round(netuseOutput[netuseOutput.length-1] / 1024) + " kB/s");
+			}
 			$('#mem-chart').text(msg.mem).change();
 			$('#meminfo-used').text(meminfo.UsedPerc);
 			$('#meminfo-buff').text(meminfo.BuffersPerc);
