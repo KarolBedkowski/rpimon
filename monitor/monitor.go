@@ -449,53 +449,43 @@ func checkIsServiceConnected(port string) (result bool) {
 }
 
 type (
-	netUsage struct {
-		TS     int64
-		Input  int64
-		Output int64
-	}
-
-	netIfaceHistory []*netUsage
-
 	// Total history as list of inputs and outputs
-	SimpleHistory struct {
-		Input  []int64
-		Output []int64
+	ifaceHistory struct {
+		lastTS     int64
+		Input      []int64
+		Output     []int64
+		lastInput  int64
+		lastOutput int64
 	}
 )
 
 var (
-	netHistoryMutex   sync.RWMutex
-	netHistory        = make(map[string]netIfaceHistory)
-	netTotalUsage     = make(netIfaceHistory, 0)
-	lastTotalUsage    = &netUsage{TS: 0}
-	lastHistoryValues = make(map[string]*netUsage)
+	netHistoryMutex sync.RWMutex
+	netHistory      = make(map[string]ifaceHistory)
+	netTotalUsage   ifaceHistory
 )
 
 // GetNetHistory return map interface->usage history
-func GetNetHistory() map[string]netIfaceHistory {
+func GetNetHistory() map[string]ifaceHistory {
 	loadMutex.RLock()
 	defer loadMutex.RUnlock()
-	result := make(map[string]netIfaceHistory)
+	result := make(map[string]ifaceHistory)
 	for key, val := range netHistory {
-		result[key] = val[:]
+		result[key] = ifaceHistory{
+			Input:  val.Input[:],
+			Output: val.Output[:],
+		}
 	}
 	return result
 }
 
 // GetTotalNetHistory return ussage all interfaces
-func GetTotalNetHistory() SimpleHistory {
+func GetTotalNetHistory() ifaceHistory {
 	loadMutex.RLock()
 	defer loadMutex.RUnlock()
-	input := make([]int64, 0)
-	output := make([]int64, 0)
-	for _, val := range netTotalUsage {
-		input = append(input, val.Input)
-		output = append(input, val.Output)
-	}
-	result := SimpleHistory{
-		Input:  input,
-		Output: output,
+	result := ifaceHistory{
+		Input:  netTotalUsage.Input[:],
+		Output: netTotalUsage.Output[:],
 	}
 	return result
 }
@@ -530,42 +520,35 @@ func gatherNetworkUsage() {
 		sumRecv += int64(recv)
 		sumTrans += int64(trans)
 
-		if last, ok := lastHistoryValues[iface]; ok {
-			tsdelta := ts - last.TS
-			netItem := &netUsage{
-				TS:     ts,
-				Input:  (int64(recv) - last.Input) / tsdelta,
-				Output: (int64(trans) - last.Output) / tsdelta,
-			}
-			if history, ok := netHistory[iface]; ok {
-				if len(history) >= netHistoryLimit {
-					netHistory[iface] = history[1:]
+		if ihist, ok := netHistory[iface]; ok {
+			if ihist.lastTS > 0 {
+				tsdelta := ts - ihist.lastTS
+				if len(ihist.Input) >= netHistoryLimit {
+					ihist.Input = ihist.Input[1:]
+					ihist.Output = ihist.Output[1:]
 				}
+				ihist.Input = append(ihist.Input, (int64(recv)-ihist.lastInput)/tsdelta)
+				ihist.Output = append(ihist.Output, (int64(trans)-ihist.lastOutput)/tsdelta)
 			}
-			netHistory[iface] = append(netHistory[iface], netItem)
-			//l.Debug("netitem: %s %v", iface, netItem)
-			last.TS = ts
-			last.Input = int64(recv)
-			last.Output = int64(trans)
+			ihist.lastTS = ts
+			ihist.lastInput = int64(recv)
+			ihist.lastOutput = int64(trans)
 		} else {
-			lastHistoryValues[iface] = &netUsage{
-				TS:     ts,
-				Input:  int64(recv),
-				Output: int64(trans),
+			ihist := ifaceHistory{
+				lastTS:     ts,
+				lastInput:  int64(recv),
+				lastOutput: int64(trans),
 			}
+			netHistory[iface] = ihist
 		}
+
 	}
-	if lastTotalUsage.TS > 0 {
-		tsdelta := ts - lastTotalUsage.TS
-		total := &netUsage{
-			TS:     ts,
-			Input:  (sumRecv - lastTotalUsage.Input) / tsdelta,
-			Output: (sumTrans - lastTotalUsage.Output) / tsdelta,
-		}
-		netTotalUsage = append(netTotalUsage, total)
-		//l.Debug("total: %v", total)
+	if netTotalUsage.lastTS > 0 {
+		tsdelta := ts - netTotalUsage.lastTS
+		netTotalUsage.Input = append(netTotalUsage.Input, (sumRecv-netTotalUsage.lastInput)/tsdelta)
+		netTotalUsage.Output = append(netTotalUsage.Output, (sumTrans-netTotalUsage.lastOutput)/tsdelta)
 	}
-	lastTotalUsage.TS = ts
-	lastTotalUsage.Input = sumRecv
-	lastTotalUsage.Output = sumTrans
+	netTotalUsage.lastTS = ts
+	netTotalUsage.lastInput = sumRecv
+	netTotalUsage.lastOutput = sumTrans
 }
