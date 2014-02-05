@@ -21,6 +21,7 @@ const (
 	uptimeInfoCacheTTL = 2
 	warningsCacheTTL   = 5
 	cpuInfoCacheTTL    = 5
+	netHistoryLimit    = 30
 )
 
 // Init monitor, start background go routine
@@ -34,6 +35,7 @@ func Init(interval int) {
 				gatherLoadInfo()
 				gatherCPUUsageInfo()
 				gatherMemoryInfo()
+				gatherNetworkUsage()
 			case <-quit:
 				ticker.Stop()
 				return
@@ -444,4 +446,85 @@ func checkIsServiceConnected(port string) (result bool) {
 		}
 	}
 	return
+}
+
+type (
+	netUsage struct {
+		TS    int64
+		Input int64
+		Ouput int64
+	}
+
+	netIfaceHistory []*netUsage
+)
+
+var (
+	netHistoryMutex   sync.RWMutex
+	netHistory        = make(map[string]netIfaceHistory)
+	lastHistoryValues = make(map[string]*netUsage)
+)
+
+// GetNetHistory return map interface->usage history
+func GetNetHistory() map[string]netIfaceHistory {
+	loadMutex.RLock()
+	defer loadMutex.RUnlock()
+	result := make(map[string]netIfaceHistory)
+	for key, val := range netHistory {
+		result[key] = val[:]
+	}
+	return result
+}
+
+func gatherNetworkUsage() {
+	file, err := os.Open("/proc/net/dev")
+	if err != nil {
+		l.Warn("gatherNetworkUsage open proc file error: %s", err.Error())
+		return
+	}
+	defer file.Close()
+	ts := time.Now().Unix()
+	reader := bufio.NewReader(file)
+	netHistoryMutex.Lock()
+	defer netHistoryMutex.Unlock()
+	for idx := 0; ; idx++ {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			break
+		}
+		if idx < 3 {
+			continue
+		}
+		fields := strings.Fields(line)
+		iface := strings.Trim(fields[0], " :")
+		if iface == "lo" {
+			continue
+		}
+		recv, _ := strconv.Atoi(fields[1])
+		trans, _ := strconv.Atoi(fields[9])
+
+		if last, ok := lastHistoryValues[iface]; ok {
+			tsdelta := ts - last.TS
+			netItem := &netUsage{
+				TS:    ts,
+				Input: (int64(recv) - last.Input) / tsdelta,
+				Ouput: (int64(trans) - last.Ouput) / tsdelta,
+			}
+			if history, ok := netHistory[iface]; ok {
+				if len(history) >= netHistoryLimit {
+					netHistory[iface] = history[1:]
+				}
+			}
+			netHistory[iface] = append(netHistory[iface], netItem)
+			last.TS = ts
+			last.Input = int64(recv)
+			last.Ouput = int64(trans)
+		} else {
+			lastHistoryValues[iface] = &netUsage{
+				TS:    ts,
+				Input: int64(recv),
+				Ouput: int64(trans),
+			}
+		}
+
+	}
 }
