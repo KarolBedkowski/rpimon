@@ -24,6 +24,9 @@ var SYSTEM = (function(self, $) {
 			$('#load-chart').text(msg.load).change();
 			$('#cpu-chart').text(msg.cpu).change();
 			$('#mem-chart').text(msg.mem).change();
+			$("#net-in-chart").text(msg.netusage.Input.join(",")).change();
+			$("#net-out-chart").text(msg.netusage.Output.join(",")).change();
+			$('#mem-chart').text(msg.mem).change();
 			$('#meminfo-used').text(meminfo.UsedPerc);
 			$('#meminfo-buff').text(meminfo.BuffersPerc);
 			$('#meminfo-cach').text(meminfo.CachePerc);

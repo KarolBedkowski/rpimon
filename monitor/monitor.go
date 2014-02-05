@@ -456,6 +456,12 @@ type (
 	}
 
 	netIfaceHistory []*netUsage
+
+	// Total history as list of inputs and outputs
+	SimpleHistory struct {
+		Input  []int64
+		Output []int64
+	}
 )
 
 var (
@@ -478,10 +484,20 @@ func GetNetHistory() map[string]netIfaceHistory {
 }
 
 // GetTotalNetHistory return ussage all interfaces
-func GetTotalNetHistory() netIfaceHistory {
+func GetTotalNetHistory() SimpleHistory {
 	loadMutex.RLock()
 	defer loadMutex.RUnlock()
-	return netTotalUsage[:]
+	input := make([]int64, 0)
+	output := make([]int64, 0)
+	for _, val := range netTotalUsage {
+		input = append(input, val.Input)
+		output = append(input, val.Output)
+	}
+	result := SimpleHistory{
+		Input:  input,
+		Output: output,
+	}
+	return result
 }
 
 func gatherNetworkUsage() {
