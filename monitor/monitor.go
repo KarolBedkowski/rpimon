@@ -517,7 +517,7 @@ func gatherNetworkUsage() {
 		if err != nil {
 			break
 		}
-		if idx < 3 {
+		if idx < 2 {
 			continue
 		}
 		fields := strings.Fields(line)
@@ -543,6 +543,7 @@ func gatherNetworkUsage() {
 				}
 			}
 			netHistory[iface] = append(netHistory[iface], netItem)
+			//l.Debug("netitem: %s %v", iface, netItem)
 			last.TS = ts
 			last.Input = int64(recv)
 			last.Output = int64(trans)
@@ -562,6 +563,7 @@ func gatherNetworkUsage() {
 			Output: (sumTrans - lastTotalUsage.Output) / tsdelta,
 		}
 		netTotalUsage = append(netTotalUsage, total)
+		//l.Debug("total: %v", total)
 	}
 	lastTotalUsage.TS = ts
 	lastTotalUsage.Input = sumRecv
