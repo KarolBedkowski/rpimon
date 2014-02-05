@@ -450,9 +450,9 @@ func checkIsServiceConnected(port string) (result bool) {
 
 type (
 	netUsage struct {
-		TS    int64
-		Input int64
-		Ouput int64
+		TS     int64
+		Input  int64
+		Output int64
 	}
 
 	netIfaceHistory []*netUsage
@@ -461,6 +461,8 @@ type (
 var (
 	netHistoryMutex   sync.RWMutex
 	netHistory        = make(map[string]netIfaceHistory)
+	netTotalUsage     = make(netIfaceHistory, 0)
+	lastTotalUsage    = &netUsage{TS: 0}
 	lastHistoryValues = make(map[string]*netUsage)
 )
 
@@ -475,6 +477,13 @@ func GetNetHistory() map[string]netIfaceHistory {
 	return result
 }
 
+// GetTotalNetHistory return ussage all interfaces
+func GetTotalNetHistory() netIfaceHistory {
+	loadMutex.RLock()
+	defer loadMutex.RUnlock()
+	return netTotalUsage[:]
+}
+
 func gatherNetworkUsage() {
 	file, err := os.Open("/proc/net/dev")
 	if err != nil {
@@ -486,6 +495,7 @@ func gatherNetworkUsage() {
 	reader := bufio.NewReader(file)
 	netHistoryMutex.Lock()
 	defer netHistoryMutex.Unlock()
+	var sumRecv, sumTrans int64
 	for idx := 0; ; idx++ {
 		line, err := reader.ReadString('\n')
 		if err != nil {
@@ -501,13 +511,15 @@ func gatherNetworkUsage() {
 		}
 		recv, _ := strconv.Atoi(fields[1])
 		trans, _ := strconv.Atoi(fields[9])
+		sumRecv += int64(recv)
+		sumTrans += int64(trans)
 
 		if last, ok := lastHistoryValues[iface]; ok {
 			tsdelta := ts - last.TS
 			netItem := &netUsage{
-				TS:    ts,
-				Input: (int64(recv) - last.Input) / tsdelta,
-				Ouput: (int64(trans) - last.Ouput) / tsdelta,
+				TS:     ts,
+				Input:  (int64(recv) - last.Input) / tsdelta,
+				Output: (int64(trans) - last.Output) / tsdelta,
 			}
 			if history, ok := netHistory[iface]; ok {
 				if len(history) >= netHistoryLimit {
@@ -517,14 +529,25 @@ func gatherNetworkUsage() {
 			netHistory[iface] = append(netHistory[iface], netItem)
 			last.TS = ts
 			last.Input = int64(recv)
-			last.Ouput = int64(trans)
+			last.Output = int64(trans)
 		} else {
 			lastHistoryValues[iface] = &netUsage{
-				TS:    ts,
-				Input: int64(recv),
-				Ouput: int64(trans),
+				TS:     ts,
+				Input:  int64(recv),
+				Output: int64(trans),
 			}
 		}
-
 	}
+	if lastTotalUsage.TS > 0 {
+		tsdelta := ts - lastTotalUsage.TS
+		total := &netUsage{
+			TS:     ts,
+			Input:  (sumRecv - lastTotalUsage.Input) / tsdelta,
+			Output: (sumTrans - lastTotalUsage.Output) / tsdelta,
+		}
+		netTotalUsage = append(netTotalUsage, total)
+	}
+	lastTotalUsage.TS = ts
+	lastTotalUsage.Input = sumRecv
+	lastTotalUsage.Output = sumTrans
 }
