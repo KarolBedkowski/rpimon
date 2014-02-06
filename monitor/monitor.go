@@ -545,6 +545,10 @@ func gatherNetworkUsage() {
 	}
 	if netTotalUsage.lastTS > 0 {
 		tsdelta := ts - netTotalUsage.lastTS
+		if len(netTotalUsage.Input) >= netHistoryLimit {
+			netTotalUsage.Input = netTotalUsage.Input[1:]
+			netTotalUsage.Output = netTotalUsage.Output[1:]
+		}
 		netTotalUsage.Input = append(netTotalUsage.Input, (sumRecv-netTotalUsage.lastInput)/tsdelta)
 		netTotalUsage.Output = append(netTotalUsage.Output, (sumTrans-netTotalUsage.lastOutput)/tsdelta)
 	}
