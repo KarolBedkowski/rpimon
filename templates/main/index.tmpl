@@ -111,7 +111,7 @@
 				</div>
 				<table class="table">
 					{{range .Interfaces}}{{if ne .Address "-"}}
-					<tr><th>{{.Name}}</th><td>{{.Address}}</td></tr>
+					<tr><th>{{.Name}}</th><td>{{.Address}} {{.Address6}}</td></tr>
 					{{end}}{{end}}
 				</table>
 			</div>

@@ -50,8 +50,22 @@ var SYSTEM = (function(self, $) {
 			// network
 			nettablebody.text("");
 			msg.iface.forEach(function(entry) {
-				nettablebody.append(["<tr><td>", entry.Name, "</td><td>",
-					entry.Address, "</td></tr>"].join(""));
+				var row = ["<tr><td>", entry.Name, "</td><td>"];
+				if (entry.State == "UP") {
+					row.push('<span class="glyphicon glyphicon-ok-circle"></span>')
+				} else {
+					row.push('&nbsp;')
+				}
+				row.push("</td><td>");
+				if (entry.Address && entry.Address6) {
+					row.push(entry.Address + "<br/>"+ entry.Address6);
+				} else if (entry.Address) {
+					row.push(entry.Address);
+				} else {
+					row.push(entry.Address6);
+				}
+				row.push("</td></tr>");
+				nettablebody.append(row.join(""));
 			});
 			// fs
 			fstablebody.text("");

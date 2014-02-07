@@ -294,14 +294,50 @@ func gatherLoadInfo() (err error) {
 
 // InterfaceInfoStruct information about network interfaces
 type InterfaceInfoStruct struct {
-	Name    string
-	Address string
+	Name     string
+	Address  string
+	Address6 string
+	State    string
+	Mac      string
+	Kind     string
 }
 
 // InterfacesStruct informations about all interfaces
-type InterfacesStruct []InterfaceInfoStruct
+type InterfacesStruct []*InterfaceInfoStruct
 
 var interfacesInfoCache = h.NewSimpleCache(ifaceCacheTTL)
+
+func parseIpResult(input string) (result InterfacesStruct) {
+	lines := strings.Split(input, "\n")
+	var iface *InterfaceInfoStruct
+	for _, line := range lines {
+		if len(line) == 0 {
+			continue
+		}
+		fields := strings.Fields(line)
+		if line[0] != ' ' {
+			if iface != nil {
+				if iface.Name != "lo" {
+					result = append(result, iface)
+				}
+			}
+			iface = new(InterfaceInfoStruct)
+			iface.Name = strings.Trim(fields[1], " :")
+			iface.State = fields[8]
+		} else if strings.HasPrefix(line, "    inet ") {
+			iface.Address = fields[1]
+		} else if strings.HasPrefix(line, "    inet6 ") {
+			iface.Address6 = fields[1]
+		} else if strings.HasPrefix(line, "    link/") {
+			iface.Mac = fields[1]
+			iface.Kind = fields[0][5:]
+		}
+	}
+	if iface != nil && iface.Name != "" && iface.Name != "lo" {
+		result = append(result, iface)
+	}
+	return result
+}
 
 // GetInterfacesInfo get current info about network interfaces
 func GetInterfacesInfo() *InterfacesStruct {
@@ -310,26 +346,7 @@ func GetInterfacesInfo() *InterfacesStruct {
 		if ipres == "" {
 			return nil
 		}
-		lines := strings.Split(ipres, "\n")
-		iface := ""
-		var result InterfacesStruct
-		for _, line := range lines {
-			if len(line) == 0 {
-				continue
-			}
-			if line[0] != ' ' {
-				if iface != "" && iface != "lo" {
-					result = append(result, InterfaceInfoStruct{iface, "-"})
-				}
-				iface = strings.Trim(strings.Fields(line)[1], " :")
-			} else if strings.HasPrefix(line, "    inet") {
-				if iface != "lo" {
-					fields := strings.Fields(line)
-					result = append(result, InterfaceInfoStruct{iface, fields[1]})
-				}
-				iface = ""
-			}
-		}
+		result := parseIpResult(ipres)
 		return &result
 	})
 	return result.(*InterfacesStruct)
