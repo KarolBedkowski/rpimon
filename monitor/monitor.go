@@ -469,16 +469,16 @@ type (
 	// Total history as list of inputs and outputs
 	ifaceHistory struct {
 		lastTS     int64
-		Input      []int64
-		Output     []int64
-		lastInput  int64
-		lastOutput int64
+		Input      []uint64
+		Output     []uint64
+		lastInput  uint64
+		lastOutput uint64
 	}
 )
 
 var (
 	netHistoryMutex sync.RWMutex
-	netHistory      = make(map[string]ifaceHistory)
+	netHistory      = make(map[string]*ifaceHistory)
 	netTotalUsage   ifaceHistory
 )
 
@@ -518,7 +518,7 @@ func gatherNetworkUsage() {
 	reader := bufio.NewReader(file)
 	netHistoryMutex.Lock()
 	defer netHistoryMutex.Unlock()
-	var sumRecv, sumTrans int64
+	var sumRecv, sumTrans uint64
 	for idx := 0; ; idx++ {
 		line, err := reader.ReadString('\n')
 		if err != nil {
@@ -532,10 +532,11 @@ func gatherNetworkUsage() {
 		if iface == "lo" {
 			continue
 		}
-		recv, _ := strconv.Atoi(fields[1])
-		trans, _ := strconv.Atoi(fields[9])
-		sumRecv += int64(recv)
-		sumTrans += int64(trans)
+
+		recv, _ := strconv.ParseUint(fields[1], 10, 64)
+		trans, _ := strconv.ParseUint(fields[9], 10, 64)
+		sumRecv += recv
+		sumTrans += trans
 
 		if ihist, ok := netHistory[iface]; ok {
 			if ihist.lastTS > 0 {
@@ -544,21 +545,22 @@ func gatherNetworkUsage() {
 					ihist.Input = ihist.Input[1:]
 					ihist.Output = ihist.Output[1:]
 				}
-				ihist.Input = append(ihist.Input, (int64(recv)-ihist.lastInput)/tsdelta)
-				ihist.Output = append(ihist.Output, (int64(trans)-ihist.lastOutput)/tsdelta)
+				ihist.Input = append(ihist.Input, (recv-ihist.lastInput)/uint64(tsdelta))
+				ihist.Output = append(ihist.Output, (trans-ihist.lastOutput)/uint64(tsdelta))
 			}
 			ihist.lastTS = ts
-			ihist.lastInput = int64(recv)
-			ihist.lastOutput = int64(trans)
+			ihist.lastInput = recv
+			ihist.lastOutput = trans
 		} else {
 			ihist := ifaceHistory{
 				lastTS:     ts,
-				lastInput:  int64(recv),
-				lastOutput: int64(trans),
+				lastInput:  recv,
+				lastOutput: trans,
+				Input:      make([]uint64, 0),
+				Output:     make([]uint64, 0),
 			}
-			netHistory[iface] = ihist
+			netHistory[iface] = &ihist
 		}
-
 	}
 	if netTotalUsage.lastTS > 0 {
 		tsdelta := ts - netTotalUsage.lastTS
@@ -566,8 +568,8 @@ func gatherNetworkUsage() {
 			netTotalUsage.Input = netTotalUsage.Input[1:]
 			netTotalUsage.Output = netTotalUsage.Output[1:]
 		}
-		netTotalUsage.Input = append(netTotalUsage.Input, (sumRecv-netTotalUsage.lastInput)/tsdelta)
-		netTotalUsage.Output = append(netTotalUsage.Output, (sumTrans-netTotalUsage.lastOutput)/tsdelta)
+		netTotalUsage.Input = append(netTotalUsage.Input, (sumRecv-netTotalUsage.lastInput)/uint64(tsdelta))
+		netTotalUsage.Output = append(netTotalUsage.Output, (sumTrans-netTotalUsage.lastOutput)/uint64(tsdelta))
 	}
 	netTotalUsage.lastTS = ts
 	netTotalUsage.lastInput = sumRecv
