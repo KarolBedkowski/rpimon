@@ -1,10 +1,12 @@
 package users
 
 import (
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	//	l "k.prv/rpimon/helpers/logging"
+	"k.prv/rpimon/monitor"
 	"net/http"
 	"strings"
 )
@@ -13,8 +15,11 @@ import (
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("net-index")
-	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("net-page")
-	localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("IFConfig", "net-page", "page", "ifconfig").SetID("ifconfig"),
+	subRouter.HandleFunc("/serv/info", app.VerifyPermission(infoHandler, "admin")).Name("net-serv-info")
+	subRouter.HandleFunc("/{page}", app.VerifyPermission(subPageHandler, "admin")).Name("net-page")
+	localMenu = []*app.MenuItem{
+		app.NewMenuItemFromRoute("Status", "net-index").SetID("status"),
+		app.NewMenuItemFromRoute("IFConfig", "net-page", "page", "ifconfig").SetID("ifconfig"),
 		app.NewMenuItemFromRoute("IPTables", "net-page", "page", "iptables").SetID("iptables"),
 		app.NewMenuItemFromRoute("Netstat", "net-page", "page", "netstat").SetID("netstat"),
 		app.NewMenuItemFromRoute("Conenctions", "net-page", "page", "connenctions").SetID("connenctions")}
@@ -22,7 +27,20 @@ func CreateRoutes(parentRoute *mux.Route) {
 
 var localMenu []*app.MenuItem
 
+type mainPageContext struct {
+	*app.BasePageContext
+	Interfaces *monitor.InterfacesStruct
+}
+
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := &mainPageContext{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
+	ctx.CurrentLocalMenuPos = "status"
+	ctx.LocalMenu = localMenu
+	ctx.Interfaces = monitor.GetInterfacesInfo()
+	app.RenderTemplateStd(w, ctx, "net/status.tmpl")
+}
+
+func subPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	page, ok := vars["page"]
 	if !ok {
@@ -78,4 +96,19 @@ func netstat(command string, args ...string) ([][]string, error) {
 		})
 	}
 	return result, nil
+}
+
+var infoHandlerCache = h.NewSimpleCache(1)
+
+func infoHandler(w http.ResponseWriter, r *http.Request) {
+	data := infoHandlerCache.Get(func() h.Value {
+		res := map[string]interface{}{
+			"netusage": monitor.GetNetHistory(),
+			"ifaces":   monitor.GetInterfacesInfo(),
+		}
+		encoded, _ := json.Marshal(res)
+		return encoded
+	}).([]byte)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(data)
 }
