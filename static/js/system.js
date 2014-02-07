@@ -50,13 +50,10 @@ var SYSTEM = (function(self, $) {
 			// network
 			nettablebody.text("");
 			msg.iface.forEach(function(entry) {
-				var row = ["<tr><td>", entry.Name, "</td><td>"];
-				if (entry.State == "UP") {
-					row.push('<span class="glyphicon glyphicon-ok-circle"></span>')
-				} else {
-					row.push('&nbsp;')
+				if (entry.State != "UP") {
+					return
 				}
-				row.push("</td><td>");
+				var row = ["<tr><td>", entry.Name, "</td><td>"];
 				if (entry.Address && entry.Address6) {
 					row.push(entry.Address + "<br/>"+ entry.Address6);
 				} else if (entry.Address) {
