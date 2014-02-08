@@ -18,6 +18,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/conf", app.VerifyPermission(confPageHandler, "admin")).Name("net-conf")
 	subRouter.HandleFunc("/iptables", app.VerifyPermission(iptablesPageHandler, "admin")).Name("net-iptables")
 	subRouter.HandleFunc("/serv/info", app.VerifyPermission(infoHandler, "admin")).Name("net-serv-info")
+	subRouter.HandleFunc("/action", app.VerifyPermission(actionHandler, "admin")).Name("net-action").Methods("PUT")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(subPageHandler, "admin")).Name("net-page")
 	localMenu = []*app.MenuItem{
 		app.NewMenuItemFromRoute("Status", "net-index").SetID("status"),
@@ -221,4 +222,29 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 	}).([]byte)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(data)
+}
+
+func actionHandler(w http.ResponseWriter, r *http.Request) {
+	action := r.FormValue("action")
+	iface := r.FormValue("iface")
+	if action == "" || iface == "" {
+		http.Error(w, "missing action and/or iface", http.StatusBadRequest)
+		return
+	}
+
+	var result string
+	switch action {
+	case "dhclient":
+		result = h.ReadFromCommand("sudo", "dhclient", iface)
+	case "down":
+		result = h.ReadFromCommand("sudo", "ifconfig", iface, "down")
+	case "up":
+		result = h.ReadFromCommand("sudo", "ifconfig", iface, "up")
+	default:
+		http.Error(w, "wrong action", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Write([]byte(result))
 }

@@ -8,11 +8,16 @@
 var RPI = RPI || {};
 
 RPI.net = (function(self, $) {
-	var infoUrl = "/net/serv/info";
+	var urls = {
+			"net-serv-info": "/net/serv/info",
+			"net-action": "/net/action"
+		},
+		contextMenu = null,
+		contextMenuIface = null;
 
 	function getHistory() {
 		$.ajax({
-			url: infoUrl,
+			url: urls["net-serv-info"],
 			cache: false,
 			dataType: 'json'
 		}).done(function(msg) {
@@ -41,10 +46,62 @@ RPI.net = (function(self, $) {
 		});
 	}
 
-	self.init = function init(infoUrl_) {
-		infoUrl = infoUrl_;
+	function onActionLink(event) {
+		event.preventDefault();
+		contextMenu.hide();
+		if (!contextMenuIface) {
+			return
+		}
+		var a = $(this),
+			action = a.data("action");
+		RPI.confirmDialog("Please confirm " + action + " action.", {
+			title: "Confirm action",
+			btnSuccess: "Continue",
+			btnSuccessClass: "btn-warning",
+			onSuccess: function() {
+				RPI.showLoadingMsg();
+				$.ajax({
+					method: "PUT",
+					url: urls["net-action"],
+					data: {
+						"action": action,
+						"iface": contextMenuIface
+					}
+				}).fail(function(msg) {
+					RPI.hideLoadingMsg();
+					if (window.console && window.console.log) { window.console.log(msg); }
+					RPI.alert(msg.responseText || "Error").open();
+					contextMenuIface = null;
+				}).done(function(msg) {
+					RPI.hideLoadingMsg();
+					RPI.showFlash("success", msg, 5);
+					selectPath(currentPath);
+					contextMenuIface = null;
+				});
+			}
+		}).open();
+	}
+
+	self.init = function init(params) {
+		urls = $.extend({}, urls, params.urls || {});
+		contextMenu = $("#contextMenu");
 		$("span.chart-line").peity("line");
+		$("a.iface-menu").on("click", function(event) {
+			event.preventDefault();
+			var pos = $(this).offset();
+			contextMenuIface = $(this).data("iface");
+			contextMenu.css({
+				left: pos.left,
+				top: pos.top + $(this).height()
+			}).show();
+			return false;
+		});
+		$(document).click(function () {
+			contextMenu.hide();
+		});
+		$("#contextMenu a.iface-menu-item").on("click", onActionLink);
 		getHistory();
+
 	};
 
 	return self;
