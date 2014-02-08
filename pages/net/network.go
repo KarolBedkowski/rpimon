@@ -16,12 +16,13 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("net-index")
 	subRouter.HandleFunc("/conf", app.VerifyPermission(confPageHandler, "admin")).Name("net-conf")
+	subRouter.HandleFunc("/iptables", app.VerifyPermission(iptablesPageHandler, "admin")).Name("net-iptables")
 	subRouter.HandleFunc("/serv/info", app.VerifyPermission(infoHandler, "admin")).Name("net-serv-info")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(subPageHandler, "admin")).Name("net-page")
 	localMenu = []*app.MenuItem{
 		app.NewMenuItemFromRoute("Status", "net-index").SetID("status"),
 		app.NewMenuItemFromRoute("Configuration", "net-conf").SetID("conf"),
-		app.NewMenuItemFromRoute("IPTables", "net-page", "page", "iptables").SetID("iptables"),
+		app.NewMenuItemFromRoute("IPTables", "net-iptables").SetID("iptables"),
 		app.NewMenuItemFromRoute("Netstat", "net-page", "page", "netstat").SetID("netstat"),
 		app.NewMenuItemFromRoute("Conenctions", "net-page", "page", "connenctions").SetID("connenctions")}
 }
@@ -50,8 +51,6 @@ func subPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.NewSimpleDataPageCtx(w, r, "Network", "net", page, localMenu)
 	data.CurrentLocalMenuPos = page
 	switch page {
-	case "iptables":
-		data.Data = h.ReadFromCommand("sudo", "iptables", "-L", "-vn")
 	case "netstat":
 		data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
 		data.TData, _ = netstat("sudo", "netstat", "-lpn", "--inet", "--inet6")
@@ -123,6 +122,54 @@ func confPageHandler(w http.ResponseWriter, r *http.Request) {
 		ctx.Commands = &confCommands
 		ctx.Data = h.ReadFromCommand(cmdfields[0], cmdfields[1:]...)
 		app.RenderTemplateStd(w, ctx, "net/conf.tmpl")
+	}
+}
+
+type iptablesPageContext struct {
+	*app.BasePageContext
+	Current string
+	Data    string
+	Tables  *[]string
+}
+
+var iptablesTables = []string{
+	"filter",
+	"nat",
+	"mangle",
+	"raw",
+	"security",
+}
+
+func iptablesPageHandler(w http.ResponseWriter, r *http.Request) {
+	table := r.FormValue("table")
+	if table == "" {
+		table = iptablesTables[0]
+	} else {
+		ok := false
+		for _, dtab := range iptablesTables {
+			if table == dtab {
+				ok = true
+				break
+			}
+		}
+		if !ok {
+			http.Error(w, "invalid request", http.StatusBadRequest)
+			return
+		}
+	}
+	data := h.ReadFromCommand("sudo", "iptables", "-L", "-vn", "-t", table)
+
+	if r.FormValue("data") == "1" {
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.Write([]byte(data))
+	} else {
+		ctx := &iptablesPageContext{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
+		ctx.CurrentLocalMenuPos = "iptables"
+		ctx.LocalMenu = localMenu
+		ctx.Current = table
+		ctx.Tables = &iptablesTables
+		ctx.Data = data
+		app.RenderTemplateStd(w, ctx, "net/iptables.tmpl")
 	}
 }
 

@@ -1,0 +1,55 @@
+{{define "body"}}
+{{$ctx := .}}
+<div class="container">
+	<form class="form-inline" role="form">
+		<div class="form-group">
+			<label for="table">Table: </label>
+			<select id="table" style="margin-right: 1em; margin-left: 0.5em;">
+			{{range .Tables}}
+				<option value="{{.}}" {{if eq $ctx.Current .}}selected="selected"{{end}}>{{.}}</option>
+			{{end}}
+			</select>
+			<a href="#" title="Reload" id="reload"><span class="glyphicon glyphicon-refresh"></span></a>
+		</div>
+	</form>
+</div>
+
+<div class="container">
+	<pre id="data">{{.Data}}</pre>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script type="text/javascript">
+	$(function() {
+		function load(table, skipHistory) {
+			$('#data').text("Loading...");
+			$.ajax({
+				url: {{namedurl "net-iptables"}},
+				type: "GET",
+				data: {
+					"table": table,
+					"data": "1",
+				},
+			}).done(function(result) {
+				$('#data').text(result);
+				if (!skipHistory) {
+					var new_location = "?table=" + encodeURIComponent(table);
+					window.history.pushState({"module": "net"}, window.title, new_location);
+				}
+			}).fail(function(msg, responseText) {
+				$('#data').text(responseText);
+			});
+		}
+
+		$('#table').on("change", function(event) {
+			load($(this).val());
+		});
+
+		$("#reload").on("click", function(event) {
+			event.preventDefault();
+			load($("#table").val(), true);
+		});
+	});
+</script>
+{{end}}
