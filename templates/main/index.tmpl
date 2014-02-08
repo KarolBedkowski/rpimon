@@ -110,7 +110,7 @@
 					</h3>
 				</div>
 				<table class="table">
-					{{range .Interfaces}}{{if ne .Address "-"}}
+					{{range .Interfaces}}{{if or .Address .Address6}}
 					<tr><th>{{.Name}}</th><td>{{.Address}} {{.Address6}}</td></tr>
 					{{end}}{{end}}
 				</table>
