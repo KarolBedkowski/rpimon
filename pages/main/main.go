@@ -89,7 +89,9 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 			"loadinfo": monitor.GetLoadInfo(),
 			"fs":       monitor.GetFilesystemsInfo(),
 			"iface":    monitor.GetInterfacesInfo(),
-			"uptime":   monitor.GetUptimeInfo()}
+			"uptime":   monitor.GetUptimeInfo(),
+			"netusage": monitor.GetTotalNetHistory(),
+		}
 		encoded, _ := json.Marshal(res)
 		return encoded
 	}).([]byte)

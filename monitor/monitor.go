@@ -21,6 +21,7 @@ const (
 	uptimeInfoCacheTTL = 2
 	warningsCacheTTL   = 5
 	cpuInfoCacheTTL    = 5
+	netHistoryLimit    = 30
 )
 
 // Init monitor, start background go routine
@@ -34,6 +35,7 @@ func Init(interval int) {
 				gatherLoadInfo()
 				gatherCPUUsageInfo()
 				gatherMemoryInfo()
+				gatherNetworkUsage()
 			case <-quit:
 				ticker.Stop()
 				return
@@ -292,14 +294,50 @@ func gatherLoadInfo() (err error) {
 
 // InterfaceInfoStruct information about network interfaces
 type InterfaceInfoStruct struct {
-	Name    string
-	Address string
+	Name     string
+	Address  string
+	Address6 string
+	State    string
+	Mac      string
+	Kind     string
 }
 
 // InterfacesStruct informations about all interfaces
-type InterfacesStruct []InterfaceInfoStruct
+type InterfacesStruct []*InterfaceInfoStruct
 
 var interfacesInfoCache = h.NewSimpleCache(ifaceCacheTTL)
+
+func parseIpResult(input string) (result InterfacesStruct) {
+	lines := strings.Split(input, "\n")
+	var iface *InterfaceInfoStruct
+	for _, line := range lines {
+		if len(line) == 0 {
+			continue
+		}
+		fields := strings.Fields(line)
+		if line[0] != ' ' {
+			if iface != nil {
+				if iface.Name != "lo" {
+					result = append(result, iface)
+				}
+			}
+			iface = new(InterfaceInfoStruct)
+			iface.Name = strings.Trim(fields[1], " :")
+			iface.State = fields[8]
+		} else if strings.HasPrefix(line, "    inet ") {
+			iface.Address = fields[1]
+		} else if strings.HasPrefix(line, "    inet6 ") {
+			iface.Address6 = fields[1]
+		} else if strings.HasPrefix(line, "    link/") {
+			iface.Mac = fields[1]
+			iface.Kind = fields[0][5:]
+		}
+	}
+	if iface != nil && iface.Name != "" && iface.Name != "lo" {
+		result = append(result, iface)
+	}
+	return result
+}
 
 // GetInterfacesInfo get current info about network interfaces
 func GetInterfacesInfo() *InterfacesStruct {
@@ -308,26 +346,7 @@ func GetInterfacesInfo() *InterfacesStruct {
 		if ipres == "" {
 			return nil
 		}
-		lines := strings.Split(ipres, "\n")
-		iface := ""
-		var result InterfacesStruct
-		for _, line := range lines {
-			if len(line) == 0 {
-				continue
-			}
-			if line[0] != ' ' {
-				if iface != "" && iface != "lo" {
-					result = append(result, InterfaceInfoStruct{iface, "-"})
-				}
-				iface = strings.Trim(strings.Fields(line)[1], " :")
-			} else if strings.HasPrefix(line, "    inet") {
-				if iface != "lo" {
-					fields := strings.Fields(line)
-					result = append(result, InterfaceInfoStruct{iface, fields[1]})
-				}
-				iface = ""
-			}
-		}
+		result := parseIpResult(ipres)
 		return &result
 	})
 	return result.(*InterfacesStruct)
@@ -444,4 +463,115 @@ func checkIsServiceConnected(port string) (result bool) {
 		}
 	}
 	return
+}
+
+type (
+	// Total history as list of inputs and outputs
+	ifaceHistory struct {
+		lastTS     int64
+		Input      []uint64
+		Output     []uint64
+		lastInput  uint64
+		lastOutput uint64
+	}
+)
+
+var (
+	netHistoryMutex sync.RWMutex
+	netHistory      = make(map[string]*ifaceHistory)
+	netTotalUsage   ifaceHistory
+)
+
+// GetNetHistory return map interface->usage history
+func GetNetHistory() map[string]ifaceHistory {
+	loadMutex.RLock()
+	defer loadMutex.RUnlock()
+	result := make(map[string]ifaceHistory)
+	for key, val := range netHistory {
+		result[key] = ifaceHistory{
+			Input:  val.Input[:],
+			Output: val.Output[:],
+		}
+	}
+	return result
+}
+
+// GetTotalNetHistory return ussage all interfaces
+func GetTotalNetHistory() ifaceHistory {
+	loadMutex.RLock()
+	defer loadMutex.RUnlock()
+	result := ifaceHistory{
+		Input:  netTotalUsage.Input[:],
+		Output: netTotalUsage.Output[:],
+	}
+	return result
+}
+
+func gatherNetworkUsage() {
+	file, err := os.Open("/proc/net/dev")
+	if err != nil {
+		l.Warn("gatherNetworkUsage open proc file error: %s", err.Error())
+		return
+	}
+	defer file.Close()
+	ts := time.Now().Unix()
+	reader := bufio.NewReader(file)
+	netHistoryMutex.Lock()
+	defer netHistoryMutex.Unlock()
+	var sumRecv, sumTrans uint64
+	for idx := 0; ; idx++ {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			break
+		}
+		if idx < 2 {
+			continue
+		}
+		fields := strings.Fields(line)
+		iface := strings.Trim(fields[0], " :")
+		if iface == "lo" {
+			continue
+		}
+
+		recv, _ := strconv.ParseUint(fields[1], 10, 64)
+		trans, _ := strconv.ParseUint(fields[9], 10, 64)
+		sumRecv += recv
+		sumTrans += trans
+
+		if ihist, ok := netHistory[iface]; ok {
+			if ihist.lastTS > 0 {
+				tsdelta := ts - ihist.lastTS
+				if len(ihist.Input) >= netHistoryLimit {
+					ihist.Input = ihist.Input[1:]
+					ihist.Output = ihist.Output[1:]
+				}
+				ihist.Input = append(ihist.Input, (recv-ihist.lastInput)/uint64(tsdelta))
+				ihist.Output = append(ihist.Output, (trans-ihist.lastOutput)/uint64(tsdelta))
+			}
+			ihist.lastTS = ts
+			ihist.lastInput = recv
+			ihist.lastOutput = trans
+		} else {
+			ihist := ifaceHistory{
+				lastTS:     ts,
+				lastInput:  recv,
+				lastOutput: trans,
+				Input:      make([]uint64, 0),
+				Output:     make([]uint64, 0),
+			}
+			netHistory[iface] = &ihist
+		}
+	}
+	if netTotalUsage.lastTS > 0 {
+		tsdelta := ts - netTotalUsage.lastTS
+		if len(netTotalUsage.Input) >= netHistoryLimit {
+			netTotalUsage.Input = netTotalUsage.Input[1:]
+			netTotalUsage.Output = netTotalUsage.Output[1:]
+		}
+		netTotalUsage.Input = append(netTotalUsage.Input, (sumRecv-netTotalUsage.lastInput)/uint64(tsdelta))
+		netTotalUsage.Output = append(netTotalUsage.Output, (sumTrans-netTotalUsage.lastOutput)/uint64(tsdelta))
+	}
+	netTotalUsage.lastTS = ts
+	netTotalUsage.lastInput = sumRecv
+	netTotalUsage.lastOutput = sumTrans
 }

@@ -85,6 +85,15 @@ div.chart-box {
 	padding: 0px;
 }
 
+div.chart-box-half {
+	border: 1px solid #e0e0e0;
+	width: 258px;
+	height: 26px;
+	margin: 5px auto;
+	padding: 0px;
+}
+
+
 
 div.mpd-buttons-sect,
 div.mpd-info-section {

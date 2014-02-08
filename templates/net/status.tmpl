@@ -1,0 +1,75 @@
+{{define "body"}}
+
+<div class="container">
+	<div class="row row-centered">
+		{{range .Interfaces}}
+		<div class="col-xs-12 col-sm-6 col-md-4">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">{{.Name}}
+						<a href="#" data-iface="{{.Name}}" class="iface-menu"><span class="glyphicon glyphicon-cog"></span></a>
+					</h3>
+				</div>
+				<div class="panel-body">
+					<div class="chart-box-half" title="Output">
+						<span id="chart-out-{{.Name}}" class="chart-line" data-width="257" data-height="25" data-min="0" data-colour="#b0ffb0" data-stroke-colour="green">0</span>
+					</div>
+					<div class="chart-box-half" title="Input">
+						<span id="chart-in-{{.Name}}" class="chart-line" data-width="257" data-height="25" data-min="0">0</span>
+					</div>
+				</div>
+				<table class="table-hover table table-condensed table-centered">
+					<thead>
+						<tr><th>Download</th><th>Upload</th></tr>
+					</thead>
+					<tbody>
+						<tr><td id="net-down-{{.Name}}">&nbsp;</td><td id="net-up-{{.Name}}">&nbsp;</td></tr>
+					</tbody>
+				</table>
+				<table class="table-hover table table-condensed table-centered">
+					<tbody>
+						<tr>
+							<th>State</th><td><span id="state-{{.Name}}">{{.State}}</span></td>
+						</tr>
+						<tr>
+							<th>IPv4</th><td><span id="addr4-{{.Name}}">{{.Address}}</span></td>
+						</tr>
+						<tr>
+							<th>IPv6</th><td><span id="addr6-{{.Name}}">{{.Address6}}</span></td>
+						</tr>
+						<tr>
+							<th>Mac</th><td><span id="mac-{{.Name}}">{{.Mac}}</span></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		{{end}}
+	</div>
+</div>
+
+<div id="contextMenu" class="dropdown clearfix" style="position: absolute; display:none;">
+	<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block;position:static;margin-bottom:5px;">
+	<li><a tabindex="-1" href="#" class="iface-menu-item" data-action="up">Iface UP</a></li>
+	<li><a tabindex="-1" href="#" class="iface-menu-item" data-action="down">Iface DOWN</a></li>
+	<li class="divider"></li>
+	<li><a tabindex="-1" href="#" class="iface-menu-item" data-action="dhclient">dhclient</a></li>
+	</ul>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script src="/static/lib/jquery/jquery.peity.js" type="text/javascript" ></script>
+<script src="/static/js/net.js" type="text/javascript" ></script>
+<script type="text/javascript">
+	$(function() {
+		RPI.net.init({
+			urls: {
+				"net-serv-info": "{{namedurl "net-serv-info"}}",
+				"net-action": "{{namedurl "net-action"}}"
+			}
+		});
+	});
+</script>
+
+{{end}}

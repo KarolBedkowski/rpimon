@@ -20,9 +20,20 @@ var SYSTEM = (function(self, $) {
 				load = msg.loadinfo,
 				nettablebody = $('tbody#network-interfaces-table'),
 				fstablebody = $('tbody#fs-table'),
-				uptime = msg.uptime;
+				uptime = msg.uptime,
+				netuseInput = msg.netusage.Input,
+				netuseOutput = msg.netusage.Output;
 			$('#load-chart').text(msg.load).change();
 			$('#cpu-chart').text(msg.cpu).change();
+			$('#mem-chart').text(msg.mem).change();
+			$("#net-in-chart").text(netuseInput.join(",")).change();
+			$("#net-out-chart").text(netuseOutput.join(",")).change();
+			if (netuseInput) {
+				$("#network-download").text(Math.round(netuseInput[netuseInput.length-1] / 1024) + " kB/s");
+			}
+			if (netuseOutput) {
+				$("#network-upload").text(Math.round(netuseOutput[netuseOutput.length-1] / 1024) + " kB/s");
+			}
 			$('#mem-chart').text(msg.mem).change();
 			$('#meminfo-used').text(meminfo.UsedPerc);
 			$('#meminfo-buff').text(meminfo.BuffersPerc);
@@ -39,8 +50,19 @@ var SYSTEM = (function(self, $) {
 			// network
 			nettablebody.text("");
 			msg.iface.forEach(function(entry) {
-				nettablebody.append(["<tr><td>", entry.Name, "</td><td>",
-					entry.Address, "</td></tr>"].join(""));
+				if (entry.State != "UP") {
+					return
+				}
+				var row = ["<tr><td>", entry.Name, "</td><td>"];
+				if (entry.Address && entry.Address6) {
+					row.push(entry.Address + "<br/>"+ entry.Address6);
+				} else if (entry.Address) {
+					row.push(entry.Address);
+				} else {
+					row.push(entry.Address6);
+				}
+				row.push("</td></tr>");
+				nettablebody.append(row.join(""));
 			});
 			// fs
 			fstablebody.text("");
