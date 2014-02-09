@@ -1,5 +1,14 @@
 {{define "body"}}
 
+{{if .Header1}}
+<div class="container">
+	<h1>{{.Header1}}</h1>
+	{{if .Header2}}
+	<h2>{{.Header1}}</h2>
+	{{end}}
+</div>
+{{end}}
+
 {{if .Data}}
 <div class="container">
 	<pre>{{.Data}}</pre>

@@ -118,6 +118,8 @@ type SimpleDataPageCtx struct {
 	*BasePageContext
 	CurrentPage string
 	Data        string
+	Header1     string
+	Header2     string
 
 	THead []string
 	TData [][]string
