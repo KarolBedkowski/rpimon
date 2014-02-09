@@ -33,7 +33,7 @@ func servicesPageHangler(w http.ResponseWriter, r *http.Request) {
 	ctx := &sevicesPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(
 		w, r, "Process", "process", "", localMenu)}
 	ctx.Services = make(map[string]string)
-	lines := strings.Split(h.ReadFromCommand("service", "--status-all"), "\n")
+	lines := strings.Split(h.ReadCommand("service", "--status-all"), "\n")
 	for _, line := range lines {
 		fields := strings.Fields(line)
 		if len(fields) > 3 {
@@ -60,7 +60,7 @@ func serviceActionPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	l.Info("process serviceActionPageHandler %s %s", service, action)
-	result := h.ReadFromCommand("sudo", "service", service, action)
+	result := h.ReadCommand("sudo", "service", service, action)
 	l.Info("process serviceActionPageHandler %s %s res=%s", service, action, result)
 	session := app.GetSessionStore(w, r)
 	session.AddFlash(result, "info")
@@ -73,7 +73,7 @@ func psaxlPageHandler(w http.ResponseWriter, r *http.Request) {
 		w, r, "Process", "process", "", localMenu)}
 	ctx.SetMenuActive("psaxl", "system")
 
-	lines := h.ReadFromCommand("ps", "axlww")
+	lines := h.ReadCommand("ps", "axlww")
 	var columns = 0
 	for idx, line := range strings.Split(lines, "\n") {
 		if line != "" {
@@ -99,7 +99,7 @@ func topPageHandler(w http.ResponseWriter, r *http.Request) {
 		w, r, "Process", "process", "", localMenu)}
 	ctx.SetMenuActive("top", "system")
 
-	lines := strings.Split(h.ReadFromCommand("top", "-b", "-n", "1", "-w", "1024"), "\n")
+	lines := strings.Split(h.ReadCommand("top", "-b", "-n", "1", "-w", "1024"), "\n")
 
 	var offset = 0
 	for idx, line := range lines {

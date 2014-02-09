@@ -36,7 +36,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := newPageCtx(w, r, page, "")
 	switch page {
 	case "devices":
-		ctx.Data = h.ReadFromCommand("lsblk")
+		ctx.Data = h.ReadCommand("lsblk")
 	default:
 		http.Redirect(w, r, app.GetNamedURL("storage-index"), 302)
 		return
@@ -60,7 +60,7 @@ func mountPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx.SimpleDataPageCtx = app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", localMenu)
 	ctx.SetMenuActive("mount", "system")
-	ctx.Data = h.ReadFromCommand("sudo", "mount")
+	ctx.Data = h.ReadCommand("sudo", "mount")
 	ctx.Mounted = mountCmdToMountPoints(ctx.Data)
 	app.RenderTemplateStd(w, ctx, "storage/storage.tmpl")
 }
@@ -81,7 +81,7 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 	values := r.Form
 	fs, ok := values["fs"]
 	if ok && fs[0] != "" {
-		data := h.ReadFromCommand("sudo", "umount", fs[0])
+		data := h.ReadCommand("sudo", "umount", fs[0])
 		if data != "" {
 			ctx := newPageCtx(w, r, "mount", data)
 			app.RenderTemplateStd(w, ctx, "data.tmpl")
@@ -100,7 +100,7 @@ func dfPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx.SetMenuActive("diskfree", "system")
 	ctx.TData = make([][]string, 0)
 	ctx.THead = []string{"Filesystem", "Size", "Used", "Available", "Used %", "Mounted on"}
-	lines := strings.Split(h.ReadFromCommand("df"), "\n")
+	lines := strings.Split(h.ReadCommand("df"), "\n")
 	for _, line := range lines[1:] {
 		if line != "" {
 			ctx.TData = append(ctx.TData, strings.Fields(line))

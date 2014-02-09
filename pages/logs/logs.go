@@ -141,7 +141,7 @@ func getLog(log logsDef, file string, lines int) (result string, err error) {
 	}
 
 	if log.Command != "" {
-		result = h.ReadFromCommand(log.Command)
+		result = h.ReadCommand(log.Command)
 	} else {
 		var logpath string
 		if log.Dir == "" {

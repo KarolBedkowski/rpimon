@@ -15,8 +15,8 @@ func CreateRoutes(parentRoute *mux.Route) {
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.NewSimpleDataPageCtx(w, r, "Users", "users", "", nil)
-	data.Data = "WHO\n=========\n" + h.ReadFromCommand("who", "-a", "-H")
-	data.Data += "\n\nW\n=========\n" + h.ReadFromCommand("w")
+	data.Data = "WHO\n=========\n" + h.ReadCommand("who", "-a", "-H")
+	data.Data += "\n\nW\n=========\n" + h.ReadCommand("w")
 	data.CurrentPage = "Who"
 	data.SetMenuActive("system")
 	app.RenderTemplateStd(w, data, "data.tmpl")

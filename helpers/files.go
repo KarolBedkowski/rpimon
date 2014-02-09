@@ -71,12 +71,12 @@ func ReadFile(filename string, limit int) (string, error) {
 	return strings.Join(buff, ""), err
 }
 
-// ReadFromCommand read result command
-func ReadFromCommand(name string, arg ...string) string {
-	l.Debug("ReadFromCommand %s %s", name, arg)
+// ReadCommand read result command
+func ReadCommand(name string, arg ...string) string {
+	l.Debug("helpers.ReadCommand %s %v", name, arg)
 	out, err := exec.Command(name, arg...).CombinedOutput()
 	if err != nil {
-		l.Warn("helpers.ReadFromCommand Error %s, %s, %s", name, arg, err)
+		l.Warn("helpers.ReadCommand error %s, %v, %s", name, arg, err.Error())
 		return err.Error()
 	}
 	return string(out)
