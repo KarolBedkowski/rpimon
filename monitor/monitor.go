@@ -240,10 +240,10 @@ func GetCPUInfo() *CPUInfoStruct {
 
 func gatherCPUInfo() *CPUInfoStruct {
 	info := &CPUInfoStruct{}
-	if val, err := h.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"); err != nil {
+	if val, err := h.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"); err == nil {
 		info.Freq = val / 1000
 	}
-	if val, err := h.ReadIntFromFile("/sys/class/thermal/thermal_zone0/temp"); err != nil {
+	if val, err := h.ReadIntFromFile("/sys/class/thermal/thermal_zone0/temp"); err == nil {
 		info.Temp = val / 1000
 	}
 	return info
