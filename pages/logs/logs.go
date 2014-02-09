@@ -47,7 +47,6 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logname := r.FormValue("log")
-
 	logs, group, err := findGroup(page, logname)
 	if err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
