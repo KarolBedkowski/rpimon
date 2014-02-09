@@ -4,6 +4,7 @@ import (
 	//"code.google.com/p/gompd/mpd"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
@@ -12,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 // CreateRoutes for /mpd
@@ -76,6 +78,9 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/log",
 		app.VerifyPermission(mpdLogPageHandler, "mpd")).Name(
 		"mpd-log")
+	subRouter.HandleFunc("/notes",
+		app.VerifyPermission(notesPageHandler, "mpd")).Name(
+		"mpd-notes")
 	// search
 	subRouter.HandleFunc("/search",
 		app.VerifyPermission(searchPageHandler, "mpd")).Name(
@@ -89,7 +94,8 @@ func CreateRoutes(parentRoute *mux.Route) {
 		app.NewMenuItemFromRoute("Library", "mpd-library").SetIcon("glyphicon glyphicon-folder-open"),
 		app.NewMenuItemFromRoute("Search", "mpd-search").SetIcon("glyphicon glyphicon-search"),
 		app.NewMenuItemFromRoute("Playlists", "mpd-playlists").SetIcon("glyphicon glyphicon-floppy-open"),
-		app.NewMenuItemFromRoute("Log", "mpd-log").SetIcon("glyphicon glyphicon-wrench"),
+		app.NewMenuItemFromRoute("Tools", "mpd-tools").SetIcon("glyphicon glyphicon-wrench").AddChild(
+			app.NewMenuItemFromRoute("Log", "mpd-log")).AddChild(app.NewMenuItemFromRoute("Notes", "mpd-notes")),
 	}
 }
 
@@ -140,6 +146,15 @@ func controlHandler(w http.ResponseWriter, r *http.Request) {
 	case "update":
 		err = mpdActionUpdate(r.FormValue("uri"))
 
+	case "add_to_notes":
+		status := getStatus()
+		data := make([]string, 0)
+		for key, val := range status.Current {
+			data = append(data, fmt.Sprintf("%s: %s", key, val))
+		}
+		data = append(data, "\n-----------------\n\n")
+		err = h.AppendToFile("mpd_notes.txt", strings.Join(data, "\n"))
+
 	default:
 		err = mpdAction(action)
 	}
@@ -163,8 +178,9 @@ func controlHandler(w http.ResponseWriter, r *http.Request) {
 
 func mpdLogPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := app.NewSimpleDataPageCtx(w, r, "mpd", "mpd", "", localMenu)
-	ctx.CurrentLocalMenuPos = "mpd-log"
+	ctx.SetMenuActive("mpd-tools", "mpd-log")
 	ctx.LocalMenu = localMenu
+	ctx.Header1 = "Logs"
 
 	if lines, err := h.ReadFromFileLastLines("/var/log/mpd/mpd.log", 25); err != nil {
 		ctx.Data = err.Error()
@@ -228,4 +244,18 @@ func filePageHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func notesPageHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := app.NewSimpleDataPageCtx(w, r, "mpd", "mpd", "", localMenu)
+	ctx.SetMenuActive("mpd-tools", "mpd-notes")
+	ctx.LocalMenu = localMenu
+	ctx.Header1 = "Notes"
+
+	if lines, err := h.ReadFromFileLastLines("mpd_notes.txt", -1); err != nil {
+		ctx.Data = err.Error()
+	} else {
+		ctx.Data = lines
+	}
+	app.RenderTemplateStd(w, ctx, "data.tmpl")
 }

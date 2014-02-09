@@ -159,7 +159,7 @@ MPD.status = (function(self, $) {
 		RPI.showLoadingMsg();
 		$("div.mpd-buttons-sect").hide();
 		$("div.mpd-info-section").hide();
-		$("a.ajax-action").on("click", doAction);
+		$("a.ajax-action, button.ajax-action").on("click", doAction);
 		$("#slider-volume").slider({
 			min: 0,
 			max: 100,
