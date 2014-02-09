@@ -213,7 +213,11 @@
 			}
 		});
 
-		SYSTEM.init("{{namedurl "main-serv-info"}}");
+		SYSTEM.init({
+			urls: {
+				"main-serv-status": "{{namedurl "main-serv-status"}}"
+			}
+		});
 	});
 </script>
 

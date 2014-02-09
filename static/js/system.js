@@ -3,14 +3,17 @@
 /* global window: false */
 /* global jQuery: false */
 
-"use strict";
 
 var SYSTEM = (function(self, $) {
-	var infoUrl = "/main/info";
+	"use strict";
+
+	var urls = {
+		"main-serv-status": ""
+	};
 
 	function getHistory() {
 		$.ajax({
-			url: infoUrl,
+			url: urls["main-serv-status"],
 			cache: false,
 			dataType: 'json'
 		}).done(function(msg) {
@@ -84,8 +87,8 @@ var SYSTEM = (function(self, $) {
 		});
 	}
 
-	self.init = function init(infoUrl_) {
-		infoUrl = infoUrl_;
+	self.init = function init(params) {
+		urls = $.extend({}, urls, params.urls || {});
 		RPI.showLoadingMsg();
 		getHistory();
 	};
