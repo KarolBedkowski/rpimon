@@ -21,7 +21,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/action", app.VerifyPermission(actionHandler, "admin")).Name("net-action").Methods("PUT")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(subPageHandler, "admin")).Name("net-page")
 	localMenu = []*app.MenuItem{
-		app.NewMenuItemFromRoute("Status", "net-index").SetID("status"),
+		app.NewMenuItemFromRoute("Status", "net-index").SetID("net-index"),
 		app.NewMenuItemFromRoute("Configuration", "net-conf").SetID("conf"),
 		app.NewMenuItemFromRoute("IPTables", "net-iptables").SetID("iptables"),
 		app.NewMenuItemFromRoute("Netstat", "net-page", "page", "netstat").SetID("netstat"),
@@ -37,7 +37,7 @@ type mainPageContext struct {
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &mainPageContext{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
-	ctx.CurrentLocalMenuPos = "status"
+	ctx.SetMenuActive("net-index", "system")
 	ctx.LocalMenu = localMenu
 	ctx.Interfaces = monitor.GetInterfacesInfo()
 	app.RenderTemplateStd(w, ctx, "net/status.tmpl")
@@ -50,7 +50,7 @@ func subPageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, app.GetNamedURL("net-index"), http.StatusFound)
 	}
 	data := app.NewSimpleDataPageCtx(w, r, "Network", "net", page, localMenu)
-	data.CurrentLocalMenuPos = page
+	data.SetMenuActive(page)
 	switch page {
 	case "netstat":
 		data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
@@ -117,7 +117,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(h.ReadFromCommand(cmdfields[0], cmdfields[1:]...)))
 	} else {
 		ctx := &confPageContext{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
-		ctx.CurrentLocalMenuPos = "conf"
+		ctx.SetMenuActive("conf")
 		ctx.LocalMenu = localMenu
 		ctx.Current = cmd
 		ctx.Commands = &confCommands
@@ -165,7 +165,7 @@ func iptablesPageHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(data))
 	} else {
 		ctx := &iptablesPageContext{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
-		ctx.CurrentLocalMenuPos = "iptables"
+		ctx.SetMenuActive("iptables")
 		ctx.LocalMenu = localMenu
 		ctx.Current = table
 		ctx.Tables = &iptablesTables

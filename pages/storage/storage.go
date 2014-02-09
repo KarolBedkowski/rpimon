@@ -23,7 +23,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 
 func newPageCtx(w http.ResponseWriter, r *http.Request, localMenuPos string, data string) *app.SimpleDataPageCtx {
 	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", localMenuPos, localMenu)
-	ctx.CurrentLocalMenuPos = localMenuPos
+	ctx.SetMenuActive(localMenuPos, "system")
 	ctx.Data = data
 	return ctx
 }
@@ -59,7 +59,7 @@ func mountPageHandler(w http.ResponseWriter, r *http.Request) {
 		Mounted     []*mountPoint
 	}
 	ctx.SimpleDataPageCtx = app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", localMenu)
-	ctx.CurrentLocalMenuPos = "mount"
+	ctx.SetMenuActive("mount", "system")
 	ctx.Data = h.ReadFromCommand("sudo", "mount")
 	ctx.Mounted = mountCmdToMountPoints(ctx.Data)
 	app.RenderTemplateStd(w, ctx, "storage/storage.tmpl")
@@ -97,7 +97,7 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func dfPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", localMenu)
-	ctx.CurrentLocalMenuPos = "diskfree"
+	ctx.SetMenuActive("diskfree", "system")
 	ctx.TData = make([][]string, 0)
 	ctx.THead = []string{"Filesystem", "Size", "Used", "Available", "Used %", "Mounted on"}
 	lines := strings.Split(h.ReadFromCommand("df"), "\n")

@@ -103,7 +103,7 @@ var localMenu []*app.MenuItem
 func newPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Mpd", "mpd", w, r)}
 	ctx.LocalMenu = localMenu
-	ctx.CurrentLocalMenuPos = "mpd-index"
+	ctx.SetMenuActive("mpd-index")
 	return ctx
 }
 

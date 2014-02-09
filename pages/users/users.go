@@ -18,5 +18,6 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	data.Data = "WHO\n=========\n" + h.ReadFromCommand("who", "-a", "-H")
 	data.Data += "\n\nW\n=========\n" + h.ReadFromCommand("w")
 	data.CurrentPage = "Who"
+	data.SetMenuActive("system")
 	app.RenderTemplateStd(w, data, "data.tmpl")
 }

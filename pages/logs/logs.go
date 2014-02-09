@@ -82,7 +82,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		ctx.Data = err.Error()
 	}
-	ctx.CurrentLocalMenuPos = page
+	ctx.SetMenuActive(page, "system")
 	ctx.CurrentPage = page
 	app.RenderTemplateStd(w, ctx, "logs.tmpl")
 }

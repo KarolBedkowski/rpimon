@@ -41,7 +41,7 @@ func servicesPageHangler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	ctx.CurrentLocalMenuPos = "services"
+	ctx.SetMenuActive("services", "system")
 	ctx.CurrentPage = "services"
 	app.RenderTemplateStd(w, ctx, "services.tmpl")
 
@@ -71,7 +71,7 @@ func serviceActionPageHandler(w http.ResponseWriter, r *http.Request) {
 func psaxlPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &sevicesPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(
 		w, r, "Process", "process", "", localMenu)}
-	ctx.CurrentLocalMenuPos = "psaxl"
+	ctx.SetMenuActive("psaxl", "system")
 
 	lines := h.ReadFromCommand("ps", "axlww")
 	var columns = 0
@@ -97,7 +97,7 @@ func psaxlPageHandler(w http.ResponseWriter, r *http.Request) {
 func topPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &sevicesPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(
 		w, r, "Process", "process", "", localMenu)}
-	ctx.CurrentLocalMenuPos = "top"
+	ctx.SetMenuActive("top", "system")
 
 	lines := strings.Split(h.ReadFromCommand("top", "-b", "-n", "1", "-w", "1024"), "\n")
 

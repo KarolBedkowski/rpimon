@@ -15,7 +15,7 @@ import (
 func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := app.NewBasePageContext("Mpd", "mpd", w, r)
 	ctx.LocalMenu = localMenu
-	ctx.CurrentLocalMenuPos = "mpd-library"
+	ctx.SetMenuActive("mpd-library")
 	app.RenderTemplateStd(w, ctx, "mpd/library.tmpl")
 }
 
@@ -99,7 +99,7 @@ func searchPageHandler(w http.ResponseWriter, r *http.Request) {
 		BasePageContext: app.NewBasePageContext("Mpd", "mpd", w, r),
 	}
 	ctx.LocalMenu = localMenu
-	ctx.CurrentLocalMenuPos = "mpd-search"
+	ctx.SetMenuActive("mpd-search")
 
 	r.ParseForm()
 	if err := decoder.Decode(ctx, r.Form); err != nil {

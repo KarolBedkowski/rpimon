@@ -7,7 +7,6 @@ type MenuItem struct {
 	ID      string
 	Submenu []*MenuItem
 	Icon    string
-	Active  bool
 }
 
 // NewMenuItem create new MenuItem structure
@@ -39,21 +38,6 @@ func (item *MenuItem) SetIcon(icon string) *MenuItem {
 	return item
 }
 
-// SetActive set active flag or menu or submenu item when activeID match item.ID.
-func (item *MenuItem) SetActive(activeID string) (active bool) {
-	if item.ID == activeID {
-		item.Active = true
-		return true
-	}
-	for _, subitem := range item.Submenu {
-		if subitem.SetActive(activeID) {
-			item.Active = true
-			return true
-		}
-	}
-	return false
-}
-
 // AddChild append menu item as submenu item
 func (item *MenuItem) AddChild(child *MenuItem) *MenuItem {
 	item.Submenu = append(item.Submenu, child)
@@ -65,9 +49,9 @@ func SetMainMenu(ctx *BasePageContext) {
 	if ctx.CurrentUser != "" {
 		ctx.MainMenu = []*MenuItem{NewMenuItemFromRoute("Home", "main-index").SetID("main").SetIcon("glyphicon glyphicon-home")}
 		if CheckPermission(ctx.CurrentUserPerms, "admin") {
-			sysMI := NewMenuItem("System", "").SetIcon("glyphicon glyphicon-wrench")
+			sysMI := NewMenuItem("System", "").SetIcon("glyphicon glyphicon-wrench").SetID("system")
 			sysMI.Submenu = []*MenuItem{
-				NewMenuItemFromRoute("Live view", "main-system").SetID("system").SetIcon("glyphicon glyphicon-dashboard"),
+				NewMenuItemFromRoute("Live view", "main-system").SetID("system-live").SetIcon("glyphicon glyphicon-dashboard"),
 				NewMenuItem("-", ""),
 				NewMenuItemFromRoute("Network", "net-index").SetID("net").SetIcon("glyphicon glyphicon-transfer"),
 				NewMenuItemFromRoute("Storage", "storage-index").SetID("storage").SetIcon("glyphicon glyphicon-hdd"),
@@ -87,10 +71,5 @@ func SetMainMenu(ctx *BasePageContext) {
 				NewMenuItemFromRoute("Files", "files-index").SetID("files").SetIcon("glyphicon glyphicon-hdd"))
 		}
 
-	}
-	for _, item := range ctx.MainMenu {
-		if item.SetActive(ctx.CurrentMainMenuPos) {
-			break
-		}
 	}
 }

@@ -12,20 +12,19 @@ import (
 
 // BasePageContext context for pages
 type BasePageContext struct {
-	Session             *sessions.Session
-	Title               string
-	ResponseWriter      http.ResponseWriter
-	Request             *http.Request
-	CsrfToken           string
-	Hostname            string
-	CurrentUser         string
-	CurrentUserPerms    []string
-	MainMenu            []*MenuItem
-	LocalMenu           []*MenuItem
-	CurrentMainMenuPos  string
-	CurrentLocalMenuPos string
-	Now                 string
-	FlashMessages       map[string][]interface{}
+	Session          *sessions.Session
+	Title            string
+	ResponseWriter   http.ResponseWriter
+	Request          *http.Request
+	CsrfToken        string
+	Hostname         string
+	CurrentUser      string
+	CurrentUserPerms []string
+	MainMenu         []*MenuItem
+	LocalMenu        []*MenuItem
+	Now              string
+	ActiveMenuItems  map[string]bool
+	FlashMessages    map[string][]interface{}
 }
 
 var hostname string
@@ -51,18 +50,19 @@ func NewBasePageContext(title, mainMenuID string, w http.ResponseWriter, r *http
 
 	login, perms := GetLoggedUserInfo(w, r)
 	ctx := &BasePageContext{Title: title,
-		ResponseWriter:     w,
-		Request:            r,
-		Session:            session,
-		CsrfToken:          csrfToken.(string),
-		Hostname:           hostname,
-		CurrentUser:        login,
-		CurrentUserPerms:   perms,
-		Now:                time.Now().Format("2006-01-02 15:04:05"),
-		CurrentMainMenuPos: mainMenuID,
-		FlashMessages:      make(map[string][]interface{}),
+		ResponseWriter:   w,
+		Request:          r,
+		Session:          session,
+		CsrfToken:        csrfToken.(string),
+		Hostname:         hostname,
+		CurrentUser:      login,
+		CurrentUserPerms: perms,
+		Now:              time.Now().Format("2006-01-02 15:04:05"),
+		FlashMessages:    make(map[string][]interface{}),
+		ActiveMenuItems:  make(map[string]bool),
 	}
 
+	ctx.ActiveMenuItems[mainMenuID] = true
 	SetMainMenu(ctx)
 
 	for _, kind := range FlashKind {
@@ -101,6 +101,16 @@ func (ctx *BasePageContext) Get(key string) interface{} {
 // Save session by page context
 func (ctx *BasePageContext) Save() error {
 	return SaveSession(ctx.ResponseWriter, ctx.Request)
+}
+
+func (ctx *BasePageContext) IsMenuActive(id string) bool {
+	return ctx.ActiveMenuItems[id]
+}
+
+func (ctx *BasePageContext) SetMenuActive(ids ...string) {
+	for _, id := range ids {
+		ctx.ActiveMenuItems[id] = true
+	}
 }
 
 // SimpleDataPageCtx - context  with data (string) + title

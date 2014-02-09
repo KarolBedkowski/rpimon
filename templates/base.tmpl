@@ -1,4 +1,5 @@
 {{define "base"}}
+{{$ctx := .}}
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -32,14 +33,14 @@
 				</div>
 				<div class="navbar-collapse collapse">
 					<ul class="nav navbar-nav">
-						{{range .MainMenu}}
+					{{range .MainMenu}}
 						{{if .Submenu}}
-						<li class="dropdown {{if .Active}}active{{end}}">
+						<li class="dropdown {{if ($ctx.IsMenuActive .ID)}}active{{end}}">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown">{{if .Icon}}<span class="{{.Icon}}"></span>&nbsp;{{end}}{{.Title}} <b class="caret"></b></a>
 							<ul class="dropdown-menu">
 							{{range .Submenu}}
 								{{if .Href}}
-								<li {{if .Active}}class="active"{{end}}>
+								<li {{if ($ctx.IsMenuActive .ID)}}class="active"{{end}}>
 									<a class="" href="{{.Href}}">{{if .Icon}}<span class="{{.Icon}}"></span>&nbsp;{{end}}{{.Title}}</a>
 								</li>
 								{{else}}
@@ -49,11 +50,11 @@
 							</ul>
 						</li>
 						{{else}}
-						<li class="{{if .Active}}active{{end}}">
+						<li class="{{if ($ctx.IsMenuActive .ID)}}active{{end}}">
 							<a class="" href="{{.Href}}">{{if .Icon}}<span class="{{.Icon}}"></span>&nbsp;{{end}}{{.Title}}</a>
 						</li>
 						{{end}}
-						{{end}}
+					{{end}}
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
 						<li>
@@ -70,32 +71,27 @@
 		{{if .LocalMenu}}
 		<div class="container" id="local-menu">
 			<ul class="nav nav-tabs">
-				{{$currentl := .CurrentLocalMenuPos}}
-				{{range .LocalMenu}}
-					{{if .Submenu}}
-				<li class="dropdown{{if eq .ID $currentl}} active{{end}}">
+			{{range .LocalMenu}}
+				{{if .Submenu}}
+				<li class="dropdown{{if ($ctx.IsMenuActive .ID)}} active{{end}}">
 					<a class="dropdown-toggle" data-toggle="dropdown" href="#">
 						{{if .Icon}}<span class="{{.Icon}}"></span>{{end}}
 						<span class="x-hidden-xs">&nbsp;{{.Title}}</span><span class="caret"></span>
 					</a>
 					<ul class="dropdown-menu">
-						{{range .Submenu}}
-						<li{{if eq .ID $currentl}} class="active"{{end}}>
+					{{range .Submenu}}
+						<li{{if ($ctx.IsMenuActive .ID)}} class="active"{{end}}>
 							<a href="{{.Href}}">{{if .Icon}}<span class="{{.Icon}}"></span>{{end}}{{.Title}}</a>
 						</li>
-						{{end}}
+					{{end}}
 					</ul>
 				</li>
-					{{else}}
-				<li{{if eq .ID $currentl}} class="active"{{end}}>
-					{{if .Icon}}
-					<a href="{{.Href}}"><span class="{{.Icon}}"></span><span class="x-hidden-xs">&nbsp;{{.Title}}</span></a>
-					{{else}}
-					<a href="{{.Href}}">{{.Title}}</a>
-					{{end}}
+				{{else}}
+				<li{{if ($ctx.IsMenuActive .ID)}} class="active"{{end}}>
+					<a href="{{.Href}}">{{if .Icon}}<span class="{{.Icon}}"></span>{{end}}<span class="x-hidden-xs">&nbsp;{{.Title}}</span></a>
 				</li>
-					{{end}}
 				{{end}}
+			{{end}}
 			</ul>
 		</div>
 		{{end}}

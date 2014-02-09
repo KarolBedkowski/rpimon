@@ -72,6 +72,7 @@ func systemPageHanler(w http.ResponseWriter, r *http.Request) {
 	ctx := &pageSystemCtx{BasePageContext: app.NewBasePageContext(
 		"System", "system", w, r),
 		Warnings: monitor.GetWarnings()}
+	ctx.SetMenuActive("system-live")
 	ctx.MaxAcceptableLoad = runtime.NumCPU() * 2
 	app.RenderTemplateStd(w, ctx, "main/system.tmpl")
 }
