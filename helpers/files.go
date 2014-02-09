@@ -27,21 +27,22 @@ func ReadLineFromFile(filename string) (string, error) {
 }
 
 // ReadIntFromFile Read first line from given file and return value as int.
-func ReadIntFromFile(filename string) int {
+func ReadIntFromFile(filename string) (int, error) {
+	l.Debug("helpers.ReadIntFromFile %s", filename)
 	line, err := ReadLineFromFile(filename)
 	if err != nil {
-		l.Warn("ReadIntFromFile Error %s: %s", filename, err)
-		return 0
+		l.Warn("helpers.ReadIntFromFile %s error: %s", filename, err.Error())
+		return 0, err
 	}
 	if len(line) == 0 {
-		return 0
+		return 0, nil
 	}
 	res, err := strconv.Atoi(line)
 	if err != nil {
-		l.Warn("ReadIntFromFile Error %s: %s", filename, err)
-		return 0
+		l.Warn("helpers.ReadIntFromFile Error %s: %s", filename, err.Error())
+		return 0, err
 	}
-	return res
+	return res, nil
 }
 
 // ReadFile read last n lines from file
