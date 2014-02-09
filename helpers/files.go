@@ -12,9 +12,10 @@ import (
 
 // ReadLineFromFile - Read one line from given file
 func ReadLineFromFile(filename string) (string, error) {
+	l.Debug("helpers.ReadLineFromFile %s", filename)
 	file, err := os.Open(filename)
 	if err != nil {
-		l.Warn("ReadLineFromFile Error %s: %s", filename, err)
+		l.Warn("helpers.ReadLineFromFile Error %s: %s", filename, err)
 		return "", err
 	}
 	defer file.Close()
@@ -47,6 +48,7 @@ func ReadIntFromFile(filename string) (int, error) {
 
 // ReadFile read last n lines from file
 func ReadFile(filename string, limit int) (string, error) {
+	l.Debug("helpers.ReadLineFromFile %s, %d", filename, limit)
 	if limit < 0 {
 		lines, err := ioutil.ReadFile(filename)
 		return string(lines), err
@@ -73,11 +75,11 @@ func ReadFile(filename string, limit int) (string, error) {
 }
 
 // ReadCommand read result command
-func ReadCommand(name string, arg ...string) string {
-	l.Debug("helpers.ReadCommand %s %v", name, arg)
-	out, err := exec.Command(name, arg...).CombinedOutput()
+func ReadCommand(command string, arg ...string) string {
+	l.Debug("helpers.ReadCommand %s %v", command, arg)
+	out, err := exec.Command(command, arg...).CombinedOutput()
 	if err != nil {
-		l.Warn("helpers.ReadCommand error %s, %v, %s", name, arg, err.Error())
+		l.Warn("helpers.ReadCommand error %s, %v, %s", command, arg, err.Error())
 		return err.Error()
 	}
 	return string(out)
@@ -85,6 +87,7 @@ func ReadCommand(name string, arg ...string) string {
 
 // AppendToFile add given data do file
 func AppendToFile(filename, data string) error {
+	l.Debug("helpers.AppendToFile %s data_len=%d", filename, len(data))
 	f, err := os.OpenFile(filename, os.O_RDWR|os.O_APPEND, 0660)
 	if err != nil {
 		f, err = os.Create(filename)
