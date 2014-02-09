@@ -155,7 +155,7 @@ func getLog(log logsDef, file string, lines int) (result string, err error) {
 				return "", errors.New("invalid path")
 			}
 		}
-		result, err = h.ReadFromFileLastLines(logpath, lines)
+		result, err = h.ReadFile(logpath, lines)
 	}
 	if result == "" && err == nil {
 		result = "<EMPTY FILE>"

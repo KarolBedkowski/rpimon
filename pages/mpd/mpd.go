@@ -182,7 +182,7 @@ func mpdLogPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx.LocalMenu = localMenu
 	ctx.Header1 = "Logs"
 
-	if lines, err := h.ReadFromFileLastLines("/var/log/mpd/mpd.log", 25); err != nil {
+	if lines, err := h.ReadFile("/var/log/mpd/mpd.log", 25); err != nil {
 		ctx.Data = err.Error()
 	} else {
 		ctx.Data = lines
@@ -252,7 +252,7 @@ func notesPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx.LocalMenu = localMenu
 	ctx.Header1 = "Notes"
 
-	if lines, err := h.ReadFromFileLastLines("mpd_notes.txt", -1); err != nil {
+	if lines, err := h.ReadFile("mpd_notes.txt", -1); err != nil {
 		ctx.Data = err.Error()
 	} else {
 		ctx.Data = lines

@@ -44,15 +44,15 @@ func ReadIntFromFile(filename string) int {
 	return res
 }
 
-// ReadFromFileLastLines read last n lines from file
-func ReadFromFileLastLines(filename string, limit int) (string, error) {
+// ReadFile read last n lines from file
+func ReadFile(filename string, limit int) (string, error) {
 	if limit < 0 {
 		lines, err := ioutil.ReadFile(filename)
 		return string(lines), err
 	}
 	file, err := os.Open(filename)
 	if err != nil {
-		l.Warn("ReadLineFromFile Error", filename, err)
+		l.Warn("helpers.ReadFile %s error %s", filename, err)
 		return "", err
 	}
 	defer file.Close()
