@@ -81,3 +81,17 @@ func ReadFromCommand(name string, arg ...string) string {
 	}
 	return string(out)
 }
+
+// AppendToFile add given data do file
+func AppendToFile(filename, data string) error {
+	f, err := os.OpenFile(filename, os.O_RDWR|os.O_APPEND, 0660)
+	if err != nil {
+		f, err = os.Create(filename)
+	}
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = f.WriteString(data)
+	return err
+}
