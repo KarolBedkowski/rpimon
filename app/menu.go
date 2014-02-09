@@ -54,6 +54,12 @@ func (item *MenuItem) SetActive(activeID string) (active bool) {
 	return false
 }
 
+// AddChild append menu item as submenu item
+func (item *MenuItem) AddChild(child *MenuItem) *MenuItem {
+	item.Submenu = append(item.Submenu, child)
+	return item
+}
+
 // SetMainMenu - fill MainMenu in BasePageContext
 func SetMainMenu(ctx *BasePageContext) {
 	if ctx.CurrentUser != "" {
