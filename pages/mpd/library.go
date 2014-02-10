@@ -39,7 +39,7 @@ func libraryActionHandler(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Invalid request", http.StatusBadRequest)
 }
 
-func libraryContentService(w http.ResponseWriter, r *http.Request) {
+func libraryServHandler(w http.ResponseWriter, r *http.Request) {
 	path, _ := url.QueryUnescape(r.FormValue("p"))
 	if len(path) > 0 {
 		if path[0] != '/' {
@@ -103,7 +103,7 @@ func searchPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 	if err := decoder.Decode(ctx, r.Form); err != nil {
-		l.Warn("Decode form error", err, r.Form)
+		l.Debug("pages.mpd.library.searchPageHandler decode form error %s %#v", err.Error(), r.Form)
 	}
 
 	if r.Method == "POST" {

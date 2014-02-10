@@ -124,7 +124,7 @@
 		$("#main-alert").hide();
 		var ctrlUrl = "{{namedurl "mpd-control" "action" "-"}}";
 		ctrlUrl = ctrlUrl.substring(0, ctrlUrl.length - 2);
-		MPD.status.init(ctrlUrl, "{{namedurl "mpd-service-info"}}");
+		MPD.status.init(ctrlUrl, "{{namedurl "mpd-service-status"}}");
 	});
 </script>
 

@@ -26,7 +26,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 		"mpd-index")
 	// Playing control
 	subRouter.HandleFunc("/control/{action}",
-		app.VerifyPermission(controlHandler, "mpd")).Name(
+		app.VerifyPermission(mpdControlHandler, "mpd")).Name(
 		"mpd-control")
 	// current Playlist
 	subRouter.HandleFunc("/playlist",
@@ -58,18 +58,18 @@ func CreateRoutes(parentRoute *mux.Route) {
 		app.VerifyPermission(playlistsActionPageHandler, "mpd")).Name(
 		"mpd-playlists-action")
 	// Services
-	subRouter.HandleFunc("/service/info",
-		app.VerifyPermission(infoHandler, "mpd")).Name(
-		"mpd-service-info")
+	subRouter.HandleFunc("/service/status",
+		app.VerifyPermission(statusServHandler, "mpd")).Name(
+		"mpd-service-status")
 	subRouter.HandleFunc("/service/song-info",
-		app.VerifyPermission(songInfoHandler, "mpd")).Name(
+		app.VerifyPermission(songInfoStubHandler, "mpd")).Name(
 		"mpd-service-song-info")
 	// Library
 	subRouter.HandleFunc("/library",
 		app.VerifyPermission(libraryPageHandler, "mpd")).Name(
 		"mpd-library")
-	subRouter.HandleFunc("/library/content",
-		app.VerifyPermission(libraryContentService, "mpd")).Name(
+	subRouter.HandleFunc("/library/serv/content",
+		app.VerifyPermission(libraryServHandler, "mpd")).Name(
 		"mpd-library-content")
 	subRouter.HandleFunc("/library/action",
 		app.VerifyPermission(libraryActionHandler, "mpd")).Methods(
@@ -99,53 +99,48 @@ func CreateRoutes(parentRoute *mux.Route) {
 	}
 }
 
+var localMenu []*app.MenuItem
+
+var BadRequestError = errors.New("Bad request")
+
 type pageCtx struct {
 	*app.BasePageContext
 	Status *mpdStatus
 }
 
-var localMenu []*app.MenuItem
-
-func newPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
+func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Mpd", "mpd", w, r)}
 	ctx.LocalMenu = localMenu
 	ctx.SetMenuActive("mpd-index")
-	return ctx
+	app.RenderTemplateStd(w, ctx, "mpd/index.tmpl")
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := newPageCtx(w, r)
-	app.RenderTemplateStd(w, data, "mpd/index.tmpl")
-}
-
-func controlHandler(w http.ResponseWriter, r *http.Request) {
+func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	action, ok := vars["action"]
 	if !ok || action == "" {
-		l.Warn("page.mpd controlHandler: missing action ", vars)
+		l.Warn("page.mpd mpdControlHandler: missing action ", vars)
 		return
 	}
 	r.ParseForm()
-	err := errors.New("invalid request")
+	err := BadRequestError
 	switch action {
 	case "volume":
-		if vol := r.Form["vol"][0]; vol != "" {
-			volInt, ok := strconv.Atoi(vol)
-			if ok == nil {
+		if vol := r.FormValue("vol"); vol != "" {
+			if volInt, err := strconv.Atoi(vol); err == nil {
 				err = setVolume(volInt)
+				break
 			}
 		}
 	case "seek":
-		if time := r.Form["time"][0]; time != "" {
-			timeInt, ok := strconv.Atoi(time)
-			if ok == nil {
+		if time := r.FormValue("time"); time != "" {
+			if timeInt, err := strconv.Atoi(time); err == nil {
 				err = seekPos(-1, timeInt)
-				return
+				break
 			}
 		}
 	case "update":
 		err = mpdActionUpdate(r.FormValue("uri"))
-
 	case "add_to_notes":
 		status := getStatus()
 		data := make([]string, 0)
@@ -154,46 +149,29 @@ func controlHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		data = append(data, "\n-----------------\n\n")
 		err = h.AppendToFile("mpd_notes.txt", strings.Join(data, "\n"))
-
-	default:
-		err = mpdAction(action)
-	}
-
-	switch action {
 	case "playlist-clear":
-		if err != nil {
+		if err = mpdAction(action); err != nil {
 			sess := app.GetSessionStore(w, r)
 			sess.AddFlash(err.Error(), "error")
 			app.SaveSession(w, r)
 		}
 		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 	default:
-		if err == nil {
-			w.Write([]byte("OK"))
-		} else {
-			w.Write([]byte(err.Error()))
-		}
+		err = mpdAction(action)
 	}
-}
 
-func mpdLogPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := app.NewSimpleDataPageCtx(w, r, "mpd", "mpd", "", localMenu)
-	ctx.SetMenuActive("mpd-tools", "mpd-log")
-	ctx.LocalMenu = localMenu
-	ctx.Header1 = "Logs"
-
-	if lines, err := h.ReadFile("/var/log/mpd/mpd.log", 25); err != nil {
-		ctx.Data = err.Error()
+	if err == nil {
+		w.Header().Set("Content-Type", "text/plain; charset=UTF-8")
+		w.Write([]byte("OK"))
 	} else {
-		ctx.Data = lines
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
-	app.RenderTemplateStd(w, ctx, "data.tmpl")
 }
 
-var infoHandlerCache = h.NewSimpleCache(1)
+var statusServCache = h.NewSimpleCache(1)
 
-func infoHandler(w http.ResponseWriter, r *http.Request) {
-	data := infoHandlerCache.Get(func() h.Value {
+func statusServHandler(w http.ResponseWriter, r *http.Request) {
+	data := statusServCache.Get(func() h.Value {
 		status := getStatus()
 		encoded, _ := json.Marshal(status)
 		return encoded
@@ -202,9 +180,10 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+/*
 const fakeResult = `{"Status":{"consume":"0","mixrampdb":"0.000000","mixrampdelay":"nan","nextsong":"1","nextsongid":"1","playlist":"2","playlistlength":"222","random":"0","repeat":"0","single":"0","song":"0","songid":"0","state":"stop","volume":"100","xfade":"0"},"Current":{"Album":"Café Del Mar - Classic I","Artist":"Jules Massenet","Date":"2002","Genre":"Baroque, Modern, Romantic, Classical","Id":"0","Last-Modified":"2013-09-27T06:14:59Z","Pos":"0","Time":"312","Title":"Meditation","Track":"01/12","file":"muzyka/mp3/cafe del mar/compilations/classics/2002, classic/01. jules massenet - meditation.mp3"},"Error":""}`
-
-func songInfoHandler(w http.ResponseWriter, r *http.Request) {
+*/
+func songInfoStubHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	var ctx struct {
 		Error string
@@ -244,18 +223,4 @@ func filePageHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-}
-
-func notesPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := app.NewSimpleDataPageCtx(w, r, "mpd", "mpd", "", localMenu)
-	ctx.SetMenuActive("mpd-tools", "mpd-notes")
-	ctx.LocalMenu = localMenu
-	ctx.Header1 = "Notes"
-
-	if lines, err := h.ReadFile("mpd_notes.txt", -1); err != nil {
-		ctx.Data = err.Error()
-	} else {
-		ctx.Data = lines
-	}
-	app.RenderTemplateStd(w, ctx, "data.tmpl")
 }
