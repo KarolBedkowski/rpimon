@@ -17,7 +17,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("net-index")
 	subRouter.HandleFunc("/conf", app.VerifyPermission(confPageHandler, "admin")).Name("net-conf")
 	subRouter.HandleFunc("/iptables", app.VerifyPermission(iptablesPageHandler, "admin")).Name("net-iptables")
-	subRouter.HandleFunc("/serv/info", app.VerifyPermission(infoHandler, "admin")).Name("net-serv-info")
+	subRouter.HandleFunc("/serv/info", app.VerifyPermission(statusServHandler, "admin")).Name("net-serv-info")
 	subRouter.HandleFunc("/action", app.VerifyPermission(actionHandler, "admin")).Name("net-action").Methods("PUT")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(subPageHandler, "admin")).Name("net-page")
 	localMenu = []*app.MenuItem{
@@ -48,6 +48,7 @@ func subPageHandler(w http.ResponseWriter, r *http.Request) {
 	page, ok := vars["page"]
 	if !ok {
 		http.Redirect(w, r, app.GetNamedURL("net-index"), http.StatusFound)
+		return
 	}
 	data := app.NewSimpleDataPageCtx(w, r, "Network", "net", page, localMenu)
 	data.SetMenuActive(page)
@@ -98,14 +99,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request) {
 	if cmd == "" {
 		cmd = confCommands[0]
 	} else {
-		ok := false
-		for _, dcmd := range confCommands {
-			if cmd == dcmd {
-				ok = true
-				break
-			}
-		}
-		if !ok {
+		if !h.CheckValueInStrList(confCommands, cmd) {
 			http.Error(w, "invalid request", http.StatusBadRequest)
 			return
 		}
@@ -146,14 +140,7 @@ func iptablesPageHandler(w http.ResponseWriter, r *http.Request) {
 	if table == "" {
 		table = iptablesTables[0]
 	} else {
-		ok := false
-		for _, dtab := range iptablesTables {
-			if table == dtab {
-				ok = true
-				break
-			}
-		}
-		if !ok {
+		if !h.CheckValueInStrList(iptablesTables, table) {
 			http.Error(w, "invalid request", http.StatusBadRequest)
 			return
 		}
@@ -209,10 +196,10 @@ func netstat(command string, args ...string) ([][]string, error) {
 	return result, nil
 }
 
-var infoHandlerCache = h.NewSimpleCache(1)
+var statusServCache = h.NewSimpleCache(1)
 
-func infoHandler(w http.ResponseWriter, r *http.Request) {
-	data := infoHandlerCache.Get(func() h.Value {
+func statusServHandler(w http.ResponseWriter, r *http.Request) {
+	data := statusServCache.Get(func() h.Value {
 		res := map[string]interface{}{
 			"netusage": monitor.GetNetHistory(),
 			"ifaces":   monitor.GetInterfacesInfo(),
