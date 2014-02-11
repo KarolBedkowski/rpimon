@@ -230,7 +230,7 @@ func mpdPlaylistsAction(playlist, action string) (result string, err error) {
 }
 
 func setVolume(volume int) (err error) {
-	if _, err = connect(); err != nil {
+	if _, err = connect(); err == nil {
 		err = connection.SetVolume(volume)
 	}
 	return

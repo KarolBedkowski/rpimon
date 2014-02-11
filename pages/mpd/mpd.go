@@ -127,14 +127,16 @@ func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
 	switch action {
 	case "volume":
 		if vol := r.FormValue("vol"); vol != "" {
-			if volInt, err := strconv.Atoi(vol); err == nil {
+			var volInt int
+			if volInt, err = strconv.Atoi(vol); err == nil {
 				err = setVolume(volInt)
 				break
 			}
 		}
 	case "seek":
 		if time := r.FormValue("time"); time != "" {
-			if timeInt, err := strconv.Atoi(time); err == nil {
+			var timeInt int
+			if timeInt, err = strconv.Atoi(time); err == nil {
 				err = seekPos(-1, timeInt)
 				break
 			}
