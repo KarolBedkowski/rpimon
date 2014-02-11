@@ -10,7 +10,11 @@ var RPI = (function(self, $) {
 	self.confirmDialog = function confirmDialogF(message, params) {
 		var dlg = $("#dialog-confirm");
 		params = params || {};
-		$("#dialog-confirm .modal-body").html(message);
+		if (params.replace) {
+			$("#dialog-confirm .modal-body").replaceWith(message);
+		} else {
+			$("#dialog-confirm .modal-body").html(message);
+		}
 		$("#dialog-confirm .modal-title").html(params.title || "");
 		if (params.btnCancel != "none") {
 			$("#dialog-confirm #dialog-confirm-cancel")
