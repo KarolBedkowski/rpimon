@@ -38,27 +38,32 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	case "devices":
 		ctx.Data = h.ReadCommand("lsblk")
 	default:
-		http.Redirect(w, r, app.GetNamedURL("storage-index"), 302)
+		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
 	app.RenderTemplateStd(w, ctx, "data.tmpl")
 }
 
-type mountPoint struct {
-	Mpoint  string
-	Device  string
-	Type    string
-	Options string
-}
+type (
+	mountPoint struct {
+		Mpoint  string
+		Device  string
+		Type    string
+		Options string
+	}
 
-func mountPageHandler(w http.ResponseWriter, r *http.Request) {
-	var ctx struct {
+	mountPageContext struct {
 		*app.SimpleDataPageCtx
 		CurrentPage string
 		Data        string
 		Mounted     []*mountPoint
 	}
-	ctx.SimpleDataPageCtx = app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", localMenu)
+)
+
+func mountPageHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := &mountPageContext{
+		SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", localMenu),
+	}
 	ctx.SetMenuActive("mount", "system")
 	ctx.Data = h.ReadCommand("sudo", "mount")
 	ctx.Mounted = mountCmdToMountPoints(ctx.Data)
@@ -67,32 +72,30 @@ func mountPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func mountCmdToMountPoints(data string) (res []*mountPoint) {
 	for _, line := range strings.Split(data, "\n") {
-		if line == "" {
-			break
+		if line != "" {
+			fields := strings.Fields(line)
+			res = append(res, &mountPoint{fields[2], fields[0], fields[4], fields[5]})
 		}
-		fields := strings.Fields(line)
-		res = append(res, &mountPoint{fields[2], fields[0], fields[4], fields[5]})
 	}
 	return
 }
 
 func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	values := r.Form
-	fs, ok := values["fs"]
-	if ok && fs[0] != "" {
-		data := h.ReadCommand("sudo", "umount", fs[0])
-		if data != "" {
-			ctx := newPageCtx(w, r, "mount", data)
-			app.RenderTemplateStd(w, ctx, "data.tmpl")
-			return
-		}
+	fs := r.FormValue("fs")
+	if fs == "" {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
 	}
+	data := h.ReadCommand("sudo", "umount", fs)
 	sess := app.GetSessionStore(w, r)
-	sess.AddFlash("Umounted "+fs[0], "success")
+	if data != "" {
+		sess.AddFlash("Umount "+fs+" error: "+data, "error")
+	} else {
+		sess.AddFlash("Umounted "+fs, "success")
+	}
 	sess.Save(r, w)
-
-	http.Redirect(w, r, app.GetNamedURL("storage-mount"), 302)
+	http.Redirect(w, r, app.GetNamedURL("storage-mount"), http.StatusFound)
 }
 
 func dfPageHandler(w http.ResponseWriter, r *http.Request) {
