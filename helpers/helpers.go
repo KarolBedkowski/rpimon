@@ -54,3 +54,13 @@ func GetParam(w http.ResponseWriter, r *http.Request, param string) (value strin
 	}
 	return
 }
+
+// CheckValueInStrList return true when value is in list
+func CheckValueInStrList(list []string, value string) (inlist bool) {
+	for _, val := range list {
+		if value == val {
+			return true
+		}
+	}
+	return
+}
