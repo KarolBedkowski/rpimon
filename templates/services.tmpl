@@ -12,18 +12,18 @@
 			</thead>
 			<tbody>
 			{{range $key, $val := .Services}}
-				<tr{{if eq $val "+"}} class="active"{{end}}>
+				<tr{{if eq $val "+"}} class="active"{{end}} data-service="{{$key | urlquery}}">
 					<td>{{$key}}</td>
 					<td>{{if eq $val "+"}}running{{else}}{{if eq $val "-"}}stoped{{else}}{{$val}}{{end}}{{end}}</td>
-					<td><a href="services/{{$key | urlquery}}/start" title="Start"><span class="glyphicon glyphicon-play"></span></a> 
+					<td><a href="#" data-action="start" title="Start"><span class="glyphicon glyphicon-play"></span></a>
 					&nbsp;
-					<a href="services/{{$key | urlquery}}/stop" title="Stop"><span class="glyphicon glyphicon-stop"></span></a> 
+					<a href="#" data-action="stop" title="Stop"><span class="glyphicon glyphicon-stop"></span></a>
 					&nbsp;
-					<a href="services/{{$key | urlquery}}/restart" title="Restart"><span class="glyphicon glyphicon-repeat"></span></a> 
+					<a href="#" data-action="restart" title="Restart"><span class="glyphicon glyphicon-repeat"></span></a>
 					&nbsp;
-					<a href="services/{{$key | urlquery}}/reload" title="Reload"><span class="glyphicon glyphicon-refresh"></span></a> 
+					<a href="#" data-action="reload" title="Reload"><span class="glyphicon glyphicon-refresh"></span></a>
 					&nbsp;
-					<a href="services/{{$key | urlquery}}/force-reload" title="Force Reload"><span class="glyphicon glyphicon-retweet"></span></a>
+					<a href="#" data-action="force-reload" title="Force Reload"><span class="glyphicon glyphicon-retweet"></span></a>
 					</td>
 				</tr>
 			{{end}}
@@ -41,12 +41,18 @@
 		$('table').dataTable({
 			"bAutoWidth": false,
 			"bStateSave": true,
-			"sPaginationType": "bootstrap",		
+			"sPaginationType": "bootstrap",
 			"iDisplayLength": 15,
 			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
 		});
-		$('table#table-services a').on("click", function() {
-			return RPI.confirm();
+		$('table#table-services a').on("click", function(event) {
+			event.preventDefault();
+			if (!RPI.confirm()) {
+				return;
+			}
+			var service = $(this).closest('tr').data("service"),
+				action = $(this).data("action");
+			window.location.href="{{namedurl "process-services-action"}}?action="+action+"&service="+service;
 		});
 	});
 </script>

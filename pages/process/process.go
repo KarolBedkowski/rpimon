@@ -14,7 +14,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(psaxlPageHandler, "admin")).Name("process-index")
 	subRouter.HandleFunc("/services", app.VerifyPermission(servicesPageHangler, "admin")).Name("process-services")
-	subRouter.HandleFunc("/services/{service}/{action}", app.VerifyPermission(serviceActionPageHandler, "admin"))
+	subRouter.HandleFunc("/services/action", app.VerifyPermission(serviceActionPageHandler, "admin")).Name("process-services-action")
 	subRouter.HandleFunc("/psaxl", app.VerifyPermission(psaxlPageHandler, "admin")).Name("process-psaxl")
 	subRouter.HandleFunc("/top", app.VerifyPermission(topPageHandler, "admin")).Name("process-top")
 	localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("PS AXL", "process-psaxl").SetID("psaxl"),
@@ -48,24 +48,18 @@ func servicesPageHangler(w http.ResponseWriter, r *http.Request) {
 }
 
 func serviceActionPageHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	service, ok := vars["service"]
-	if !ok || service == "" {
-		serviceActionPageHandler(w, r)
-		return
-	}
-	action, ok := vars["action"]
-	if !ok || action == "" {
-		serviceActionPageHandler(w, r)
+	service := r.FormValue("service")
+	action := r.FormValue("action")
+	if service == "" || action == "" {
+		http.Error(w, "invalid request; missing service and/or action", http.StatusBadRequest)
 		return
 	}
 	l.Info("process serviceActionPageHandler %s %s", service, action)
 	result := h.ReadCommand("sudo", "service", service, action)
-	l.Info("process serviceActionPageHandler %s %s res=%s", service, action, result)
 	session := app.GetSessionStore(w, r)
 	session.AddFlash(result, "info")
 	session.Save(r, w)
-	http.Redirect(w, r, "/process/services", http.StatusFound)
+	http.Redirect(w, r, app.GetNamedURL("process-services"), http.StatusFound)
 }
 
 func psaxlPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -101,18 +95,18 @@ func topPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	lines := strings.Split(h.ReadCommand("top", "-b", "-n", "1", "-w", "1024"), "\n")
 
-	var offset = 0
+	// find header length
+	var headerLen = 0
 	for idx, line := range lines {
 		if line == "" {
-			offset = idx
+			headerLen = idx
 			break
 		}
 	}
-	ctx.Data = strings.Join(lines[:offset], "\n")
+	ctx.Data = strings.Join(lines[:headerLen], "\n")
 
 	var columns = 0
-	for idx, line := range lines[offset+1:] {
-		//l.Debug("idx = %#v, cols=%v", idx, columns)
+	for idx, line := range lines[headerLen+1:] {
 		if line != "" {
 			fields := strings.Fields(line)
 			if idx == 0 {
