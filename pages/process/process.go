@@ -93,7 +93,7 @@ func topPageHandler(w http.ResponseWriter, r *http.Request) {
 		w, r, "Process", "process", "", localMenu)}
 	ctx.SetMenuActive("top", "system")
 
-	lines := strings.Split(h.ReadCommand("top", "-b", "-n", "1", "-w", "1024"), "\n")
+	lines := strings.Split(h.ReadCommand("top", "-b", "-n", "1", "-w", "256"), "\n")
 
 	// find header length
 	var headerLen = 0
