@@ -209,7 +209,7 @@ FILES.browser = (function(self, $) {
 		urls = $.extend(urls, params.urls || {});
 		table = $('table').dataTable({
 			"bAutoWidth": false,
-			"bStateSave": true,
+			//"bStateSave": true,
 			"sPaginationType": "bootstrap",
 			"bFilter": false,
 			"iDisplayLength": 50,
@@ -287,6 +287,12 @@ FILES.browser = (function(self, $) {
 		});
 
 		$("#create-folder-dlg form").submit(createDirectory);
+
+		// hide columns on small screens
+		if (document.body.clientWidth < 768) {
+			table.fnSetColumnVis(2, false);
+			table.fnSetColumnVis(3, false);
+		}
 
 		gotoLocation();
 	};
