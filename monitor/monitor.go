@@ -311,7 +311,7 @@ type InterfacesStruct []*InterfaceInfoStruct
 
 var interfacesInfoCache = h.NewSimpleCache(ifaceCacheTTL)
 
-func parseIpResult(input string) (result InterfacesStruct) {
+func parseIPResult(input string) (result InterfacesStruct) {
 	lines := strings.Split(input, "\n")
 	var iface *InterfaceInfoStruct
 	for _, line := range lines {
@@ -350,7 +350,7 @@ func GetInterfacesInfo() *InterfacesStruct {
 		if ipres == "" {
 			return nil
 		}
-		result := parseIpResult(ipres)
+		result := parseIPResult(ipres)
 		return &result
 	})
 	return result.(*InterfacesStruct)

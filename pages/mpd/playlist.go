@@ -40,7 +40,7 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing action", http.StatusBadRequest)
 		return
 	}
-	var songID int = -2
+	var songID = -2
 	if songIDStr, ok := vars["song-id"]; ok && songIDStr != "" {
 		songID, _ = strconv.Atoi(songIDStr)
 	}

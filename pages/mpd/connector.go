@@ -31,6 +31,7 @@ func Init(mpdHost string) {
 	connectWatcher()
 }
 
+// Close MPD connection
 func Close() {
 	playlistCache.Clear()
 	mpdLibraryCache.Clear()
@@ -105,7 +106,6 @@ func getStatus() (status *mpdStatus) {
 	}
 	if stat, err := connection.Status(); err != nil {
 		status.Error = err.Error()
-		return
 	} else {
 		status.Status = stat
 	}
@@ -376,7 +376,7 @@ func mpdFileAction(uri, action string) (err error) {
 		case "add":
 			return connection.Add(uri)
 		default:
-			err = errors.New("Invalid action")
+			err = errors.New("nnvalid action")
 		}
 	}
 	return

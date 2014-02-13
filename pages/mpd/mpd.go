@@ -101,7 +101,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 
 var localMenu []*app.MenuItem
 
-var BadRequestError = errors.New("Bad request")
+var errBadRequest = errors.New("bad request")
 
 type pageCtx struct {
 	*app.BasePageContext
@@ -123,7 +123,7 @@ func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r.ParseForm()
-	err := BadRequestError
+	err := errBadRequest
 	switch action {
 	case "volume":
 		if vol := r.FormValue("vol"); vol != "" {

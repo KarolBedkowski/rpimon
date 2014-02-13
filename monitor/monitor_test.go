@@ -17,7 +17,7 @@ func TestParseIpResult1if(t *testing.T) {
     inet6 fe80::1234:aff:fecd:490e/64 scope link 
        valid_lft forever preferred_lft forever`
 
-	ifaces := parseIpResult(data1)
+	ifaces := parseIPResult(data1)
 	if ifaces == nil || len(ifaces) == 0 {
 		t.Errorf("Missing data %#v", ifaces)
 	}
@@ -65,7 +65,7 @@ func TestParseIpResult2if(t *testing.T) {
     inet6 fe80::a22:9111:1234:4567/64 scope link
        valid_lft forever preferred_lft forever`
 
-	ifaces := parseIpResult(data2)
+	ifaces := parseIPResult(data2)
 	if ifaces == nil || len(ifaces) == 0 {
 		t.Errorf("Missing data %#v", ifaces)
 	}
