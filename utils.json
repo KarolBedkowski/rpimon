@@ -2,8 +2,8 @@
   "utils": {
     "Network": [
       {
-        "name": "WakeUp NAS",
-        "command": "wakeonlan 10:7b:ef:7a:58:b4"
+        "command": "wakeonlan 10:7b:ef:7a:58:b4",
+        "name": "WakeUp NAS"
       }
     ],
     "Misc": [
@@ -16,10 +16,14 @@
         "name": "MiniDLN reload"
       }
     ],
-    "Main": [
+    "Power": [
       {
         "command": "sudo shutdown -h now",
         "name": "Halt"
+      },
+      {
+        "command": "sudo shutdown -r now",
+        "name": "Reboot"
       }
     ]
   }
