@@ -38,8 +38,8 @@ func LoadConfiguration(filename string) *AppConfiguration {
 		log.Fatal("app.LoadConfiguration error: ", err.Error())
 		return nil
 	}
-	err = json.Unmarshal(file, &Configuration)
-	if err != nil {
+
+	if err = json.Unmarshal(file, &Configuration); err != nil {
 		log.Fatal("app.LoadConfiguration error: ", err.Error())
 		return nil
 	}
