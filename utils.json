@@ -1,19 +1,25 @@
 {
   "utils": {
-    "Main": [
+    "Network": [
       {
-        "name": "Halt",
-        "command": "sudo shutdown -h now"
+        "name": "WakeUp NAS",
+        "command": "wakeonlan 10:7b:ef:7a:58:b4"
       }
     ],
     "Misc": [
       {
-        "name": "MPD reload",
-        "command": "sudo service mpd reload"
+        "command": "sudo service mpd reload",
+        "name": "MPD reload"
       },
       {
-        "name": "MiniDLN reload",
-        "command": "sudo service minidlna force-reload"
+        "command": "sudo service minidlna force-reload",
+        "name": "MiniDLN reload"
+      }
+    ],
+    "Main": [
+      {
+        "command": "sudo shutdown -h now",
+        "name": "Halt"
       }
     ]
   }
