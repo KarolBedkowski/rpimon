@@ -25,7 +25,9 @@ func CreateRoutes(parentRoute *mux.Route) {
 		app.NewMenuItemFromRoute("Configuration", "net-conf").SetID("conf"),
 		app.NewMenuItemFromRoute("IPTables", "net-iptables").SetID("iptables"),
 		app.NewMenuItemFromRoute("Netstat", "net-page", "page", "netstat").SetID("netstat"),
-		app.NewMenuItemFromRoute("Conenctions", "net-page", "page", "connenctions").SetID("connenctions")}
+		app.NewMenuItemFromRoute("Conenctions", "net-page", "page", "connenctions").SetID("connenctions"),
+		app.NewMenuItemFromRoute("Samba", "net-page", "page", "samba").SetID("samba"),
+	}
 }
 
 var localMenu []*app.MenuItem
@@ -59,6 +61,8 @@ func subPageHandler(w http.ResponseWriter, r *http.Request) {
 	case "connenctions":
 		data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
 		data.TData, _ = netstat("sudo", "netstat", "-pn", "--inet", "--inet6")
+	case "samba":
+		data.Data = h.ReadCommand("sudo", "smbstatus")
 	}
 	app.RenderTemplateStd(w, data, "data.tmpl")
 }
