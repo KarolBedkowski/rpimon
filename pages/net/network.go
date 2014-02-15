@@ -27,6 +27,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 		app.NewMenuItemFromRoute("Netstat", "net-page", "page", "netstat").SetID("netstat"),
 		app.NewMenuItemFromRoute("Conenctions", "net-page", "page", "connenctions").SetID("connenctions"),
 		app.NewMenuItemFromRoute("Samba", "net-page", "page", "samba").SetID("samba"),
+		app.NewMenuItemFromRoute("NFS", "net-page", "page", "nfs").SetID("nfs"),
 	}
 }
 
@@ -63,6 +64,8 @@ func subPageHandler(w http.ResponseWriter, r *http.Request) {
 		data.TData, _ = netstat("sudo", "netstat", "-pn", "--inet", "--inet6")
 	case "samba":
 		data.Data = h.ReadCommand("sudo", "smbstatus")
+	case "nfs":
+		data.Data = h.ReadCommand("nfsstat", "-s")
 	}
 	app.RenderTemplateStd(w, data, "data.tmpl")
 }
