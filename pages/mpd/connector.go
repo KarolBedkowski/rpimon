@@ -239,9 +239,9 @@ func setVolume(volume int) (err error) {
 func seekPos(pos, time int) (err error) {
 	if _, err = connect(); err == nil {
 		var song mpd.Attrs
-		if song, err = connection.CurrentSong(); err != nil {
+		if song, err = connection.CurrentSong(); err == nil {
 			var sid int
-			if sid, err = strconv.Atoi(song["Id"]); err != nil {
+			if sid, err = strconv.Atoi(song["Id"]); err == nil {
 				err = connection.SeekId(sid, time)
 			}
 		}
@@ -348,7 +348,6 @@ func GetShortStatus() (status map[string]string, err error) {
 		return map[string]string(cachedValue), nil
 	}
 	if _, err = connect(); err == nil {
-		var status mpd.Attrs
 		if status, err = connection.Status(); err == nil {
 			mpdShortStatusCache.SetValue(status)
 		}
