@@ -17,6 +17,8 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/services/action", app.VerifyPermission(serviceActionPageHandler, "admin")).Name("process-services-action")
 	subRouter.HandleFunc("/psaxl", app.VerifyPermission(psaxlPageHandler, "admin")).Name("process-psaxl")
 	subRouter.HandleFunc("/top", app.VerifyPermission(topPageHandler, "admin")).Name("process-top")
+	subRouter.HandleFunc("/process/action", app.VerifyPermission(processActionHandler, "admin")).Name(
+		"process-action")
 	localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("PS AXL", "process-psaxl").SetID("psaxl"),
 		app.NewMenuItemFromRoute("TOP", "process-top").SetID("top"),
 		app.NewMenuItemFromRoute("Services", "process-services").SetID("services")}
@@ -85,7 +87,7 @@ func psaxlPageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	app.RenderTemplateStd(w, ctx, "data.tmpl")
+	app.RenderTemplateStd(w, ctx, "process/psaxl.tmpl")
 }
 
 func topPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -122,5 +124,38 @@ func topPageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	app.RenderTemplateStd(w, ctx, "data.tmpl")
+	app.RenderTemplateStd(w, ctx, "process/top.tmpl")
+}
+
+func processActionHandler(w http.ResponseWriter, r *http.Request) {
+	action := r.FormValue("a")
+	pid := r.FormValue("pid")
+	if action == "" || pid == "" {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+
+	back := r.FormValue("back")
+	var result string
+
+	switch action {
+	case "kill":
+		result = h.ReadCommand("sudo", "kill", "-9", pid)
+	case "stop":
+		result = h.ReadCommand("sudo", "kill", pid)
+	default:
+		http.Error(w, "invalid action", http.StatusBadRequest)
+		return
+	}
+	session := app.GetSessionStore(w, r)
+	if result == "" {
+		session.AddFlash("Process killed", "success")
+	} else {
+		session.AddFlash(result, "error")
+	}
+	session.Save(r, w)
+	if back == "" {
+		back = app.GetNamedURL("process-index")
+	}
+	http.Redirect(w, r, back, http.StatusFound)
 }

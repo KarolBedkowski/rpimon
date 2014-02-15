@@ -1,0 +1,72 @@
+{{define "body"}}
+
+{{if .Header1}}
+<div class="container">
+	<h1>{{.Header1}}</h1>
+	{{if .Header2}}
+	<h2>{{.Header1}}</h2>
+	{{end}}
+</div>
+{{end}}
+
+{{if .Data}}
+<div class="container">
+	<pre>{{.Data}}</pre>
+</div>
+{{end}}
+
+{{if .TData}}
+<div class="container">
+	<table class="table-hover table-bordered table-condensed" id="table-services">
+		<thead>
+			<tr>
+				{{range .THead}}<th>{{.}}</th>{{end}}
+				<th>A.</th>
+			</tr>
+		</thead>
+		<tbody>
+		{{range .TData}}
+			<tr data-pid="{{index . 0}}">{{range .}}<td>{{.}}</td>{{end}}
+			<td>
+				<a href="#" data-action="stop" class="action" title="Stop"><span class="glyphicon glyphicon-off"></span></a>
+				<a href="#" data-action="kill" class="action" title="Kill"><span class="glyphicon glyphicon-remove-circle"></span></a>
+			</td>
+			</tr>
+		{{end}}
+		</tbody>
+	</table>
+</div>
+{{end}}
+{{end}}
+
+
+{{define "scripts"}}
+{{if .TData}}
+<script src="/static/lib/jquery/jquery.dataTables.js" type="text/javascript"></script>
+<script src="/static/lib/dataTables.bootstrap.js" type="text/javascript"></script>
+<script type="text/javascript">
+	$(function() {
+		$('table').dataTable({
+			"bAutoWidth": false,
+			"bStateSave": true,
+			"sPaginationType": "bootstrap",
+			"iDisplayLength": 15,
+			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
+		});
+
+		$("a.action").on("click", function(event) {
+			event.preventDefault();
+			var pid = $(this).closest('tr').data("pid"),
+				action = $(this).data("action");
+			RPI.confirmDialog("Kill process " + pid + "?", {
+				title: "Process",
+				btnSuccess: "Kill",
+				onSuccess: function() {
+					window.location.href="{{namedurl "process-action"}}?a=" + action + "&pid=" + pid;
+				}
+			}).open();
+		});
+	});
+</script>
+{{end}}
+{{end}}
