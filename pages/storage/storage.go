@@ -65,7 +65,7 @@ func mountPageHandler(w http.ResponseWriter, r *http.Request) {
 		SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", localMenu),
 	}
 	ctx.SetMenuActive("mount", "system")
-	ctx.Data = h.ReadCommand("sudo", "mount")
+	ctx.Data = h.ReadCommand("mount")
 	ctx.Mounted = mountCmdToMountPoints(ctx.Data)
 	app.RenderTemplateStd(w, ctx, "storage/storage.tmpl")
 }
@@ -74,6 +74,7 @@ func mountCmdToMountPoints(data string) (res []*mountPoint) {
 	for _, line := range strings.Split(data, "\n") {
 		if line != "" {
 			fields := strings.Fields(line)
+			fields[5] = strings.Replace(fields[5], ",", ", ", -1)
 			res = append(res, &mountPoint{fields[2], fields[0], fields[4], fields[5]})
 		}
 	}
