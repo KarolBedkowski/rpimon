@@ -103,10 +103,12 @@ func (ctx *BasePageContext) Save() error {
 	return SaveSession(ctx.ResponseWriter, ctx.Request)
 }
 
+// IsMenuActive return true when given menu item is active
 func (ctx *BasePageContext) IsMenuActive(id string) bool {
 	return ctx.ActiveMenuItems[id]
 }
 
+// SetMenuActive add id  to menu active items
 func (ctx *BasePageContext) SetMenuActive(ids ...string) {
 	for _, id := range ids {
 		ctx.ActiveMenuItems[id] = true

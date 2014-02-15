@@ -88,7 +88,11 @@
 				</li>
 				{{else}}
 				<li{{if ($ctx.IsMenuActive .ID)}} class="active"{{end}}>
-					<a href="{{.Href}}">{{if .Icon}}<span class="{{.Icon}}"></span>{{end}}<span class="x-hidden-xs">&nbsp;{{.Title}}</span></a>
+					<a href="{{.Href}}">
+						{{if .Icon}}<span class="{{.Icon}}"></span><span class="x-hidden-xs">&nbsp;{{.Title}}</span>
+						{{else}}{{.Title}}
+						{{end}}
+					</a>
 				</li>
 				{{end}}
 			{{end}}

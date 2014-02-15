@@ -7,7 +7,7 @@ import (
 
 func BenchmarkReadFromFileLastLines(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		res, err := h.ReadFromFileLastLines("files.go", 10)
+		res, err := h.ReadFile("files.go", 10)
 		if res == "" || err != nil {
 			b.Errorf("wrong resut %v", err)
 		}

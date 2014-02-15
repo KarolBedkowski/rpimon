@@ -1,3 +1,23 @@
-* wyszukiwanie w MPD
 * własne strony błędów
+* możliwość ubijania procesów
+* notatnik
+* monitorowanie smb
+* monitorowanie nfs
+* konfiguracja smb
+* konfiguracja openvpn
+* konfiguracja nfs
+* konfiguracja iptables
+* konfiguracja użytkowników
 
+* konfiguracja resolvconf
+
+* apt
+
+* konfiguracja hosts
+* konfiguracja cron
+
+* sensors
+
+* możliwość wyłączania modułów - ukrywanie ze strony głównej itd
+
+* terminal (?)

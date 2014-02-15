@@ -25,39 +25,31 @@ type playlistPageCtx struct {
 	Error         error
 }
 
-func newPlaylistPageCtx(w http.ResponseWriter, r *http.Request) *playlistPageCtx {
+func playlistPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &playlistPageCtx{BasePageContext: app.NewBasePageContext("Mpd", "mpd", w, r)}
 	ctx.LocalMenu = localMenu
 	ctx.SetMenuActive("mpd-playlist")
-	return ctx
-}
-
-func playlistPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := newPlaylistPageCtx(w, r)
-	app.RenderTemplateStd(w, data, "mpd/playlist.tmpl")
+	app.RenderTemplateStd(w, ctx, "mpd/playlist.tmpl")
 }
 
 func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	action, ok := vars["action"]
 	if !ok || action == "" {
-		l.Warn("page.mpd songActionPageHandler: missing action ", vars)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+		l.Warn("page.mpd.songActionPageHandler: missing action ", vars)
+		http.Error(w, "missing action", http.StatusBadRequest)
 		return
 	}
-	songIDStr, ok := vars["song-id"]
-	if !ok || songIDStr == "" {
-		l.Warn("page.mpd songActionPageHandler: missing songID ", vars)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+	var songID = -2
+	if songIDStr, ok := vars["song-id"]; ok && songIDStr != "" {
+		songID, _ = strconv.Atoi(songIDStr)
+	}
+	if songID == -2 {
+		l.Warn("page.mpd.songActionPageHandler: missing or invalid songID ", vars)
+		http.Error(w, "missing or invalid songID", http.StatusBadRequest)
 		return
 	}
-	songID, err := strconv.Atoi(songIDStr)
-	if err != nil || songID < 0 {
-		l.Warn("page.mpd songActionPageHandler: wrong songID ", vars)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
-		return
-	}
-	err = mpdSongAction(songID, action)
+	err := mpdSongAction(songID, action)
 	if r.Method == "PUT" {
 		encoded, _ := json.Marshal(getStatus())
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -73,10 +65,8 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func playlistActionPageHandler(w http.ResponseWriter, r *http.Request) {
-	l.Info("playlistActionPageHandler")
 	vars := mux.Vars(r)
-	action, ok := vars["action"]
-	if ok && action != "" {
+	if action, ok := vars["action"]; ok && action != "" {
 		playlistAction(action)
 	}
 	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
@@ -102,18 +92,12 @@ func playlistSavePageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleError(msg string, w http.ResponseWriter, r *http.Request) {
-	session := app.GetSessionStore(w, r)
-	session.AddFlash(msg, "error")
-	session.Save(r, w)
-}
-
 type addToPlaylistForm struct {
 	Uri       string
 	CsrfToken string
 }
 
-func addToPlaylistPageHandler(w http.ResponseWriter, r *http.Request) {
+func addToPlaylistActionHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	form := &addToPlaylistForm{}
 	decoder.Decode(form, r.Form)
@@ -156,16 +140,16 @@ func filterPlaylist(playlist [][]string, filter string) (filtered [][]string) {
 	return
 }
 
-type sInfoParams struct {
+type plistContentParams struct {
 	Start  int    `schema:"iDisplayStart"`
 	End    int    `schema:"iDisplayLength"`
 	Echo   string `schema:"sEcho"`
 	Search string `schema:"sSearch"`
 }
 
-func sInfoPlaylistHandler(w http.ResponseWriter, r *http.Request) {
+func plistContentServHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	params := &sInfoParams{}
+	params := &plistContentParams{}
 	decoder.Decode(params, r.Form)
 	start := params.Start
 	if params.End > 0 {
@@ -180,9 +164,7 @@ func sInfoPlaylistHandler(w http.ResponseWriter, r *http.Request) {
 		"sEcho":                params.Echo,
 	}
 
-	playlist, stat, err := getPlaylistStat()
-
-	if err == nil {
+	if playlist, stat, err := getPlaylistStat(); err == nil {
 		if params.Search != "" {
 			playlist = filterPlaylist(playlist, params.Search)
 			result["iTotalDisplayRecords"] = len(playlist)

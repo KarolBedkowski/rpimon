@@ -15,13 +15,13 @@ import (
 // CreateRoutes for /main
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", mainPageHanler).Name("main-index")
+	subRouter.HandleFunc("/", mainPageHandler).Name("main-index")
 	subRouter.HandleFunc("/system",
-		app.VerifyPermission(systemPageHanler, "admin")).Name(
+		app.VerifyPermission(systemPageHandler, "admin")).Name(
 		"main-system")
-	subRouter.HandleFunc("/info",
-		app.VerifyPermission(infoHandler, "admin")).Name(
-		"main-serv-info")
+	subRouter.HandleFunc("/serv/status",
+		app.VerifyPermission(statusServHandler, "admin")).Name(
+		"main-serv-status")
 }
 
 type pageCtx struct {
@@ -39,7 +39,7 @@ type pageCtx struct {
 	LoadTrucated      float64
 }
 
-func mainPageHanler(w http.ResponseWriter, r *http.Request) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext(
 		"Main", "main", w, r)}
 	ctx.Warnings = monitor.GetWarnings()
@@ -68,7 +68,7 @@ type pageSystemCtx struct {
 	MaxAcceptableLoad int
 }
 
-func systemPageHanler(w http.ResponseWriter, r *http.Request) {
+func systemPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &pageSystemCtx{BasePageContext: app.NewBasePageContext(
 		"System", "system", w, r),
 		Warnings: monitor.GetWarnings()}
@@ -77,10 +77,10 @@ func systemPageHanler(w http.ResponseWriter, r *http.Request) {
 	app.RenderTemplateStd(w, ctx, "main/system.tmpl")
 }
 
-var infoHandlerCache = h.NewSimpleCache(1)
+var statusServCache = h.NewSimpleCache(1)
 
-func infoHandler(w http.ResponseWriter, r *http.Request) {
-	data := infoHandlerCache.Get(func() h.Value {
+func statusServHandler(w http.ResponseWriter, r *http.Request) {
+	data := statusServCache.Get(func() h.Value {
 		res := map[string]interface{}{"cpu": strings.Join(monitor.GetCPUHistory(), ","),
 			"load":     strings.Join(monitor.GetLoadHistory(), ","),
 			"mem":      strings.Join(monitor.GetMemoryHistory(), ","),

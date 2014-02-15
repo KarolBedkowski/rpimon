@@ -47,7 +47,6 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logname := r.FormValue("log")
-
 	logs, group, err := findGroup(page, logname)
 	if err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
@@ -141,7 +140,7 @@ func getLog(log logsDef, file string, lines int) (result string, err error) {
 	}
 
 	if log.Command != "" {
-		result = h.ReadFromCommand(log.Command)
+		result = h.ReadCommand(log.Command)
 	} else {
 		var logpath string
 		if log.Dir == "" {
@@ -155,7 +154,7 @@ func getLog(log logsDef, file string, lines int) (result string, err error) {
 				return "", errors.New("invalid path")
 			}
 		}
-		result, err = h.ReadFromFileLastLines(logpath, lines)
+		result, err = h.ReadFile(logpath, lines)
 	}
 	if result == "" && err == nil {
 		result = "<EMPTY FILE>"

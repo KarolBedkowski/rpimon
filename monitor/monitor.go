@@ -240,8 +240,12 @@ func GetCPUInfo() *CPUInfoStruct {
 
 func gatherCPUInfo() *CPUInfoStruct {
 	info := &CPUInfoStruct{}
-	info.Freq = h.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq") / 1000
-	info.Temp = h.ReadIntFromFile("/sys/class/thermal/thermal_zone0/temp") / 1000
+	if val, err := h.ReadIntFromFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"); err == nil {
+		info.Freq = val / 1000
+	}
+	if val, err := h.ReadIntFromFile("/sys/class/thermal/thermal_zone0/temp"); err == nil {
+		info.Temp = val / 1000
+	}
 	return info
 }
 
@@ -307,7 +311,7 @@ type InterfacesStruct []*InterfaceInfoStruct
 
 var interfacesInfoCache = h.NewSimpleCache(ifaceCacheTTL)
 
-func parseIpResult(input string) (result InterfacesStruct) {
+func parseIPResult(input string) (result InterfacesStruct) {
 	lines := strings.Split(input, "\n")
 	var iface *InterfaceInfoStruct
 	for _, line := range lines {
@@ -342,11 +346,11 @@ func parseIpResult(input string) (result InterfacesStruct) {
 // GetInterfacesInfo get current info about network interfaces
 func GetInterfacesInfo() *InterfacesStruct {
 	result := interfacesInfoCache.Get(func() h.Value {
-		ipres := h.ReadFromCommand("/sbin/ip", "addr")
+		ipres := h.ReadCommand("/sbin/ip", "addr")
 		if ipres == "" {
 			return nil
 		}
-		result := parseIpResult(ipres)
+		result := parseIPResult(ipres)
 		return &result
 	})
 	return result.(*InterfacesStruct)
@@ -371,7 +375,7 @@ var fsInfoCache = h.NewSimpleCache(fsCacheTTL)
 // GetFilesystemsInfo returns information about all filesystems
 func GetFilesystemsInfo() *FilesystemsStruct {
 	result := fsInfoCache.Get(func() h.Value {
-		cmdout := h.ReadFromCommand("df", "-h", "-l", "-x", "tmpfs", "-x", "devtmpfs", "-x", "rootfs")
+		cmdout := h.ReadCommand("df", "-h", "-l", "-x", "tmpfs", "-x", "devtmpfs", "-x", "rootfs")
 		if cmdout == "" {
 			return nil
 		}
@@ -402,7 +406,7 @@ var uptimeInfoCache = h.NewSimpleCache(uptimeInfoCacheTTL)
 // GetUptimeInfo get current info about uptime & users
 func GetUptimeInfo() *UptimeInfoStruct {
 	result := uptimeInfoCache.Get(func() h.Value {
-		cmdout := h.ReadFromCommand("uptime")
+		cmdout := h.ReadCommand("uptime")
 		if cmdout == "" {
 			return nil
 		}
@@ -441,7 +445,7 @@ var netstatCache = h.NewSimpleCache(warningsCacheTTL)
 func checkIsServiceConnected(port string) (result bool) {
 	result = false
 	out := netstatCache.Get(func() h.Value {
-		return string(h.ReadFromCommand("netstat", "-pn", "--inet"))
+		return string(h.ReadCommand("netstat", "-pn", "--inet"))
 	}).(string)
 	if out == "" {
 		return

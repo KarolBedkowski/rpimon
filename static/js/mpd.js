@@ -214,7 +214,8 @@ MPD.status = (function(self, $) {
 				}).done(function(data) {
 					RPI.confirmDialog(data, {
 						title: "Song info",
-						btnSuccess: "none"
+						btnSuccess: "none",
+						replace: true,
 					}).open();
 				});
 			}

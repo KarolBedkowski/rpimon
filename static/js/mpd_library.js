@@ -13,7 +13,7 @@ MPD.library = (function(self, $) {
 	var urls = {
 			"mpd-service-song-info": "",
 			"mpd-library-action": "",
-			"mpd-library-content": "/mpd/library/content"
+			"mpd-library-content": ""
 		},
 		currentPath = "",
 		table = null;

@@ -4,24 +4,35 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"log"
+	l "k.prv/rpimon/helpers/logging"
 )
 
+// One log definiton
 type logsDef struct {
-	Name     string `json:"name"`
+	// Name of log
+	Name string `json:"name"`
+	// Filename, if empty - used when no Dir and Command defined
 	Filename string `json:"filename, omitempty"`
-	Dir      string `json:"dir,omitempty"`
-	Prefix   string `json:"prefix,omitempty"`
-	Limit    int    `json:"limit,omitempty"`
-	Command  string `json:"command,omitempty"`
+	// Directory with log files
+	Dir string `json:"dir,omitempty"`
+	// Prefix of filename when looking for logs in Dir
+	Prefix string `json:"prefix,omitempty"`
+	// Log lines limit
+	Limit int `json:"limit,omitempty"`
+	// Command to get log
+	Command string `json:"command,omitempty"`
 }
 
+// Log group
 type logsGroup struct {
-	Name string    `json:"name"`
+	// Name of logs group
+	Name string `json:"name"`
+	// Logs definition
 	Logs []logsDef `json:"logs"`
 }
 
 type configuration struct {
+	// Logs groups
 	Groups []logsGroup `json:"groups"`
 }
 
@@ -29,15 +40,15 @@ var config configuration
 
 // Init utils pages
 func Init(filename string) error {
-	log.Print("pages.files Loading configuration file ", filename)
+	l.Info("pages.logs.Init configuration file: %s ", filename)
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Fatal("Error: ", err.Error())
+		l.Error("pages.log.Init read file error: %s", err.Error())
 		return err
 	}
 	err = json.Unmarshal(file, &config)
 	if err != nil {
-		log.Fatal("Error: ", err.Error())
+		l.Error("pages.log.Init unmarshal error: %s", err.Error())
 	}
 	return err
 }

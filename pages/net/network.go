@@ -17,7 +17,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("net-index")
 	subRouter.HandleFunc("/conf", app.VerifyPermission(confPageHandler, "admin")).Name("net-conf")
 	subRouter.HandleFunc("/iptables", app.VerifyPermission(iptablesPageHandler, "admin")).Name("net-iptables")
-	subRouter.HandleFunc("/serv/info", app.VerifyPermission(infoHandler, "admin")).Name("net-serv-info")
+	subRouter.HandleFunc("/serv/info", app.VerifyPermission(statusServHandler, "admin")).Name("net-serv-info")
 	subRouter.HandleFunc("/action", app.VerifyPermission(actionHandler, "admin")).Name("net-action").Methods("PUT")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(subPageHandler, "admin")).Name("net-page")
 	localMenu = []*app.MenuItem{
@@ -48,6 +48,7 @@ func subPageHandler(w http.ResponseWriter, r *http.Request) {
 	page, ok := vars["page"]
 	if !ok {
 		http.Redirect(w, r, app.GetNamedURL("net-index"), http.StatusFound)
+		return
 	}
 	data := app.NewSimpleDataPageCtx(w, r, "Network", "net", page, localMenu)
 	data.SetMenuActive(page)
@@ -98,14 +99,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request) {
 	if cmd == "" {
 		cmd = confCommands[0]
 	} else {
-		ok := false
-		for _, dcmd := range confCommands {
-			if cmd == dcmd {
-				ok = true
-				break
-			}
-		}
-		if !ok {
+		if !h.CheckValueInStrList(confCommands, cmd) {
 			http.Error(w, "invalid request", http.StatusBadRequest)
 			return
 		}
@@ -114,14 +108,14 @@ func confPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.FormValue("data") == "1" {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.Write([]byte(h.ReadFromCommand(cmdfields[0], cmdfields[1:]...)))
+		w.Write([]byte(h.ReadCommand(cmdfields[0], cmdfields[1:]...)))
 	} else {
 		ctx := &confPageContext{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
 		ctx.SetMenuActive("conf")
 		ctx.LocalMenu = localMenu
 		ctx.Current = cmd
 		ctx.Commands = &confCommands
-		ctx.Data = h.ReadFromCommand(cmdfields[0], cmdfields[1:]...)
+		ctx.Data = h.ReadCommand(cmdfields[0], cmdfields[1:]...)
 		app.RenderTemplateStd(w, ctx, "net/conf.tmpl")
 	}
 }
@@ -146,19 +140,12 @@ func iptablesPageHandler(w http.ResponseWriter, r *http.Request) {
 	if table == "" {
 		table = iptablesTables[0]
 	} else {
-		ok := false
-		for _, dtab := range iptablesTables {
-			if table == dtab {
-				ok = true
-				break
-			}
-		}
-		if !ok {
+		if !h.CheckValueInStrList(iptablesTables, table) {
 			http.Error(w, "invalid request", http.StatusBadRequest)
 			return
 		}
 	}
-	data := h.ReadFromCommand("sudo", "iptables", "-L", "-vn", "-t", table)
+	data := h.ReadCommand("sudo", "iptables", "-L", "-vn", "-t", table)
 
 	if r.FormValue("data") == "1" {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -176,7 +163,7 @@ func iptablesPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func netstat(command string, args ...string) ([][]string, error) {
 	result := make([][]string, 0)
-	res := h.ReadFromCommand(command, args...)
+	res := h.ReadCommand(command, args...)
 	lines := strings.Split(res, "\n")
 	if len(lines) < 2 {
 		return result, nil
@@ -209,10 +196,10 @@ func netstat(command string, args ...string) ([][]string, error) {
 	return result, nil
 }
 
-var infoHandlerCache = h.NewSimpleCache(1)
+var statusServCache = h.NewSimpleCache(1)
 
-func infoHandler(w http.ResponseWriter, r *http.Request) {
-	data := infoHandlerCache.Get(func() h.Value {
+func statusServHandler(w http.ResponseWriter, r *http.Request) {
+	data := statusServCache.Get(func() h.Value {
 		res := map[string]interface{}{
 			"netusage": monitor.GetNetHistory(),
 			"ifaces":   monitor.GetInterfacesInfo(),
@@ -235,11 +222,11 @@ func actionHandler(w http.ResponseWriter, r *http.Request) {
 	var result string
 	switch action {
 	case "dhclient":
-		result = h.ReadFromCommand("sudo", "dhclient", iface)
+		result = h.ReadCommand("sudo", "dhclient", iface)
 	case "down":
-		result = h.ReadFromCommand("sudo", "ifconfig", iface, "down")
+		result = h.ReadCommand("sudo", "ifconfig", iface, "down")
 	case "up":
-		result = h.ReadFromCommand("sudo", "ifconfig", iface, "up")
+		result = h.ReadCommand("sudo", "ifconfig", iface, "up")
 	default:
 		http.Error(w, "wrong action", http.StatusBadRequest)
 		return

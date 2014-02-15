@@ -19,21 +19,15 @@ type playlistsPageCtx struct {
 	Error       string
 }
 
-func newPlaylistsPageCtx(w http.ResponseWriter, r *http.Request) *playlistsPageCtx {
+func playlistsPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &playlistsPageCtx{BasePageContext: app.NewBasePageContext("Mpd", "mpd", w, r)}
 	ctx.LocalMenu = localMenu
 	ctx.SetMenuActive("mpd-playlists")
-	return ctx
-}
-
-func playlistsPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := newPlaylistsPageCtx(w, r)
-	app.RenderTemplateStd(w, data, "mpd/playlists.tmpl")
+	app.RenderTemplateStd(w, ctx, "mpd/playlists.tmpl")
 }
 
 func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	//l.Debug("Form: %#v", r.Form)
 	action, ok := h.GetParam(w, r, "a")
 	if !ok {
 		return
@@ -51,13 +45,12 @@ func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func playlistsListService(w http.ResponseWriter, r *http.Request) {
-	result := map[string]interface{}{
-		"error": "",
-	}
+	result := make(map[string]interface{})
 	if playlists, err := mpdGetPlaylists(); err != nil {
 		result["error"] = err.Error()
 	} else {
 		result["items"] = playlists
+		result["error"] = ""
 	}
 	encoded, _ := json.Marshal(result)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
