@@ -1,0 +1,77 @@
+{{define "body"}}
+<div class="container">
+	<h1>Notepad</h1>
+
+	<div class="row text-right">
+		<p>
+		<button class="btn btn-default" data-toggle="modal" data-target="#create-note-dlg">New note</button>
+		</p>
+	</div>
+</div>
+
+<div class="container">
+	<div class="row">
+		<table class="table-hover table-bordered table-condensed" id="table-services">
+			<thead>
+				<tr>
+					<th>Filename</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{range .NoteList}}
+				<tr>
+					<td>{{.Filename}}</td>
+					<td><a href="{{namedurl "notepad-note" "note" .Filename}}">Edit</a>
+					<a href="{{namedurl "notepad-delete" "note" .Filename}}" onclick="return confirm('Delete?');">Delete</a></td>
+				</tr>
+			{{end}}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<div class="modal fade" id="create-note-dlg" tabindex="-1" role="dialog" aria-labelledby="create-note-dlg-label" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h4 class="modal-title" id="create-note-dlg-label">Create new note</h4>
+			</div>
+			<form action="{{namedurl "notepad-note" "note" "new"}}" method="get" class="form-inline" role="form">
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="note-name">File name</label>
+						<input type="text" name="name" id="note-name" class="form-control" placeholder="Note name" required />
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="submit" class="btn btn-primary" data-loading-text="Creating..">Create</button>
+				</div>
+			</form>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+{{end}}
+
+
+{{define "scripts"}}
+<script src="/static/lib/jquery/jquery.dataTables.js" type="text/javascript"></script>
+<script src="/static/lib/dataTables.bootstrap.js" type="text/javascript"></script>
+<script type="text/javascript">
+	$(function() {
+		$('table').dataTable({
+			"bAutoWidth": false,
+			"bStateSave": true,
+			"sPaginationType": "bootstrap",
+			"iDisplayLength": 15,
+			"aLengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
+		});
+		$('#create-note-dlg form').submit(function(e) {
+			$(this).attr("action", $(this).attr("action").replace("new", $("#note-name").val()));
+		});
+	});
+</script>
+{{end}}

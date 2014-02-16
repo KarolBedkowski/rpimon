@@ -22,6 +22,7 @@ copy_pi:
 	cp rpimon dist/
 	ssh k@pi sudo service k_rpimon stop
 	rsync -arv --delete dist/* k@pi:rpimon/
+	ssh k@pi "mkdir rpimon/notepad"
 	ssh k@pi sudo service k_rpimon start
 
 install: build build_static

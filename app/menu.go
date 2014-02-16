@@ -70,6 +70,14 @@ func SetMainMenu(ctx *BasePageContext) {
 			ctx.MainMenu = append(ctx.MainMenu,
 				NewMenuItemFromRoute("Files", "files-index").SetID("files").SetIcon("glyphicon glyphicon-hdd"))
 		}
-
+		// Tools
+		toolsMenu := NewMenuItem("Tools", "").SetIcon("glyphicon glyphicon-briefcase").SetID("tools")
+		if CheckPermission(ctx.CurrentUserPerms, "notepad") {
+			toolsMenu.Submenu = append(toolsMenu.Submenu,
+				NewMenuItemFromRoute("Notepad", "notepad-index").SetID("notepad-index").SetIcon("glyphicon glyphicon-paperclip"))
+		}
+		if toolsMenu.Submenu != nil {
+			ctx.MainMenu = append(ctx.MainMenu, toolsMenu)
+		}
 	}
 }

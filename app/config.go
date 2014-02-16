@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"path/filepath"
 )
 
 // AppConfiguration Main app configuration.
@@ -25,6 +26,7 @@ type AppConfiguration struct {
 	SslKey                string
 	MonitorUpdateInterval int
 	Logs                  string
+	Notepad               string `json:"notepad"`
 }
 
 // Configuration - main app configuration instance
@@ -43,5 +45,7 @@ func LoadConfiguration(filename string) *AppConfiguration {
 		log.Fatal("app.LoadConfiguration error: ", err.Error())
 		return nil
 	}
+
+	Configuration.Notepad, _ = filepath.Abs(Configuration.Notepad)
 	return &Configuration
 }

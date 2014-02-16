@@ -10,6 +10,7 @@ import (
 	pmain "k.prv/rpimon/pages/main"
 	pmpd "k.prv/rpimon/pages/mpd"
 	pnet "k.prv/rpimon/pages/net"
+	pnotepad "k.prv/rpimon/pages/notepad"
 	pproc "k.prv/rpimon/pages/process"
 	pstorage "k.prv/rpimon/pages/storage"
 	pusers "k.prv/rpimon/pages/users"
@@ -61,6 +62,7 @@ func main() {
 	pproc.CreateRoutes(app.Router.PathPrefix("/process"))
 	pfiles.Init(conf.BrowserConf)
 	pfiles.CreateRoutes(app.Router.PathPrefix("/files"))
+	pnotepad.CreateRoutes(app.Router.PathPrefix("/notepad"))
 
 	/* for filesystem store
 	go app.ClearSessionStore()
