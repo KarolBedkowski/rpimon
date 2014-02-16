@@ -21,8 +21,7 @@ copy_pi:
 	cp rpimon dist/
 	ssh k@pi sudo service k_rpimon stop
 	rsync -arv --delete dist/* k@pi:rpimon/
-	ssh k@pi "mkdir rpimon/notepad"
-	ssh k@pi sudo service k_rpimon start
+	ssh k@pi "(mkdir rpimon/notepad || true); (sudo service k_rpimon start)"
 
 install: build build_static
 	cp *.json dist/
@@ -44,11 +43,19 @@ debug: clean
 
 
 build_static:
-	rm -rf dist/static dist/templates
-	mkdir "dist" || true
-	cp -r static templates dist/
-	find dist -name *.css -print -exec yui-compressor -v -o "{}.tmp" "{}" ';' -exec  mv "{}.tmp" "{}" ';'
-	find dist -name *.js -print -exec closure-compiler --language_in ECMASCRIPT5 --js_output_file "{}.tmp" --js "{}" ';' -exec  mv "{}.tmp" "{}" ';'
-	find dist -iname '*.css' -exec gzip -f --best -k {} ';'
-	find dist -iname '*.js' -exec gzip -f --best -k {} ';'
+	# create dist dir if not exists
+	if [ ! -d dist ]; then mkdir -p "dist"; rm -f .stamp; fi
+	cp -r templates dist/
+	if [ ! -e .stamp ]; then touch -t 200001010000 .stamp; fi
+	# copy dir structure
+	find static -type d -exec mkdir -p -- dist/{} ';'
+	# minify updated css
+	find static -name *.css -newer .stamp -print -exec yui-compressor -v -o "./dist/{}" "{}" ';' 
+	# minify updated js
+	find static -name *.js -newer .stamp -print -exec closure-compiler --language_in ECMASCRIPT5 --js_output_file "dist/{}" --js "{}" ';' 
+	# compress updated css
+	find dist -iname '*.css' -newer .stamp -print -exec gzip -f --best -k {} ';'
+	# compress updated js
+	find dist -iname '*.js' -newer .stamp -print -exec gzip -f --best -k {} ';'
+	touch .stamp
 
