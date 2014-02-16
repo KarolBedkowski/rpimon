@@ -178,15 +178,17 @@ MPD.library = (function(self, $) {
 
 		$("button.action-update").on("click", function(event) {
 			event.preventDefault();
-			var url = $(this).attr("href"),
-				kind = $(this).data("kind"),
+			var kind = $(this).data("kind"),
 				uri = kind == "lib" ? "" : currentPath;
 			RPI.confirmDialog("Start updating " + (uri == "/" ? "folder?" : "library?"), {
 				title: "Library",
 				btnSuccess: "Update",
 				onSuccess: function() {
 					RPI.showLoadingMsg();
-					$.get(url, {uri: uri
+					$.ajax({
+						url: urls["mpd-library-action"],
+						type: "PUT",
+						data: {uri: uri,  a: "update"}
 					}).always(function() {
 						RPI.hideLoadingMsg();
 					}).done(function() {

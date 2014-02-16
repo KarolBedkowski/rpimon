@@ -16,4 +16,5 @@
   "StaticDir": "./static",
   "MpdHost": "localhost:6600",
 	"Logs": "logs.json"
+	"notepad": "./notepad/"
 }

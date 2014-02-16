@@ -10,6 +10,7 @@ import (
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
+	n "k.prv/rpimon/pages/notepad"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -78,9 +79,6 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/log",
 		app.VerifyPermission(mpdLogPageHandler, "mpd")).Name(
 		"mpd-log")
-	subRouter.HandleFunc("/notes",
-		app.VerifyPermission(notesPageHandler, "mpd")).Name(
-		"mpd-notes")
 	// search
 	subRouter.HandleFunc("/search",
 		app.VerifyPermission(searchPageHandler, "mpd")).Name(
@@ -95,7 +93,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 		app.NewMenuItemFromRoute("Search", "mpd-search").SetIcon("glyphicon glyphicon-search"),
 		app.NewMenuItemFromRoute("Playlists", "mpd-playlists").SetIcon("glyphicon glyphicon-floppy-open"),
 		app.NewMenuItemFromRoute("Tools", "mpd-tools").SetIcon("glyphicon glyphicon-wrench").AddChild(
-			app.NewMenuItemFromRoute("Log", "mpd-log")).AddChild(app.NewMenuItemFromRoute("Notes", "mpd-notes")),
+			app.NewMenuItemFromRoute("Log", "mpd-log")),
 	}
 }
 
@@ -124,6 +122,7 @@ func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	r.ParseForm()
 	err := errBadRequest
+	var result = "OK"
 	switch action {
 	case "volume":
 		if vol := r.FormValue("vol"); vol != "" {
@@ -141,8 +140,6 @@ func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 		}
-	case "update":
-		err = mpdActionUpdate(r.FormValue("uri"))
 	case "add_to_notes":
 		status := getStatus()
 		data := make([]string, 0)
@@ -150,7 +147,10 @@ func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
 			data = append(data, fmt.Sprintf("%s: %s", key, val))
 		}
 		data = append(data, "\n-----------------\n\n")
-		err = h.AppendToFile("mpd_notes.txt", strings.Join(data, "\n"))
+		err = n.AppendToNote("mpd_notes.txt", strings.Join(data, "\n"))
+		if err == nil {
+			result = "Added to notes"
+		}
 	case "playlist-clear":
 		if err = mpdAction(action); err != nil {
 			sess := app.GetSessionStore(w, r)
@@ -164,7 +164,7 @@ func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err == nil {
 		w.Header().Set("Content-Type", "text/plain; charset=UTF-8")
-		w.Write([]byte("OK"))
+		w.Write([]byte(result))
 	} else {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}

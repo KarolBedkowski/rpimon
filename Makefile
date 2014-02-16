@@ -7,7 +7,6 @@ build_pi:
 
 clean:
 	go clean
-	rm -rf temp dist
 	rm -f server rpimon
 	find ./static -iname '*.css.gz' -exec rm -f {} ';'
 	find ./static -iname '*.js.gz' -exec rm -f {} ';'
@@ -22,6 +21,7 @@ copy_pi:
 	cp rpimon dist/
 	ssh k@pi sudo service k_rpimon stop
 	rsync -arv --delete dist/* k@pi:rpimon/
+	ssh k@pi "mkdir rpimon/notepad"
 	ssh k@pi sudo service k_rpimon start
 
 install: build build_static
@@ -31,7 +31,7 @@ install: build build_static
 install_pi: build_pi build_static copy_pi
 
 run: clean
-	mkdir temp
+	mkdir temp || true
 	go-reload server.go
 
 certs:

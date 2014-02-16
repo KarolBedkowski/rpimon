@@ -142,7 +142,16 @@ MPD.status = (function(self, $) {
 	function doAction(event) {
 		event.preventDefault();
 		var act = $(this).data("action");
-		$.get(mpdControlUrl + "/" + act);
+		$.get(mpdControlUrl + "/" + act
+		).done(function(msg) {
+			if (msg != "OK") {
+				RPI.showFlash("success", msg, 3);
+			}
+		}).fail(function(jqXHR, textStatus) {
+			RPI.showFlash("error", textStatus);
+		});
+
+;
 	}
 
 	function setVolume(value) {

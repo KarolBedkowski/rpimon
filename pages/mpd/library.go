@@ -35,6 +35,12 @@ func libraryActionHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
+	case "update":
+		err := mpdActionUpdate(r.FormValue("uri"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+		return
 	}
 	http.Error(w, "Invalid request", http.StatusBadRequest)
 }
