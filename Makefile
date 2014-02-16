@@ -7,7 +7,6 @@ build_pi:
 
 clean:
 	go clean
-	rm -rf temp dist
 	rm -f server rpimon
 	find ./static -iname '*.css.gz' -exec rm -f {} ';'
 	find ./static -iname '*.js.gz' -exec rm -f {} ';'
@@ -32,7 +31,7 @@ install: build build_static
 install_pi: build_pi build_static copy_pi
 
 run: clean
-	mkdir temp
+	mkdir temp || true
 	go-reload server.go
 
 certs:
