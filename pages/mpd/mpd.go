@@ -141,8 +141,6 @@ func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 		}
-	case "update":
-		err = mpdActionUpdate(r.FormValue("uri"))
 	case "add_to_notes":
 		status := getStatus()
 		data := make([]string, 0)

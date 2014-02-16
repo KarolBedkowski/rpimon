@@ -153,8 +153,10 @@ func mpdAction(action string) (err error) {
 }
 
 func mpdActionUpdate(uri string) (err error) {
-	if _, err := connect(); err == nil {
-		_, err = connection.Update(uri)
+	if _, err = connect(); err == nil {
+		var jobid int
+		jobid, err = connection.Update(uri)
+		l.Debug("mpdActionUpdate jobid: %d, err: %v", jobid, err)
 	}
 	return err
 }
