@@ -24,6 +24,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "notepad")).Name("notepad-index")
 	subRouter.HandleFunc("/{note}", app.VerifyPermission(notePageHandler, "notepad")).Name("notepad-note")
 	subRouter.HandleFunc("/{note}/delete", app.VerifyPermission(noteDeleteHandler, "notepad")).Name("notepad-delete")
+	subRouter.HandleFunc("/{note}/download", app.VerifyPermission(noteDownloadHandler, "notepad")).Name("notepad-download")
 }
 
 type NoteStuct struct {
@@ -116,6 +117,21 @@ func noteDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	app.SaveSession(w, r)
 	http.Redirect(w, r, app.GetNamedURL("notepad-index"), http.StatusFound)
+}
+
+func noteDownloadHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	filename, _ := vars["note"]
+	if filename == "" {
+		http.Error(w, "missing filename", http.StatusBadRequest)
+		return
+	}
+	if filepath, ok := getFilepath(filename); ok {
+		w.Header().Set("Content-Disposition", "attachment; filename=\""+filename+"\"")
+		http.ServeFile(w, r, filepath)
+	} else {
+		http.Error(w, "File not found", http.StatusNotFound)
+	}
 }
 
 func findFiles() (result []*NoteStuct) {

@@ -15,15 +15,18 @@
 			<thead>
 				<tr>
 					<th>Filename</th>
-					<th>Action</th>
+					<th style="width: 48px">Action</th>
 				</tr>
 			</thead>
 			<tbody>
 			{{range .NoteList}}
 				<tr>
-					<td>{{.Filename}}</td>
-					<td><a href="{{namedurl "notepad-note" "note" .Filename}}">Edit</a>
-					<a href="{{namedurl "notepad-delete" "note" .Filename}}" onclick="return confirm('Delete?');">Delete</a></td>
+					<td><a href="{{namedurl "notepad-note" "note" .Filename}}">{{.Filename}}</a></td>
+					<td>
+						<a href="{{namedurl "notepad-note" "note" .Filename}}" title="Open"><span class="glyphicon glyphicon-open"></span></a>
+						<a href="{{namedurl "notepad-download" "note" .Filename}}" title="Download"><span class="glyphicon glyphicon-save"></span></a>
+						<a href="{{namedurl "notepad-delete" "note" .Filename}}" onclick="return confirm('Delete?');" title="Delete"><span class="glyphicon glyphicon-remove"></span></a>
+					</td>
 				</tr>
 			{{end}}
 			</tbody>

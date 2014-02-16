@@ -7,7 +7,7 @@
 	<form method="POST">
 		<div class="form-group">
 			<label for="iContent">Content</label>
-			<textarea name="Content" id="iContent" class="form-control" rows="10">{{.Note.Content}}</textarea>
+			<textarea name="Content" id="iContent" class="form-control" rows="15">{{.Note.Content}}</textarea>
 		</div>
 		<a href="{{namedurl "notepad-index"}}" class="btn btn-default">Cancel</a>
 		{{if not .New}}
