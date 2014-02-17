@@ -1,7 +1,7 @@
 {{define "body"}}
 
 {{if .Header1}}
-<div class="container">
+<div class="container-fluid">
 	<h1>{{.Header1}}</h1>
 	{{if .Header2}}
 	<h2>{{.Header1}}</h2>
@@ -10,13 +10,13 @@
 {{end}}
 
 {{if .Data}}
-<div class="container">
+<div class="container-fluid">
 	<pre>{{.Data}}</pre>
 </div>
 {{end}}
 
 {{if .TData}}
-<div class="container">
+<div class="container-fluid">
 	<table class="table-hover table-bordered table-condensed" id="table-services">
 		<thead>
 			<tr>

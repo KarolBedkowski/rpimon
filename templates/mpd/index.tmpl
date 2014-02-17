@@ -1,13 +1,13 @@
 {{define "body"}}
 
-<div class="container">
+<div class="container-fluid">
 	<div class="alert alert-danger" id="main-alert" style="display: none;">
 		<p>Error loading data: <em id="main-alert-error"></em></p>
 		<a href="#" class="alert-link" onclick="location.reload()">Reload</a>
 	</div>
 </div>
 
-<div class="container mpd-info-section center-block" id="song-box">
+<div class="container-fluid mpd-info-section center-block" id="song-box">
 	<div id="curr-name"></div>
 	<div id="curr-artist"></div>
 	<div id="track-info">
@@ -23,7 +23,7 @@
 	<div id="curr-genre"></div>
 </div>
 
-<div class="container mpd-buttons-sect">
+<div class="container-fluid mpd-buttons-sect">
 	<div class="btn-group">
 		<a class="btn ui-state-default ajax-action" href="#" data-action="prev" role="button">
 			<span class="glyphicon glyphicon-step-backward"></span><br/>
@@ -48,7 +48,7 @@
 	</div>
 </div>
 
-<div class="container mpd-info-section" id="mpd-sliders-pos">
+<div class="container-fluid mpd-info-section" id="mpd-sliders-pos">
 	<div id="pos-info">
 		<div id="pos-info-time">
 			<span id="st-time">&nbsp;</span>
@@ -59,7 +59,7 @@
 	</div>
 </div>
 
-<div class="container mpd-info-section" id="mpd-sliders-vol">
+<div class="container-fluid mpd-info-section" id="mpd-sliders-vol">
 	<div id="volume">
 		<div id="info">
 			<div id="volume-label"><label for="st-voliume">Volume&nbsp;</label></div>
@@ -70,7 +70,7 @@
 	</div>
 </div>
 
-<div class="container mpd-buttons-sect">
+<div class="container-fluid mpd-buttons-sect">
 	<div class="btn-group">
 		<a class="btn ui-state-default ajax-action" href="#" data-action="toggle_random">
 			<span class="glyphicon glyphicon-random"></span><br/>
@@ -83,7 +83,7 @@
 	</div>
 </div>
 
-<div class="container mpd-info-section" id="songinfo-box">
+<div class="container-fluid mpd-info-section" id="songinfo-box">
 	<div id="additional-info">
 		<div>
 			<label for="curr-file">File:</label>

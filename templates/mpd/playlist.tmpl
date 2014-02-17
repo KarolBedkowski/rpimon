@@ -1,13 +1,13 @@
 {{define "body"}}
 
-<div class="container">
+<div class="container-fluid">
 	<div class="alert alert-danger" id="main-alert" style="display: none;">
 		<p>Error loading playlist: <em id="main-alert-error"></em></p>
 		<a href="#" class="alert-link" onclick="location.reload()">Reload</a>
 	</div>
 </div>
 
-<div class="container playlist-data">
+<div class="container-fluid playlist-data">
 	<table class="table table-hover table-bordered table-condensed" id="table-mpd-playlist">
 		<thead>
 			<tr>
