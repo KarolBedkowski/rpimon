@@ -21,7 +21,6 @@ type BasePageContext struct {
 	CurrentUser      string
 	CurrentUserPerms []string
 	MainMenu         []*MenuItem
-	LocalMenu        []*MenuItem
 	Now              string
 	ActiveMenuItems  map[string]bool
 	FlashMessages    map[string][]interface{}
@@ -109,9 +108,14 @@ func (ctx *BasePageContext) IsMenuActive(id string) bool {
 }
 
 // SetMenuActive add id  to menu active items
-func (ctx *BasePageContext) SetMenuActive(ids ...string) {
-	for _, id := range ids {
-		ctx.ActiveMenuItems[id] = true
+func (ctx *BasePageContext) SetMenuActive(id string) {
+	if ctx.MainMenu == nil {
+		return
+	}
+	for _, subitem := range ctx.MainMenu {
+		if subitem.SetActiveMenu(id) {
+			break
+		}
 	}
 }
 
@@ -131,6 +135,6 @@ type SimpleDataPageCtx struct {
 func NewSimpleDataPageCtx(w http.ResponseWriter, r *http.Request,
 	title string, mainMenuID string, cuurentPage string, localMenu []*MenuItem) *SimpleDataPageCtx {
 	ctx := &SimpleDataPageCtx{BasePageContext: NewBasePageContext(title, mainMenuID, w, r)}
-	ctx.LocalMenu = localMenu
+	AttachSubmenu(ctx.BasePageContext, mainMenuID, localMenu)
 	return ctx
 }

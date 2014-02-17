@@ -46,7 +46,7 @@ type mainPageContext struct {
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &mainPageContext{BasePageContext: app.NewBasePageContext("Notepad", "notepad", w, r)}
-	ctx.SetMenuActive("notepad-index", "tools")
+	ctx.SetMenuActive("notepad-index")
 	ctx.NoteList = findFiles()
 	app.RenderTemplateStd(w, ctx, "notepad/index.tmpl")
 }
@@ -74,7 +74,7 @@ func notePageHandler(w http.ResponseWriter, r *http.Request) {
 			ctx.Note = &NoteStuct{Filename: filename}
 			ctx.New = true
 		}
-		ctx.SetMenuActive("notepad-index", "tools")
+		ctx.SetMenuActive("notepad-index")
 		app.RenderTemplateStd(w, ctx, "notepad/note.tmpl")
 		return
 	case "POST":

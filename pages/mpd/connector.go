@@ -345,9 +345,10 @@ var mpdShortStatusCache = h.NewSimpleCache(5)
 
 // GetShortStatus return cached MPD status
 func GetShortStatus() (status map[string]string, err error) {
-	if result, ok := mpdShortStatusCache.GetValue(); ok {
-		cachedValue := result.(mpd.Attrs)
-		return map[string]string(cachedValue), nil
+	if result, ok := mpdShortStatusCache.GetValue(); ok && result != nil {
+		if cachedValue, ok := result.(mpd.Attrs); ok {
+			return map[string]string(cachedValue), nil
+		}
 	}
 	if _, err = connect(); err == nil {
 		if status, err = connection.Status(); err == nil {

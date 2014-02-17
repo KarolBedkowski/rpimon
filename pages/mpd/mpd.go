@@ -87,7 +87,10 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/file",
 		app.VerifyPermission(filePageHandler, "mpd")).Name(
 		"mpd-file")
-	localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("Status", "mpd-index").SetIcon("glyphicon glyphicon-music"),
+}
+
+func buildLocalMenu() (localMenu []*app.MenuItem) {
+	return []*app.MenuItem{app.NewMenuItemFromRoute("Status", "mpd-index").SetIcon("glyphicon glyphicon-music"),
 		app.NewMenuItemFromRoute("Playlist", "mpd-playlist").SetIcon("glyphicon glyphicon-list"),
 		app.NewMenuItemFromRoute("Library", "mpd-library").SetIcon("glyphicon glyphicon-folder-open"),
 		app.NewMenuItemFromRoute("Search", "mpd-search").SetIcon("glyphicon glyphicon-search"),
@@ -96,8 +99,6 @@ func CreateRoutes(parentRoute *mux.Route) {
 			app.NewMenuItemFromRoute("Log", "mpd-log")),
 	}
 }
-
-var localMenu []*app.MenuItem
 
 var errBadRequest = errors.New("bad request")
 
@@ -108,7 +109,7 @@ type pageCtx struct {
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Mpd", "mpd", w, r)}
-	ctx.LocalMenu = localMenu
+	app.AttachSubmenu(ctx.BasePageContext, "mpd", buildLocalMenu())
 	ctx.SetMenuActive("mpd-index")
 	app.RenderTemplateStd(w, ctx, "mpd/index.tmpl")
 }

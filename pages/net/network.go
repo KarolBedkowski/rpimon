@@ -20,7 +20,10 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/serv/info", app.VerifyPermission(statusServHandler, "admin")).Name("net-serv-info")
 	subRouter.HandleFunc("/action", app.VerifyPermission(actionHandler, "admin")).Name("net-action").Methods("PUT")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(subPageHandler, "admin")).Name("net-page")
-	localMenu = []*app.MenuItem{
+}
+
+func buildLocalMenu() (localMenu []*app.MenuItem) {
+	return []*app.MenuItem{
 		app.NewMenuItemFromRoute("Status", "net-index").SetID("net-index"),
 		app.NewMenuItemFromRoute("Configuration", "net-conf").SetID("conf"),
 		app.NewMenuItemFromRoute("IPTables", "net-iptables").SetID("iptables"),
@@ -31,8 +34,6 @@ func CreateRoutes(parentRoute *mux.Route) {
 	}
 }
 
-var localMenu []*app.MenuItem
-
 type mainPageContext struct {
 	*app.BasePageContext
 	Interfaces *monitor.InterfacesStruct
@@ -40,8 +41,8 @@ type mainPageContext struct {
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &mainPageContext{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
-	ctx.SetMenuActive("net-index", "system")
-	ctx.LocalMenu = localMenu
+	ctx.SetMenuActive("net-index")
+	app.AttachSubmenu(ctx.BasePageContext, "net", buildLocalMenu())
 	ctx.Interfaces = monitor.GetInterfacesInfo()
 	app.RenderTemplateStd(w, ctx, "net/status.tmpl")
 }
@@ -53,7 +54,7 @@ func subPageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, app.GetNamedURL("net-index"), http.StatusFound)
 		return
 	}
-	data := app.NewSimpleDataPageCtx(w, r, "Network", "net", page, localMenu)
+	data := app.NewSimpleDataPageCtx(w, r, "Network", "net", page, buildLocalMenu())
 	data.SetMenuActive(page)
 	switch page {
 	case "netstat":
@@ -119,7 +120,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		ctx := &confPageContext{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
 		ctx.SetMenuActive("conf")
-		ctx.LocalMenu = localMenu
+		app.AttachSubmenu(ctx.BasePageContext, "net", buildLocalMenu())
 		ctx.Current = cmd
 		ctx.Commands = &confCommands
 		ctx.Data = h.ReadCommand(cmdfields[0], cmdfields[1:]...)
@@ -160,7 +161,7 @@ func iptablesPageHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		ctx := &iptablesPageContext{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
 		ctx.SetMenuActive("iptables")
-		ctx.LocalMenu = localMenu
+		app.AttachSubmenu(ctx.BasePageContext, "net", buildLocalMenu())
 		ctx.Current = table
 		ctx.Tables = &iptablesTables
 		ctx.Data = data

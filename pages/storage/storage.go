@@ -16,19 +16,19 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/umount", app.VerifyPermission(umountPageHandler, "admin")).Name("storage-umount")
 	subRouter.HandleFunc("/df", app.VerifyPermission(dfPageHandler, "admin")).Name("storage-df")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("storage-page")
-	localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("Disk Free", "storage-df").SetID("diskfree"),
+}
+func buildLocalMenu() (localMenu []*app.MenuItem) {
+	return []*app.MenuItem{app.NewMenuItemFromRoute("Disk Free", "storage-df").SetID("diskfree"),
 		app.NewMenuItemFromRoute("Mount", "storage-mount").SetID("mount"),
 		app.NewMenuItemFromRoute("Devices", "storage-page", "page", "devices").SetID("devices")}
 }
 
 func newPageCtx(w http.ResponseWriter, r *http.Request, localMenuPos string, data string) *app.SimpleDataPageCtx {
-	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", localMenuPos, localMenu)
-	ctx.SetMenuActive(localMenuPos, "system")
+	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", localMenuPos, buildLocalMenu())
+	ctx.SetMenuActive(localMenuPos)
 	ctx.Data = data
 	return ctx
 }
-
-var localMenu []*app.MenuItem
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -62,9 +62,9 @@ type (
 
 func mountPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &mountPageContext{
-		SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", localMenu),
+		SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", buildLocalMenu()),
 	}
-	ctx.SetMenuActive("mount", "system")
+	ctx.SetMenuActive("mount")
 	ctx.Data = h.ReadCommand("mount")
 	ctx.Mounted = mountCmdToMountPoints(ctx.Data)
 	app.RenderTemplateStd(w, ctx, "storage/storage.tmpl")
@@ -100,8 +100,8 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func dfPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", localMenu)
-	ctx.SetMenuActive("diskfree", "system")
+	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", buildLocalMenu())
+	ctx.SetMenuActive("diskfree")
 	ctx.TData = make([][]string, 0)
 	ctx.THead = []string{"Filesystem", "Size", "Used", "Available", "Used %", "Mounted on"}
 	lines := strings.Split(h.ReadCommand("df"), "\n")

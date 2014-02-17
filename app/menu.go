@@ -7,17 +7,18 @@ type MenuItem struct {
 	ID      string
 	Submenu []*MenuItem
 	Icon    string
+	Active  bool
 }
 
 // NewMenuItem create new MenuItem structure
 func NewMenuItem(title, href string) *MenuItem {
-	return &MenuItem{Title: title, Href: href, ID: href}
+	return &MenuItem{Title: title, Href: href, ID: href, Icon: "empty-icon"}
 }
 
 // NewMenuItemFromRoute create new menu item pointing to named route
 func NewMenuItemFromRoute(title, routeName string, args ...string) *MenuItem {
 	url := GetNamedURL(routeName, args...)
-	return &MenuItem{Title: title, Href: url, ID: routeName}
+	return &MenuItem{Title: title, Href: url, ID: routeName, Icon: "empty-icon"}
 }
 
 // SetID for menu item
@@ -42,6 +43,37 @@ func (item *MenuItem) SetIcon(icon string) *MenuItem {
 func (item *MenuItem) AddChild(child *MenuItem) *MenuItem {
 	item.Submenu = append(item.Submenu, child)
 	return item
+}
+
+func (item *MenuItem) AttachSubmenu(parentID string, submenu []*MenuItem) (attached bool) {
+	if item.ID == parentID {
+		item.Submenu = append(item.Submenu, submenu...)
+		return true
+	}
+	if item.Submenu != nil {
+		for _, subitem := range item.Submenu {
+			if subitem.AttachSubmenu(parentID, submenu) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (item *MenuItem) SetActiveMenu(menuID string) (found bool) {
+	if item.ID == menuID {
+		item.Active = true
+		return true
+	}
+	if item.Submenu != nil {
+		for _, subitem := range item.Submenu {
+			if subitem.SetActiveMenu(menuID) {
+				item.Active = true
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // SetMainMenu - fill MainMenu in BasePageContext
@@ -78,6 +110,17 @@ func SetMainMenu(ctx *BasePageContext) {
 		}
 		if toolsMenu.Submenu != nil {
 			ctx.MainMenu = append(ctx.MainMenu, toolsMenu)
+		}
+	}
+}
+
+func AttachSubmenu(ctx *BasePageContext, parentID string, submenu []*MenuItem) {
+	if ctx.MainMenu == nil {
+		return
+	}
+	for _, subitem := range ctx.MainMenu {
+		if subitem.AttachSubmenu(parentID, submenu) {
+			return
 		}
 	}
 }
