@@ -41,8 +41,8 @@ type mainPageContext struct {
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &mainPageContext{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
-	ctx.SetMenuActive("net-index")
 	app.AttachSubmenu(ctx.BasePageContext, "net", buildLocalMenu())
+	ctx.SetMenuActive("net-index")
 	ctx.Interfaces = monitor.GetInterfacesInfo()
 	app.RenderTemplateStd(w, ctx, "net/status.tmpl")
 }
@@ -119,8 +119,8 @@ func confPageHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(h.ReadCommand(cmdfields[0], cmdfields[1:]...)))
 	} else {
 		ctx := &confPageContext{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
-		ctx.SetMenuActive("conf")
 		app.AttachSubmenu(ctx.BasePageContext, "net", buildLocalMenu())
+		ctx.SetMenuActive("conf")
 		ctx.Current = cmd
 		ctx.Commands = &confCommands
 		ctx.Data = h.ReadCommand(cmdfields[0], cmdfields[1:]...)

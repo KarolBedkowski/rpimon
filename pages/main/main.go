@@ -42,6 +42,7 @@ type pageCtx struct {
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext(
 		"Main", "main", w, r)}
+	ctx.SetMenuActive("main")
 	ctx.Warnings = monitor.GetWarnings()
 	ctx.Uptime = monitor.GetUptimeInfo()
 	ctx.CPUUsage = monitor.GetCPUUsageInfo()
