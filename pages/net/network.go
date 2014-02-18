@@ -199,6 +199,8 @@ func netstat(command string, args ...string) ([][]string, error) {
 		}
 		if len(fields) == 7 {
 			state = fields[5]
+		} else if len(fields) != 6 {
+			continue
 		}
 		result = append(result, []string{
 			fields[0], fields[1], fields[2],
