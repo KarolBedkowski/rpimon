@@ -71,8 +71,9 @@ func subPageHandler(w http.ResponseWriter, r *http.Request) {
 		data.Header1 = "Samba"
 		data.Data = h.ReadCommand("sudo", "smbstatus")
 	case "nfs":
-		data.Header1 = "NFS Stat"
-		data.Data = h.ReadCommand("nfsstat")
+		data.Header1 = "NFS"
+		data.Data = h.ReadCommand("sudo", "exportfs", "-v")
+		data.Data += "\n\n---------------------------\n\n" + h.ReadCommand("nfsstat")
 	}
 	app.RenderTemplateStd(w, data, "data.tmpl")
 }
