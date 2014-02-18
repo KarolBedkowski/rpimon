@@ -4,6 +4,7 @@ package monitor
 import (
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
+	//	l "k.prv/rpimon/helpers/logging"
 	"strings"
 )
 
@@ -75,6 +76,7 @@ func GetWarnings() *WarningsStruct {
 			}
 		*/
 		for port, comment := range conf.MonitoredServices {
+			//l.Debug("checking %v -> %v", port, comment)
 			if checkIsServiceConnected(port) {
 				warnings.Infos = append(warnings.Infos, comment)
 			}
@@ -100,7 +102,7 @@ func checkIsServiceConnected(port string) (result bool) {
 	if out == "" {
 		return
 	}
-	lookingFor := ":" + port + " "
+	lookingFor := ":" + port
 	if !strings.Contains(out, lookingFor) {
 		return false
 	}
@@ -109,10 +111,14 @@ func checkIsServiceConnected(port string) (result bool) {
 		if len(line) == 0 {
 			continue
 		}
-		if !strings.HasSuffix(line, "ESTABLISHED") {
+		if !strings.HasPrefix(line, "tcp ") && !strings.HasPrefix(line, "udp ") {
 			continue
 		}
-		if strings.Contains(line, lookingFor) {
+		fields := strings.Fields(line)
+		if fields[5] != "ESTABLISHED" {
+			continue
+		}
+		if strings.HasSuffix(fields[3], lookingFor) {
 			return true
 		}
 	}
