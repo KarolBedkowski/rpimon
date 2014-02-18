@@ -5,7 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
-	//	l "k.prv/rpimon/helpers/logging"
+	//l "k.prv/rpimon/helpers/logging"
 	"k.prv/rpimon/monitor"
 	"net/http"
 	"strings"
@@ -189,26 +189,25 @@ func netstat(command string, args ...string) ([][]string, error) {
 		if line == "" {
 			continue
 		}
-		fields := strings.Fields(line)
-		laddressDiv := strings.LastIndex(fields[3], ":")
-		faddressDiv := strings.LastIndex(fields[4], ":")
-		var state string
+		if !strings.HasPrefix(line, "tcp ") && !strings.HasPrefix(line, "udp ") {
+			continue
+		}
+		fields := strings.Fields(line[:80])
+		state := fields[5]
 		var pidcmd []string
-		pidcmdfield := fields[len(fields)-1]
+		pidcmdfield := strings.TrimSpace(line[80:])
 		if pidcmdfield == "-" {
 			pidcmd = []string{"", "-"}
 		} else {
 			pidcmd = strings.Split(pidcmdfield, "/")
 		}
-		if len(fields) == 7 {
-			state = fields[5]
-		} else if len(fields) != 6 {
-			continue
-		}
+		//l.Debug("%v, %#v, %#v", line, fields, pidcmd)
+		laddressDiv := strings.Split(fields[3], ":")
+		faddressDiv := strings.Split(fields[4], ":")
 		result = append(result, []string{
 			fields[0], fields[1], fields[2],
-			fields[3][:laddressDiv], fields[3][laddressDiv+1:],
-			fields[4][:faddressDiv], fields[4][faddressDiv+1:],
+			laddressDiv[0], laddressDiv[1],
+			faddressDiv[0], faddressDiv[1],
 			state, pidcmd[0], pidcmd[1],
 		})
 	}
