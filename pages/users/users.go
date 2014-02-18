@@ -17,7 +17,8 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.NewSimpleDataPageCtx(w, r, "Users", "users", "", nil)
 	data.Data = "WHO\n=========\n" + h.ReadCommand("who", "-a", "-H")
 	data.Data += "\n\nW\n=========\n" + h.ReadCommand("w")
-	data.CurrentPage = "Who"
+	data.Header1 = "Users"
+	data.Header2 = "Who"
 	data.SetMenuActive("users")
 	app.RenderTemplateStd(w, data, "data.tmpl")
 }

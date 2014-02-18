@@ -1,185 +1,169 @@
 {{define "body"}}
 
-{{if .Warnings}}
-<div class="">
-	<div class="alert alert-warning">
-		<section>
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h3 class="panel-title">Warning</h3>
-				</div>
-				<div class="panel-body">
-			<ul>
-			{{range .Warnings}}
-				<li>{{.}}</li>
-			{{end}}
-			</ul>
-		</section>
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">System <small>Live view</small></h1>
 	</div>
 </div>
-{{end}}
 
-
-<div class="">
-	<div class="row row-centered">
-		<div class="col-xs-12 col-md-6 col-lg-4">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h3 class="panel-title">Load</h3>
-				</div>
-				<div class="panel-body">
-					<div class="chart-box">
-						<span id="load-chart" class="chart-line-load" data-width="257" data-height="50" data-min="0" data-max="{{.MaxAcceptableLoad}}">0</span>
-					</div>
-				</div>
-				<table class="table-hover table table-condensed table-centered">
-					<thead>
-						<tr>
-							<th>1m</th>
-							<th>5m</th>
-							<th>15m</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td><span id="load-load1"></span></td>
-							<td><span id="load-load5"></span></td>
-							<td><span id="load-load15"></span></td>
-						</tr>
-					</tbody>
-				</table>
+<div class="row row-centered">
+	<div class="col-xs-12 col-md-6 col-lg-4">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Load</h3>
 			</div>
-		</div>
-
-		<div class="col-xs-12 col-md-6 col-lg-4">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h3 class="panel-title">CPU
-						<a href="{{namedurl "process-index"}}"><span class="glyphicon glyphicon-cog"></span></a>
-					</h3>
+			<div class="panel-body">
+				<div class="chart-box">
+					<span id="load-chart" class="chart-line-load" data-width="257" data-height="50" data-min="0" data-max="{{.MaxAcceptableLoad}}">0</span>
 				</div>
-				<div class="panel-body">
-					<div class="chart-box">
-						<span id="cpu-chart" class="chart-line" data-width="257" data-height="50" data-min="0" data-max="100">0</span>
-					</div>
-				</div>
-				<table class="table-hover table table-condensed table-centered">
-					<thead>
-						<tr>
-							<th>User</th>
-							<th>System</th>
-							<th>IO</th>
-							<th>Freq</th>
-							<th>Temp</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td><span id="cpuusage-user"></span>%</td>
-							<td><span id="cpuusage-system"></span>%</td>
-							<td><span id="cpuusage-iowait"></span>%</td>
-							<td><span id="cpuinfo-freq"></span></td>
-							<td><span id="cpuinfo-temp"></span>°C</td>
-						</tr>
-					</tbody>
-				</table>
 			</div>
+			<table class="table-hover table table-condensed table-centered">
+				<thead>
+					<tr>
+						<th>1m</th>
+						<th>5m</th>
+						<th>15m</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><span id="load-load1"></span></td>
+						<td><span id="load-load5"></span></td>
+						<td><span id="load-load15"></span></td>
+					</tr>
+				</tbody>
+			</table>
 		</div>
+	</div>
 
-		<div class="col-xs-12 col-md-6 col-lg-4">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h3 class="panel-title">Memory</h3>
-				</div>
-				<div class="panel-body">
-					<div class="chart-box">
-						<span id="mem-chart" class="chart-line" data-width="257" data-height="50" data-min="0" data-max="100">0</span>
-					</div>
-				</div>
-				<table class="table-hover table table-condensed table-centered">
-					<thead>
-						<tr>
-							<th>User</th>
-							<th>Buffers</th>
-							<th>Cache</th>
-							<th>Swap Used</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td><span id="meminfo-used"></span>%</td>
-							<td><span id="meminfo-buff"></span>%</td>
-							<td><span id="meminfo-cach"></span>%</td>
-							<td><span id="meminfo-swap"></span>%</td>
-						</tr>
-					</tbody>
-				</table>
+	<div class="col-xs-12 col-md-6 col-lg-4">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">CPU
+					<a href="{{namedurl "process-index"}}"><span class="glyphicon glyphicon-cog"></span></a>
+				</h3>
 			</div>
-		</div>
-
-		<div class="col-xs-12 col-md-6 col-lg-4">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h3 class="panel-title">Mount
-						<a href="{{namedurl "storage-index"}}"><span class="glyphicon glyphicon-cog"></span></a>
-					</h3>
+			<div class="panel-body">
+				<div class="chart-box">
+					<span id="cpu-chart" class="chart-line" data-width="257" data-height="50" data-min="0" data-max="100">0</span>
 				</div>
-				<table class="table-hover table table-condensed">
-					<thead>
-						<tr>
-							<th>Filesystem</th>
-							<th colspan="2">Used</th>
-						</tr>
-					</thead>
-					<tbody id="fs-table">
-					</tbody>
-				</table>
 			</div>
+			<table class="table-hover table table-condensed table-centered">
+				<thead>
+					<tr>
+						<th>User</th>
+						<th>System</th>
+						<th>IO</th>
+						<th>Freq</th>
+						<th>Temp</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><span id="cpuusage-user"></span>%</td>
+						<td><span id="cpuusage-system"></span>%</td>
+						<td><span id="cpuusage-iowait"></span>%</td>
+						<td><span id="cpuinfo-freq"></span></td>
+						<td><span id="cpuinfo-temp"></span>°C</td>
+					</tr>
+				</tbody>
+			</table>
 		</div>
+	</div>
 
-		<div class="col-xs-12 col-md-6 col-lg-4">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h3 class="panel-title">Network interfaces
-						<a href="{{namedurl "net-index"}}"><span class="glyphicon glyphicon-cog"></span></a>
-					</h3>
-				</div>
-				<div class="chart-box-half" title="Output">
-					<span id="net-out-chart" class="chart-line" data-width="257" data-height="25" data-min="0" data-colour="#b0ffb0" data-stroke-colour="green">0</span>
-				</div>
-				<div class="chart-box-half" title="Input">
-					<span id="net-in-chart" class="chart-line" data-width="257" data-height="25" data-min="0">0</span>
-				</div>
-				<table class="table-hover table table-condensed table-centered">
-					<thead>
-						<tr><th>Download</th><th>Upload</th></tr>
-					</thead>
-					<tbody>
-						<tr><td id="network-download">&nbsp;</td><td id="network-upload">&nbsp;</td></tr>
-					</tbody>
-				</table>
-				<table class="table-hover table table-condensed">
-					<thead>
-						<tr>
-							<th>Interface</th>
-							<th>IP</th>
-						</tr>
-					</thead>
-					<tbody id="network-interfaces-table">
-					</tbody>
-				</table>
+	<div class="col-xs-12 col-md-6 col-lg-4">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Memory</h3>
 			</div>
+			<div class="panel-body">
+				<div class="chart-box">
+					<span id="mem-chart" class="chart-line" data-width="257" data-height="50" data-min="0" data-max="100">0</span>
+				</div>
+			</div>
+			<table class="table-hover table table-condensed table-centered">
+				<thead>
+					<tr>
+						<th>User</th>
+						<th>Buffers</th>
+						<th>Cache</th>
+						<th>Swap Used</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><span id="meminfo-used"></span>%</td>
+						<td><span id="meminfo-buff"></span>%</td>
+						<td><span id="meminfo-cach"></span>%</td>
+						<td><span id="meminfo-swap"></span>%</td>
+					</tr>
+				</tbody>
+			</table>
 		</div>
+	</div>
 
-		<div class="col-xs-12 col-md-6 col-lg-4">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h3 class="panel-title">Other</h3>
-				</div>
-				<div class="panel-body">
-					<p><label>Users:</label> <span id="uptime-users"></span></p>
-					<p><label>Uptime:</label> <span id="uptime-uptime"></span></p>
-				</div>
+	<div class="col-xs-12 col-md-6 col-lg-4">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Mount
+					<a href="{{namedurl "storage-index"}}"><span class="glyphicon glyphicon-cog"></span></a>
+				</h3>
+			</div>
+			<table class="table-hover table table-condensed">
+				<thead>
+					<tr>
+						<th>Filesystem</th>
+						<th colspan="2">Used</th>
+					</tr>
+				</thead>
+				<tbody id="fs-table">
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<div class="col-xs-12 col-md-6 col-lg-4">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Network interfaces
+					<a href="{{namedurl "net-index"}}"><span class="glyphicon glyphicon-cog"></span></a>
+				</h3>
+			</div>
+			<div class="chart-box-half" title="Output">
+				<span id="net-out-chart" class="chart-line" data-width="257" data-height="25" data-min="0" data-colour="#b0ffb0" data-stroke-colour="green">0</span>
+			</div>
+			<div class="chart-box-half" title="Input">
+				<span id="net-in-chart" class="chart-line" data-width="257" data-height="25" data-min="0">0</span>
+			</div>
+			<table class="table-hover table table-condensed table-centered">
+				<thead>
+					<tr><th>Download</th><th>Upload</th></tr>
+				</thead>
+				<tbody>
+					<tr><td id="network-download">&nbsp;</td><td id="network-upload">&nbsp;</td></tr>
+				</tbody>
+			</table>
+			<table class="table-hover table table-condensed">
+				<thead>
+					<tr>
+						<th>Interface</th>
+						<th>IP</th>
+					</tr>
+				</thead>
+				<tbody id="network-interfaces-table">
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<div class="col-xs-12 col-md-6 col-lg-4">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Other</h3>
+			</div>
+			<div class="panel-body">
+				<p><label>Users:</label> <span id="uptime-users"></span></p>
+				<p><label>Uptime:</label> <span id="uptime-uptime"></span></p>
 			</div>
 		</div>
 	</div>

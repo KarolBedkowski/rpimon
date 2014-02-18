@@ -1,21 +1,30 @@
 {{define "body"}}
 {{$ctx := .}}
-<div class="container-fluid">
-	<form class="form-inline" role="form">
-		<div class="form-group">
-			<label for="table">Table: </label>
-			<select id="table" style="margin-right: 1em; margin-left: 0.5em;">
-			{{range .Tables}}
-				<option value="{{.}}" {{if eq $ctx.Current .}}selected="selected"{{end}}>{{.}}</option>
-			{{end}}
-			</select>
-			<a href="#" title="Reload" id="reload"><span class="glyphicon glyphicon-refresh"></span></a>
-		</div>
-	</form>
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">IPtables</h1>
+	</div>
+</div>
+<div class="row">
+	<div class="col-lg-12">
+		<form class="form-inline" role="form">
+			<div class="form-group">
+				<label for="table">Table: </label>
+				<select id="table" style="margin-right: 1em; margin-left: 0.5em;">
+				{{range .Tables}}
+					<option value="{{.}}" {{if eq $ctx.Current .}}selected="selected"{{end}}>{{.}}</option>
+				{{end}}
+				</select>
+				<a href="#" title="Reload" id="reload"><span class="glyphicon glyphicon-refresh"></span></a>
+			</div>
+		</form>
+	</div>
 </div>
 
-<div class="container-fluid">
-	<pre id="data">{{.Data}}</pre>
+<div class="row">
+	<div class="col-lg-12">
+		<pre id="data">{{.Data}}</pre>
+	</div>
 </div>
 {{end}}
 

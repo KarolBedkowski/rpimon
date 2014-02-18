@@ -1,14 +1,23 @@
 {{define "body"}}
-<div class="container-fluid">
-	<h1>Utils</h1>
-	{{range $key, $elements := .Configuration.Utils}}
-	<h2>{{$key}}</h2>
-	<ul>
-		{{range $idx, $ele := $elements}}
-		<li><a href="/utils/{{$key | urlquery}}/{{$idx | urlquery}}" onclick="return RPI.confirm()">{{$ele.Name}}</a></li>
-		{{end}}
-	</ul>
-	{{end}}
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">Utilities</h1>
+		</h1>
+	</div>
+</div>
+<div class="row">
+{{range $key, $elements := .Configuration.Utils}}
+	<div class="col-lg-4">
+		<div class="panel panel-default">
+			<div class="panel-heading"> {{$key}} </div>
+			<div class="list-group">
+			{{range $idx, $ele := $elements}}
+				<a href="/utils/{{$key | urlquery}}/{{$idx | urlquery}}" onclick="return RPI.confirm()" class="list-group-item">{{$ele.Name}}</a>
+			{{end}}
+			</div>
+		</div>
+	</div>
+{{end}}
 </div>
 
 {{end}}

@@ -1,58 +1,61 @@
 {{define "body"}}
 {{$ctx := . }}
-<div class="container-fluid">
-	<div class="row row-centered">
-		<div class="col-xs-12">
-			<form method="post" class="form-inline" role="form">
-				<div class="form-group">
-					<label for="form-field">Field</label>
-					<select name="Form.Field" id="form-field">
-						<option value="any">Any</option>
-						<option value="artist">Artist</option>
-						<option value="albumartist">Album artist</option>
-						<option value="title">Title</option>
-						<option value="album">Album</option>
-						<option value="track">Track</option>
-						<option value="genre">Genre</option>
-						<option value="filename">File name</option>
-					</select>
-				</div>
-				<div class="form-group">
-					<label for="form-value">Value</label>
-					<input type="text" name="Form.Value" id="form-any" class="form-control" placeholder="Value" value="{{.Form.Value}}" required />
-				</div>
-				<div class="form-group">
-					<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
-					<button type="submit" class="btn btn-primary" data-loading-text="Searching..">Search</button>
-				</div>
-			</form>
-		</div>
-		<div class="col-xs-12">
-			<table class="table table-hover table-bordered table-condensed" id="table-files-browser">
-				<thead>
-					<tr>
-						<th>Title</th>
-						<th>Artist</th>
-						<th>Track</th>
-						<th>Album</th>
-						<th width="48px">A.</th>
-					</tr>
-				</thead>
-				<tbody>
-					{{range .Result}}
-					<tr data-uri="{{.file}}">
-						<td>{{.Title}}</td>
-						<td>{{.Artist}}</td>
-						<td>{{.Track}}</td>
-						<td>{{.Album}}</td>
-						<td>
-							<a href="#" class="add-file-action"><span class="glyphicon glyphicon-plus" title="Add"></span></a>
-							<a href="#" class="info-file-action"><span class="glyphicon glyphicon-info-sign" title="Info"></a>
-						</td>
-					{{end}}
-				</tbody>
-			</table>
-		</div>
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">MPD <small>Search</small></h1>
+	</div>
+</div>
+<div class="row row-centered">
+	<div class="col-xs-12">
+		<form method="post" class="form-inline" role="form">
+			<div class="form-group">
+				<label for="form-field">Field</label>
+				<select name="Form.Field" id="form-field">
+					<option value="any">Any</option>
+					<option value="artist">Artist</option>
+					<option value="albumartist">Album artist</option>
+					<option value="title">Title</option>
+					<option value="album">Album</option>
+					<option value="track">Track</option>
+					<option value="genre">Genre</option>
+					<option value="filename">File name</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="form-value">Value</label>
+				<input type="text" name="Form.Value" id="form-any" class="form-control" placeholder="Value" value="{{.Form.Value}}" required />
+			</div>
+			<div class="form-group">
+				<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
+				<button type="submit" class="btn btn-primary" data-loading-text="Searching..">Search</button>
+			</div>
+		</form>
+	</div>
+	<div class="col-xs-12">
+		<table class="table table-hover table-bordered table-condensed" id="table-files-browser">
+			<thead>
+				<tr>
+					<th>Title</th>
+					<th>Artist</th>
+					<th>Track</th>
+					<th>Album</th>
+					<th width="48px">A.</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{range .Result}}
+				<tr data-uri="{{.file}}">
+					<td>{{.Title}}</td>
+					<td>{{.Artist}}</td>
+					<td>{{.Track}}</td>
+					<td>{{.Album}}</td>
+					<td>
+						<a href="#" class="add-file-action"><span class="glyphicon glyphicon-plus" title="Add"></span></a>
+						<a href="#" class="info-file-action"><span class="glyphicon glyphicon-info-sign" title="Info"></a>
+					</td>
+				{{end}}
+			</tbody>
+		</table>
 	</div>
 </div>
 {{end}}

@@ -1,40 +1,43 @@
 {{define "body"}}
 
 {{if .Header1}}
-<div class="container-fluid">
-	<h1>{{.Header1}}</h1>
-	{{if .Header2}}
-	<h2>{{.Header1}}</h2>
-	{{end}}
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">{{.Header1}}{{if .Header2}} <small>{{.Header2}}</small>{{end}}</h1>
+	</div>
 </div>
 {{end}}
 
 {{if .Data}}
-<div class="container-fluid">
-	<pre>{{.Data}}</pre>
+<div class="row">
+	<div class="col-lg-12">
+		<pre>{{.Data}}</pre>
+	</div>
 </div>
 {{end}}
 
 {{if .TData}}
-<div class="container-fluid">
-	<table class="table-hover table-bordered table-condensed" id="table-services">
-		<thead>
-			<tr>
-				{{range .THead}}<th>{{.}}</th>{{end}}
-				<th>A.</th>
-			</tr>
-		</thead>
-		<tbody>
-		{{range .TData}}
-			<tr data-pid="{{index . 0}}">{{range .}}<td>{{.}}</td>{{end}}
-			<td>
-				<a href="#" data-action="stop" class="action" title="Stop"><span class="glyphicon glyphicon-off"></span></a>
-				<a href="#" data-action="kill" class="action" title="Kill"><span class="glyphicon glyphicon-remove-circle"></span></a>
-			</td>
-			</tr>
-		{{end}}
-		</tbody>
-	</table>
+<div class="row">
+	<div class="col-lg-12">
+		<table class="table-hover table-bordered table-condensed" id="table-services">
+			<thead>
+				<tr>
+					{{range .THead}}<th>{{.}}</th>{{end}}
+					<th>A.</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{range .TData}}
+				<tr data-pid="{{index . 0}}">{{range .}}<td>{{.}}</td>{{end}}
+				<td>
+					<a href="#" data-action="stop" class="action" title="Stop"><span class="glyphicon glyphicon-off"></span></a>
+					<a href="#" data-action="kill" class="action" title="Kill"><span class="glyphicon glyphicon-remove-circle"></span></a>
+				</td>
+				</tr>
+			{{end}}
+			</tbody>
+		</table>
+	</div>
 </div>
 {{end}}
 {{end}}

@@ -1,31 +1,46 @@
 {{define "body"}}
 
-<div class="container-fluid">
-	<div class="alert alert-danger" id="main-alert" style="display: none;">
-		<p>Error loading playlist: <em id="main-alert-error"></em></p>
-		<a href="#" class="alert-link" onclick="location.reload()">Reload</a>
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">MPD <small>Playlist</small></h1>
 	</div>
 </div>
 
-<div class="container-fluid playlist-data">
-	<table class="table table-hover table-bordered table-condensed" id="table-mpd-playlist">
-		<thead>
-			<tr>
-				<th>
-					<div class="row">
-						<span class="col-title col-sm-6 col-xs-12 col-md-5">Title</span>
-						<span class="col-artist col-sm-6 col-xs-12 col-md-3">Artist</span>
-						<span class="col-track col-sm-2 col-xs-3 col-md-1">Track</span>
-						<span class="col-album col-sm-10 col-xs-9 col-md-3">Album</span>
-					</div>
-				</th>
-				<th style="max-width: 50px"></th>
-			</tr>
-		</thead>
-		<tbody id="playlist-tbody">
-		</tbody>
-	</table>
-	<p>
+<div class="row">
+	<div class="col-lg-12">
+		<div class="alert alert-danger" id="main-alert" style="display: none;">
+			<p>Error loading playlist: <em id="main-alert-error"></em></p>
+			<a href="#" class="alert-link" onclick="location.reload()">Reload</a>
+		</div>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-lg-12">
+		<div class="playlist-data">
+			<table class="table table-hover table-bordered table-condensed" id="table-mpd-playlist">
+				<thead>
+					<tr>
+						<th>
+							<div class="row">
+								<span class="col-title col-sm-6 col-xs-12 col-md-5">Title</span>
+								<span class="col-artist col-sm-6 col-xs-12 col-md-3">Artist</span>
+								<span class="col-track col-sm-2 col-xs-3 col-md-1">Track</span>
+								<span class="col-album col-sm-10 col-xs-9 col-md-3">Album</span>
+							</div>
+						</th>
+						<th style="max-width: 50px"></th>
+					</tr>
+				</thead>
+				<tbody id="playlist-tbody">
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-lg-12">
 		<a class="btn btn-default btn-sm" href="#" onclick="MPD.plist.gotoCurrentSong()">
 			<span class="glyphicon glyphicon-share-alt"></span>&nbsp;Go to current</a>
 		<a class="btn btn-danger btn-sm" href="{{namedurl "mpd-pl-action" "action" "clear"}}" onclick="return RPI.confirm()">
@@ -34,7 +49,7 @@
 			<span class="glyphicon glyphicon-save"></span>&nbsp;Save playlist</button>
 		<button class="btn btn-default btn-sm" data-toggle="modal" data-target="#add-custom-dlg">
 			<span class="glyphicon glyphicon-plus"></span>&nbsp;Add custom URL</button>
-	</p>
+	</div>
 </div>
 
 <div class="modal fade" id="save-playlist-dlg" tabindex="-1" role="dialog" aria-labelledby="save-playlist-dlg-label" aria-hidden="true">

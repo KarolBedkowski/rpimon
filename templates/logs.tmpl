@@ -1,40 +1,51 @@
 {{define "body"}}
 {{$ctx := .}}
-<div class="container-fluid">
-	<form class="form-inline" role="form">
-		{{if .Logs}}
-		<div class="form-group">
-			<label for="log-select">Log: </label>
-			<select id="log-select" style="margin-right: 1em; margin-left: 0.5em;">
-			{{range .Logs}}
-				<option value="{{.}}" {{if eq $ctx.LogsDef.Name .}}selected="selected"{{end}}>{{.}}</option>
-			{{end}}
-			</select>
-		</div>
-		{{end}}
-		{{if .Files}}
-		<div class="form-group">
-			<label for="file-select">File: </label>
-			<select id="file-select" style="margin-right: 1em; margin-left: 0.5em;">
-			{{range .Files}}
-				<option value="{{.}}">{{.}}</option>
-			{{end}}
-			</select>
-		</div>
-		<div class="form-group">
-			<label for="log-maxlines">Max lines: </label>
-			<select id="log-maxlines" style="margin-right: 1em; margin-left: 0.5em;">
-				<option value="100">100</option>
-				<option value="500">500</option>
-				<option value="-1">All</option>
-			</select>
-		</div>
-		{{end}}
-	</form>
+
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">Logs <small>{{.CurrentPage}}</small></h1>
+	</div>
 </div>
 
-<div class="container-fluid">
-	<pre id="data">{{.Data}}</pre>
+<div class="row">
+	<div class="col-lg-12">
+		<form class="form-inline" role="form">
+			{{if .Logs}}
+			<div class="form-group">
+				<label for="log-select">Log: </label>
+				<select id="log-select" style="margin-right: 1em; margin-left: 0.5em;">
+				{{range .Logs}}
+					<option value="{{.}}" {{if eq $ctx.LogsDef.Name .}}selected="selected"{{end}}>{{.}}</option>
+				{{end}}
+				</select>
+			</div>
+			{{end}}
+			{{if .Files}}
+			<div class="form-group">
+				<label for="file-select">File: </label>
+				<select id="file-select" style="margin-right: 1em; margin-left: 0.5em;">
+				{{range .Files}}
+					<option value="{{.}}">{{.}}</option>
+				{{end}}
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="log-maxlines">Max lines: </label>
+				<select id="log-maxlines" style="margin-right: 1em; margin-left: 0.5em;">
+					<option value="100">100</option>
+					<option value="500">500</option>
+					<option value="-1">All</option>
+				</select>
+			</div>
+			{{end}}
+		</form>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-lg-12">
+		<pre id="data">{{.Data}}</pre>
+	</div>
 </div>
 {{end}}
 

@@ -36,6 +36,8 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := newPageCtx(w, r, page, "")
 	switch page {
 	case "devices":
+		ctx.Header1 = "Storage"
+		ctx.Header2 = "Devices"
 		ctx.Data = h.ReadCommand("lsblk")
 	default:
 		http.Error(w, "invalid request", http.StatusBadRequest)
@@ -65,6 +67,8 @@ func mountPageHandler(w http.ResponseWriter, r *http.Request) {
 		SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", buildLocalMenu()),
 	}
 	ctx.SetMenuActive("mount")
+	ctx.Header1 = "Storage"
+	ctx.Header2 = "Mount"
 	ctx.Data = h.ReadCommand("mount")
 	ctx.Mounted = mountCmdToMountPoints(ctx.Data)
 	app.RenderTemplateStd(w, ctx, "storage/storage.tmpl")
@@ -102,6 +106,8 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 func dfPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", "storage", buildLocalMenu())
 	ctx.SetMenuActive("diskfree")
+	ctx.Header1 = "Storage"
+	ctx.Header2 = "diskfree"
 	ctx.TData = make([][]string, 0)
 	ctx.THead = []string{"Filesystem", "Size", "Used", "Available", "Used %", "Mounted on"}
 	lines := strings.Split(h.ReadCommand("df"), "\n")

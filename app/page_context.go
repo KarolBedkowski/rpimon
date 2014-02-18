@@ -122,10 +122,9 @@ func (ctx *BasePageContext) SetMenuActive(id string) {
 // SimpleDataPageCtx - context  with data (string) + title
 type SimpleDataPageCtx struct {
 	*BasePageContext
-	CurrentPage string
-	Data        string
-	Header1     string
-	Header2     string
+	Data    string
+	Header1 string
+	Header2 string
 
 	THead []string
 	TData [][]string

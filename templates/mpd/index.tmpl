@@ -1,116 +1,142 @@
 {{define "body"}}
 
-<div class="container-fluid">
-	<div class="alert alert-danger" id="main-alert" style="display: none;">
-		<p>Error loading data: <em id="main-alert-error"></em></p>
-		<a href="#" class="alert-link" onclick="location.reload()">Reload</a>
+<div class="row">
+	<div class="col-lg-12">
+		<div class="alert alert-danger" id="main-alert" style="display: none;">
+			<p>Error loading data: <em id="main-alert-error"></em></p>
+			<a href="#" class="alert-link" onclick="location.reload()">Reload</a>
+		</div>
 	</div>
 </div>
 
-<div class="container-fluid mpd-info-section center-block" id="song-box">
-	<div id="curr-name"></div>
-	<div id="curr-artist"></div>
-	<div id="track-info">
-		<span id="curr-track"></span>
-		&nbsp;
-		<span id="curr-title"></span>
-	</div>
-	<div id="album-info">
-		<span id="curr-date"></span>
-		&nbsp;
-		<span id="curr-album"></span>
-	</div>
-	<div id="curr-genre"></div>
-</div>
-
-<div class="container-fluid mpd-buttons-sect">
-	<div class="btn-group">
-		<a class="btn ui-state-default ajax-action" href="#" data-action="prev" role="button">
-			<span class="glyphicon glyphicon-step-backward"></span><br/>
-			<span class="button-label">prev</span>
-		</a>
-		<a class="btn ui-state-default ajax-action" href="#" data-action="play" role="button">
-			<span class="glyphicon glyphicon-play"></span><br/>
-			<span class="button-label">play</span>
-		</a>
-		<a class="btn ui-state-default ajax-action" href="#" data-action="pause"role="button">
-			<span class="glyphicon glyphicon-pause"></span><br/>
-			<span class="button-label">pause</span>
-		</a>
-		<a class="btn ui-state-default ajax-action" href="#" data-action="stop" role="button">
-			<span class="glyphicon glyphicon-stop"></span><br/>
-			<span class="button-label">stop</span>
-		</a>
-		<a class="btn ui-state-default ajax-action" href="#" data-action="next" role="button">
-			<span class="glyphicon glyphicon-step-forward"></span><br/>
-			<span class="button-label">next</span>
-		</a>
+<div class="row">
+	<div class="col-lg-12">
+		<div class="mpd-info-section center-block" id="song-box">
+			<div id="curr-name"></div>
+			<div id="curr-artist"></div>
+			<div id="track-info">
+				<span id="curr-track"></span>
+				&nbsp;
+				<span id="curr-title"></span>
+			</div>
+			<div id="album-info">
+				<span id="curr-date"></span>
+				&nbsp;
+				<span id="curr-album"></span>
+			</div>
+			<div id="curr-genre"></div>
+		</div>
 	</div>
 </div>
 
-<div class="container-fluid mpd-info-section" id="mpd-sliders-pos">
-	<div id="pos-info">
-		<div id="pos-info-time">
-			<span id="st-time">&nbsp;</span>
-			<span id="curr-time">&nbsp;</span>
+<div class="row">
+	<div class="col-lg-12">
+		<div class="mpd-buttons-sect">
+			<div class="btn-group">
+				<a class="btn ui-state-default ajax-action" href="#" data-action="prev" role="button">
+					<span class="glyphicon glyphicon-step-backward"></span><br/>
+					<span class="button-label">prev</span>
+				</a>
+				<a class="btn ui-state-default ajax-action" href="#" data-action="play" role="button">
+					<span class="glyphicon glyphicon-play"></span><br/>
+					<span class="button-label">play</span>
+				</a>
+				<a class="btn ui-state-default ajax-action" href="#" data-action="pause"role="button">
+					<span class="glyphicon glyphicon-pause"></span><br/>
+					<span class="button-label">pause</span>
+				</a>
+				<a class="btn ui-state-default ajax-action" href="#" data-action="stop" role="button">
+					<span class="glyphicon glyphicon-stop"></span><br/>
+					<span class="button-label">stop</span>
+				</a>
+				<a class="btn ui-state-default ajax-action" href="#" data-action="next" role="button">
+					<span class="glyphicon glyphicon-step-forward"></span><br/>
+					<span class="button-label">next</span>
+				</a>
+			</div>
 		</div>
-		<div style="clear:both;"></div>
-		<div id="slider-song-pos"></div>
 	</div>
 </div>
 
-<div class="container-fluid mpd-info-section" id="mpd-sliders-vol">
-	<div id="volume">
-		<div id="info">
-			<div id="volume-label"><label for="st-voliume">Volume&nbsp;</label></div>
-			<div id="st-volume">&nbsp;</div>
+<div class="row">
+	<div class="col-lg-12">
+		<div class="mpd-info-section" id="mpd-sliders-pos">
+			<div id="pos-info">
+				<div id="pos-info-time">
+					<span id="st-time">&nbsp;</span>
+					<span id="curr-time">&nbsp;</span>
+				</div>
+				<div style="clear:both;"></div>
+				<div id="slider-song-pos"></div>
+			</div>
 		</div>
-		<div style="clear:both;"></div>
-		<div id="slider-volume"></div>
 	</div>
 </div>
 
-<div class="container-fluid mpd-buttons-sect">
-	<div class="btn-group">
-		<a class="btn ui-state-default ajax-action" href="#" data-action="toggle_random">
-			<span class="glyphicon glyphicon-random"></span><br/>
-			<span class="button-label">&nbsp</span>
-		</a>
-		<a class="btn ui-state-default ajax-action" href="#" data-action="toggle_repeat">
-			<span class="glyphicon glyphicon-repeat"></span><br/>
-			<span class="button-label">&nbsp</span>
-		</a>
+<div class="row">
+	<div class="col-lg-12">
+		<div class="mpd-info-section" id="mpd-sliders-vol">
+			<div id="volume">
+				<div id="info">
+					<div id="volume-label"><label for="st-voliume">Volume&nbsp;</label></div>
+					<div id="st-volume">&nbsp;</div>
+				</div>
+				<div style="clear:both;"></div>
+				<div id="slider-volume"></div>
+			</div>
+		</div>
 	</div>
 </div>
 
-<div class="container-fluid mpd-info-section" id="songinfo-box">
-	<div id="additional-info">
-		<div>
-			<label for="curr-file">File:</label>
-			<span id="curr-file"></span>
-			<a href="#" id="action-info"><span class="glyphicon glyphicon-info-sign" title="Info"></span> Info</a>
-			&nbsp;
-			<a href="#" class="ajax-action" data-action="add_to_notes">	<span class="glyphicon glyphicon-save"></span> Add to notes</a>
+<div class="row">
+	<div class="col-lg-12">
+		<div class="mpd-buttons-sect">
+			<div class="btn-group">
+				<a class="btn ui-state-default ajax-action" href="#" data-action="toggle_random">
+					<span class="glyphicon glyphicon-random"></span><br/>
+					<span class="button-label">&nbsp</span>
+				</a>
+				<a class="btn ui-state-default ajax-action" href="#" data-action="toggle_repeat">
+					<span class="glyphicon glyphicon-repeat"></span><br/>
+					<span class="button-label">&nbsp</span>
+				</a>
+			</div>
 		</div>
-		<div>
-			<label for="st-audio">Audio:</label>
-			<span id="st-audio">&nbsp;</span>
-		</div>
-		<div>
-			<label for="st-bitrate">Bitrate:</label>
-			<span id="st-bitrate">&nbsp;</span>
-		</div>
-		<div>
-			<label for="st-playlistlength">Playlist length:</label>
-			<span id="st-playlistlength">&nbsp;</span>
-		</div>
-		<div>
-			<label for="st-state">State:</label>
-			<span id="st-state">&nbsp;</span>
-		</div>
-		<div>
-			<label for="st-error">Error:</label>
-			<span id="st-error">&nbsp;</span>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-lg-12">
+		<div class="mpd-info-section" id="songinfo-box">
+			<div id="additional-info">
+				<div>
+					<label for="curr-file">File:</label>
+					<span id="curr-file"></span>
+					<a href="#" id="action-info"><span class="glyphicon glyphicon-info-sign" title="Info"></span> Info</a>
+					&nbsp;
+					<a href="#" class="ajax-action" data-action="add_to_notes">	<span class="glyphicon glyphicon-save"></span> Add to notes</a>
+				</div>
+				<div>
+					<label for="st-audio">Audio:</label>
+					<span id="st-audio">&nbsp;</span>
+				</div>
+				<div>
+					<label for="st-bitrate">Bitrate:</label>
+					<span id="st-bitrate">&nbsp;</span>
+				</div>
+				<div>
+					<label for="st-playlistlength">Playlist length:</label>
+					<span id="st-playlistlength">&nbsp;</span>
+				</div>
+				<div>
+					<label for="st-state">State:</label>
+					<span id="st-state">&nbsp;</span>
+				</div>
+				<div>
+					<label for="st-error">Error:</label>
+					<span id="st-error">&nbsp;</span>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

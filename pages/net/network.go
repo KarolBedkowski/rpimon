@@ -58,15 +58,21 @@ func subPageHandler(w http.ResponseWriter, r *http.Request) {
 	data.SetMenuActive(page)
 	switch page {
 	case "netstat":
+		data.Header1 = "Netstat"
+		data.Header2 = "Listen"
 		data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
 		data.TData, _ = netstat("sudo", "netstat", "-lpn", "--inet", "--inet6")
 	case "connenctions":
+		data.Header1 = "Netstat"
+		data.Header2 = "Connections"
 		data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
 		data.TData, _ = netstat("sudo", "netstat", "-pn", "--inet", "--inet6")
 	case "samba":
+		data.Header1 = "Samba"
 		data.Data = h.ReadCommand("sudo", "smbstatus")
 	case "nfs":
-		data.Data = h.ReadCommand("nfsstat", "-s")
+		data.Header1 = "NFS Stat"
+		data.Data = h.ReadCommand("nfsstat")
 	}
 	app.RenderTemplateStd(w, data, "data.tmpl")
 }
@@ -160,8 +166,8 @@ func iptablesPageHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(data))
 	} else {
 		ctx := &iptablesPageContext{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
-		ctx.SetMenuActive("iptables")
 		app.AttachSubmenu(ctx.BasePageContext, "net", buildLocalMenu())
+		ctx.SetMenuActive("iptables")
 		ctx.Current = table
 		ctx.Tables = &iptablesTables
 		ctx.Data = data
