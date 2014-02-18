@@ -157,8 +157,8 @@ footer {
 	border-top: 1px solid #e5e5e5;
 }
 
-.row div.col-xs-12 {
-	margin-bottom: 20px;
+.row div {
+	margin-bottom: 10px;
 }
 
 div.pager input {
@@ -270,9 +270,20 @@ div#loading-box p {
 	overflow: none;
 	z-index: 1100;
 	position:  absolute;
-	margin-left: 5%;
-	margin-right: 5%;
-	width: 90%;
+	padding-left: 20px;
+	padding-right: 20px;
+	margin-right: 0;
+	margin-left: 0;
+	width: 100%;
+	display: block-inline;
+}
+
+@media(min-width:768px) {
+	#flash-container {
+		margin-left: -250px;
+		padding-left: 100px;
+		padding-right: 100px;
+	}
 }
 
 .panel-heading .panel-title a {
@@ -281,7 +292,6 @@ div#loading-box p {
 }
 
 #page-wrapper {
-	padding-top: 10px;
 }
 
 .empty-icon {

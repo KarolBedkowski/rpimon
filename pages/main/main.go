@@ -22,6 +22,9 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/serv/status",
 		app.VerifyPermission(statusServHandler, "admin")).Name(
 		"main-serv-status")
+	subRouter.HandleFunc("/serv/alerts",
+		app.VerifyPermission(alertsServHandler, "admin")).Name(
+		"main-serv-alerts")
 }
 
 type pageCtx struct {
@@ -99,4 +102,12 @@ func statusServHandler(w http.ResponseWriter, r *http.Request) {
 	}).([]byte)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(data)
+}
+
+func alertsServHandler(w http.ResponseWriter, r *http.Request) {
+	data := make(map[string]interface{})
+	data["warnings"] = monitor.GetWarnings()
+	encoded, _ := json.Marshal(data)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(encoded)
 }
