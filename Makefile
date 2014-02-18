@@ -49,6 +49,8 @@ build_static:
 	if [ ! -e .stamp ]; then touch -t 200001010000 .stamp; fi
 	# copy dir structure
 	find static -type d -exec mkdir -p -- dist/{} ';'
+	# copy non-js and non-css files
+	find static -type f ! -name *.js ! -name *.css -exec cp {} dist/{} ';'
 	# minify updated css
 	find static -name *.css -newer .stamp -print -exec yui-compressor -v -o "./dist/{}" "{}" ';' 
 	# minify updated js
