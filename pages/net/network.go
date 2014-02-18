@@ -88,6 +88,8 @@ var confCommands = []string{
 	"ifconfig",
 	"route -n",
 	"arp -n",
+	"cat /etc/hosts",
+	"cat /etc/resolv.conf",
 	"ip link",
 	"ip addr",
 	"ip addrlabel",
