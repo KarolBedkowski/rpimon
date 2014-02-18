@@ -2,8 +2,8 @@
 package monitor
 
 import (
+	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
-	"runtime"
 	"strings"
 )
 
@@ -17,28 +17,31 @@ type WarningsStruct struct {
 
 const warningsCacheTTL = 5
 
-var maxAcceptableLoad = float64(runtime.NumCPU() * 2)
-
 var warningsCache = h.NewSimpleCache(warningsCacheTTL)
 
 // GetWarnings return current warnings to show
 func GetWarnings() *WarningsStruct {
 	result := warningsCache.Get(func() h.Value {
+		conf := app.Configuration.Monitor
 		warnings := &WarningsStruct{}
 		// high load
 		if lastLoadInfo != nil {
-			if lastLoadInfo.Load5 > maxAcceptableLoad*2 {
+			if lastLoadInfo.Load5 > conf.LoadError {
 				warnings.Errors = append(warnings.Errors, "Critical system Load")
-			} else if lastLoadInfo.Load5 > maxAcceptableLoad {
+			} else if lastLoadInfo.Load5 > conf.LoadWarning {
 				warnings.Warnings = append(warnings.Warnings, "High system Load")
 			}
 		}
 		// low mem
-		if lastMemInfo != nil && lastMemInfo.UsedPerc > 90 {
-			if lastMemInfo.SwapFreePerc < 25 {
-				warnings.Errors = append(warnings.Errors, "CRITICAL memory ussage")
-			} else {
-				warnings.Warnings = append(warnings.Warnings, "High memory ussage")
+		if lastMemInfo != nil {
+			if lastMemInfo.UsedPerc > conf.RamUsageWarning {
+				if lastMemInfo.SwapFreePerc < 100-conf.SwapUsageWarning {
+					warnings.Errors = append(warnings.Errors, "CRITICAL RAM/SWAP ussage")
+				} else {
+					warnings.Warnings = append(warnings.Warnings, "High memory ussage")
+				}
+			} else if lastMemInfo.SwapFreePerc < 100-conf.SwapUsageWarning {
+				warnings.Warnings = append(warnings.Warnings, "High SWAP ussage")
 			}
 		}
 		// filesystems
@@ -46,28 +49,35 @@ func GetWarnings() *WarningsStruct {
 			if fsinfo.Size == "0" {
 				continue
 			}
-			if fsinfo.FreePerc < 5 {
+			if fsinfo.FreePerc < conf.DefaultFSUsageError {
 				warnings.Errors = append(warnings.Errors, "Low free space on "+fsinfo.Name)
-			} else if fsinfo.FreePerc < 10 {
+			} else if fsinfo.FreePerc < conf.DefaultFSUsageWarning {
 				warnings.Warnings = append(warnings.Warnings, "Low free space on "+fsinfo.Name)
 			}
 		}
 		// cpu temp
 		cputemp := GetCPUInfo().Temp
-		if cputemp > 80 {
+		if cputemp > conf.CPUTempError {
 			warnings.Errors = append(warnings.Errors, "Critical CPU temperature")
-		} else if cputemp > 60 {
+		} else if cputemp > conf.CPUTempWarning {
 			warnings.Warnings = append(warnings.Warnings, "High CPU temperature")
 		}
 		// Services
-		if checkIsServiceConnected("8200") {
-			warnings.Infos = append(warnings.Infos, "MiniDLNA Connected")
-		}
-		if checkIsServiceConnected("445") {
-			warnings.Infos = append(warnings.Infos, "SAMBA Connected")
-		}
-		if checkIsServiceConnected("21") {
-			warnings.Infos = append(warnings.Infos, "FTP Connected")
+		/*
+			if checkIsServiceConnected("8200") {
+				warnings.Infos = append(warnings.Infos, "MiniDLNA Connected")
+			}
+			if checkIsServiceConnected("445") {
+				warnings.Infos = append(warnings.Infos, "SAMBA Connected")
+			}
+			if checkIsServiceConnected("21") {
+				warnings.Infos = append(warnings.Infos, "FTP Connected")
+			}
+		*/
+		for port, comment := range conf.MonitoredServices {
+			if checkIsServiceConnected(port) {
+				warnings.Infos = append(warnings.Infos, comment)
+			}
 		}
 		/* test
 		warnings.Warnings = append(warnings.Warnings, "Warn1", "Warn2")
