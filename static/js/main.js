@@ -16,7 +16,7 @@ RPI.main = (function(self, $) {
 			warnings.forEach(function(warn) {
 				$('<li>').append($('<a href="#">').append($("<div>")).append($('<span>').append('<span class="glyphicon glyphicon-info-sign"></span> ').append(warn))).appendTo(ddst);
 			});
-			if (warnings > 0) {
+			if (warnings.length > 0) {
 				$("#nav-alerts-dropdown").show();
 				$("#nav-alerts-cnt").text(warnings.length).show();
 			} else {
