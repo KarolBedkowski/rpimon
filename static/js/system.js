@@ -24,8 +24,8 @@ var SYSTEM = (function(self, $) {
 				nettablebody = $('tbody#network-interfaces-table'),
 				fstablebody = $('tbody#fs-table'),
 				uptime = msg.uptime,
-				netuseInput = msg.netusage.Input,
-				netuseOutput = msg.netusage.Output;
+				netuseInput = msg.netusage.Input || [],
+				netuseOutput = msg.netusage.Output || [];
 			$('#load-chart').text(msg.load).change();
 			$('#cpu-chart').text(msg.cpu).change();
 			$('#mem-chart').text(msg.mem).change();
