@@ -9,50 +9,74 @@ import (
 
 // WARNINGS
 
-var warningsCache = h.NewSimpleCache(warningsCacheTTL)
+type WarningsStruct struct {
+	Warnings []string
+	Errors   []string
+	Infos    []string
+}
+
+const warningsCacheTTL = 5
+
 var maxAcceptableLoad = float64(runtime.NumCPU() * 2)
 
+var warningsCache = h.NewSimpleCache(warningsCacheTTL)
+
 // GetWarnings return current warnings to show
-func GetWarnings() []string {
+func GetWarnings() *WarningsStruct {
 	result := warningsCache.Get(func() h.Value {
-		var warnings []string
+		warnings := &WarningsStruct{}
 		// high load
-		if lastLoadInfo != nil && lastLoadInfo.Load5 > maxAcceptableLoad {
-			warnings = append(warnings, "High system Load")
+		if lastLoadInfo != nil {
+			if lastLoadInfo.Load5 > maxAcceptableLoad*2 {
+				warnings.Errors = append(warnings.Errors, "Critical system Load")
+			} else if lastLoadInfo.Load5 > maxAcceptableLoad {
+				warnings.Warnings = append(warnings.Warnings, "High system Load")
+			}
 		}
 		// low mem
 		if lastMemInfo != nil && lastMemInfo.UsedPerc > 90 {
 			if lastMemInfo.SwapFreePerc < 25 {
-				warnings = append(warnings, "CRITICAL memory ussage")
+				warnings.Errors = append(warnings.Errors, "CRITICAL memory ussage")
 			} else {
-				warnings = append(warnings, "High memory ussage")
+				warnings.Warnings = append(warnings.Warnings, "High memory ussage")
 			}
 		}
 		// filesystems
 		for _, fsinfo := range *GetFilesystemsInfo() {
-			if fsinfo.FreePerc < 10 {
-				warnings = append(warnings, "Low free space on "+fsinfo.Name)
+			if fsinfo.Size == "0" {
+				continue
+			}
+			if fsinfo.FreePerc < 5 {
+				warnings.Errors = append(warnings.Errors, "Low free space on "+fsinfo.Name)
+			} else if fsinfo.FreePerc < 10 {
+				warnings.Warnings = append(warnings.Warnings, "Low free space on "+fsinfo.Name)
 			}
 		}
 		// cpu temp
 		cputemp := GetCPUInfo().Temp
 		if cputemp > 80 {
-			warnings = append(warnings, "Critical CPU temperature")
+			warnings.Errors = append(warnings.Errors, "Critical CPU temperature")
 		} else if cputemp > 60 {
-			warnings = append(warnings, "High CPU temperature")
+			warnings.Warnings = append(warnings.Warnings, "High CPU temperature")
 		}
 		// Services
 		if checkIsServiceConnected("8200") {
-			warnings = append(warnings, "MiniDLNA Connected")
+			warnings.Infos = append(warnings.Infos, "MiniDLNA Connected")
 		}
 		if checkIsServiceConnected("445") {
-			warnings = append(warnings, "SAMBA Connected")
+			warnings.Infos = append(warnings.Infos, "SAMBA Connected")
 		}
 		if checkIsServiceConnected("21") {
-			warnings = append(warnings, "FTP Connected")
+			warnings.Infos = append(warnings.Infos, "FTP Connected")
 		}
+		/* test
+		warnings.Warnings = append(warnings.Warnings, "Warn1", "Warn2")
+		warnings.Errors = append(warnings.Errors, "Err1", "Err2")
+		warnings.Infos = append(warnings.Infos, "Info1", "Info2")
+		*/
 		return warnings
-	}).([]string)
+
+	}).(*WarningsStruct)
 	return result
 }
 

@@ -19,7 +19,6 @@ const (
 	ifaceCacheTTL      = 5
 	fsCacheTTL         = 10
 	uptimeInfoCacheTTL = 2
-	warningsCacheTTL   = 5
 	cpuInfoCacheTTL    = 5
 	netHistoryLimit    = 30
 )
