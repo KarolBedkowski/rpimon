@@ -418,57 +418,6 @@ func GetUptimeInfo() *UptimeInfoStruct {
 	return result.(*UptimeInfoStruct)
 }
 
-// WARNINGS
-
-var warningsCache = h.NewSimpleCache(warningsCacheTTL)
-
-// GetWarnings return current warnings to show
-func GetWarnings() []string {
-	result := warningsCache.Get(func() h.Value {
-		var warnings []string
-		if checkIsServiceConnected("8200") {
-			warnings = append(warnings, "MiniDLNA Connected")
-		}
-		if checkIsServiceConnected("445") {
-			warnings = append(warnings, "SAMBA Connected")
-		}
-		if checkIsServiceConnected("21") {
-			warnings = append(warnings, "FTP Connected")
-		}
-		return warnings
-	}).([]string)
-	return result
-}
-
-var netstatCache = h.NewSimpleCache(warningsCacheTTL)
-
-func checkIsServiceConnected(port string) (result bool) {
-	result = false
-	out := netstatCache.Get(func() h.Value {
-		return string(h.ReadCommand("netstat", "-pn", "--inet"))
-	}).(string)
-	if out == "" {
-		return
-	}
-	lookingFor := ":" + port + " "
-	if !strings.Contains(out, lookingFor) {
-		return false
-	}
-	lines := strings.Split(out, "\n")
-	for _, line := range lines {
-		if len(line) == 0 {
-			continue
-		}
-		if !strings.HasSuffix(line, "ESTABLISHED") {
-			continue
-		}
-		if strings.Contains(line, lookingFor) {
-			return true
-		}
-	}
-	return
-}
-
 type (
 	// Total history as list of inputs and outputs
 	ifaceHistory struct {
