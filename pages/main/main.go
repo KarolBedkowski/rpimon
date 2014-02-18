@@ -37,7 +37,7 @@ type pageCtx struct {
 	Filesystems       *monitor.FilesystemsStruct
 	Interfaces        *monitor.InterfacesStruct
 	MpdStatus         map[string]string
-	Warnings          []string
+	Warnings          *monitor.WarningsStruct
 	MaxAcceptableLoad int
 	LoadTrucated      float64
 }
@@ -68,7 +68,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 
 type pageSystemCtx struct {
 	*app.BasePageContext
-	Warnings          []string
+	Warnings          *monitor.WarningsStruct
 	MaxAcceptableLoad int
 }
 

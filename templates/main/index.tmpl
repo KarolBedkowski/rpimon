@@ -6,23 +6,57 @@
 	</div>
 </div>
 
-{{if .Warnings}}
 <div class="row">
-	<div class="col-lg-12">
+{{if .Warnings.Errors}}
+	<div class="col-lg-4 col-xs-12">
+		<div class="panel panel-danger">
+			<div class="panel-heading">
+				<h3 class="panel-title">Errors</h3>
+			</div>
+			<div class="panel-body">
+				<ul>
+				{{range .Warnings.Errors}}
+					<li>{{.}}</li>
+				{{end}}
+				</ul>
+			</div>
+		</div>
+	</div>
+{{end}}
+{{if .Warnings.Warnings}}
+	<div class="col-lg-4 col-xs-12">
 		<div class="panel panel-warning">
 			<div class="panel-heading">
 				<h3 class="panel-title">Warning</h3>
 			</div>
 			<div class="panel-body">
-			<ul>
-			{{range .Warnings}}
-				<li>{{.}}</li>
-			{{end}}
-			</ul>
+				<ul>
+				{{range .Warnings.Warnings}}
+					<li>{{.}}</li>
+				{{end}}
+				</ul>
+			</div>
 		</div>
 	</div>
-</div>
 {{end}}
+
+{{if .Warnings.Infos}}
+	<div class="col-lg-4 col-xs-12">
+		<div class="panel panel-info">
+			<div class="panel-heading">
+				<h3 class="panel-title">Info</h3>
+			</div>
+			<div class="panel-body">
+				<ul>
+				{{range .Warnings.Infos}}
+					<li>{{.}}</li>
+				{{end}}
+				</ul>
+			</div>
+		</div>
+	</div>
+{{end}}
+</div>
 
 <div class="row row-centered">
 	<div class="col-xs-12 col-sm-6 col-md-4">
