@@ -15,6 +15,6 @@
   "SessionStoreDir": "./temp",
   "StaticDir": "./static",
   "MpdHost": "localhost:6600",
-	"Logs": "logs.json"
+	"Logs": "logs.json",
 	"notepad": "./notepad/"
 }
