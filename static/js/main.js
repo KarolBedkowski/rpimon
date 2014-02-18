@@ -15,9 +15,9 @@ RPI.main = (function(self, $) {
 				errors = datawarn.Errors || [],
 				infos = datawarn.Infos || [],
 				ddst = $(".dropdown-alerts");
-			if (!warnings && !errors && !infos) {
+			if (warnings.length == 0 && errors.length == 0 && infos.length == 0) {
 				$("#nav-alerts-dropdown").hide();
-				return
+				return;
 			}
 			ddst.html("");
 			if (errors.length > 0) {
