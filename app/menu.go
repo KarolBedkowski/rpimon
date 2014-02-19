@@ -95,9 +95,7 @@ func SetMainMenu(ctx *BasePageContext) {
 				NewMenuItemFromRoute("Storage", "storage-index").SetID("storage").SetIcon("glyphicon glyphicon-hdd"),
 				NewMenuItemFromRoute("Logs", "logs-index").SetID("logs").SetIcon("glyphicon glyphicon-eye-open"),
 				NewMenuItemFromRoute("Process", "process-index").SetID("process").SetIcon("glyphicon glyphicon-cog"),
-				NewMenuItemFromRoute("Users", "users-index").SetID("users").SetIcon("glyphicon glyphicon-user"),
-				NewMenuItem("-", ""),
-				NewMenuItemFromRoute("Utilities", "utils-index").SetID("utils").SetIcon("glyphicon glyphicon-wrench")}
+				NewMenuItemFromRoute("Users", "users-index").SetID("users").SetIcon("glyphicon glyphicon-user")}
 			ctx.MainMenu = append(ctx.MainMenu, sysMI)
 		}
 		if CheckPermission(ctx.CurrentUserPerms, "mpd") {
@@ -110,6 +108,11 @@ func SetMainMenu(ctx *BasePageContext) {
 		}
 		// Tools
 		toolsMenu := NewMenuItem("Tools", "").SetIcon("glyphicon glyphicon-briefcase").SetID("tools")
+		if CheckPermission(ctx.CurrentUserPerms, "admin") {
+			toolsMenu.Submenu = append(toolsMenu.Submenu,
+				NewMenuItemFromRoute("Utilities", "utils-index").SetID("utils").SetIcon("glyphicon glyphicon-wrench"),
+				NewMenuItem("-", ""))
+		}
 		if CheckPermission(ctx.CurrentUserPerms, "notepad") {
 			toolsMenu.Submenu = append(toolsMenu.Submenu,
 				NewMenuItemFromRoute("Notepad", "notepad-index").SetID("notepad-index").SetIcon("glyphicon glyphicon-paperclip"))
