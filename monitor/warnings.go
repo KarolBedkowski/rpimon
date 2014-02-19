@@ -36,12 +36,12 @@ func GetWarnings() *WarningsStruct {
 		// low mem
 		if lastMemInfo != nil {
 			if lastMemInfo.UsedPerc > conf.RamUsageWarning {
-				if lastMemInfo.SwapFreePerc < 100-conf.SwapUsageWarning {
+				if lastMemInfo.SwapTotal > 0 && lastMemInfo.SwapFreePerc < 100-conf.SwapUsageWarning {
 					warnings.Errors = append(warnings.Errors, "CRITICAL RAM/SWAP ussage")
 				} else {
 					warnings.Warnings = append(warnings.Warnings, "High memory ussage")
 				}
-			} else if lastMemInfo.SwapFreePerc < 100-conf.SwapUsageWarning {
+			} else if lastMemInfo.SwapTotal > 0 && lastMemInfo.SwapFreePerc < 100-conf.SwapUsageWarning {
 				warnings.Warnings = append(warnings.Warnings, "High SWAP ussage")
 			}
 		}
