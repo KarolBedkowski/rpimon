@@ -96,10 +96,10 @@ func loadConfiguration(filename string) bool {
 	Configuration.Notepad, _ = filepath.Abs(Configuration.Notepad)
 
 	if Configuration.Monitor.LoadWarning == 0 {
-		Configuration.Monitor.LoadWarning = float64(runtime.NumCPU())
+		Configuration.Monitor.LoadWarning = float64(runtime.NumCPU() * 2)
 	}
 	if Configuration.Monitor.LoadError == 0 {
-		Configuration.Monitor.LoadError = float64(runtime.NumCPU() * 2)
+		Configuration.Monitor.LoadError = float64(runtime.NumCPU() * 4)
 	}
 	if Configuration.Monitor.RamUsageWarning == 0 {
 		Configuration.Monitor.RamUsageWarning = 90
