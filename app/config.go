@@ -6,6 +6,7 @@ import (
 	"log"
 	"path/filepath"
 	"runtime"
+	"time"
 )
 
 type (
@@ -49,19 +50,47 @@ type (
 
 // Configuration - main app configuration instance
 var Configuration AppConfiguration
+var quitReloaderChan = make(chan string)
 
 // LoadConfiguration from given file
 func LoadConfiguration(filename string) *AppConfiguration {
 	log.Print("Loading configuration file ", filename)
+
+	if !loadConfiguration(filename) {
+		return nil
+	}
+
+	ticker := time.NewTicker(time.Minute)
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				//log.Print("Reloading configuration")
+				loadConfiguration(filename)
+			case <-quitReloaderChan:
+				ticker.Stop()
+				return
+			}
+		}
+	}()
+
+	return &Configuration
+}
+
+func closeConf() {
+	quitReloaderChan <- "END"
+}
+
+func loadConfiguration(filename string) bool {
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatal("app.LoadConfiguration error: ", err.Error())
-		return nil
+		return false
 	}
 
 	if err = json.Unmarshal(file, &Configuration); err != nil {
 		log.Fatal("app.LoadConfiguration error: ", err.Error())
-		return nil
+		return false
 	}
 
 	Configuration.Notepad, _ = filepath.Abs(Configuration.Notepad)
@@ -90,6 +119,5 @@ func LoadConfiguration(filename string) *AppConfiguration {
 	if Configuration.Monitor.CPUTempError == 0 {
 		Configuration.Monitor.CPUTempError = 80
 	}
-
-	return &Configuration
+	return true
 }
