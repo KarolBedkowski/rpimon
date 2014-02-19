@@ -23,6 +23,7 @@ type BasePageContext struct {
 	MainMenu         []*MenuItem
 	Now              string
 	FlashMessages    map[string][]interface{}
+	Tabs             []*MenuItem
 }
 
 var hostname string

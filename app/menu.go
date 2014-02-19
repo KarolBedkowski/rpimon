@@ -39,6 +39,12 @@ func (item *MenuItem) SetIcon(icon string) *MenuItem {
 	return item
 }
 
+// SetActve for menu item
+func (item *MenuItem) SetActve(active bool) *MenuItem {
+	item.Active = active
+	return item
+}
+
 // AddChild append menu item as submenu item
 func (item *MenuItem) AddChild(child *MenuItem) *MenuItem {
 	item.Submenu = append(item.Submenu, child)
@@ -121,6 +127,15 @@ func AttachSubmenu(ctx *BasePageContext, parentID string, submenu []*MenuItem) {
 	for _, subitem := range ctx.MainMenu {
 		if subitem.AttachSubmenu(parentID, submenu) {
 			return
+		}
+	}
+}
+
+// SetMenuActive add id  to menu active items
+func MenuListSetMenuActive(id string, menu []*MenuItem) {
+	for _, subitem := range menu {
+		if subitem.SetActiveMenu(id) {
+			break
 		}
 	}
 }
