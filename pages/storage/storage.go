@@ -36,14 +36,28 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := newPageCtx(w, r, page, "")
 	switch page {
 	case "devices":
+		sec := r.FormValue("sec")
+		if sec == "" {
+			sec = "devices"
+		}
 		ctx.Header1 = "Storage"
-		ctx.Header2 = "Devices"
-		ctx.Data = h.ReadCommand("lsblk")
+		switch sec {
+		case "devices":
+			ctx.Header2 = "Devices"
+			ctx.Data = h.ReadCommand("lsblk", "-a")
+		case "fdisk":
+			ctx.Header2 = "Fdisk"
+			ctx.Data = h.ReadCommand("fdisk", "-l")
+		}
+		ctx.Tabs = []*app.MenuItem{
+			app.NewMenuItemFromRoute("Devices", "storage-page", "page", page).AddQuery("?sec=devices").SetActve(sec == "devices"),
+			app.NewMenuItemFromRoute("Fdisk", "storage-page", "page", page).AddQuery("?sec=fdisk").SetActve(sec == "fdisk"),
+		}
 	default:
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
-	app.RenderTemplateStd(w, ctx, "data.tmpl")
+	app.RenderTemplateStd(w, ctx, "data.tmpl", "tabs.tmpl")
 }
 
 type (
