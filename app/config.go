@@ -42,6 +42,8 @@ type (
 		CPUTempWarning        int               `json:"cpu_temp_warning"`
 		CPUTempError          int               `json:"cpu_temp_error"`
 		MonitoredServices     map[string]string `json:"monitored_services"`
+		CPUFreqFile           string            `json:"cpu_freq_file"`
+		CPUTempFile           string            `json:"cpu_temp_file"`
 	}
 )
 

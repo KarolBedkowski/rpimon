@@ -13,7 +13,9 @@
     "fs_usage_warning": 25,
     "fs_usage_error": 15,
     "cpu_temp_warning": 60,
-    "cpu_temp_error": 75
+    "cpu_temp_error": 75,
+		"cpu_freq_file": "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq",
+		"cpu_temp_file": "/sys/class/thermal/thermal_zone0/temp"
   },
   "notepad": "./notepad/",
   "Logs": "logs.json",
