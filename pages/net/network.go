@@ -193,7 +193,11 @@ func netstat(command string, args ...string) ([][]string, error) {
 			continue
 		}
 		fields := strings.Fields(line[:80])
-		state := fields[5]
+		//l.Debug("%v\n%#v, %#v", line, fields)
+		state := ""
+		if len(fields) == 6 {
+			state = fields[5]
+		}
 		var pidcmd []string
 		pidcmdfield := strings.TrimSpace(line[80:])
 		if pidcmdfield == "-" {
