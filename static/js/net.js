@@ -29,8 +29,9 @@ RPI.net = (function(self, $) {
 			});
 			var name;
 			for (name in msg.netusage) {
-				var inp = msg.netusage[name].Input,
-					out = msg.netusage[name].Output;
+				var usage = msg.netusage[name],
+					inp = usage.Input,
+					out = usage.Output;
 				$('#chart-in-'+name).text(inp || '0').change();
 				$('#chart-out-'+name).text(out || '0').change();
 				if (inp) {
