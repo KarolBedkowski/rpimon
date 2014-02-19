@@ -108,7 +108,7 @@ type pageCtx struct {
 }
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Mpd", "mpd", w, r)}
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Mpd", w, r)}
 	app.AttachSubmenu(ctx.BasePageContext, "mpd", buildLocalMenu())
 	ctx.SetMenuActive("mpd-index")
 	app.RenderTemplateStd(w, ctx, "mpd/index.tmpl")

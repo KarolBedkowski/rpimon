@@ -40,7 +40,7 @@ type mainPageContext struct {
 }
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &mainPageContext{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
+	ctx := &mainPageContext{BasePageContext: app.NewBasePageContext("Network", w, r)}
 	app.AttachSubmenu(ctx.BasePageContext, "net", buildLocalMenu())
 	ctx.SetMenuActive("net-index")
 	ctx.Interfaces = monitor.GetInterfacesInfo()
@@ -54,7 +54,7 @@ func subPageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, app.GetNamedURL("net-index"), http.StatusFound)
 		return
 	}
-	data := app.NewSimpleDataPageCtx(w, r, "Network", "net", page, buildLocalMenu())
+	data := app.NewSimpleDataPageCtx(w, r, "Network", "net", buildLocalMenu())
 	data.SetMenuActive(page)
 	switch page {
 	case "netstat":
@@ -127,7 +127,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte(h.ReadCommand(cmdfields[0], cmdfields[1:]...)))
 	} else {
-		ctx := &confPageContext{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
+		ctx := &confPageContext{BasePageContext: app.NewBasePageContext("Network", w, r)}
 		app.AttachSubmenu(ctx.BasePageContext, "net", buildLocalMenu())
 		ctx.SetMenuActive("conf")
 		ctx.Current = cmd
@@ -168,7 +168,7 @@ func iptablesPageHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte(data))
 	} else {
-		ctx := &iptablesPageContext{BasePageContext: app.NewBasePageContext("Network", "net", w, r)}
+		ctx := &iptablesPageContext{BasePageContext: app.NewBasePageContext("Network", w, r)}
 		app.AttachSubmenu(ctx.BasePageContext, "net", buildLocalMenu())
 		ctx.SetMenuActive("iptables")
 		ctx.Current = table

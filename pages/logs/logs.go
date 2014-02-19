@@ -40,7 +40,7 @@ func buildLocalMenu() (localMenu []*app.MenuItem) {
 }
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("logs", "logs", w, r)}
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("logs", w, r)}
 	app.AttachSubmenu(ctx.BasePageContext, "logs", buildLocalMenu())
 	vars := mux.Vars(r)
 	page, ok := vars["page"]

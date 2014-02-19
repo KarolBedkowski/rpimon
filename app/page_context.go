@@ -22,7 +22,6 @@ type BasePageContext struct {
 	CurrentUserPerms []string
 	MainMenu         []*MenuItem
 	Now              string
-	ActiveMenuItems  map[string]bool
 	FlashMessages    map[string][]interface{}
 }
 
@@ -38,7 +37,7 @@ func init() {
 var FlashKind = []string{"error", "info", "success"}
 
 // NewBasePageContext create base page context for request
-func NewBasePageContext(title, mainMenuID string, w http.ResponseWriter, r *http.Request) *BasePageContext {
+func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *BasePageContext {
 
 	session := GetSessionStore(w, r)
 	csrfToken := session.Values[CONTEXTCSRFTOKEN]
@@ -58,10 +57,8 @@ func NewBasePageContext(title, mainMenuID string, w http.ResponseWriter, r *http
 		CurrentUserPerms: perms,
 		Now:              time.Now().Format("2006-01-02 15:04:05"),
 		FlashMessages:    make(map[string][]interface{}),
-		ActiveMenuItems:  make(map[string]bool),
 	}
 
-	ctx.ActiveMenuItems[mainMenuID] = true
 	SetMainMenu(ctx)
 
 	for _, kind := range FlashKind {
@@ -102,11 +99,6 @@ func (ctx *BasePageContext) Save() error {
 	return SaveSession(ctx.ResponseWriter, ctx.Request)
 }
 
-// IsMenuActive return true when given menu item is active
-func (ctx *BasePageContext) IsMenuActive(id string) bool {
-	return ctx.ActiveMenuItems[id]
-}
-
 // SetMenuActive add id  to menu active items
 func (ctx *BasePageContext) SetMenuActive(id string) {
 	if ctx.MainMenu == nil {
@@ -132,8 +124,8 @@ type SimpleDataPageCtx struct {
 
 // NewSimpleDataPageCtx create new simple context to show text data
 func NewSimpleDataPageCtx(w http.ResponseWriter, r *http.Request,
-	title string, mainMenuID string, cuurentPage string, localMenu []*MenuItem) *SimpleDataPageCtx {
-	ctx := &SimpleDataPageCtx{BasePageContext: NewBasePageContext(title, mainMenuID, w, r)}
-	AttachSubmenu(ctx.BasePageContext, mainMenuID, localMenu)
+	title string, parentMenuId string, localMenu []*MenuItem) *SimpleDataPageCtx {
+	ctx := &SimpleDataPageCtx{BasePageContext: NewBasePageContext(title, w, r)}
+	AttachSubmenu(ctx.BasePageContext, parentMenuId, localMenu)
 	return ctx
 }

@@ -38,7 +38,7 @@ func CreateRoutes(parentRoute *mux.Route) {
 }
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
-	ctx := app.NewBasePageContext("Files", "files", w, r)
+	ctx := app.NewBasePageContext("Files", w, r)
 	ctx.SetMenuActive("files")
 	r.ParseForm()
 	var relpath, abspath = ".", config.BaseDir

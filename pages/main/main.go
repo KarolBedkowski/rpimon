@@ -43,8 +43,7 @@ type pageCtx struct {
 }
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext(
-		"Main", "main", w, r)}
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Main", w, r)}
 	ctx.SetMenuActive("main")
 	ctx.Warnings = monitor.GetWarnings()
 	ctx.Uptime = monitor.GetUptimeInfo()
@@ -73,8 +72,7 @@ type pageSystemCtx struct {
 }
 
 func systemPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &pageSystemCtx{BasePageContext: app.NewBasePageContext(
-		"System", "system", w, r),
+	ctx := &pageSystemCtx{BasePageContext: app.NewBasePageContext("System", w, r),
 		Warnings: monitor.GetWarnings()}
 	ctx.SetMenuActive("system-live")
 	ctx.MaxAcceptableLoad = runtime.NumCPU() * 2

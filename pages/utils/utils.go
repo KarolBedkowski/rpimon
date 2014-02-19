@@ -25,7 +25,7 @@ type pageCtx struct {
 }
 
 func newPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Utils", "utils", "", nil)}
+	ctx := &pageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Utils", "", nil)}
 	ctx.Configuration = config
 	ctx.SetMenuActive("system")
 	return ctx

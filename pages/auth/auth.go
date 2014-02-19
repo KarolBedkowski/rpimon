@@ -42,7 +42,7 @@ func (ctx loginPageCtx) Validate() (err string) {
 }
 
 func loginPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &loginPageCtx{app.NewBasePageContext("Login", "auth-login", w, r),
+	ctx := &loginPageCtx{app.NewBasePageContext("Login", w, r),
 		new(loginForm), ""}
 	if r.Method == "POST" {
 		r.ParseForm()
