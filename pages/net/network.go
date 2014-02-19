@@ -19,6 +19,8 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/iptables", app.VerifyPermission(iptablesPageHandler, "admin")).Name("net-iptables")
 	subRouter.HandleFunc("/serv/info", app.VerifyPermission(statusServHandler, "admin")).Name("net-serv-info")
 	subRouter.HandleFunc("/action", app.VerifyPermission(actionHandler, "admin")).Name("net-action").Methods("PUT")
+	subRouter.HandleFunc("/netstat", app.VerifyPermission(netstatPageHandler, "admin")).Name("net-netstat")
+	subRouter.HandleFunc("/nfs", app.VerifyPermission(nfsPageHandler, "admin")).Name("net-nfs")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(subPageHandler, "admin")).Name("net-page")
 }
 
@@ -27,10 +29,9 @@ func buildLocalMenu() (localMenu []*app.MenuItem) {
 		app.NewMenuItemFromRoute("Status", "net-index").SetID("net-index"),
 		app.NewMenuItemFromRoute("Configuration", "net-conf").SetID("conf"),
 		app.NewMenuItemFromRoute("IPTables", "net-iptables").SetID("iptables"),
-		app.NewMenuItemFromRoute("Netstat", "net-page", "page", "netstat").SetID("netstat"),
-		app.NewMenuItemFromRoute("Conenctions", "net-page", "page", "connenctions").SetID("connenctions"),
+		app.NewMenuItemFromRoute("Netstat", "net-page", "page", "netstat").SetID("net-netstat"),
 		app.NewMenuItemFromRoute("Samba", "net-page", "page", "samba").SetID("samba"),
-		app.NewMenuItemFromRoute("NFS", "net-page", "page", "nfs").SetID("nfs"),
+		app.NewMenuItemFromRoute("NFS", "net-page", "page", "nfs").SetID("net-nfs"),
 	}
 }
 
@@ -57,16 +58,6 @@ func subPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.NewSimpleDataPageCtx(w, r, "Network", "net", buildLocalMenu())
 	data.SetMenuActive(page)
 	switch page {
-	case "netstat":
-		data.Header1 = "Netstat"
-		data.Header2 = "Listen"
-		data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
-		data.TData, _ = netstat("sudo", "netstat", "-lpn", "--inet", "--inet6")
-	case "connenctions":
-		data.Header1 = "Netstat"
-		data.Header2 = "Connections"
-		data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
-		data.TData, _ = netstat("sudo", "netstat", "-pn", "--inet", "--inet6")
 	case "samba":
 		data.Header1 = "Samba"
 		data.Data = h.ReadCommand("sudo", "smbstatus")
@@ -76,6 +67,57 @@ func subPageHandler(w http.ResponseWriter, r *http.Request) {
 		data.Data += "\n\n---------------------------\n\n" + h.ReadCommand("nfsstat")
 	}
 	app.RenderTemplateStd(w, data, "data.tmpl")
+}
+
+func netstatPageHandler(w http.ResponseWriter, r *http.Request) {
+	page := r.FormValue("sec")
+	if page == "" {
+		page = "listen"
+	}
+	data := app.NewSimpleDataPageCtx(w, r, "Netstat", "net", buildLocalMenu())
+	data.SetMenuActive("net-netstat")
+	data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
+	data.Header1 = "Netstat"
+	switch page {
+	case "listen":
+		data.Header2 = "Listen"
+		data.TData, _ = netstat("sudo", "netstat", "-lpn", "--inet", "--inet6")
+	case "connections":
+		data.Header2 = "Connections"
+		data.TData, _ = netstat("sudo", "netstat", "-pn", "--inet", "--inet6")
+	case "all":
+		data.Header2 = "all"
+		data.TData, _ = netstat("sudo", "netstat", "-apn", "--inet", "--inet6")
+	}
+	data.Tabs = []*app.MenuItem{
+		app.NewMenuItemFromRoute("Listen", "net-netstat").AddQuery("?sec=listen").SetActve(page == "listen"),
+		app.NewMenuItemFromRoute("Connections", "net-netstat").AddQuery("?sec=connections").SetActve(page == "connections"),
+		app.NewMenuItemFromRoute("All", "net-netstat").AddQuery("?sec=all").SetActve(page == "all"),
+	}
+	app.RenderTemplateStd(w, data, "data.tmpl", "tabs.tmpl")
+}
+
+func nfsPageHandler(w http.ResponseWriter, r *http.Request) {
+	page := r.FormValue("sec")
+	if page == "" {
+		page = "stat"
+	}
+	data := app.NewSimpleDataPageCtx(w, r, "NFS", "net", buildLocalMenu())
+	data.SetMenuActive("net-nfs")
+	data.Header1 = "NFS"
+	switch page {
+	case "exportfs":
+		data.Header2 = "Listen"
+		data.Data = h.ReadCommand("sudo", "exportfs", "-v")
+	case "stat":
+		data.Header2 = "Connections"
+		data.Data = h.ReadCommand("nfsstat")
+	}
+	data.Tabs = []*app.MenuItem{
+		app.NewMenuItemFromRoute("NFSstat", "net-nfs").AddQuery("?sec=stat").SetActve(page == "stat"),
+		app.NewMenuItemFromRoute("exportfs", "net-nfs").AddQuery("?sec=exportfs").SetActve(page == "exportfs"),
+	}
+	app.RenderTemplateStd(w, data, "data.tmpl", "tabs.tmpl")
 }
 
 type confPageContext struct {
