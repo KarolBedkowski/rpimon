@@ -133,6 +133,7 @@ var confCommands = []string{
 	"arp -n",
 	"cat /etc/hosts",
 	"cat /etc/resolv.conf",
+	"iwconfig",
 	"ip link",
 	"ip addr",
 	"ip addrlabel",
