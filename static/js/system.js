@@ -53,7 +53,7 @@ var SYSTEM = (function(self, $) {
 			// network
 			nettablebody.text("");
 			msg.iface.forEach(function(entry) {
-				if (entry.State != "UP") {
+				if (!entry.Address && !entry.Address6) {
 					return
 				}
 				var row = ["<tr><td>", entry.Name, "</td><td>"];
