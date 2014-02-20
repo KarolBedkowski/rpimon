@@ -319,7 +319,7 @@ func parseIPResult(input string) (result InterfacesStruct) {
 			continue
 		}
 		fields := strings.Fields(line)
-		if line[0] != ' ' {
+		if line[0] >= '0' && line[0] <= '9' {
 			if iface != nil {
 				if iface.Name != "lo" {
 					result = append(result, iface)
@@ -327,14 +327,22 @@ func parseIPResult(input string) (result InterfacesStruct) {
 			}
 			iface = new(InterfaceInfoStruct)
 			iface.Name = strings.Trim(fields[1], " :")
-			iface.State = fields[8]
-		} else if strings.HasPrefix(line, "    inet ") {
-			iface.Address = fields[1]
-		} else if strings.HasPrefix(line, "    inet6 ") {
-			iface.Address6 = fields[1]
-		} else if strings.HasPrefix(line, "    link/") {
-			iface.Mac = fields[1]
-			iface.Kind = fields[0][5:]
+			for idx, field := range fields {
+				if field == "state" {
+					iface.State = fields[idx+1]
+					break
+				}
+			}
+		} else {
+			line = strings.TrimSpace(line)
+			if strings.HasPrefix(line, "inet ") {
+				iface.Address = fields[1]
+			} else if strings.HasPrefix(line, "inet6 ") {
+				iface.Address6 = fields[1]
+			} else if strings.HasPrefix(line, "link/") {
+				iface.Mac = fields[1]
+				iface.Kind = fields[0][5:]
+			}
 		}
 	}
 	if iface != nil && iface.Name != "" && iface.Name != "lo" {
@@ -346,7 +354,7 @@ func parseIPResult(input string) (result InterfacesStruct) {
 // GetInterfacesInfo get current info about network interfaces
 func GetInterfacesInfo() *InterfacesStruct {
 	result := interfacesInfoCache.Get(func() h.Value {
-		ipres := h.ReadCommand("/sbin/ip", "addr")
+		ipres := h.ReadCommand("ip", "addr")
 		if ipres == "" {
 			return nil
 		}
@@ -480,14 +488,14 @@ func gatherNetworkUsage() {
 		if idx < 2 {
 			continue
 		}
-		fields := strings.Fields(line)
-		iface := strings.Trim(fields[0], " :")
+		sep := strings.Index(line, ":")
+		iface := strings.TrimSpace(line[:sep])
 		if iface == "lo" {
 			continue
 		}
-
-		recv, _ := strconv.ParseUint(fields[1], 10, 64)
-		trans, _ := strconv.ParseUint(fields[9], 10, 64)
+		fields := strings.Fields(line[sep+1:])
+		recv, err := strconv.ParseUint(fields[0], 10, 64)
+		trans, err := strconv.ParseUint(fields[8], 10, 64)
 		sumRecv += recv
 		sumTrans += trans
 
