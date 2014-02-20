@@ -97,7 +97,7 @@ var netstatCache = h.NewSimpleCache(warningsCacheTTL)
 func checkIsServiceConnected(port string) (result bool) {
 	result = false
 	out := netstatCache.Get(func() h.Value {
-		return string(h.ReadCommand("netstat", "-pn", "--inet"))
+		return string(h.ReadCommand("netstat", "-pn", "-tu"))
 	}).(string)
 	if out == "" {
 		return

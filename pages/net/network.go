@@ -81,13 +81,13 @@ func netstatPageHandler(w http.ResponseWriter, r *http.Request) {
 	switch page {
 	case "listen":
 		data.Header2 = "Listen"
-		data.TData, _ = netstat("sudo", "netstat", "-lpn", "--inet", "--inet6")
+		data.TData, _ = netstat("sudo", "netstat", "-lpn", "-t", "-p")
 	case "connections":
 		data.Header2 = "Connections"
-		data.TData, _ = netstat("sudo", "netstat", "-pn", "--inet", "--inet6")
+		data.TData, _ = netstat("sudo", "netstat", "-pn", "-t", "-u")
 	case "all":
 		data.Header2 = "all"
-		data.TData, _ = netstat("sudo", "netstat", "-apn", "--inet", "--inet6")
+		data.TData, _ = netstat("sudo", "netstat", "-apn", "-t", "-u")
 	}
 	data.Tabs = []*app.MenuItem{
 		app.NewMenuItemFromRoute("Listen", "net-netstat").AddQuery("?sec=listen").SetActve(page == "listen"),
