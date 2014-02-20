@@ -78,11 +78,12 @@ func ReadFile(filename string, limit int) (string, error) {
 func ReadCommand(command string, arg ...string) string {
 	l.Debug("helpers.ReadCommand %s %v", command, arg)
 	out, err := exec.Command(command, arg...).CombinedOutput()
+	outstr := string(out)
 	if err != nil {
 		l.Warn("helpers.ReadCommand error %s, %v, %s", command, arg, err.Error())
-		return err.Error()
+		outstr += "\n\n" + err.Error()
 	}
-	return string(out)
+	return outstr
 }
 
 // AppendToFile add given data do file
