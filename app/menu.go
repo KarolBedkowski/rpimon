@@ -95,7 +95,10 @@ func SetMainMenu(ctx *BasePageContext) {
 				NewMenuItemFromRoute("Storage", "storage-index").SetID("storage").SetIcon("glyphicon glyphicon-hdd"),
 				NewMenuItemFromRoute("Logs", "logs-index").SetID("logs").SetIcon("glyphicon glyphicon-eye-open"),
 				NewMenuItemFromRoute("Process", "process-index").SetID("process").SetIcon("glyphicon glyphicon-cog"),
-				NewMenuItemFromRoute("Users", "users-index").SetID("users").SetIcon("glyphicon glyphicon-user")}
+				NewMenuItemFromRoute("Users", "users-index").SetID("users").SetIcon("glyphicon glyphicon-user"),
+				NewMenuItem("-", ""),
+				NewMenuItemFromRoute("Other", "other-index").SetID("other").SetIcon("glyphicon glyphicon-cog"),
+			}
 			ctx.MainMenu = append(ctx.MainMenu, sysMI)
 		}
 		if CheckPermission(ctx.CurrentUserPerms, "mpd") {

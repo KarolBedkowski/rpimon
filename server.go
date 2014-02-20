@@ -11,6 +11,7 @@ import (
 	pmpd "k.prv/rpimon/pages/mpd"
 	pnet "k.prv/rpimon/pages/net"
 	pnotepad "k.prv/rpimon/pages/notepad"
+	pother "k.prv/rpimon/pages/other"
 	pproc "k.prv/rpimon/pages/process"
 	pstorage "k.prv/rpimon/pages/storage"
 	pusers "k.prv/rpimon/pages/users"
@@ -63,6 +64,7 @@ func main() {
 	pfiles.Init(conf.BrowserConf)
 	pfiles.CreateRoutes(app.Router.PathPrefix("/files"))
 	pnotepad.CreateRoutes(app.Router.PathPrefix("/notepad"))
+	pother.CreateRoutes(app.Router.PathPrefix("/other"))
 
 	/* for filesystem store
 	go app.ClearSessionStore()
