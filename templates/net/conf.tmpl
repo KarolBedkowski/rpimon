@@ -11,8 +11,12 @@
 			<div class="form-group">
 				<label for="command">Command: </label>
 				<select id="command" style="margin-right: 1em; margin-left: 0.5em;">
-				{{range .Commands}}
-					<option value="{{.}}" {{if eq $ctx.Current .}}selected="selected"{{end}}>{{.}}</option>
+				{{range $label, $list := .Commands}}
+					 <optgroup label="{{$label}}">
+					{{range $list}}
+						<option value="{{.}}" {{if eq $ctx.Current .}}selected="selected"{{end}}>{{.}}</option>
+					{{end}}
+					</optgroup>
 				{{end}}
 				</select>
 				<a href="#" title="Reload" id="reload"><span class="glyphicon glyphicon-refresh"></span></a>

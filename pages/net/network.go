@@ -124,42 +124,54 @@ type confPageContext struct {
 	*app.BasePageContext
 	Current  string
 	Data     string
-	Commands *[]string
+	Commands *map[string][]string
 }
 
-var confCommands = []string{
-	"ifconfig",
-	"route -n",
-	"arp -n",
-	"cat /etc/hosts",
-	"cat /etc/resolv.conf",
-	"iwconfig",
-	"ip link",
-	"ip addr",
-	"ip addrlabel",
-	"ip route",
-	"ip rule",
-	"ip neigh",
-	"ip ntable",
-	"ip tunnel",
-	"ip tuntap",
-	"ip maddr",
-	"ip mroute",
-	"ip mrule",
-	"ip monitor",
-	"ip xfrm",
-	"ip netns",
-	"ip l2tp",
-	"ip tcp_metrics",
-	"ip token",
+var confCommands = map[string][]string{
+	"Base": []string{
+		"ifconfig",
+		"route -n",
+		"arp -n",
+		"cat /etc/hosts",
+		"cat /etc/resolv.conf",
+		"iwconfig",
+	},
+	"ip": []string{
+		"ip link",
+		"ip addr",
+		"ip addrlabel",
+		"ip route",
+		"ip rule",
+		"ip neigh",
+		"ip ntable",
+		"ip tunnel",
+		"ip tuntap",
+		"ip maddr",
+		"ip mroute",
+		"ip mrule",
+		"ip monitor",
+		"ip xfrm",
+		"ip netns",
+		"ip l2tp",
+		"ip tcp_metrics",
+		"ip token",
+	},
+	"iw": []string{
+		"iw phy",
+		"iw dev",
+		"iw wlan0 scan dump",
+		"iw wlan0 station dump",
+		"iw wlan0 survey dump",
+		"iw wlan0 link",
+	},
 }
 
 func confPageHandler(w http.ResponseWriter, r *http.Request) {
 	cmd := r.FormValue("cmd")
 	if cmd == "" {
-		cmd = confCommands[0]
+		cmd = confCommands["Base"][0]
 	} else {
-		if !h.CheckValueInStrList(confCommands, cmd) {
+		if !h.CheckValueInDictOfList(confCommands, cmd) {
 			http.Error(w, "invalid request", http.StatusBadRequest)
 			return
 		}
