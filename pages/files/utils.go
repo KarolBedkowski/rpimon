@@ -16,8 +16,16 @@ type pathContext struct {
 
 type pathHandlerFunc func(w http.ResponseWriter, r *http.Request, pctx *pathContext)
 
+var errNotFound = errors.New("not found")
+
+// verifyAccess check is request has "p" param and it pointing to location in baseDir.
+// Create pathContext for request.
 func verifyAccess(h pathHandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if config.BaseDir == "" {
+			http.Error(w, "Missing module configuration. Check browser.josm", http.StatusInternalServerError)
+			return
+		}
 		r.ParseForm()
 		pathD, ok := r.Form["p"]
 		var ctx *pathContext
@@ -57,12 +65,12 @@ func isPathValid(inputPath string) (abspath, relpath string, err error) {
 func isDir(filename string) (bool, error) {
 	f, err := os.Open(filename)
 	if err != nil {
-		return false, errors.New("not found")
+		return false, errNotFound
 	}
 	defer f.Close()
 	d, err1 := f.Stat()
 	if err1 != nil {
-		return false, errors.New("not found")
+		return false, errNotFound
 	}
 	return d.IsDir(), nil
 }

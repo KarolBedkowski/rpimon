@@ -18,7 +18,7 @@ MPD.plist = (function(self, $) {
 	function processServerData(sSource, aoData, fnCallback) {
 		$.ajax({
 			url: sSource,
-			data: aoData || {},
+			data: aoData || {}
 		}).done(function(response) {
 			RPI.hideLoadingMsg();
 			if (response.error) {
@@ -36,7 +36,7 @@ MPD.plist = (function(self, $) {
 
 	function showError(errormsg) {
 		RPI.hideLoadingMsg();
-		window.console.log(errormsg);
+		if (window.console && window.console.log) { window.console.log(errormsg); }
 		$("#main-alert-error").text(errormsg);
 		$("#main-alert").show();
 		$("div.playlist-data").hide();
@@ -46,14 +46,14 @@ MPD.plist = (function(self, $) {
 		table = $('table').dataTable({
 			"bAutoWidth": false,
 			"bSort": false,
-			"sPaginationType": "bootstrap",		
+			"sPaginationType": "bootstrap",
 			"bProcessing": true,
 			"bServerSide": true,
 			"sAjaxSource": "/mpd/playlist/serv/info",
 			"fnServerData": processServerData,
 			"aoColumns": [
 				{},
-				{"mData": null},
+				{"mData": null}
 			],
 			"aoColumnDefs": [
 				{
@@ -62,19 +62,19 @@ MPD.plist = (function(self, $) {
 					"mRender": function(data, type, full) {
 						var title = full[3] || full[5];
 						return ['<div class="row"><span class="col-title col-sm-6 col-xs-12 col-md-5">', title, '</span>' +
-							'<span class="col-artist col-sm-6 col-xs-12 col-md-4">', full[1], '</span>',
+							'<span class="col-artist col-sm-6 col-xs-12 col-md-3">', full[1], '</span>',
 							'<span class="col-track col-sm-2 col-xs-3 col-md-1">', full[2], '</span>',
-							'<span class="col-album col-sm-10 col-xs-9 col-md-2">', full[0], '</span></div>'].join("");
-					},
+							'<span class="col-album col-sm-10 col-xs-9 col-md-3">', full[0], '</span></div>'].join("");
+					}
 				},
 				{
 					"aTargets": [1],
 					"mData": null,
 					"bSortable": false,
 					"mRender": function(data, type, full) {
-						return '<a href="#" class="play-song-action"><span class="glyphicon glyphicon-play" title="Play"></span></a> <a href="#" class="remove-song-action"><span class="glyphicon glyphicon-remove" title="Remove"></span></a> ' + 
+						return '<a href="#" class="play-song-action"><span class="glyphicon glyphicon-play" title="Play"></span></a> <a href="#" class="remove-song-action"><span class="glyphicon glyphicon-remove" title="Remove"></span></a> ' +
 							'<a href="#" class="action-info" data-uri="' + full[5] + '"><span class="glyphicon glyphicon-info-sign" title="Info"></a>';
-					},
+					}
 				}
 			],
 			"fnRowCallback": function(row, aData) { //, iDisplayIndex, iDisplayIndexFull) {
@@ -90,8 +90,7 @@ MPD.plist = (function(self, $) {
 				$("a.action-info").on("click", songInfo);
 				$("tr").on("click",  playSong);
 			},
-			"sDom": "<'row'<'col-xs-12 col-sm-6'l><'col-xs-12 col-sm-6'f>r>t<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>",
-				
+			"sDom": "<'row'<'col-xs-12 col-sm-6'l><'col-xs-12 col-sm-6'f>r>t<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>"
 		});
 		return;
 	};
@@ -158,18 +157,55 @@ MPD.plist = (function(self, $) {
 			url: '/mpd/service/song-info',
 			type: "GET",
 			data: {
-				uri: $(this).data("uri"),
-			},
+				uri: $(this).data("uri")
+			}
 		}).done(function(data) {
 			RPI.confirmDialog(data, {
 				title: "Song info",
-				btnSuccess: "none",
+				btnSuccess: "none"
 			}).open();
+		});
+	}
+
+	function playlistAjaxAction(dialog, event, refresh) {
+		event.preventDefault();
+		$('button[type="submit"]', dialog).button('loading');
+		var form = $("form", dialog);
+		$.ajax({
+			method: "POST",
+			url: form.attr("action"),
+			data: form.serialize()
+		}).always(function() {
+			dialog.modal("hide");
+			$('button[type="submit"]', dialog).button('reset');
+		}).done(function(msg) {
+			RPI.showFlash("success", msg, 1);
+			$('input[type="text"]', dialog).val("");
+			if (refresh) {
+				table.fnDraw();
+			}
+		}).fail(function(msg) {
+			RPI.alert(msg.responseText).open();
 		});
 	}
 
 	self.init = function initF() {
 		RPI.showLoadingMsg();
+
+		$('div.modal').on('shown.bs.modal', function() {
+			var inputs = $('input:first-of-type');
+			if (inputs) {
+				inputs.focus();
+			}
+		});
+
+		$("#save-playlist-dlg form").submit(function(event) {
+			playlistAjaxAction($("#save-playlist-dlg"), event);
+		});
+		$("#add-custom-dlg form").submit(function(event) {
+			playlistAjaxAction($("#add-custom-dlg"), event, true);
+		});
+
 		self.refresh();
 	};
 

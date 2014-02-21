@@ -1,7 +1,7 @@
 body {
+    background-color: #f8f8f8;
 	font-size: 10pt;
 }
-
 pre {
 	background: #fafafa;
 	border: 1px solid #eee;
@@ -79,11 +79,20 @@ div.big-chart {
 
 div.chart-box {
 	border: 1px solid #e0e0e0;
-	width: 282px;
-	height: 52px;
-	margin: 10px auto;
-	padding: 1px;
+	width: 258px;
+	height: 51px;
+	margin: 5px auto;
+	padding: 0px;
 }
+
+div.chart-box-half {
+	border: 1px solid #e0e0e0;
+	width: 258px;
+	height: 26px;
+	margin: 5px auto;
+	padding: 0px;
+}
+
 
 
 div.mpd-buttons-sect,
@@ -148,8 +157,8 @@ footer {
 	border-top: 1px solid #e5e5e5;
 }
 
-.row div.col-xs-12 {
-	margin-bottom: 20px;
+.row div {
+	margin-bottom: 10px;
 }
 
 div.pager input {
@@ -255,4 +264,51 @@ div#loading-box p {
 	z-index: 1001;
 	opacity: 1;
 	margin: 1em;
+}
+
+#flash-container {
+	overflow: none;
+	z-index: 1100;
+	position:  absolute;
+	padding-left: 20px;
+	padding-right: 20px;
+	margin-right: 0;
+	margin-left: 0;
+	width: 100%;
+	display: block-inline;
+}
+
+@media(min-width:768px) {
+	#flash-container {
+		margin-left: -250px;
+		padding-left: 100px;
+		padding-right: 100px;
+	}
+}
+
+.panel-heading .panel-title a {
+	float: right;
+	display: block;
+}
+
+#page-wrapper {
+}
+
+.empty-icon {
+	display: inline-block;
+	width: 1em;
+	position: relative;
+	top: 1px;
+	font-family: 'Glyphicons Halflings';
+	font-style: normal;
+	font-weight: normal;
+	line-height: 1;
+}
+
+.empty-icon:before {
+	content: "\2022"; 
+}
+
+.nav .active > a {
+	font-weight: bold;
 }

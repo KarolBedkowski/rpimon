@@ -10,6 +10,8 @@ import (
 	pmain "k.prv/rpimon/pages/main"
 	pmpd "k.prv/rpimon/pages/mpd"
 	pnet "k.prv/rpimon/pages/net"
+	pnotepad "k.prv/rpimon/pages/notepad"
+	pother "k.prv/rpimon/pages/other"
 	pproc "k.prv/rpimon/pages/process"
 	pstorage "k.prv/rpimon/pages/storage"
 	pusers "k.prv/rpimon/pages/users"
@@ -19,6 +21,9 @@ import (
 	// _ "net/http/pprof" // /debug/pprof/
 	"runtime"
 	//"time"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -27,12 +32,21 @@ func main() {
 	flag.Parse()
 
 	conf := app.Init(*configFilename, *debug)
-	defer app.Close()
 
 	if !conf.Debug {
 		log.Printf("NumCPU: %d", runtime.NumCPU())
 		runtime.GOMAXPROCS(runtime.NumCPU())
 	}
+
+	// cleanup
+	cleanChannel := make(chan os.Signal, 1)
+	signal.Notify(cleanChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGKILL)
+	go func() {
+		<-cleanChannel
+		app.Close()
+		pmpd.Close()
+		os.Exit(1)
+	}()
 
 	app.Router.HandleFunc("/", handleHome)
 	auth.CreateRoutes(app.Router.PathPrefix("/auth"))
@@ -43,11 +57,14 @@ func main() {
 	putils.CreateRoutes(app.Router.PathPrefix("/utils"))
 	pmpd.Init(conf.MpdHost)
 	pmpd.CreateRoutes(app.Router.PathPrefix("/mpd"))
+	plogs.Init(conf.Logs)
 	plogs.CreateRoutes(app.Router.PathPrefix("/logs"))
 	pusers.CreateRoutes(app.Router.PathPrefix("/users"))
 	pproc.CreateRoutes(app.Router.PathPrefix("/process"))
 	pfiles.Init(conf.BrowserConf)
 	pfiles.CreateRoutes(app.Router.PathPrefix("/files"))
+	pnotepad.CreateRoutes(app.Router.PathPrefix("/notepad"))
+	pother.CreateRoutes(app.Router.PathPrefix("/other"))
 
 	/* for filesystem store
 	go app.ClearSessionStore()

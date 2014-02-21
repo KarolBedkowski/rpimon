@@ -1,0 +1,50 @@
+{{define "body"}}
+{{$ctx := .}}
+
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">SMART</small></h1>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-lg-12">
+		<form class="form-inline" role="form">
+			<div class="form-group">
+				<label for="dev-select">Device: </label>
+				<select id="dev-select" style="margin-right: 1em; margin-left: 0.5em;">
+				{{range .Devices}}
+					<option value="{{.}}">{{.}}</option>
+				{{end}}
+				</select>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-lg-12">
+		<pre id="data">{{.Data}}</pre>
+	</div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script type="text/javascript">
+	$(function() {
+		function load() {
+			$.ajax({
+				url: {{namedurl "storage-serv-smart"}},
+				type: "GET",
+				data: {
+					"dev": $("#dev-select").val()
+				},
+			}).done(function(result) {
+				$('#data').text(result);
+			});
+		}
+		$('#dev-select').on("change", load);
+		load();
+	});
+</script>
+{{end}}

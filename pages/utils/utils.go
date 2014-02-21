@@ -10,11 +10,9 @@ import (
 	"strings"
 )
 
-var subRouter *mux.Router
-
 // CreateRoutes for /pages
 func CreateRoutes(parentRoute *mux.Route) {
-	subRouter = parentRoute.Subrouter()
+	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("utils-index")
 	subRouter.HandleFunc("/{group}/{command-id:[0-9]+}", app.VerifyPermission(commandPageHandler, "admin"))
 }
@@ -27,14 +25,15 @@ type pageCtx struct {
 }
 
 func newPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Utils", "utils", "", nil)}
+	ctx := &pageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Utils", "", nil)}
 	ctx.Configuration = config
+	ctx.SetMenuActive("utils")
 	return ctx
 }
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := newPageCtx(w, r)
-	app.RenderTemplate(w, data, "base", "base.tmpl", "utils/utils.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, data, "utils/utils.tmpl")
 }
 
 func commandPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -72,6 +71,6 @@ func commandPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	data := newPageCtx(w, r)
 	data.CurrentPage = "Utils " + groupName + ": " + group[commandID].Name
-	data.Data = h.ReadFromCommand(command[0], command[1:]...)
-	app.RenderTemplate(w, data, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
+	data.Data = h.ReadCommand(command[0], command[1:]...)
+	app.RenderTemplateStd(w, data, "data.tmpl")
 }

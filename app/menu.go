@@ -12,13 +12,13 @@ type MenuItem struct {
 
 // NewMenuItem create new MenuItem structure
 func NewMenuItem(title, href string) *MenuItem {
-	return &MenuItem{Title: title, Href: href, ID: href}
+	return &MenuItem{Title: title, Href: href, ID: href, Icon: "empty-icon"}
 }
 
 // NewMenuItemFromRoute create new menu item pointing to named route
 func NewMenuItemFromRoute(title, routeName string, args ...string) *MenuItem {
 	url := GetNamedURL(routeName, args...)
-	return &MenuItem{Title: title, Href: url, ID: routeName}
+	return &MenuItem{Title: title, Href: url, ID: routeName, Icon: "empty-icon"}
 }
 
 // SetID for menu item
@@ -39,16 +39,44 @@ func (item *MenuItem) SetIcon(icon string) *MenuItem {
 	return item
 }
 
-// SetActive set active flag or menu or submenu item when activeID match item.ID.
-func (item *MenuItem) SetActive(activeID string) (active bool) {
-	if item.ID == activeID {
+// SetActve for menu item
+func (item *MenuItem) SetActve(active bool) *MenuItem {
+	item.Active = active
+	return item
+}
+
+// AddChild append menu item as submenu item
+func (item *MenuItem) AddChild(child *MenuItem) *MenuItem {
+	item.Submenu = append(item.Submenu, child)
+	return item
+}
+
+func (item *MenuItem) AttachSubmenu(parentID string, submenu []*MenuItem) (attached bool) {
+	if item.ID == parentID {
+		item.Submenu = append(item.Submenu, submenu...)
+		return true
+	}
+	if item.Submenu != nil {
+		for _, subitem := range item.Submenu {
+			if subitem.AttachSubmenu(parentID, submenu) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (item *MenuItem) SetActiveMenu(menuID string) (found bool) {
+	if item.ID == menuID {
 		item.Active = true
 		return true
 	}
-	for _, subitem := range item.Submenu {
-		if subitem.SetActive(activeID) {
-			item.Active = true
-			return true
+	if item.Submenu != nil {
+		for _, subitem := range item.Submenu {
+			if subitem.SetActiveMenu(menuID) {
+				item.Active = true
+				return true
+			}
 		}
 	}
 	return false
@@ -57,12 +85,11 @@ func (item *MenuItem) SetActive(activeID string) (active bool) {
 // SetMainMenu - fill MainMenu in BasePageContext
 func SetMainMenu(ctx *BasePageContext) {
 	if ctx.CurrentUser != "" {
-		user := GetUser(ctx.CurrentUser)
 		ctx.MainMenu = []*MenuItem{NewMenuItemFromRoute("Home", "main-index").SetID("main").SetIcon("glyphicon glyphicon-home")}
-		if user.HasPermission("admin") {
-			sysMI := NewMenuItem("System", "").SetIcon("glyphicon glyphicon-wrench")
+		if CheckPermission(ctx.CurrentUserPerms, "admin") {
+			sysMI := NewMenuItem("System", "").SetIcon("glyphicon glyphicon-wrench").SetID("system")
 			sysMI.Submenu = []*MenuItem{
-				NewMenuItemFromRoute("Live view", "main-system").SetID("system").SetIcon("glyphicon glyphicon-dashboard"),
+				NewMenuItemFromRoute("Live view", "main-system").SetID("system-live").SetIcon("glyphicon glyphicon-dashboard"),
 				NewMenuItem("-", ""),
 				NewMenuItemFromRoute("Network", "net-index").SetID("net").SetIcon("glyphicon glyphicon-transfer"),
 				NewMenuItemFromRoute("Storage", "storage-index").SetID("storage").SetIcon("glyphicon glyphicon-hdd"),
@@ -70,20 +97,50 @@ func SetMainMenu(ctx *BasePageContext) {
 				NewMenuItemFromRoute("Process", "process-index").SetID("process").SetIcon("glyphicon glyphicon-cog"),
 				NewMenuItemFromRoute("Users", "users-index").SetID("users").SetIcon("glyphicon glyphicon-user"),
 				NewMenuItem("-", ""),
-				NewMenuItemFromRoute("Utilities", "utils-index").SetID("utils").SetIcon("glyphicon glyphicon-wrench")}
+				NewMenuItemFromRoute("Other", "other-index").SetID("other").SetIcon("glyphicon glyphicon-cog"),
+			}
 			ctx.MainMenu = append(ctx.MainMenu, sysMI)
 		}
-		if user.HasPermission("mpd") {
+		if CheckPermission(ctx.CurrentUserPerms, "mpd") {
 			ctx.MainMenu = append(ctx.MainMenu,
 				NewMenuItemFromRoute("MPD", "mpd-index").SetID("mpd").SetIcon("glyphicon glyphicon-music"))
 		}
-		if user.HasPermission("files") {
+		if CheckPermission(ctx.CurrentUserPerms, "files") {
 			ctx.MainMenu = append(ctx.MainMenu,
 				NewMenuItemFromRoute("Files", "files-index").SetID("files").SetIcon("glyphicon glyphicon-hdd"))
 		}
+		// Tools
+		toolsMenu := NewMenuItem("Tools", "").SetIcon("glyphicon glyphicon-briefcase").SetID("tools")
+		if CheckPermission(ctx.CurrentUserPerms, "admin") {
+			toolsMenu.Submenu = append(toolsMenu.Submenu,
+				NewMenuItemFromRoute("Utilities", "utils-index").SetID("utils").SetIcon("glyphicon glyphicon-wrench"),
+				NewMenuItem("-", ""))
+		}
+		if CheckPermission(ctx.CurrentUserPerms, "notepad") {
+			toolsMenu.Submenu = append(toolsMenu.Submenu,
+				NewMenuItemFromRoute("Notepad", "notepad-index").SetID("notepad-index").SetIcon("glyphicon glyphicon-paperclip"))
+		}
+		if toolsMenu.Submenu != nil {
+			ctx.MainMenu = append(ctx.MainMenu, toolsMenu)
+		}
 	}
-	for _, item := range ctx.MainMenu {
-		if item.SetActive(ctx.CurrentMainMenuPos) {
+}
+
+func AttachSubmenu(ctx *BasePageContext, parentID string, submenu []*MenuItem) {
+	if ctx.MainMenu == nil {
+		return
+	}
+	for _, subitem := range ctx.MainMenu {
+		if subitem.AttachSubmenu(parentID, submenu) {
+			return
+		}
+	}
+}
+
+// SetMenuActive add id  to menu active items
+func MenuListSetMenuActive(id string, menu []*MenuItem) {
+	for _, subitem := range menu {
+		if subitem.SetActiveMenu(id) {
 			break
 		}
 	}

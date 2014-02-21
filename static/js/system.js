@@ -3,14 +3,17 @@
 /* global window: false */
 /* global jQuery: false */
 
-"use strict";
 
 var SYSTEM = (function(self, $) {
-	var infoUrl = "/main/info";
+	"use strict";
+
+	var urls = {
+		"main-serv-status": ""
+	};
 
 	function getHistory() {
 		$.ajax({
-			url: infoUrl,
+			url: urls["main-serv-status"],
 			cache: false,
 			dataType: 'json'
 		}).done(function(msg) {
@@ -20,9 +23,20 @@ var SYSTEM = (function(self, $) {
 				load = msg.loadinfo,
 				nettablebody = $('tbody#network-interfaces-table'),
 				fstablebody = $('tbody#fs-table'),
-				uptime = msg.uptime;
+				uptime = msg.uptime,
+				netuseInput = msg.netusage.Input || [],
+				netuseOutput = msg.netusage.Output || [];
 			$('#load-chart').text(msg.load).change();
 			$('#cpu-chart').text(msg.cpu).change();
+			$('#mem-chart').text(msg.mem).change();
+			$("#net-in-chart").text(netuseInput.join(",")).change();
+			$("#net-out-chart").text(netuseOutput.join(",")).change();
+			if (netuseInput) {
+				$("#network-download").text(Math.round(netuseInput[netuseInput.length-1] / 1024) + " kB/s");
+			}
+			if (netuseOutput) {
+				$("#network-upload").text(Math.round(netuseOutput[netuseOutput.length-1] / 1024) + " kB/s");
+			}
 			$('#mem-chart').text(msg.mem).change();
 			$('#meminfo-used').text(meminfo.UsedPerc);
 			$('#meminfo-buff').text(meminfo.BuffersPerc);
@@ -39,14 +53,25 @@ var SYSTEM = (function(self, $) {
 			// network
 			nettablebody.text("");
 			msg.iface.forEach(function(entry) {
-				nettablebody.append(["<tr><td>", entry.Name, "</td><td>",
-					entry.Address, "</td></tr>"].join(""));
+				if (!entry.Address && !entry.Address6) {
+					return
+				}
+				var row = ["<tr><td>", entry.Name, "</td><td>"];
+				if (entry.Address && entry.Address6) {
+					row.push(entry.Address + "<br/>"+ entry.Address6);
+				} else if (entry.Address) {
+					row.push(entry.Address);
+				} else {
+					row.push(entry.Address6);
+				}
+				row.push("</td></tr>");
+				nettablebody.append(row.join(""));
 			});
 			// fs
 			fstablebody.text("");
 			msg["fs"].forEach(function(entry) {
 				fstablebody.append(["<tr><td>", entry["MountPoint"], "</td><td>",
-					"<span class=\"pie\" data-diameter=\"32\" data-colours='[\"red\", \"#f0f0f0\"]'>", 
+					"<span class=\"pie\" data-diameter=\"32\" data-colours='[\"red\", \"#f0f0f0\"]'>",
 					entry["UsedPerc"], "/100</span></td><td>",
 					entry["UsedPerc"], "%</td></tr>"].join(""));
 
@@ -62,8 +87,8 @@ var SYSTEM = (function(self, $) {
 		});
 	}
 
-	self.init = function init(infoUrl_) {
-		infoUrl = infoUrl_;
+	self.init = function init(params) {
+		urls = $.extend({}, urls, params.urls || {});
 		RPI.showLoadingMsg();
 		getHistory();
 	};

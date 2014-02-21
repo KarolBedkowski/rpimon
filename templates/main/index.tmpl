@@ -1,25 +1,69 @@
 {{define "body"}}
 
-
-{{if .Warnings}}
-<div class="container">
-	<div class="alert alert-warning">
-		<section>
-			<h1>Warning</h1>
-			<ul>
-			{{range .Warnings}}
-				<li>{{.}}</li>
-			{{end}}
-			</ul>
-		</section>
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">System</h1>
 	</div>
 </div>
+
+<div class="row">
+{{if .Warnings.Errors}}
+	<div class="col-lg-4 col-xs-12">
+		<div class="panel panel-danger">
+			<div class="panel-heading">
+				<h3 class="panel-title">Errors</h3>
+			</div>
+			<div class="panel-body">
+				<ul>
+				{{range .Warnings.Errors}}
+					<li>{{.}}</li>
+				{{end}}
+				</ul>
+			</div>
+		</div>
+	</div>
+{{end}}
+{{if .Warnings.Warnings}}
+	<div class="col-lg-4 col-xs-12">
+		<div class="panel panel-warning">
+			<div class="panel-heading">
+				<h3 class="panel-title">Warning</h3>
+			</div>
+			<div class="panel-body">
+				<ul>
+				{{range .Warnings.Warnings}}
+					<li>{{.}}</li>
+				{{end}}
+				</ul>
+			</div>
+		</div>
+	</div>
 {{end}}
 
-<div class="container">
-	<div class="row row-centered">
-		<div class="col-xs-12 col-sm-6 col-md-4">
-			<h1>System</h1>
+{{if .Warnings.Infos}}
+	<div class="col-lg-4 col-xs-12">
+		<div class="panel panel-info">
+			<div class="panel-heading">
+				<h3 class="panel-title">Info</h3>
+			</div>
+			<div class="panel-body">
+				<ul>
+				{{range .Warnings.Infos}}
+					<li>{{.}}</li>
+				{{end}}
+				</ul>
+			</div>
+		</div>
+	</div>
+{{end}}
+</div>
+
+<div class="row row-centered">
+	<div class="col-xs-12 col-sm-6 col-md-4">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">System</h3>
+			</div>
 			<table class="table">
 				<tr>
 					<th>Load:</th>
@@ -32,9 +76,15 @@
 				</tr>
 			</table>
 		</div>
+	</div>
 
-		<div class="col-xs-12 col-sm-6 col-md-4">
-			<h1>CPU</h1>
+	<div class="col-xs-12 col-sm-6 col-md-4">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">CPU
+					<a href="{{namedurl "process-index"}}"><span class="glyphicon glyphicon-cog"></span></a>
+				</h3>
+			</div>
 			<table class="table">
 				<tr>
 					<th>Usage</th>
@@ -48,9 +98,13 @@
 				</tr>
 			</table>
 		</div>
+	</div>
 
-		<div class="col-xs-12 col-sm-6 col-md-4">
-			<h1>Memory</h1>
+	<div class="col-xs-12 col-sm-6 col-md-4">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Memory</h3>
+			</div>
 			<table class="table">
 				<tr>
 					<th>RAM</th>
@@ -64,9 +118,15 @@
 				</tr>
 			</table>
 		</div>
+	</div>
 
-		<div class="col-xs-12 col-sm-6 col-md-4">
-			<h1>Filesystem</h1>
+	<div class="col-xs-12 col-sm-6 col-md-4">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Filesystem
+					<a href="{{namedurl "storage-index"}}"><span class="glyphicon glyphicon-cog"></span></a>
+				</h3>
+			</div>
 			<table class="table">
 				{{range .Filesystems}}
 				<tr>
@@ -77,27 +137,41 @@
 				{{end}}
 			</table>
 		</div>
+	</div>
 
-		<div class="col-xs-12 col-sm-6 col-md-4">
-			<h1>Network</h1>
+	<div class="col-xs-12 col-sm-6 col-md-4">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Network
+					<a href="{{namedurl "net-index"}}"><span class="glyphicon glyphicon-cog"></span></a>
+				</h3>
+			</div>
 			<table class="table">
-				{{range .Interfaces}}{{if ne .Address "-"}}
-				<tr><th>{{.Name}}</th><td>{{.Address}}</td></tr>
+				{{range .Interfaces}}{{if or .Address .Address6}}
+				<tr><th>{{.Name}}</th><td>{{.Address}} {{.Address6}}</td></tr>
 				{{end}}{{end}}
 			</table>
 		</div>
-		
-		<div class="col-xs-12 col-sm-6 col-md-4">
-			<h1>MPD</h1>
-			{{if .MpdStatus}}
+	</div>
+
+	<div class="col-xs-12 col-sm-6 col-md-4">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">MPD
+					<a href="{{namedurl "mpd-index"}}"><span class="glyphicon glyphicon-cog"></span></a>
+				</h3>
+			</div>
+			{{if not .MpdStatus}}
+			<div class="panel-body">
+				<p>Missing data</p>
+			</div>
+			{{else}}
 			<table class="table">
 				<tr>
 					<th>State:</th>
 					<td>{{.MpdStatus.state}}</td>
 				</tr>
 			</table>
-			{{else}}
-			<p>Missing data</p>
 			{{end}}
 		</div>
 	</div>

@@ -9,44 +9,22 @@ import (
 	"strings"
 )
 
-var subRouter *mux.Router
-
 // CreateRoutes for /process
 func CreateRoutes(parentRoute *mux.Route) {
-	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("process-index")
+	subRouter := parentRoute.Subrouter()
+	subRouter.HandleFunc("/", app.VerifyPermission(psaxlPageHandler, "admin")).Name("process-index")
 	subRouter.HandleFunc("/services", app.VerifyPermission(servicesPageHangler, "admin")).Name("process-services")
-	subRouter.HandleFunc("/services/{service}/{action}", app.VerifyPermission(serviceActionPageHandler, "admin"))
-	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("process-page")
+	subRouter.HandleFunc("/services/action", app.VerifyPermission(serviceActionPageHandler, "admin")).Name("process-services-action")
+	subRouter.HandleFunc("/psaxl", app.VerifyPermission(psaxlPageHandler, "admin")).Name("process-psaxl")
+	subRouter.HandleFunc("/top", app.VerifyPermission(topPageHandler, "admin")).Name("process-top")
+	subRouter.HandleFunc("/process/action", app.VerifyPermission(processActionHandler, "admin")).Name(
+		"process-action")
 }
 
-var localMenu []*app.MenuItem
-
-func createLocalMenu() []*app.MenuItem {
-	if localMenu == nil {
-		localMenu = []*app.MenuItem{app.NewMenuItemFromRoute("PS AXL", "process-page", "page", "psaxl").SetID("psaxl"),
-			app.NewMenuItemFromRoute("TOP", "process-page", "page", "top").SetID("top"),
-			app.NewMenuItemFromRoute("Services", "process-page", "page", "services").SetID("services")}
-	}
-	return localMenu
-}
-
-func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := app.NewSimpleDataPageCtx(w, r, "Process", "process", "", createLocalMenu())
-	vars := mux.Vars(r)
-	page, ok := vars["page"]
-	if !ok {
-		page = "psaxl"
-	}
-	switch page {
-	case "psaxl":
-		data.Data = h.ReadFromCommand("ps", "axlww")
-	case "top":
-		data.Data = h.ReadFromCommand("top", "-b", "-n", "1", "-w", "1024")
-	}
-	data.CurrentLocalMenuPos = page
-	data.CurrentPage = page
-	app.RenderTemplate(w, data, "base", "base.tmpl", "log.tmpl", "flash.tmpl")
+func buildLocalMenu() (localMenu []*app.MenuItem) {
+	return []*app.MenuItem{app.NewMenuItemFromRoute("PS AXL", "process-psaxl").SetID("psaxl"),
+		app.NewMenuItemFromRoute("TOP", "process-top").SetID("top"),
+		app.NewMenuItemFromRoute("Services", "process-services").SetID("services")}
 }
 
 type sevicesPageCtx struct {
@@ -56,9 +34,9 @@ type sevicesPageCtx struct {
 
 func servicesPageHangler(w http.ResponseWriter, r *http.Request) {
 	ctx := &sevicesPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(
-		w, r, "Process", "process", "", createLocalMenu())}
+		w, r, "Process", "process", buildLocalMenu())}
 	ctx.Services = make(map[string]string)
-	lines := strings.Split(h.ReadFromCommand("service", "--status-all"), "\n")
+	lines := strings.Split(h.ReadCommand("service", "--status-all"), "\n")
 	for _, line := range lines {
 		fields := strings.Fields(line)
 		if len(fields) > 3 {
@@ -66,29 +44,123 @@ func servicesPageHangler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	ctx.CurrentLocalMenuPos = "services"
-	ctx.CurrentPage = "services"
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "services.tmpl", "flash.tmpl")
+	ctx.SetMenuActive("services")
+	ctx.Header1 = "Services"
+	app.RenderTemplateStd(w, ctx, "services.tmpl")
 
 }
 
 func serviceActionPageHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	service, ok := vars["service"]
-	if !ok || service == "" {
-		serviceActionPageHandler(w, r)
-		return
-	}
-	action, ok := vars["action"]
-	if !ok || action == "" {
-		serviceActionPageHandler(w, r)
+	service := r.FormValue("service")
+	action := r.FormValue("action")
+	if service == "" || action == "" {
+		http.Error(w, "invalid request; missing service and/or action", http.StatusBadRequest)
 		return
 	}
 	l.Info("process serviceActionPageHandler %s %s", service, action)
-	result := h.ReadFromCommand("sudo", "service", service, action)
-	l.Info("process serviceActionPageHandler %s %s res=%s", service, action, result)
+	result := h.ReadCommand("sudo", "service", service, action)
 	session := app.GetSessionStore(w, r)
-	session.AddFlash(result)
+	session.AddFlash(result, "info")
 	session.Save(r, w)
-	http.Redirect(w, r, "/process/services", http.StatusFound)
+	http.Redirect(w, r, app.GetNamedURL("process-services"), http.StatusFound)
+}
+
+func psaxlPageHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := &sevicesPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(
+		w, r, "Process", "process", buildLocalMenu())}
+	ctx.SetMenuActive("psaxl")
+	ctx.Header1 = "Process"
+	ctx.Header2 = "psaxl"
+
+	lines := h.ReadCommand("ps", "axlww")
+	var columns = 0
+	for idx, line := range strings.Split(lines, "\n") {
+		if line != "" {
+			fields := strings.Fields(line)
+			if idx == 0 {
+				ctx.THead = fields
+				columns = len(fields) - 1
+			} else {
+				if len(fields) > columns {
+					cmd := strings.Join(fields[columns:], " ")
+					fields = append(fields[:columns], cmd)
+				}
+				ctx.TData = append(ctx.TData, fields)
+			}
+		}
+	}
+
+	app.RenderTemplateStd(w, ctx, "process/psaxl.tmpl")
+}
+
+func topPageHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := &sevicesPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(
+		w, r, "Process", "process", buildLocalMenu())}
+	ctx.SetMenuActive("top")
+	ctx.Header1 = "Process"
+	ctx.Header2 = "top"
+
+	lines := strings.Split(h.ReadCommand("top", "-b", "-n", "1", "-w", "256"), "\n")
+
+	// find header length
+	var headerLen = 0
+	for idx, line := range lines {
+		if line == "" {
+			headerLen = idx
+			break
+		}
+	}
+	ctx.Data = strings.Join(lines[:headerLen], "\n")
+
+	var columns = 0
+	for idx, line := range lines[headerLen+1:] {
+		if line != "" {
+			fields := strings.Fields(line)
+			if idx == 0 {
+				ctx.THead = fields
+				columns = len(fields) - 1
+			} else {
+				if len(fields) > columns {
+					cmd := strings.Join(fields[columns:], " ")
+					fields = append(fields[:columns], cmd)
+				}
+				ctx.TData = append(ctx.TData, fields)
+			}
+		}
+	}
+
+	app.RenderTemplateStd(w, ctx, "process/top.tmpl")
+}
+
+func processActionHandler(w http.ResponseWriter, r *http.Request) {
+	action := r.FormValue("a")
+	pid := r.FormValue("pid")
+	if action == "" || pid == "" {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+
+	back := r.FormValue("back")
+	var result string
+
+	switch action {
+	case "kill":
+		result = h.ReadCommand("sudo", "kill", "-9", pid)
+	case "stop":
+		result = h.ReadCommand("sudo", "kill", pid)
+	default:
+		http.Error(w, "invalid action", http.StatusBadRequest)
+		return
+	}
+	session := app.GetSessionStore(w, r)
+	if result == "" {
+		session.AddFlash("Process killed", "success")
+	} else {
+		session.AddFlash(result, "error")
+	}
+	session.Save(r, w)
+	if back == "" {
+		back = app.GetNamedURL("process-index")
+	}
+	http.Redirect(w, r, back, http.StatusFound)
 }

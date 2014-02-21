@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
+	l "k.prv/rpimon/helpers/logging"
 )
 
 type utility struct {
@@ -19,16 +19,16 @@ var config configuration
 
 // Init utils pages
 func Init(filename string) error {
-	log.Print("pages.utils Loading configuration file ", filename)
+	l.Print("pages.utils Loading configuration file: %s ", filename)
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Fatal("Error: ", err.Error())
+		l.Error("pages.utils: error: %s ", err.Error())
 		return err
 	}
 	err = json.Unmarshal(file, &config)
 	if err != nil {
-		log.Fatal("Error: ", err.Error())
+		l.Error("pages.utils: error: %s", err.Error())
 	}
-	log.Print("pages.utils Loaded groups ", len(config.Utils))
+	l.Print("pages.utils Loaded groups: %d ", len(config.Utils))
 	return err
 }

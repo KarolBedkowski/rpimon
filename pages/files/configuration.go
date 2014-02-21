@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
+	l "k.prv/rpimon/helpers/logging"
 	"path/filepath"
 )
 
@@ -15,20 +15,21 @@ var config configuration
 
 // Init utils pages
 func Init(filename string) error {
-	log.Print("pages.files Loading configuration file ", filename)
+	l.Print("pages.files Loading configuration file %s", filename)
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Fatal("Error: ", err.Error())
+		l.Error("pages.files: %s", err.Error())
 		return err
 	}
 	err = json.Unmarshal(file, &config)
 	if err != nil {
-		log.Fatal("Error: ", err.Error())
+		l.Error("pages.files: %s", err.Error())
+		return err
 	}
 
 	config.BaseDir, err = filepath.Abs(config.BaseDir)
 	if err != nil {
-		log.Fatal("error setting absolute base dir ", err.Error())
+		l.Error("pages.files: error setting absolute base dir ", err.Error())
 	}
 
 	return err

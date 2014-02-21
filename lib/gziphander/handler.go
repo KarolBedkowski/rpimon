@@ -14,55 +14,56 @@ import (
 )
 
 type gzipFileHandler struct {
-	fs http.FileSystem
+	fs           http.FileSystem
+	cacheControl bool
 }
 
 func (h *gzipFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	p := r.URL.Path
-	if !strings.HasPrefix(p, "/") {
-		p = "/" + p
-		r.URL.Path = p
+	if !strings.HasPrefix(r.URL.Path, "/") {
+		r.URL.Path = "/" + r.URL.Path
 	}
-	serveFile(w, r, h.fs, path.Clean(p), true)
+	serveFile(w, r, h.fs, path.Clean(r.URL.Path), true, h.cacheControl)
 }
 
-// Similar to net.http.FileServer, but serves <file>.gz instead of <file> if
-// it exists, has a later modification time, and the request supports gzip
-// encoding. Also serves the .gz file if the original doesn't exist.
-func FileServer(root http.FileSystem) http.Handler {
-	return &gzipFileHandler{root}
+// FileServer - net.http.FileServer + serving <file>.gz when exists instead of requested
+// file.
+// When cacheControl - add header Cache-Control to response.
+func FileServer(root http.FileSystem, cacheControl bool) http.Handler {
+	return &gzipFileHandler{root, cacheControl}
 }
 
-// Similar to net.http.ServeFile, but serves <file>.gz instead of <file> if
-// it exists, has a later modification time, and the request supports gzip
-// encoding. Also serves the .gz file if the original doesn't exist.
-func ServeFile(w http.ResponseWriter, r *http.Request, name string) {
+// ServeFile - net.http.ServeFile but first try to serve gzip file when exists <file>.gz
+func ServeFile(w http.ResponseWriter, r *http.Request, name string, cacheControl bool) {
 	dir, file := filepath.Split(name)
-	serveFile(w, r, http.Dir(dir), file, false)
+	serveFile(w, r, http.Dir(dir), file, false, cacheControl)
 }
 
 func serveFile(w http.ResponseWriter, r *http.Request, fs http.FileSystem,
-	name string, redirect bool) {
+	name string, redirect bool, cacheControl bool) {
 
+	// try to serve gziped file; ignore request for gz files
 	if !strings.HasSuffix(strings.ToLower(name), ".gz") && supportsGzip(r) {
-		file, stat := open(fs, name+".gz")
-		if file != nil && !stat.IsDir() {
+		if file, stat := open(fs, name+".gz"); file != nil {
 			defer file.Close()
 			name = stat.Name()
 			name = name[:len(name)-3]
 			setContentType(w, name, file)
 			w.Header().Set("Content-Encoding", "gzip")
+			if cacheControl {
+				w.Header().Set("Cache-Control", "must_revalidate, private, max-age=604800")
+			}
 			http.ServeContent(w, r, name, stat.ModTime(), file)
 			return
 		}
 	}
 
-	file, stat := open(fs, name)
-	if file != nil {
+	// serve requested file
+	if file, stat := open(fs, name); file != nil {
 		defer file.Close()
-		if !stat.IsDir() {
-			http.ServeContent(w, r, stat.Name(), stat.ModTime(), file)
+		if cacheControl {
+			w.Header().Set("Cache-Control", "must_revalidate, private, max-age=604800")
 		}
+		http.ServeContent(w, r, stat.Name(), stat.ModTime(), file)
 		return
 	}
 
@@ -94,15 +95,17 @@ func setContentType(w http.ResponseWriter, name string, file http.File) {
 	w.Header().Set("Content-Type", t)
 }
 
-func open(fs http.FileSystem, name string) (http.File, os.FileInfo) {
-	f, err := fs.Open(name)
+// open file and return File and FileInfo; ignore directories.
+func open(fs http.FileSystem, name string) (file http.File, stat os.FileInfo) {
+	var err error
+	file, err = fs.Open(name)
 	if err != nil {
-		return nil, nil
+		return
 	}
-	s, err := f.Stat()
-	if err != nil {
-		f.Close()
-		return nil, nil
+	stat, err = file.Stat()
+	if err != nil || stat.IsDir() { // ignore dirs
+		file.Close()
+		file = nil
 	}
-	return f, s
+	return
 }

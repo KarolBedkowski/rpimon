@@ -1,1 +1,20 @@
+* własne strony błędów
+* notatnik
+* konfiguracja smb
+* konfiguracja openvpn
+* konfiguracja nfs
+* konfiguracja iptables
+* konfiguracja użytkowników
 
+* konfiguracja resolvconf
+
+* apt
+
+* konfiguracja hosts
+* konfiguracja cron
+
+* sensors
+
+* możliwość wyłączania modułów - ukrywanie ze strony głównej itd
+
+* terminal (?)

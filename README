@@ -1,2 +1,5 @@
 rpimon 0.4
 
+
+User password:
+python -c "import sys, md5; m=md5.md5(); m.update(sys.argv[1]); print m.hexdigest()" <password>

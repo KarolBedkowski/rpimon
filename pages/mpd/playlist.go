@@ -3,12 +3,12 @@ package mpd
 // MPD current playlist
 
 import (
-	"code.google.com/p/gompd/mpd"
+	//"code.google.com/p/gompd/mpd"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
+	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
-	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"strconv"
@@ -19,46 +19,37 @@ var decoder = schema.NewDecoder()
 
 type playlistPageCtx struct {
 	*app.BasePageContext
-	CurrentPage   string
 	Playlist      []mpd.Attrs
 	CurrentSongID string
 	CurrentSong   string
 	Error         error
 }
 
-func newPlaylistPageCtx(w http.ResponseWriter, r *http.Request) *playlistPageCtx {
-	ctx := &playlistPageCtx{BasePageContext: app.NewBasePageContext("Mpd", "mpd", w, r)}
-	ctx.LocalMenu = createLocalMenu()
-	ctx.CurrentLocalMenuPos = "mpd-playlist"
-	return ctx
-}
-
 func playlistPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := newPlaylistPageCtx(w, r)
-	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlist.tmpl", "flash.tmpl")
+	ctx := &playlistPageCtx{BasePageContext: app.NewBasePageContext("Mpd", w, r)}
+	app.AttachSubmenu(ctx.BasePageContext, "mpd", buildLocalMenu())
+	ctx.SetMenuActive("mpd-playlist")
+	app.RenderTemplateStd(w, ctx, "mpd/playlist.tmpl")
 }
 
 func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	action, ok := vars["action"]
 	if !ok || action == "" {
-		l.Warn("page.mpd songActionPageHandler: missing action ", vars)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+		l.Warn("page.mpd.songActionPageHandler: missing action ", vars)
+		http.Error(w, "missing action", http.StatusBadRequest)
 		return
 	}
-	songIDStr, ok := vars["song-id"]
-	if !ok || songIDStr == "" {
-		l.Warn("page.mpd songActionPageHandler: missing songID ", vars)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+	var songID = -2
+	if songIDStr, ok := vars["song-id"]; ok && songIDStr != "" {
+		songID, _ = strconv.Atoi(songIDStr)
+	}
+	if songID == -2 {
+		l.Warn("page.mpd.songActionPageHandler: missing or invalid songID ", vars)
+		http.Error(w, "missing or invalid songID", http.StatusBadRequest)
 		return
 	}
-	songID, err := strconv.Atoi(songIDStr)
-	if err != nil || songID < 0 {
-		l.Warn("page.mpd songActionPageHandler: wrong songID ", vars)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
-		return
-	}
-	err = mpdSongAction(songID, action)
+	err := mpdSongAction(songID, action)
 	if r.Method == "PUT" {
 		encoded, _ := json.Marshal(getStatus())
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -66,7 +57,7 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		if err != nil {
 			session := app.GetSessionStore(w, r)
-			session.AddFlash(err.Error())
+			session.AddFlash(err.Error(), "error")
 			session.Save(r, w)
 		}
 		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
@@ -74,10 +65,8 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func playlistActionPageHandler(w http.ResponseWriter, r *http.Request) {
-	l.Info("playlistActionPageHandler")
 	vars := mux.Vars(r)
-	action, ok := vars["action"]
-	if ok && action != "" {
+	if action, ok := vars["action"]; ok && action != "" {
 		playlistAction(action)
 	}
 	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
@@ -93,24 +82,14 @@ func playlistSavePageHandler(w http.ResponseWriter, r *http.Request) {
 	form := &savePlaylistForm{}
 	decoder.Decode(form, r.Form)
 	if form.Name == "" {
-		handleError("Missing name", w, r)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+		http.Error(w, "Missing name", http.StatusBadRequest)
 		return
 	}
 	if err := playlistSave(form.Name); err != nil {
-		handleError("Saving playlist error: "+err.Error(), w, r)
+		http.Error(w, "Saving playlist error: "+err.Error(), http.StatusInternalServerError)
 	} else {
-		session := app.GetSessionStore(w, r)
-		session.AddFlash("Playlist saved")
-		session.Save(r, w)
+		w.Write([]byte("Playlist saved"))
 	}
-	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
-}
-
-func handleError(msg string, w http.ResponseWriter, r *http.Request) {
-	session := app.GetSessionStore(w, r)
-	session.AddFlash(msg)
-	session.Save(r, w)
 }
 
 type addToPlaylistForm struct {
@@ -118,55 +97,31 @@ type addToPlaylistForm struct {
 	CsrfToken string
 }
 
-func addToPlaylistPageHandler(w http.ResponseWriter, r *http.Request) {
+func addToPlaylistActionHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	form := &addToPlaylistForm{}
 	decoder.Decode(form, r.Form)
 	if form.Uri == "" {
-		handleError("Missing uri", w, r)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+		http.Error(w, "Missing URI", http.StatusBadRequest)
 		return
 	}
 	if err := addToPlaylist(form.Uri); err != nil {
-		handleError("Adding to playlist error "+err.Error(), w, r)
+		http.Error(w, "Adding to playlist error: "+err.Error(), http.StatusInternalServerError)
 	} else {
-		session := app.GetSessionStore(w, r)
-		session.AddFlash("Added to playlist")
-		session.Save(r, w)
+		w.Write([]byte("URI added"))
 	}
-	http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
-}
-
-var mpdPlaylistCache = h.NewSimpleCache(10)
-var mpdStatusCache = h.NewSimpleCache(10)
-
-type sInfoParams struct {
-	Start  int    `schema:"iDisplayStart"`
-	End    int    `schema:"iDisplayLength"`
-	Echo   string `schema:"sEcho"`
-	Search string `schema:"sSearch"`
 }
 
 func getPlaylistStat() (playlist [][]string, stat mpd.Attrs, err error) {
-	if cachedPlaylist, ok := mpdPlaylistCache.GetValue(); ok {
-		playlist = cachedPlaylist.([][]string)
-	}
-	if cachedStat, ok := mpdStatusCache.GetValue(); ok {
-		stat = cachedStat.(mpd.Attrs)
-	}
-	if len(playlist) == 0 || len(stat) == 0 {
-		var lplaylist []mpd.Attrs
-		lplaylist, err, stat = mpdPlaylistInfo(-1, -1)
-		for _, item := range lplaylist {
-			l.Print(item)
-			if title, ok := item["Title"]; !ok || title == "" {
-				item["Title"] = item["file"]
-			}
-			playlist = append(playlist, []string{item["Album"],
-				item["Artist"], item["Track"], item["Title"],
-				item["Id"], item["file"],
-			})
+	lplaylist, err, stat := mpdPlaylistInfo()
+	for _, item := range lplaylist {
+		if title, ok := item["Title"]; !ok || title == "" {
+			item["Title"] = item["file"]
 		}
+		playlist = append(playlist, []string{item["Album"],
+			item["Artist"], item["Track"], item["Title"],
+			item["Id"], item["file"],
+		})
 	}
 	return
 }
@@ -185,9 +140,16 @@ func filterPlaylist(playlist [][]string, filter string) (filtered [][]string) {
 	return
 }
 
-func sInfoPlaylistHandler(w http.ResponseWriter, r *http.Request) {
+type plistContentParams struct {
+	Start  int    `schema:"iDisplayStart"`
+	End    int    `schema:"iDisplayLength"`
+	Echo   string `schema:"sEcho"`
+	Search string `schema:"sSearch"`
+}
+
+func plistContentServHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	params := &sInfoParams{}
+	params := &plistContentParams{}
 	decoder.Decode(params, r.Form)
 	start := params.Start
 	if params.End > 0 {
@@ -202,9 +164,7 @@ func sInfoPlaylistHandler(w http.ResponseWriter, r *http.Request) {
 		"sEcho":                params.Echo,
 	}
 
-	playlist, stat, err := getPlaylistStat()
-
-	if err == nil {
+	if playlist, stat, err := getPlaylistStat(); err == nil {
 		if params.Search != "" {
 			playlist = filterPlaylist(playlist, params.Search)
 			result["iTotalDisplayRecords"] = len(playlist)

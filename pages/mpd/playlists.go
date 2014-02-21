@@ -3,10 +3,12 @@ package mpd
 // MPD Playlists
 
 import (
-	"code.google.com/p/gompd/mpd"
-	"github.com/gorilla/mux"
+	//"code.google.com/p/gompd/mpd"
+	"encoding/json"
+	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
-	l "k.prv/rpimon/helpers/logging"
+	h "k.prv/rpimon/helpers"
+	//l "k.prv/rpimon/helpers/logging"
 	"net/http"
 )
 
@@ -17,45 +19,40 @@ type playlistsPageCtx struct {
 	Error       string
 }
 
-func newPlaylistsPageCtx(w http.ResponseWriter, r *http.Request) *playlistsPageCtx {
-	ctx := &playlistsPageCtx{BasePageContext: app.NewBasePageContext("Mpd", "mpd", w, r)}
-	ctx.LocalMenu = createLocalMenu()
-	ctx.CurrentLocalMenuPos = "mpd-playlists"
-	return ctx
-}
 func playlistsPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := newPlaylistsPageCtx(w, r)
-	playlists, err := mpdGetPlaylists()
-	data.Playlists = playlists
-	if err != nil {
-		data.Error = err.Error()
-	}
-	app.RenderTemplate(w, data, "base", "base.tmpl", "mpd/playlists.tmpl", "flash.tmpl")
+	ctx := &playlistsPageCtx{BasePageContext: app.NewBasePageContext("Mpd", w, r)}
+	app.AttachSubmenu(ctx.BasePageContext, "mpd", buildLocalMenu())
+	ctx.SetMenuActive("mpd-playlists")
+	app.RenderTemplateStd(w, ctx, "mpd/playlists.tmpl")
 }
 
 func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	action, ok := vars["action"]
-	if !ok || action == "" {
-		l.Warn("page.mpd playlistsActionPageHandler: missing action ", vars)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
+	r.ParseForm()
+	action, ok := h.GetParam(w, r, "a")
+	if !ok {
 		return
 	}
-	playlist, ok := vars["plist"]
-	if !ok || playlist == "" {
-		l.Warn("page.mpd playlistsActionPageHandler: missing songID ", vars)
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
+	playlist, ok := h.GetParam(w, r, "p")
+	if !ok {
 		return
 	}
-	err := mpdPlaylistsAction(playlist, action)
-	if err != nil {
-		session := app.GetSessionStore(w, r)
-		session.AddFlash(err.Error())
-		session.Save(r, w)
-	}
-	if r.Method == "GET" {
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlists"), http.StatusFound)
+	status, err := mpdPlaylistsAction(playlist, action)
+	if err == nil {
+		w.Write([]byte(status))
 	} else {
-		w.Write([]byte("OK"))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func playlistsListService(w http.ResponseWriter, r *http.Request) {
+	result := make(map[string]interface{})
+	if playlists, err := mpdGetPlaylists(); err != nil {
+		result["error"] = err.Error()
+	} else {
+		result["items"] = playlists
+		result["error"] = ""
+	}
+	encoded, _ := json.Marshal(result)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(encoded)
 }

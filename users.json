@@ -1,7 +1,7 @@
 {
 	"Users": [{
 		"Login": "admin",
-		"Password": "q1w2e3",
-		"Privs": ["admin", "mpd", "files"]
+		"Password": "7cbb3252ba6b7e9c422fac5334d22054",
+		"Privs": ["admin", "mpd", "files", "notepad"]
 	}]
 }

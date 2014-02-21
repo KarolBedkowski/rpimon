@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/gorilla/context"
 	"k.prv/rpimon/database"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
@@ -10,16 +9,20 @@ import (
 	"time"
 )
 
-// Session key for userid
-const sessionLoginKey = "USERID"
-const usercontextkey = "USER"
+// Session key
+const (
+	sessionLoginKey      = "USERID"
+	sessionPermissionKey = "USER_PERM"
+)
 
-const sessionTimestampKey = "timestamp"
+// Sessions settings
+const (
+	sessionTimestampKey = "timestamp"
+	maxSessionAge       = time.Duration(24) * time.Hour
+)
 
-const maxSessionAge = time.Duration(24) * time.Hour
-
-// GetLoggedUserLogin for request
-func GetLoggedUserLogin(w http.ResponseWriter, r *http.Request) (login string) {
+// GetLoggedUserInfo returns current login and permission
+func GetLoggedUserInfo(w http.ResponseWriter, r *http.Request) (login string, perm []string) {
 	session := GetSessionStore(w, r)
 	if ts, ok := session.Values[sessionTimestampKey]; ok {
 		timestamp := time.Unix(ts.(int64), 0)
@@ -27,65 +30,35 @@ func GetLoggedUserLogin(w http.ResponseWriter, r *http.Request) (login string) {
 		if now.Sub(timestamp) < maxSessionAge {
 			session.Values[sessionTimestampKey] = now.Unix()
 			session.Save(r, w)
-			sessLogin := session.Values[sessionLoginKey]
-			if sessLogin != nil {
+			if sessLogin := session.Values[sessionLoginKey]; sessLogin != nil {
 				login = sessLogin.(string)
+				if sessPerm := session.Values[sessionPermissionKey]; sessPerm != nil {
+					perm = sessPerm.([]string)
+				}
 			}
 		}
 	}
 	return
 }
 
-// GetLoggedUser for request
-func GetLoggedUser(w http.ResponseWriter, r *http.Request) (user *database.User) {
-	user = nil
-	userLogin := GetLoggedUserLogin(w, r)
-	if userLogin != "" {
-		user := database.GetUserByLogin(userLogin)
-		if user != nil {
-			return user
-		}
-	}
-	return
-}
-
-// GetUser from database based on login
-func GetUser(login string) (user *database.User) {
+// CheckUserLoggerOrRedirect for request; if user is not logged - redirect to login page
+func CheckUserLoggerOrRedirect(w http.ResponseWriter, r *http.Request) (login string, perm []string) {
+	login, perm = GetLoggedUserInfo(w, r)
 	if login != "" {
-		user := database.GetUserByLogin(login)
-		if user != nil {
-			return user
-		}
-	}
-	return nil
-}
-
-// CheckIsUserLogger for request
-func CheckIsUserLogger(w http.ResponseWriter, r *http.Request, redirect bool) (user *database.User) {
-	user = GetLoggedUser(w, r)
-	if user != nil {
 		return
 	}
 	log.Print("Access denied")
-	if redirect {
-		url := GetNamedURL("auth-login")
-		url += h.BuildQuery("back", r.URL.String())
-		http.Redirect(w, r, url, 302)
-	}
+	url := GetNamedURL("auth-login")
+	url += h.BuildQuery("back", r.URL.String())
+	http.Redirect(w, r, url, 302)
 	return
-}
-
-// ComparePassword check passwords
-func ComparePassword(userPassword string, candidatePassword string) bool {
-	return userPassword == candidatePassword
 }
 
 // VerifyPermission check is user is logged and have given permission
 func VerifyPermission(h http.HandlerFunc, permission string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if user := CheckIsUserLogger(w, r, true); user != nil {
-			if user.HasPermission(permission) {
-				context.Set(r, usercontextkey, user)
+		if login, perms := CheckUserLoggerOrRedirect(w, r); login != "" {
+			if CheckPermission(perms, permission) {
 				h(w, r)
 				return
 			}
@@ -94,22 +67,32 @@ func VerifyPermission(h http.HandlerFunc, permission string) http.HandlerFunc {
 	})
 }
 
-// VerifyLogged check is user is logged
+// VerifyLogged check only is user is logged
 func VerifyLogged(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if user := CheckIsUserLogger(w, r, true); user != nil {
-			context.Set(r, usercontextkey, user)
+		if login, _ := CheckUserLoggerOrRedirect(w, r); login != "" {
 			h(w, r)
 		}
 	})
 }
 
 // LoginUser - update session
-func LoginUser(w http.ResponseWriter, r *http.Request, login string) error {
-	l.Info("User %s log in", login)
+func LoginUser(w http.ResponseWriter, r *http.Request, user *database.User) error {
+	l.Info("User %s log in", user.Login)
 	session := GetSessionStore(w, r)
-	session.Values[sessionLoginKey] = login
+	session.Values[sessionLoginKey] = user.Login
+	session.Values[sessionPermissionKey] = user.Privs
 	session.Values[sessionTimestampKey] = time.Now().Unix()
 	session.Save(r, w)
 	return nil
+}
+
+// CheckPermission return true if requred permission is on list
+func CheckPermission(userPermissions []string, required string) bool {
+	for _, p := range userPermissions {
+		if p == required {
+			return true
+		}
+	}
+	return false
 }

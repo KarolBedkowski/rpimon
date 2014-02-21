@@ -1,5 +1,12 @@
 package database
 
+import (
+	"crypto/md5"
+	"fmt"
+	"io"
+	l "k.prv/rpimon/helpers/logging"
+)
+
 // User structure
 type User struct {
 	Login    string
@@ -28,4 +35,16 @@ func (user *User) HasPermission(permission string) bool {
 		}
 	}
 	return false
+}
+
+// CheckPassword verify given password for user
+func (user *User) CheckPassword(candidatePassword string) bool {
+	l.Info("%#v %v", user, candidatePassword)
+	if user.Password == "" {
+		return candidatePassword == user.Login
+	}
+	hash := md5.New()
+	io.WriteString(hash, candidatePassword)
+	pass := fmt.Sprintf("%x", hash.Sum(nil))
+	return user.Password == pass
 }

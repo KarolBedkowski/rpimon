@@ -1,13 +1,12 @@
-build: clean
+build:
 	GOGCCFLAGS="-s -fPIC -O4 -Ofast -march=native" go build
 
-build_pi: clean
+build_pi:
 	CGO_ENABLED="0" GOGCCFLAGS="-fPIC -O4 -Ofast -march=native -s" GOARCH=arm GOARM=5 go build -o rpimon
 	#CGO_ENABLED="0" GOGCCFLAGS="-g -O2 -fPIC" GOARCH=arm GOARM=5 go build server.go 
 
 clean:
 	go clean
-	rm -rf temp dist
 	rm -f server rpimon
 	find ./static -iname '*.css.gz' -exec rm -f {} ';'
 	find ./static -iname '*.js.gz' -exec rm -f {} ';'
@@ -17,19 +16,21 @@ compress:
 	find ./static -iname '*.css' -exec gzip -f -k {} ';'
 	find ./static -iname '*.js' -exec gzip -f -k {} ';'
 
+copy_pi:
+	cp rpi/* dist/
+	cp rpimon dist/
+	ssh k@pi sudo service k_rpimon stop
+	rsync -arv --delete --exclude notepad --exclude temp dist/* k@pi:rpimon/
+	ssh k@pi sudo service k_rpimon start
+
 install: build build_static
 	cp *.json dist/
 	cp rpimon dist/
 
-install_pi: build_pi build_static
-	cp rpi/* dist/
-	cp rpimon dist/
-	ssh k@pi sudo service k_rpimon stop
-	rsync -arv --delete dist/* k@pi:rpimon/
-	ssh k@pi sudo service k_rpimon start
+install_pi: build_pi build_static copy_pi
 
 run: clean
-	mkdir temp
+	mkdir temp || true
 	go-reload server.go
 
 certs:
@@ -38,15 +39,25 @@ certs:
 
 debug: clean
 	go build -gcflags "-N -l" server.go
-	gdb ./server
+	gdb -tui ./server -d $GOROOT
 
 
 build_static:
-	rm -rf dist/static dist/templates
-	mkdir "dist" || true
-	cp -r static templates dist/
-	find dist -name *.css -print -exec yui-compressor -v -o "{}.tmp" "{}" ';' -exec  mv "{}.tmp" "{}" ';'
-	find dist -name *.js -print -exec google-compiler --language_in ECMASCRIPT5 --js_output_file "{}.tmp" --js "{}" ';' -exec  mv "{}.tmp" "{}" ';'
-	find dist -iname '*.css' -exec gzip -f -k {} ';'
-	find dist -iname '*.js' -exec gzip -f -k {} ';'
+	# create dist dir if not exists
+	if [ ! -d dist ]; then mkdir -p "dist"; rm -f .stamp; fi
+	cp -r templates dist/
+	if [ ! -e .stamp ]; then touch -t 200001010000 .stamp; fi
+	# copy dir structure
+	find static -type d -exec mkdir -p -- dist/{} ';'
+	# copy non-js and non-css files
+	find static -type f ! -name *.js ! -name *.css -exec cp {} dist/{} ';'
+	# minify updated css
+	find static -name *.css -newer .stamp -print -exec yui-compressor -v -o "./dist/{}" "{}" ';' 
+	# minify updated js
+	find static -name *.js -newer .stamp -print -exec closure-compiler --language_in ECMASCRIPT5 --js_output_file "dist/{}" --js "{}" ';' 
+	# compress updated css
+	find dist -iname '*.css' -newer .stamp -print -exec gzip -f --best -k {} ';'
+	# compress updated js
+	find dist -iname '*.js' -newer .stamp -print -exec gzip -f --best -k {} ';'
+	touch .stamp
 

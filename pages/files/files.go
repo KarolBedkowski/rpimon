@@ -14,36 +14,32 @@ import (
 	"path/filepath"
 )
 
-var subRouter *mux.Router
-
 // CreateRoutes for /files
 func CreateRoutes(parentRoute *mux.Route) {
-	subRouter = parentRoute.Subrouter()
+	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/",
-		app.VerifyPermission(verifyAccess(mainPageHandler), "files")).Name("files-index")
+		app.VerifyPermission(verifyAccess(mainPageHandler), "files")).Name(
+		"files-index")
 	subRouter.HandleFunc("/mkdir",
-		app.VerifyPermission(verifyAccess(mkdirPageHandler), "files")).Methods(
+		app.VerifyPermission(verifyAccess(mkdirServHandler), "files")).Methods(
 		"POST").Name("files-mkdir")
 	subRouter.HandleFunc("/upload",
 		app.VerifyPermission(verifyAccess(uploadPageHandler), "files")).Methods(
 		"POST").Name("files-upload")
 	subRouter.HandleFunc("/serv/dirs",
-		app.VerifyPermission(serviceDirsHandler, "files")).Name(
+		app.VerifyPermission(dirServHandler, "files")).Name(
 		"files-serv-dirs")
 	subRouter.HandleFunc("/serv/files",
-		app.VerifyPermission(serviceFilesHandler, "files")).Name(
+		app.VerifyPermission(filesServHandler, "files")).Name(
 		"files-serv-files")
 	subRouter.HandleFunc("/action",
 		app.VerifyPermission(verifyAccess(actionHandler), "files")).Methods(
 		"PUT").Name("files-file-action")
 }
 
-type pageCtx struct {
-	*app.BasePageContext
-}
-
 func mainPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Files", "files", w, r)}
+	ctx := app.NewBasePageContext("Files", w, r)
+	ctx.SetMenuActive("files")
 	r.ParseForm()
 	var relpath, abspath = ".", config.BaseDir
 	if pctx != nil {
@@ -66,26 +62,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) 
 		return
 	}
 
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "files/browser.tmpl", "flash.tmpl")
-}
-
-func mkdirPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
-	if pctx == nil {
-		http.Error(w, "Error: missing path ", http.StatusBadRequest)
-		return
-	}
-	var _, abspath = pctx.relpath, pctx.abspath
-	dirname, ok := h.GetParam(w, r, "name")
-	if !ok {
-		return
-	}
-	dirpath := filepath.Join(abspath, dirname)
-	l.Debug("files: create dir %s", dirpath)
-	if err := os.MkdirAll(dirpath, os.ModePerm|0770); err != nil {
-		http.Error(w, "Error: creating directory "+err.Error(),
-			http.StatusNotFound)
-	}
-	w.Write([]byte("OK"))
+	app.RenderTemplateStd(w, ctx, "files/browser.tmpl")
 }
 
 func uploadPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
@@ -172,16 +149,18 @@ type dirInfo struct {
 	State    map[string]bool `json:"state"`
 }
 
-func serviceDirsHandler(w http.ResponseWriter, r *http.Request) {
+func dirServHandler(w http.ResponseWriter, r *http.Request) {
+	if config.BaseDir == "" {
+		http.Error(w, "Missing module configuration. Check browser.josm", http.StatusInternalServerError)
+		return
+	}
 	r.ParseForm()
 	path, ok := h.GetParam(w, r, "id")
 	if !ok {
 		return
 	}
 
-	path = id2Dir(path)
-
-	abspath, relpath, err := isPathValid(path)
+	abspath, relpath, err := isPathValid(id2Dir(path))
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
 		return
@@ -218,7 +197,11 @@ func serviceDirsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(encoded)
 }
 
-func serviceFilesHandler(w http.ResponseWriter, r *http.Request) {
+func filesServHandler(w http.ResponseWriter, r *http.Request) {
+	if config.BaseDir == "" {
+		http.Error(w, "Missing module configuration. Check browser.josm", http.StatusInternalServerError)
+		return
+	}
 	r.ParseForm()
 	path, ok := h.GetParam(w, r, "id")
 	if !ok {
@@ -266,4 +249,20 @@ func serviceFilesHandler(w http.ResponseWriter, r *http.Request) {
 	encoded, _ := json.Marshal(children)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(encoded)
+}
+
+func mkdirServHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
+	if pctx == nil {
+		http.Error(w, "Error: missing path ", http.StatusBadRequest)
+		return
+	}
+	if dirname, ok := h.GetParam(w, r, "name"); ok {
+		dirpath := filepath.Join(pctx.abspath, dirname)
+		l.Debug("files: create dir %s", dirpath)
+		if err := os.MkdirAll(dirpath, os.ModePerm|0770); err != nil {
+			http.Error(w, "Error: creating directory "+err.Error(),
+				http.StatusNotFound)
+		}
+		w.Write([]byte("OK"))
+	}
 }

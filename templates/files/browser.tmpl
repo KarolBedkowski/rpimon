@@ -1,34 +1,39 @@
 {{define "body"}}
 {{$ctx := . }}
-<div class="container">
-	<div class="row">
-		<div class="col-xs-12 col-md-8">
-			<ol class="breadcrumb" id="breadcrumb"></ol>
-		</div>
-		<div class="col-xs-12 col-md-4 text-right">
-			<div class="btn-group btn-group-sm">
-				<button class="btn btn-default" data-toggle="modal" data-target="#create-folder-dlg">Create directory</button>
-				<button class="btn btn-default" data-toggle="modal" data-target="#upload-dlg">Upload</button>
-			</div>
-		</div>
+
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">Files</h1>
+	</div>
 </div>
-<div class="container">
-	<div class="row row-centered">
-		<div class="col-xs-12">
-			<table class="table table-hover table-bordered table-condensed" id="table-files-browser">
-				<thead>
-					<tr>
-						<th width="16px"></th>
-						<th>Filename</th>
-						<th>Size</th>
-						<th>Date</th>
-						<th>A.</th>
-					</tr>
-				</thead>
-				<tbody>
-				</tbody>
-			</table>
+
+<div class="row">
+	<div class="col-xs-12 col-md-8">
+		<ol class="breadcrumb" id="breadcrumb"></ol>
+	</div>
+	<div class="col-xs-12 col-md-4 text-right">
+		<div class="btn-group btn-group-sm">
+			<button class="btn btn-default" data-toggle="modal" data-target="#create-folder-dlg">Create directory</button>
+			<button class="btn btn-default" data-toggle="modal" data-target="#upload-dlg">Upload</button>
 		</div>
+	</div>
+</div>
+
+<div class="row row-centered">
+	<div class="col-xs-12">
+		<table class="table table-hover table-bordered table-condensed" id="table-files-browser">
+			<thead>
+				<tr>
+					<th width="16px"></th>
+					<th>Filename</th>
+					<th>Size</th>
+					<th>Date</th>
+					<th>A.</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
 	</div>
 </div>
 
@@ -45,7 +50,7 @@
 						<label for="folder-name">Folder name</label>
 						<input type="text" name="name" id="folder-name" class="form-control" placeholder="Directory name" required />
 					</div>
-					<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
+					<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
 					<input type="hidden" name="p" id="" value="" />
 				</div>
 				<div class="modal-footer">
@@ -67,7 +72,7 @@
 			<form action="{{namedurl "files-upload"}}" method="post" enctype="multipart/form-data" class="form-inline">
 				<div class="modal-body">
 					<input type="file" name="upload" />
-					<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
+					<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
 					<input type="hidden" name="p" id="" value="" />
 				</div>
 				<div class="modal-footer">
@@ -117,4 +122,3 @@
 	});
 </script>
 {{end}}
-

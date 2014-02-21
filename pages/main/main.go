@@ -12,28 +12,19 @@ import (
 	"strings"
 )
 
-var subRouter *mux.Router
-
 // CreateRoutes for /main
 func CreateRoutes(parentRoute *mux.Route) {
-	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/", mainPageHanler).Name("main-index")
+	subRouter := parentRoute.Subrouter()
+	subRouter.HandleFunc("/", mainPageHandler).Name("main-index")
 	subRouter.HandleFunc("/system",
-		app.VerifyPermission(systemPageHanler, "admin")).Name(
+		app.VerifyPermission(systemPageHandler, "admin")).Name(
 		"main-system")
-	subRouter.HandleFunc("/info",
-		app.VerifyPermission(infoHandler, "admin")).Name(
-		"main-serv-info")
-}
-
-type fsInfo struct {
-	Name       string
-	Size       string
-	Used       string
-	Available  string
-	UsedPerc   int
-	MountPoint string
-	FreePerc   int
+	subRouter.HandleFunc("/serv/status",
+		app.VerifyPermission(statusServHandler, "admin")).Name(
+		"main-serv-status")
+	subRouter.HandleFunc("/serv/alerts",
+		app.VerifyPermission(alertsServHandler, "admin")).Name(
+		"main-serv-alerts")
 }
 
 type pageCtx struct {
@@ -46,14 +37,14 @@ type pageCtx struct {
 	Filesystems       *monitor.FilesystemsStruct
 	Interfaces        *monitor.InterfacesStruct
 	MpdStatus         map[string]string
-	Warnings          []string
+	Warnings          *monitor.WarningsStruct
 	MaxAcceptableLoad int
 	LoadTrucated      float64
 }
 
-func mainPageHanler(w http.ResponseWriter, r *http.Request) {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext(
-		"Main", "main", w, r)}
+func mainPageHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Main", w, r)}
+	ctx.SetMenuActive("main")
 	ctx.Warnings = monitor.GetWarnings()
 	ctx.Uptime = monitor.GetUptimeInfo()
 	ctx.CPUUsage = monitor.GetCPUUsageInfo()
@@ -71,27 +62,27 @@ func mainPageHanler(w http.ResponseWriter, r *http.Request) {
 	if mpdStatus, err := mpd.GetShortStatus(); err == nil {
 		ctx.MpdStatus = mpdStatus
 	}
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/index.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, ctx, "main/index.tmpl")
 }
 
 type pageSystemCtx struct {
 	*app.BasePageContext
-	Warnings          []string
+	Warnings          *monitor.WarningsStruct
 	MaxAcceptableLoad int
 }
 
-func systemPageHanler(w http.ResponseWriter, r *http.Request) {
-	ctx := &pageSystemCtx{BasePageContext: app.NewBasePageContext(
-		"System", "system", w, r),
+func systemPageHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := &pageSystemCtx{BasePageContext: app.NewBasePageContext("System", w, r),
 		Warnings: monitor.GetWarnings()}
+	ctx.SetMenuActive("system-live")
 	ctx.MaxAcceptableLoad = runtime.NumCPU() * 2
-	app.RenderTemplate(w, ctx, "base", "base.tmpl", "main/system.tmpl", "flash.tmpl")
+	app.RenderTemplateStd(w, ctx, "main/system.tmpl")
 }
 
-var infoHandlerCache = h.NewSimpleCache(1)
+var statusServCache = h.NewSimpleCache(1)
 
-func infoHandler(w http.ResponseWriter, r *http.Request) {
-	data := infoHandlerCache.Get(func() h.Value {
+func statusServHandler(w http.ResponseWriter, r *http.Request) {
+	data := statusServCache.Get(func() h.Value {
 		res := map[string]interface{}{"cpu": strings.Join(monitor.GetCPUHistory(), ","),
 			"load":     strings.Join(monitor.GetLoadHistory(), ","),
 			"mem":      strings.Join(monitor.GetMemoryHistory(), ","),
@@ -101,10 +92,20 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 			"loadinfo": monitor.GetLoadInfo(),
 			"fs":       monitor.GetFilesystemsInfo(),
 			"iface":    monitor.GetInterfacesInfo(),
-			"uptime":   monitor.GetUptimeInfo()}
+			"uptime":   monitor.GetUptimeInfo(),
+			"netusage": monitor.GetTotalNetHistory(),
+		}
 		encoded, _ := json.Marshal(res)
 		return encoded
 	}).([]byte)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(data)
+}
+
+func alertsServHandler(w http.ResponseWriter, r *http.Request) {
+	data := make(map[string]interface{})
+	data["warnings"] = monitor.GetWarnings()
+	encoded, _ := json.Marshal(data)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(encoded)
 }

@@ -17,7 +17,7 @@ FILES.browser = (function(self, $) {
 		urls = {
 			"service-dirs": "serv/dirs",
 			"service-files": "serv/files",
-			"file-action": "action",
+			"file-action": "action"
 		}
 		;
 
@@ -54,20 +54,22 @@ FILES.browser = (function(self, $) {
 		$("#breadcrumb a").on("click", gotoAction);
 	}
 
-	function selectPath(path) {
+	function selectPath(path, skipAppdendHistory) {
 		currentPath = path;
 		RPI.showLoadingMsg();
 		$('input[name=p]').val(path);
 		$.ajax({
 			url: urls["service-files"],
 			data: {
-				id: path,
+				id: path
 			},
 			cache: true,
 			dataType: "json"
 		}).done(function(msg) {
-			var new_location = "?p="+path;
-			window.history.pushState({ path: new_location }, window.title, new_location);
+			if (!skipAppdendHistory) {
+				var new_location = "?p=" + encodeURIComponent(path);
+				window.history.pushState({"module": "files"}, window.title, new_location);
+			}
 			table.fnClearTable();
 			table.fnAddData(msg);
 			updateBreadcrumb(path);
@@ -92,15 +94,15 @@ FILES.browser = (function(self, $) {
 					url: urls["file-action"],
 					data: {
 						"action": "delete",
-						"p": p,
-					},
+						"p": p
+					}
 				}).fail(function(msg) {
 					RPI.hideLoadingMsg();
-					window.console.log(msg);
+					if (window.console && window.console.log) { window.console.log(msg); }
 					RPI.alert(msg.responseText).open();
 				}).done(function(msg) {
 					RPI.hideLoadingMsg();
-					window.console.log(msg);
+					RPI.showFlash("success", "File deleted", 1);
 					selectPath(currentPath);
 				});
 			}
@@ -128,15 +130,15 @@ FILES.browser = (function(self, $) {
 					data: {
 						"action": "move",
 						"p": p,
-						"d": dlgDirTreeSelection,
-					},
+						"d": dlgDirTreeSelection
+					}
 				}).fail(function(msg) {
 					RPI.hideLoadingMsg();
-					window.console.log(msg);
+					if (window.console && window.console.log) { window.console.log(msg); }
 					RPI.alert(msg.responseText).open();
 				}).done(function(msg) {
 					RPI.hideLoadingMsg();
-					window.console.log(msg);
+					RPI.showFlash("success", "File moved", 1);
 					selectPath(currentPath);
 				});
 			}
@@ -149,18 +151,18 @@ FILES.browser = (function(self, $) {
 		$.ajax({
 			method: "POST",
 			url: $(this).attr("action"),
-			data: $(this).serialize(),
+			data: $(this).serialize()
 		}).done(function(msg) {
 			$("#create-folder-dlg").modal("hide");
-			window.console.log(msg);
+			RPI.showFlash("success", "Directory created", 1);
 			selectPath(currentPath);
 			$('#create-folder-dlg input[name="name"]').val("");
 			$('#create-folder-dlg button[type="submit"]').button('reset');
 		}).fail(function(msg) {
-			window.console.log(msg);
+			if (window.console && window.console.log) { window.console.log(msg); }
 			$("#create-folder-dlg").modal("hide");
 			$('#create-folder-dlg button[type="submit"]').button('reset');
-			RPI.alert(msg.responseText);
+			RPI.alert(msg.responseText).open();
 		});
 	}
 
@@ -177,8 +179,8 @@ FILES.browser = (function(self, $) {
 				},
 				"themes" : {
 					"variant": "small",
-					"responsive": false,
-				},
+					"responsive": false
+				}
 			}
 		}).on("select_node.jstree", function (e, data) {
 			var path = data.selected[0];
@@ -207,7 +209,7 @@ FILES.browser = (function(self, $) {
 		urls = $.extend(urls, params.urls || {});
 		table = $('table').dataTable({
 			"bAutoWidth": false,
-			"bStateSave": true,
+			//"bStateSave": true,
 			"sPaginationType": "bootstrap",
 			"bFilter": false,
 			"iDisplayLength": 50,
@@ -228,7 +230,7 @@ FILES.browser = (function(self, $) {
 						}
 					},
 					"sType": "data",
-					"aDataSort": [ 0, 1 ],
+					"aDataSort": [ 0, 1 ]
 				},
 				{
 					"aTargets": [1],
@@ -240,7 +242,7 @@ FILES.browser = (function(self, $) {
 							return ['<a class="ajax-action-open" href="#">', data, '</a>'].join("");
 						}
 					},
-					"aDataSort": [ 1, 0 ],
+					"aDataSort": [ 1, 0 ]
 				},
 				{
 					"aTargets": [4],
@@ -252,8 +254,8 @@ FILES.browser = (function(self, $) {
 							' <a href="#" class="ajax-action-move"><span class="glyphicon glyphicon-share-alt" title="Move"></span></a>';
 						}
 						return "";
-					},
-				},
+					}
+				}
 			],
 			"aaSorting": [[0,'asc'], [1,'asc']],
 			"fnRowCallback": function(row, aData) { //, iDisplayIndex, iDisplayIndexFull) {
@@ -263,26 +265,36 @@ FILES.browser = (function(self, $) {
 				$("table a.ajax-action-open").on("click", gotoAction);
 				$("table a.ajax-action-del").on("click", deleteAction);
 				$("table a.ajax-action-move").on("click", moveAction);
-			},
+			}
 		});
 
-		$(window).bind('popstate', function(event) {
+		function gotoLocation() {
 			var location = window.location.search;
 			if (location && location.startsWith("?p=")) {
 				location = location.substr(3, location.length);
 				location = decodeURIComponent(location);
-				selectPath(location || ".");
+			}
+			selectPath(location || ".", true);
+		}
+
+		$(window).bind('popstate', gotoLocation);
+
+		$('div.modal').on('shown.bs.modal', function() {
+			var inputs = $('input:first-of-type');
+			if (inputs) {
+				inputs.focus();
 			}
 		});
 
 		$("#create-folder-dlg form").submit(createDirectory);
 
-		var location = window.location.search;
-		if (location && location.startsWith("?p=")) {
-			location = location.substr(3, location.length);
-			location = decodeURIComponent(location);
+		// hide columns on small screens
+		if (document.body.clientWidth < 768) {
+			table.fnSetColumnVis(2, false);
+			table.fnSetColumnVis(3, false);
 		}
-		selectPath(location || ".");
+
+		gotoLocation();
 	};
 
 	return self;
