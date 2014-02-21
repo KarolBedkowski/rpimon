@@ -275,16 +275,18 @@ div#loading-box p {
 	margin-right: 0;
 	margin-left: 0;
 	width: 100%;
-	display: block-inline;
+	display: block;
 }
 
 @media(min-width:768px) {
 	#flash-container {
-		margin-left: -250px;
-		padding-left: 100px;
-		padding-right: 100px;
+		margin-left: 50%;
+		margin-right; 0;
+		width: 50%;
 	}
 }
+
+
 
 .panel-heading .panel-title a {
 	float: right;
