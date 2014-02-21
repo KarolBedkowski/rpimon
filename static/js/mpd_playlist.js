@@ -61,7 +61,7 @@ MPD.plist = (function(self, $) {
 					"mData": null,
 					"mRender": function(data, type, full) {
 						var title = full[3] || full[5];
-						return ['<div class="row"><span class="col-title col-sm-6 col-xs-12 col-md-5">', title, '</span>' +
+						return ['<div class="row"><span class="col-title col-sm-6 col-xs-12 col-md-5"><a href="#" class="play-song-action">', title, '</a></span>' +
 							'<span class="col-artist col-sm-6 col-xs-12 col-md-3">', full[1], '</span>',
 							'<span class="col-track col-sm-2 col-xs-3 col-md-1">', full[2], '</span>',
 							'<span class="col-album col-sm-10 col-xs-9 col-md-3">', full[0], '</span></div>'].join("");
@@ -88,7 +88,6 @@ MPD.plist = (function(self, $) {
 				$("a.play-song-action").on("click", playSong);
 				$("a.remove-song-action").on("click", removeSong);
 				$("a.action-info").on("click", songInfo);
-				$("tr").on("click",  playSong);
 			},
 			"sDom": "<'row'<'col-xs-12 col-sm-6'l><'col-xs-12 col-sm-6'f>r>t<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>"
 		});
