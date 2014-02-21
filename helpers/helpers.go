@@ -64,3 +64,15 @@ func CheckValueInStrList(list []string, value string) (inlist bool) {
 	}
 	return
 }
+
+// CheckValueInDictOfList return true when value exists in any list in map
+func CheckValueInDictOfList(dict map[string][]string, value string) (inlist bool) {
+	for _, list := range dict {
+		for _, val := range list {
+			if value == val {
+				return true
+			}
+		}
+	}
+	return
+}
