@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/modules"
+	mnet "k.prv/rpimon/modules/network"
 	"k.prv/rpimon/monitor"
 	"k.prv/rpimon/pages/auth"
 	pfiles "k.prv/rpimon/pages/files"
@@ -65,6 +67,8 @@ func main() {
 	pfiles.CreateRoutes(app.Router.PathPrefix("/files"))
 	pnotepad.CreateRoutes(app.Router.PathPrefix("/notepad"))
 	pother.CreateRoutes(app.Router.PathPrefix("/other"))
+
+	modules.Register(mnet.InitModule(app.Router.PathPrefix("/m/network")))
 
 	/* for filesystem store
 	go app.ClearSessionStore()

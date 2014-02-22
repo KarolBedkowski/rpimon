@@ -130,3 +130,12 @@ func NewSimpleDataPageCtx(w http.ResponseWriter, r *http.Request,
 	AttachSubmenu(ctx.BasePageContext, parentMenuId, localMenu)
 	return ctx
 }
+
+type BaseContextHandlerFunc func(w http.ResponseWriter, r *http.Request, ctx *BasePageContext)
+
+func HandleWithContext(h BaseContextHandlerFunc, title string) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := NewBasePageContext(title, w, r)
+		h(w, r, ctx)
+	})
+}
