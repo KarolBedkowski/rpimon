@@ -11,7 +11,6 @@ import (
 	"k.prv/rpimon/pages/auth"
 	plogs "k.prv/rpimon/pages/logs"
 	pmain "k.prv/rpimon/pages/main"
-	pnet "k.prv/rpimon/pages/net"
 	pnotepad "k.prv/rpimon/pages/notepad"
 	pother "k.prv/rpimon/pages/other"
 	pproc "k.prv/rpimon/pages/process"
@@ -53,7 +52,6 @@ func main() {
 	app.Router.HandleFunc("/", handleHome)
 	auth.CreateRoutes(app.Router.PathPrefix("/auth"))
 	pmain.CreateRoutes(app.Router.PathPrefix("/main"))
-	pnet.CreateRoutes(app.Router.PathPrefix("/net"))
 	pstorage.CreateRoutes(app.Router.PathPrefix("/storage"))
 	putils.Init(conf.UtilsFilename)
 	putils.CreateRoutes(app.Router.PathPrefix("/utils"))
