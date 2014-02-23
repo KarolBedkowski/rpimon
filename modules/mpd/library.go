@@ -14,7 +14,6 @@ import (
 
 func libraryPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := app.NewBasePageContext("Mpd", w, r)
-	app.AttachSubmenu(ctx, "mpd", buildLocalMenu())
 	ctx.SetMenuActive("mpd-library")
 	app.RenderTemplateStd(w, ctx, "mpd/library.tmpl")
 }
@@ -104,7 +103,6 @@ func searchPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &searchPageContext{
 		BasePageContext: app.NewBasePageContext("Mpd", w, r),
 	}
-	app.AttachSubmenu(ctx.BasePageContext, "mpd", buildLocalMenu())
 	ctx.SetMenuActive("mpd-search")
 
 	r.ParseForm()

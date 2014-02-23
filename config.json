@@ -51,6 +51,10 @@
 		"files": {
 			"enabled": true,
 			"config": "./browser.json"
+		},
+		"mpd": {
+			"enabled": true,
+			"config": ""
 		}
 	}
 }

@@ -27,7 +27,6 @@ type playlistPageCtx struct {
 
 func playlistPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &playlistPageCtx{BasePageContext: app.NewBasePageContext("Mpd", w, r)}
-	app.AttachSubmenu(ctx.BasePageContext, "mpd", buildLocalMenu())
 	ctx.SetMenuActive("mpd-playlist")
 	app.RenderTemplateStd(w, ctx, "mpd/playlist.tmpl")
 }

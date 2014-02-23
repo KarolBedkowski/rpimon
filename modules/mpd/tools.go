@@ -7,7 +7,7 @@ import (
 )
 
 func mpdLogPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := app.NewSimpleDataPageCtx(w, r, "mpd", "mpd", buildLocalMenu())
+	ctx := app.NewSimpleDataPageCtx(w, r, "mpd", "mpd", nil)
 	ctx.SetMenuActive("mpd-log")
 	ctx.Header1 = "Logs"
 

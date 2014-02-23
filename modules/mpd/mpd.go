@@ -10,15 +10,30 @@ import (
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
-	n "k.prv/rpimon/pages/notepad"
+	"k.prv/rpimon/modules"
+	n "k.prv/rpimon/modules/notepad"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 )
 
+var mpdModule = &modules.Module{
+	Name:          "mpd",
+	Title:         "MPD",
+	Description:   "",
+	AllPrivilages: nil,
+	Init:          InitModule,
+	GetMenu:       getMenu,
+	Shutdown:      shutdown,
+}
+
+func GetModule() *modules.Module {
+	return mpdModule
+}
+
 // CreateRoutes for /mpd
-func CreateRoutes(parentRoute *mux.Route) {
+func InitModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
 	subRouter := parentRoute.Subrouter()
 	// Main page
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "mpd"))
@@ -87,10 +102,17 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/file",
 		app.VerifyPermission(filePageHandler, "mpd")).Name(
 		"mpd-file")
+	initConnector(conf.MpdHost)
+	return true
 }
 
-func buildLocalMenu() (localMenu []*app.MenuItem) {
-	return []*app.MenuItem{app.NewMenuItemFromRoute("Status", "mpd-index").SetIcon("glyphicon glyphicon-music"),
+func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
+	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "mpd") {
+		return "", nil
+	}
+
+	menu = app.NewMenuItemFromRoute("MPD", "mpd-index").SetID("mpd").SetIcon("glyphicon glyphicon-music")
+	menu.Submenu = []*app.MenuItem{app.NewMenuItemFromRoute("Status", "mpd-index").SetIcon("glyphicon glyphicon-music"),
 		app.NewMenuItemFromRoute("Playlist", "mpd-playlist").SetIcon("glyphicon glyphicon-list"),
 		app.NewMenuItemFromRoute("Library", "mpd-library").SetIcon("glyphicon glyphicon-folder-open"),
 		app.NewMenuItemFromRoute("Search", "mpd-search").SetIcon("glyphicon glyphicon-search"),
@@ -98,6 +120,11 @@ func buildLocalMenu() (localMenu []*app.MenuItem) {
 		app.NewMenuItemFromRoute("Tools", "mpd-tools").SetIcon("glyphicon glyphicon-wrench").AddChild(
 			app.NewMenuItemFromRoute("Log", "mpd-log")),
 	}
+	return "", menu
+}
+
+func shutdown() {
+	closeConnector()
 }
 
 var errBadRequest = errors.New("bad request")
@@ -109,7 +136,6 @@ type pageCtx struct {
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Mpd", w, r)}
-	app.AttachSubmenu(ctx.BasePageContext, "mpd", buildLocalMenu())
 	ctx.SetMenuActive("mpd-index")
 	app.RenderTemplateStd(w, ctx, "mpd/index.tmpl")
 }

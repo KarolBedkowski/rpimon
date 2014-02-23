@@ -26,13 +26,13 @@ var (
 )
 
 // Init MPD configuration
-func Init(mpdHost string) {
+func initConnector(mpdHost string) {
 	host = mpdHost
 	connectWatcher()
 }
 
 // Close MPD connection
-func Close() {
+func closeConnector() {
 	playlistCache.Clear()
 	mpdLibraryCache.Clear()
 	mpdListFilesCache.Clear()
@@ -90,7 +90,7 @@ func connect() (client *mpd.Client, err error) {
 		connection, err = mpd.Dial("tcp", host)
 		if err != nil {
 			l.Error("Mpd connect error: %s", err.Error())
-			Close()
+			closeConnector()
 			return nil, err
 		}
 		connectWatcher()
@@ -345,6 +345,9 @@ var mpdShortStatusCache = h.NewSimpleCache(5)
 
 // GetShortStatus return cached MPD status
 func GetShortStatus() (status map[string]string, err error) {
+	if !mpdModule.Enabled {
+		return nil, nil
+	}
 	if result, ok := mpdShortStatusCache.GetValue(); ok && result != nil {
 		if cachedValue, ok := result.(mpd.Attrs); ok {
 			return map[string]string(cachedValue), nil

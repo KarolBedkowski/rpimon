@@ -5,12 +5,12 @@ import (
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/modules"
 	mfiles "k.prv/rpimon/modules/files"
+	mmpd "k.prv/rpimon/modules/mpd"
 	mnet "k.prv/rpimon/modules/network"
 	"k.prv/rpimon/monitor"
 	"k.prv/rpimon/pages/auth"
 	plogs "k.prv/rpimon/pages/logs"
 	pmain "k.prv/rpimon/pages/main"
-	pmpd "k.prv/rpimon/pages/mpd"
 	pnet "k.prv/rpimon/pages/net"
 	pnotepad "k.prv/rpimon/pages/notepad"
 	pother "k.prv/rpimon/pages/other"
@@ -70,6 +70,7 @@ func main() {
 	modules.Register(mnet.GetNFSModule())
 	modules.Register(mnet.GetSambaModule())
 	modules.Register(mfiles.GetModule())
+	modules.Register(mmpd.GetModule())
 
 	modules.InitModules(conf, app.Router)
 
