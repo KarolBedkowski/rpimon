@@ -9,6 +9,7 @@ import (
 	mnet "k.prv/rpimon/modules/network"
 	mnotepad "k.prv/rpimon/modules/notepad"
 	mstorage "k.prv/rpimon/modules/storage"
+	msystem "k.prv/rpimon/modules/system"
 	msyslogs "k.prv/rpimon/modules/system/logs"
 	msystother "k.prv/rpimon/modules/system/other"
 	msysproc "k.prv/rpimon/modules/system/process"
@@ -64,6 +65,7 @@ func main() {
 	modules.Register(mfiles.GetModule())
 	modules.Register(mmpd.GetModule())
 	modules.Register(mnotepad.GetModule())
+	modules.Register(msystem.GetModule())
 	modules.Register(msystother.GetModule())
 	modules.Register(msysproc.GetModule())
 	modules.Register(msyslogs.GetModule())

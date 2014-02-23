@@ -72,6 +72,9 @@
 		},
 		"storage": {
 			"enabled": true
+		},
+		"system": {
+			"enabled": true
 		}
 }
 }
