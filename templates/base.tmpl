@@ -64,8 +64,8 @@
 			<nav class="navbar-default navbar-static-side" role="navigation">
 				<div class="sidebar-collapse">
 					<ul class="nav" id="side-menu">
-					{{range .MainMenu}}
-						{{if .Submenu}}
+					{{if .MainMenu}}
+						{{range .MainMenu.Submenu}}
 						<li class="{{if .Active}}active{{end}}">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="{{.Icon}}"></span>&nbsp;{{.Title}} <b class="caret"></b></a>
 							<ul class="nav nav-second-level">

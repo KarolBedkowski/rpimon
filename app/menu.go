@@ -1,5 +1,7 @@
 package app
 
+import "container/list"
+
 // MenuItem - one position in menu
 type MenuItem struct {
 	Title   string
@@ -68,6 +70,21 @@ func (item *MenuItem) AttachSubmenu(parentID string, submenu []*MenuItem) (attac
 	return false
 }
 
+func (i *MenuItem) AppendItem(parentID string, item *MenuItem) (attached bool) {
+	if i.ID == parentID {
+		i.Submenu = append(i.Submenu, item)
+		return true
+	}
+	if i.Submenu != nil {
+		for _, subitem := range i.Submenu {
+			if subitem.AppendItem(parentID, item) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func (item *MenuItem) SetActiveMenu(menuID string) (found bool) {
 	if item.ID == menuID {
 		item.Active = true
@@ -84,13 +101,47 @@ func (item *MenuItem) SetActiveMenu(menuID string) (found bool) {
 	return false
 }
 
+type notAttachedItems struct {
+	parent string
+	item   *MenuItem
+}
+
 // SetMainMenu - fill MainMenu in BasePageContext
 func SetMainMenu(ctx *BasePageContext) {
+	ctx.MainMenu = &MenuItem{}
+	itemsWithoutParent := list.New()
 	for _, item := range ModulesMenuItems {
-		_, mitem := item(ctx)
+		parent, mitem := item(ctx)
 		if mitem != nil {
-			ctx.MainMenu = append(ctx.MainMenu, mitem)
+			if !ctx.MainMenu.AppendItem(parent, mitem) {
+				itemsWithoutParent.PushBack(notAttachedItems{parent, mitem})
+			}
 		}
+	}
+	itemsLen := itemsWithoutParent.Len()
+	for {
+		if itemsWithoutParent.Len() == 0 {
+			break
+		}
+		var next *list.Element
+		for e := itemsWithoutParent.Front(); e != nil; e = next {
+			next = e.Next()
+			nai := e.Value.(notAttachedItems)
+			if ctx.MainMenu.AppendItem(nai.parent, nai.item) {
+				itemsWithoutParent.Remove(e)
+			}
+		}
+		if itemsLen == itemsWithoutParent.Len() {
+			// items list not changed
+			break
+		}
+	}
+	if itemsWithoutParent.Len() > 0 {
+		mitem := &MenuItem{Title: "Other"}
+		for e := itemsWithoutParent.Front(); e != nil; e = e.Next() {
+			mitem.Submenu = append(mitem.Submenu, e.Value.(notAttachedItems).item)
+		}
+		ctx.MainMenu.AppendItem("", mitem)
 	}
 
 	/*
@@ -141,11 +192,7 @@ func AttachSubmenu(ctx *BasePageContext, parentID string, submenu []*MenuItem) {
 	if ctx.MainMenu == nil {
 		return
 	}
-	for _, subitem := range ctx.MainMenu {
-		if subitem.AttachSubmenu(parentID, submenu) {
-			return
-		}
-	}
+	ctx.MainMenu.AttachSubmenu(parentID, submenu)
 }
 
 // SetMenuActive add id  to menu active items

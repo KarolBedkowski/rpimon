@@ -20,7 +20,7 @@ type BasePageContext struct {
 	Hostname         string
 	CurrentUser      string
 	CurrentUserPerms []string
-	MainMenu         []*MenuItem
+	MainMenu         *MenuItem
 	Now              string
 	FlashMessages    map[string][]interface{}
 	Tabs             []*MenuItem
@@ -105,11 +105,7 @@ func (ctx *BasePageContext) SetMenuActive(id string) {
 	if ctx.MainMenu == nil {
 		return
 	}
-	for _, subitem := range ctx.MainMenu {
-		if subitem.SetActiveMenu(id) {
-			break
-		}
-	}
+	ctx.MainMenu.SetActiveMenu(id)
 }
 
 // SimpleDataPageCtx - context  with data (string) + title
