@@ -78,6 +78,10 @@
 		},
 		"system-users": {
 			"enabled": true
+		},
+		"utilities": {
+			"enabled": true,
+			"config": "./utils.json"
 		}
 
 }

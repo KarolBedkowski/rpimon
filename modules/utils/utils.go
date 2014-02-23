@@ -5,16 +5,36 @@ import (
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
+	"k.prv/rpimon/modules"
 	"net/http"
 	"strconv"
 	"strings"
 )
 
+func GetModule() *modules.Module {
+	return &modules.Module{
+		Name:          "utilities",
+		Title:         "Utilities",
+		Description:   "Various utilities",
+		AllPrivilages: nil,
+		Init:          initModule,
+		GetMenu:       getMenu,
+	}
+}
+
 // CreateRoutes for /pages
-func CreateRoutes(parentRoute *mux.Route) {
+func initModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("utils-index")
 	subRouter.HandleFunc("/{group}/{command-id:[0-9]+}", app.VerifyPermission(commandPageHandler, "admin"))
+	return loadConfiguration(configFilename) == nil
+}
+func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
+	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
+		return "", nil
+	}
+	menu = app.NewMenuItemFromRoute("Utilities", "utils-index").SetID("utils").SetIcon("glyphicon glyphicon-wrench")
+	return "", menu
 }
 
 type pageCtx struct {
