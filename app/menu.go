@@ -1,18 +1,25 @@
 package app
 
-import "container/list"
+import (
+	"container/list"
+	"sort"
+)
 
 // MenuItem - one position in menu
-type MenuItem struct {
-	Title   string
-	Href    string
-	ID      string
-	Submenu []*MenuItem
-	Icon    string
-	Active  bool
-	// RequredPrivilages as [[priv and priv ....] or [ priv ...]]
-	RequredPrivilages [][]string
-}
+type (
+	MenuItem struct {
+		Title     string
+		Href      string
+		ID        string
+		Submenu   []*MenuItem
+		Icon      string
+		Active    bool
+		SortOrder int
+		// RequredPrivilages as [[priv and priv ....] or [ priv ...]]
+		RequredPrivilages [][]string
+	}
+	subMenu []*MenuItem
+)
 
 // NewMenuItem create new MenuItem structure
 func NewMenuItem(title, href string) *MenuItem {
@@ -101,6 +108,24 @@ func (item *MenuItem) SetActiveMenu(menuID string) (found bool) {
 	return false
 }
 
+func (i *MenuItem) Sort() {
+	if i.Submenu != nil {
+		sort.Sort(subMenu(i.Submenu))
+		for _, item := range i.Submenu {
+			item.Sort()
+		}
+	}
+}
+
+func (s subMenu) Len() int      { return len(s) }
+func (s subMenu) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+func (s subMenu) Less(i, j int) bool {
+	if s[i].SortOrder == s[j].SortOrder {
+		return s[i].Title < s[j].Title
+	}
+	return s[i].SortOrder < s[j].SortOrder
+}
+
 type notAttachedItems struct {
 	parent string
 	item   *MenuItem
@@ -143,6 +168,7 @@ func SetMainMenu(ctx *BasePageContext) {
 		}
 		ctx.MainMenu.AppendItem("", mitem)
 	}
+
 }
 
 func AttachSubmenu(ctx *BasePageContext, parentID string, submenu []*MenuItem) {
