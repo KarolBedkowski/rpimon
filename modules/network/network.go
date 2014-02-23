@@ -11,7 +11,19 @@ import (
 	"strings"
 )
 
-func InitModule(parentRoute *mux.Route) *modules.Module {
+func GetModule() *modules.Module {
+	return &modules.Module{
+		Name:          "network",
+		Title:         "Network",
+		Description:   "Network",
+		AllPrivilages: nil,
+		Init:          InitModule,
+		GetMenu:       getMenu,
+		GetWarnings:   getWarnings,
+	}
+}
+
+func InitModule(parentRoute *mux.Route, configFilename string) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.HandleWithContext(mainPageHandler,
@@ -22,20 +34,9 @@ func InitModule(parentRoute *mux.Route) *modules.Module {
 		"Network - Iptables")).Name("m-net-iptables")
 	subRouter.HandleFunc("/netstat", app.HandleWithContext(netstatPageHandler,
 		"Network - Netstat")).Name("m-net-netstat")
-	subRouter.HandleFunc("/nfs", app.HandleWithContext(nfsPageHandler,
-		"Network - NFS")).Name("m-net-nfs")
-	subRouter.HandleFunc("/samba", app.HandleWithContext(sambaPageHandler,
-		"Network - Samba")).Name("m-net-samba")
 	subRouter.HandleFunc("/serv/info", app.HandleWithContext(statusServHandler, "")).Name("m-net-serv-info")
 	subRouter.HandleFunc("/action", app.HandleWithContext(actionHandler, "")).Name("m-net-action").Methods("PUT")
-
-	return &modules.Module{
-		Title:         "Network",
-		Description:   "Network",
-		AllPrivilages: nil,
-		GetMenu:       getMenu,
-		GetWarnings:   getWarnings,
-	}
+	return true
 }
 
 func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
@@ -49,8 +50,6 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 		app.NewMenuItemFromRoute("Configuration", "m-net-conf"),
 		app.NewMenuItemFromRoute("IPTables", "m-net-iptables"),
 		app.NewMenuItemFromRoute("Netstat", "m-net-netstat"),
-		app.NewMenuItemFromRoute("Samba", "m-net-samba"),
-		app.NewMenuItemFromRoute("NFS", "m-net-nfs"),
 	}
 	return "", menu
 }
@@ -69,14 +68,6 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePageCo
 	c.SetMenuActive("m-net-index")
 	c.Interfaces = monitor.GetInterfacesInfo()
 	app.RenderTemplateStd(w, c, "net/status.tmpl")
-}
-
-func sambaPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePageContext) {
-	data := &app.SimpleDataPageCtx{BasePageContext: ctx}
-	data.SetMenuActive("m-net-samba")
-	data.Header1 = "Samba"
-	data.Data = h.ReadCommand("sudo", "smbstatus")
-	app.RenderTemplateStd(w, data, "data.tmpl")
 }
 
 func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePageContext) {
@@ -103,29 +94,6 @@ func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePag
 		app.NewMenuItemFromRoute("Listen", "m-net-netstat").AddQuery("?sec=listen").SetActve(page == "listen"),
 		app.NewMenuItemFromRoute("Connections", "m-net-netstat").AddQuery("?sec=connections").SetActve(page == "connections"),
 		app.NewMenuItemFromRoute("All", "m-net-netstat").AddQuery("?sec=all").SetActve(page == "all"),
-	}
-	app.RenderTemplateStd(w, data, "data.tmpl", "tabs.tmpl")
-}
-
-func nfsPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePageContext) {
-	page := r.FormValue("sec")
-	if page == "" {
-		page = "stat"
-	}
-	data := &app.SimpleDataPageCtx{BasePageContext: ctx}
-	data.SetMenuActive("m-net-nfs")
-	data.Header1 = "NFS"
-	switch page {
-	case "exportfs":
-		data.Header2 = "Listen"
-		data.Data = h.ReadCommand("sudo", "exportfs", "-v")
-	case "stat":
-		data.Header2 = "Connections"
-		data.Data = h.ReadCommand("nfsstat")
-	}
-	data.Tabs = []*app.MenuItem{
-		app.NewMenuItemFromRoute("NFSstat", "m-net-nfs").AddQuery("?sec=stat").SetActve(page == "stat"),
-		app.NewMenuItemFromRoute("exportfs", "m-net-nfs").AddQuery("?sec=exportfs").SetActve(page == "exportfs"),
 	}
 	app.RenderTemplateStd(w, data, "data.tmpl", "tabs.tmpl")
 }

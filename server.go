@@ -68,7 +68,11 @@ func main() {
 	pnotepad.CreateRoutes(app.Router.PathPrefix("/notepad"))
 	pother.CreateRoutes(app.Router.PathPrefix("/other"))
 
-	modules.Register(mnet.InitModule(app.Router.PathPrefix("/m/network")))
+	modules.Register(mnet.GetModule())
+	modules.Register(mnet.GetNFSModule())
+	modules.Register(mnet.GetSambaModule())
+
+	modules.InitModules(conf, app.Router)
 
 	/* for filesystem store
 	go app.ClearSessionStore()

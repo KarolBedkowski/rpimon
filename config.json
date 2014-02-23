@@ -34,5 +34,19 @@
   "BrowserConf": "./browser.json",
   "SessionStoreDir": "./temp",
   "StaticDir": "./static",
-  "MpdHost": "localhost:6600"
+  "MpdHost": "localhost:6600",
+	"modules": {
+		"network": {
+			"enabled": true,
+			"config": ""
+		},
+		"network-smb": {
+			"enabled": true,
+			"config": ""
+		},
+		"network-nfs": {
+			"enabled": true,
+			"config": ""
+		}
+	}
 }
