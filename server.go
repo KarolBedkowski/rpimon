@@ -13,10 +13,10 @@ import (
 	msyslogs "k.prv/rpimon/modules/system/logs"
 	msystother "k.prv/rpimon/modules/system/other"
 	msysproc "k.prv/rpimon/modules/system/process"
+	msysusers "k.prv/rpimon/modules/system/users"
 	"k.prv/rpimon/monitor"
 	"k.prv/rpimon/pages/auth"
 	pmain "k.prv/rpimon/pages/main"
-	pusers "k.prv/rpimon/pages/users"
 	putils "k.prv/rpimon/pages/utils"
 	"log"
 	"net/http"
@@ -57,7 +57,6 @@ func main() {
 	putils.CreateRoutes(app.Router.PathPrefix("/utils"))
 	pmpd.Init(conf.MpdHost)
 	pmpd.CreateRoutes(app.Router.PathPrefix("/mpd"))
-	pusers.CreateRoutes(app.Router.PathPrefix("/users"))
 
 	modules.Register(mnet.GetModule())
 	modules.Register(mnet.GetNFSModule())
@@ -69,6 +68,7 @@ func main() {
 	modules.Register(msystother.GetModule())
 	modules.Register(msysproc.GetModule())
 	modules.Register(msyslogs.GetModule())
+	modules.Register(msysusers.GetModule())
 	modules.Register(mstorage.GetModule())
 
 	modules.InitModules(conf, app.Router)

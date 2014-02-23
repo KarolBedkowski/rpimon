@@ -75,6 +75,10 @@
 		},
 		"system": {
 			"enabled": true
+		},
+		"system-users": {
+			"enabled": true
 		}
+
 }
 }
