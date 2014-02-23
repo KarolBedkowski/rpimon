@@ -34,6 +34,9 @@ type Module struct {
 
 	// GetWarnings return map warning kind -> messages
 	GetWarnings func() map[string][]string
+
+	// Shutdown module
+	Shutdown func()
 }
 
 var Modules = make(map[string]*Module)
@@ -66,6 +69,14 @@ func InitModules(conf *app.AppConfiguration, router *mux.Router) {
 					}
 				}
 			}
+		}
+	}
+}
+
+func ShutdownModules() {
+	for _, module := range Modules {
+		if module.Enabled && module.Shutdown != nil {
+			module.Shutdown()
 		}
 	}
 }
