@@ -127,9 +127,25 @@ func NewSimpleDataPageCtx(w http.ResponseWriter, r *http.Request, title string) 
 
 type BaseContextHandlerFunc func(w http.ResponseWriter, r *http.Request, ctx *BasePageContext)
 
+// HandleWithContext create BasePageContext for request
 func HandleWithContext(h BaseContextHandlerFunc, title string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := NewBasePageContext(title, w, r)
 		h(w, r, ctx)
+	})
+}
+
+// HandleWithContextSec check logged user persmissions; if ok - create BasePageContext; otherwise
+// redirect to login.
+func HandleWithContextSec(h BaseContextHandlerFunc, title string, permission string) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if login, perms := CheckUserLoggerOrRedirect(w, r); login != "" {
+			if CheckPermission(perms, permission) {
+				ctx := NewBasePageContext(title, w, r)
+				h(w, r, ctx)
+				return
+			}
+			http.Error(w, "Fobidden/Privilages", http.StatusForbidden)
+		}
 	})
 }

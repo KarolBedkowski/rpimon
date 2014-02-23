@@ -16,7 +16,7 @@ var subRouter *mux.Router
 // CreateRoutes for /auth
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/login", loginPageHandler).Name("auth-login")
+	subRouter.HandleFunc("/login", app.HandleWithContext(loginPageHandler, "Login")).Name("auth-login")
 	subRouter.HandleFunc("/logoff", logoffHandler).Name("auth-logoff")
 }
 
@@ -41,9 +41,8 @@ func (ctx loginPageCtx) Validate() (err string) {
 	return
 }
 
-func loginPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &loginPageCtx{app.NewBasePageContext("Login", w, r),
-		new(loginForm), ""}
+func loginPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+	ctx := &loginPageCtx{bctx, new(loginForm), ""}
 	if r.Method == "POST" {
 		r.ParseForm()
 		if err := decoder.Decode(ctx, r.Form); err != nil {

@@ -28,9 +28,9 @@ func GetModule() *modules.Module {
 // CreateRoutes for /logs
 func initModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("logs-index")
+	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "Logs", "admin")).Name("logs-index")
 	subRouter.HandleFunc("/serv", app.VerifyPermission(servLogHandler, "admin")).Name("logs-serv")
-	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("logs-page")
+	subRouter.HandleFunc("/{page}", app.HandleWithContextSec(mainPageHandler, "Logs", "admin")).Name("logs-page")
 	return loadConfiguration(configFilename) == nil
 }
 
@@ -55,8 +55,8 @@ type pageCtx struct {
 	LogsDef     logsDef
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("logs", w, r)}
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+	ctx := &pageCtx{BasePageContext: bctx}
 	vars := mux.Vars(r)
 	page, ok := vars["page"]
 	if !ok {

@@ -36,9 +36,9 @@ func GetModule() *modules.Module {
 func InitModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
 	subRouter := parentRoute.Subrouter()
 	// Main page
-	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "mpd"))
+	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "MPD", "mpd"))
 	subRouter.HandleFunc("/main",
-		app.VerifyPermission(mainPageHandler, "mpd")).Name(
+		app.HandleWithContextSec(mainPageHandler, "MPD", "mpd")).Name(
 		"mpd-index")
 	// Playing control
 	subRouter.HandleFunc("/control/{action}",
@@ -46,7 +46,7 @@ func InitModule(parentRoute *mux.Route, configFilename string, conf *app.AppConf
 		"mpd-control")
 	// current Playlist
 	subRouter.HandleFunc("/playlist",
-		app.VerifyPermission(playlistPageHandler, "mpd")).Name(
+		app.HandleWithContextSec(playlistPageHandler, "MPD - Playlist", "mpd")).Name(
 		"mpd-playlist")
 	subRouter.HandleFunc("/playlist/save",
 		app.VerifyPermission(playlistSavePageHandler, "mpd")).Name(
@@ -65,7 +65,7 @@ func InitModule(parentRoute *mux.Route, configFilename string, conf *app.AppConf
 		"mpd-song-action")
 	// Playlists
 	subRouter.HandleFunc("/playlists",
-		app.VerifyPermission(playlistsPageHandler, "mpd")).Name(
+		app.HandleWithContextSec(playlistsPageHandler, "MPD - Playlists", "mpd")).Name(
 		"mpd-playlists")
 	subRouter.HandleFunc("/playlists/serv/list",
 		app.VerifyPermission(playlistsListService, "mpd")).Name(
@@ -82,7 +82,7 @@ func InitModule(parentRoute *mux.Route, configFilename string, conf *app.AppConf
 		"mpd-service-song-info")
 	// Library
 	subRouter.HandleFunc("/library",
-		app.VerifyPermission(libraryPageHandler, "mpd")).Name(
+		app.HandleWithContextSec(libraryPageHandler, "MPD - Library", "mpd")).Name(
 		"mpd-library")
 	subRouter.HandleFunc("/library/serv/content",
 		app.VerifyPermission(libraryServHandler, "mpd")).Name(
@@ -96,7 +96,7 @@ func InitModule(parentRoute *mux.Route, configFilename string, conf *app.AppConf
 		"mpd-log")
 	// search
 	subRouter.HandleFunc("/search",
-		app.VerifyPermission(searchPageHandler, "mpd")).Name(
+		app.HandleWithContextSec(searchPageHandler, "MPD - Search", "mpd")).Name(
 		"mpd-search")
 	// files
 	subRouter.HandleFunc("/file",
@@ -134,8 +134,8 @@ type pageCtx struct {
 	Status *mpdStatus
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Mpd", w, r)}
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+	ctx := &pageCtx{BasePageContext: bctx}
 	ctx.SetMenuActive("mpd-index")
 	app.RenderTemplateStd(w, ctx, "mpd/index.tmpl")
 }

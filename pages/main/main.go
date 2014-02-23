@@ -13,7 +13,7 @@ import (
 // CreateRoutes for /main
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", mainPageHandler).Name("main-index")
+	subRouter.HandleFunc("/", app.HandleWithContext(mainPageHandler, "Main")).Name("main-index")
 	subRouter.HandleFunc("/serv/alerts",
 		app.VerifyPermission(alertsServHandler, "admin")).Name(
 		"main-serv-alerts")
@@ -34,8 +34,8 @@ type pageCtx struct {
 	LoadTrucated      float64
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Main", w, r)}
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+	ctx := &pageCtx{BasePageContext: bctx}
 	ctx.SetMenuActive("main")
 	ctx.Warnings = monitor.GetWarnings()
 	ctx.Uptime = monitor.GetUptimeInfo()

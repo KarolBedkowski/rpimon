@@ -22,7 +22,7 @@ func GetModule() *modules.Module {
 // CreateRoutes for /users
 func initModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("other-index")
+	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "Other", "admin")).Name("other-index")
 	return true
 }
 
@@ -34,12 +34,12 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 	return "system", menu
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
 	page := r.FormValue("sec")
 	if page == "" {
 		page = "acpi"
 	}
-	data := app.NewSimpleDataPageCtx(w, r, "Other")
+	data := &app.SimpleDataPageCtx{BasePageContext: bctx}
 	data.Header1 = "Other"
 	data.Tabs = []*app.MenuItem{
 		app.NewMenuItemFromRoute("ACPI", "other-index").AddQuery("?sec=acpi").SetActve(page == "acpi"),

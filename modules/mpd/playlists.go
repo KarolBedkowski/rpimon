@@ -19,8 +19,8 @@ type playlistsPageCtx struct {
 	Error       string
 }
 
-func playlistsPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &playlistsPageCtx{BasePageContext: app.NewBasePageContext("Mpd", w, r)}
+func playlistsPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+	ctx := &playlistsPageCtx{BasePageContext: bctx}
 	ctx.SetMenuActive("mpd-playlists")
 	app.RenderTemplateStd(w, ctx, "mpd/playlists.tmpl")
 }

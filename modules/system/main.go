@@ -27,7 +27,7 @@ func GetModule() *modules.Module {
 func initModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/",
-		app.VerifyPermission(systemPageHandler, "admin")).Name(
+		app.HandleWithContextSec(systemPageHandler, "System", "admin")).Name(
 		"main-system")
 	subRouter.HandleFunc("/serv/status",
 		app.VerifyPermission(statusServHandler, "admin")).Name(
@@ -52,8 +52,8 @@ type pageSystemCtx struct {
 	MaxAcceptableLoad int
 }
 
-func systemPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &pageSystemCtx{BasePageContext: app.NewBasePageContext("System", w, r),
+func systemPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+	ctx := &pageSystemCtx{BasePageContext: bctx,
 		Warnings: monitor.GetWarnings()}
 	ctx.SetMenuActive("system-live")
 	ctx.MaxAcceptableLoad = runtime.NumCPU() * 2

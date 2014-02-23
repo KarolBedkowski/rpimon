@@ -25,8 +25,8 @@ func GetModule() *modules.Module {
 // CreateRoutes for /pages
 func initModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("utils-index")
-	subRouter.HandleFunc("/{group}/{command-id:[0-9]+}", app.VerifyPermission(commandPageHandler, "admin"))
+	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "Utils", "admin")).Name("utils-index")
+	subRouter.HandleFunc("/{group}/{command-id:[0-9]+}", app.HandleWithContextSec(commandPageHandler, "Utils", "admin"))
 	return loadConfiguration(configFilename) == nil
 }
 func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
@@ -44,52 +44,52 @@ type pageCtx struct {
 	Data          string
 }
 
-func newPageCtx(w http.ResponseWriter, r *http.Request) *pageCtx {
-	ctx := &pageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Utils", "", nil)}
-	ctx.Configuration = config
-	ctx.SetMenuActive("utils")
-	return ctx
-}
-
-func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := newPageCtx(w, r)
+func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePageContext) {
+	data := &pageCtx{
+		SimpleDataPageCtx: &app.SimpleDataPageCtx{BasePageContext: ctx},
+		Configuration:     config,
+	}
+	data.SetMenuActive("utils")
 	app.RenderTemplateStd(w, data, "utils/utils.tmpl")
 }
 
-func commandPageHandler(w http.ResponseWriter, r *http.Request) {
+func commandPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePageContext) {
 	vars := mux.Vars(r)
 	groupName, ok := vars["group"]
 	if !ok || groupName == "" {
 		l.Warn("page.utils commandPageHandler: missing group ", vars)
-		mainPageHandler(w, r)
+		mainPageHandler(w, r, ctx)
 		return
 	}
 
 	group, ok := config.Utils[groupName]
 	if !ok {
 		l.Warn("page.utils commandPageHandler: wrong group ", vars)
-		mainPageHandler(w, r)
+		mainPageHandler(w, r, ctx)
 		return
 	}
 
 	commandIDStr, ok := vars["command-id"]
 	if !ok || commandIDStr == "" {
 		l.Warn("page.utils commandPageHandler: wrong commandIDStr ", vars)
-		mainPageHandler(w, r)
+		mainPageHandler(w, r, ctx)
 		return
 	}
 
 	commandID, err := strconv.Atoi(commandIDStr)
 	if err != nil || commandID < 0 || commandID >= len(group) {
 		l.Warn("page.utils commandPageHandler: wrong commandID ", vars)
-		mainPageHandler(w, r)
+		mainPageHandler(w, r, ctx)
 		return
 	}
 
 	commandStr := group[commandID].Command
 	command := strings.Split(commandStr, " ")
 
-	data := newPageCtx(w, r)
+	data := &pageCtx{
+		SimpleDataPageCtx: &app.SimpleDataPageCtx{BasePageContext: ctx},
+		Configuration:     config,
+	}
 	data.CurrentPage = "Utils " + groupName + ": " + group[commandID].Name
 	data.Data = h.ReadCommand(command[0], command[1:]...)
 	app.RenderTemplateStd(w, data, "data.tmpl")

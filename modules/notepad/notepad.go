@@ -33,7 +33,7 @@ func GetModule() *modules.Module {
 func initModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
 	subRouter := parentRoute.Subrouter()
 	// Main page
-	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "notepad")).Name("notepad-index")
+	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "Notepad", "notepad")).Name("notepad-index")
 	subRouter.HandleFunc("/{note}", app.VerifyPermission(notePageHandler, "notepad")).Name("notepad-note")
 	subRouter.HandleFunc("/{note}/delete", app.VerifyPermission(noteDeleteHandler, "notepad")).Name("notepad-delete")
 	subRouter.HandleFunc("/{note}/download", app.VerifyPermission(noteDownloadHandler, "notepad")).Name("notepad-download")
@@ -65,8 +65,8 @@ type mainPageContext struct {
 	NoteList []*NoteStuct
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &mainPageContext{BasePageContext: app.NewBasePageContext("Notepad", w, r)}
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+	ctx := &mainPageContext{BasePageContext: bctx}
 	ctx.SetMenuActive("notepad-index")
 	ctx.NoteList = findFiles()
 	app.RenderTemplateStd(w, ctx, "notepad/index.tmpl")
