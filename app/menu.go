@@ -209,6 +209,6 @@ type GetMenuFunc func(ctx *BasePageContext) (parentId string, menu *MenuItem)
 // TODO: przerobic
 var ModulesMenuItems []GetMenuFunc
 
-func RegisterMenuItem(f GetMenuFunc) {
+func RegisterMenuProvider(f GetMenuFunc) {
 	ModulesMenuItems = append(ModulesMenuItems, f)
 }
