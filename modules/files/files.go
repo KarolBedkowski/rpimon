@@ -52,7 +52,7 @@ func InitModule(parentRoute *mux.Route, configFilename string, conf *app.AppConf
 }
 
 func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
-	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
+	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "files") {
 		return "", nil
 	}
 	return "", app.NewMenuItemFromRoute("Files", "files-index").SetID("files").SetIcon("glyphicon glyphicon-hdd")

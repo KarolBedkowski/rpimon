@@ -33,6 +33,7 @@ func initModule(parentRoute *mux.Route, configFilename string, conf *app.AppConf
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("logs-page")
 	return loadConfiguration(configFilename) == nil
 }
+
 func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil

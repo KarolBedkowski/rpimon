@@ -67,6 +67,8 @@ func InitModules(conf *app.AppConfiguration, router *mux.Router) {
 					if module.GetMenu != nil {
 						app.RegisterMenuProvider(module.GetMenu)
 					}
+				} else {
+					l.Warn("Module %s init error; %#v", module.Name, mconfig)
 				}
 			}
 		}

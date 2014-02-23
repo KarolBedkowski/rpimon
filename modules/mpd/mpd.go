@@ -117,7 +117,7 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 		app.NewMenuItemFromRoute("Library", "mpd-library").SetIcon("glyphicon glyphicon-folder-open"),
 		app.NewMenuItemFromRoute("Search", "mpd-search").SetIcon("glyphicon glyphicon-search"),
 		app.NewMenuItemFromRoute("Playlists", "mpd-playlists").SetIcon("glyphicon glyphicon-floppy-open"),
-		app.NewMenuItemFromRoute("Tools", "mpd-tools").SetIcon("glyphicon glyphicon-wrench").AddChild(
+		app.NewMenuItem("Tools", "mpd-tools").SetIcon("glyphicon glyphicon-wrench").AddChild(
 			app.NewMenuItemFromRoute("Log", "mpd-log")),
 	}
 	return "", menu

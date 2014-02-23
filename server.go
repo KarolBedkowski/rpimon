@@ -53,8 +53,6 @@ func main() {
 	app.Router.HandleFunc("/", handleHome)
 	auth.CreateRoutes(app.Router.PathPrefix("/auth"))
 	pmain.CreateRoutes(app.Router.PathPrefix("/main"))
-	pmpd.Init(conf.MpdHost)
-	pmpd.CreateRoutes(app.Router.PathPrefix("/mpd"))
 
 	modules.Register(mnet.GetModule())
 	modules.Register(mnet.GetNFSModule())

@@ -1,10 +1,72 @@
 {
+  "modules": {
+    "utilities": {
+      "config": "./utils.json",
+      "enabled": true
+    },
+    "system-users": {
+      "enabled": true
+    },
+    "system": {
+      "enabled": true
+    },
+    "storage": {
+      "enabled": true
+    },
+    "system-logs": {
+      "config": "logs.json",
+      "enabled": true
+    },
+    "network": {
+      "config": "",
+      "enabled": true
+    },
+    "network-smb": {
+      "config": "",
+      "enabled": true
+    },
+    "network-nfs": {
+      "config": "",
+      "enabled": true
+    },
+    "files": {
+      "config": "./browser.json",
+      "enabled": true
+    },
+    "mpd": {
+      "config": "",
+      "enabled": true
+    },
+    "notepad": {
+      "config": "",
+      "enabled": true
+    },
+    "system-other": {
+      "config": "",
+      "enabled": true
+    },
+    "system-process": {
+      "enabled": true
+    }
+  },
+  "MpdHost": "localhost:6600",
+  "StaticDir": "./static",
+  "Users": "./users.json",
+  "CookieAuthKey": "12345678901234567890123456789012",
+  "CookieEncKey": "12345678901234567890012345678901",
+  "Debug": true,
+  "UtilsFilename": "./utils.json",
+  "LogFilename": "app.log",
+  "notepad": "./notepad/",
   "monitor": {
+    "cpu_temp_file": "/sys/class/thermal/thermal_zone0/temp",
+    "cpu_freq_file": "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq",
+    "cpu_temp_error": 80,
     "monitored_services": {
-      "22": "SSH Connected",
-      "21": "FTP Connected",
+      "8200": "MiniDLNA Connected",
       "445": "SAMBA Connected",
-      "8200": "MiniDLNA Connected"
+      "21": "FTP Connected",
+      "22": "SSH Connected"
     },
     "load_warning": 0,
     "load_error": 0,
@@ -12,18 +74,8 @@
     "swap_usage_warning": 50,
     "fs_usage_warning": 25,
     "fs_usage_error": 15,
-    "cpu_temp_warning": 70,
-    "cpu_temp_error": 80,
-		"cpu_freq_file": "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq",
-		"cpu_temp_file": "/sys/class/thermal/thermal_zone0/temp"
+    "cpu_temp_warning": 70
   },
-  "notepad": "./notepad/",
-  "LogFilename": "app.log",
-  "UtilsFilename": "./utils.json",
-  "Debug": true,
-  "CookieEncKey": "12345678901234567890012345678901",
-  "CookieAuthKey": "12345678901234567890123456789012",
-  "Users": "./users.json",
   "TemplatesDir": "./templates",
   "MonitorUpdateInterval": 5,
   "SslKey": "key.pem",
@@ -31,58 +83,5 @@
   "http_address": ":8000",
   "https_address": "",
   "BrowserConf": "./browser.json",
-  "SessionStoreDir": "./temp",
-  "StaticDir": "./static",
-  "MpdHost": "localhost:6600",
-	"modules": {
-		"network": {
-			"enabled": true,
-			"config": ""
-		},
-		"network-smb": {
-			"enabled": true,
-			"config": ""
-		},
-		"network-nfs": {
-			"enabled": true,
-			"config": ""
-		},
-		"files": {
-			"enabled": true,
-			"config": "./browser.json"
-		},
-		"mpd": {
-			"enabled": true,
-			"config": ""
-		},
-		"notepad": {
-			"enabled": true,
-			"config": ""
-		},
-		"system-other": {
-			"enabled": true,
-			"config": ""
-		},
-		"system-process": {
-			"enabled": true
-		},
-		"system-logs": {
-			"enabled": true,
-			"config": "logs.json"
-		},
-		"storage": {
-			"enabled": true
-		},
-		"system": {
-			"enabled": true
-		},
-		"system-users": {
-			"enabled": true
-		},
-		"utilities": {
-			"enabled": true,
-			"config": "./utils.json"
-		}
-
-}
+  "SessionStoreDir": "./temp"
 }
