@@ -62,29 +62,14 @@ func (item *MenuItem) AddChild(child ...*MenuItem) *MenuItem {
 	return item
 }
 
-func (item *MenuItem) AttachSubmenu(parentID string, submenu []*MenuItem) (attached bool) {
-	if item.ID == parentID {
-		item.Submenu = append(item.Submenu, submenu...)
-		return true
-	}
-	if item.Submenu != nil {
-		for _, subitem := range item.Submenu {
-			if subitem.AttachSubmenu(parentID, submenu) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func (i *MenuItem) AppendItem(parentID string, item *MenuItem) (attached bool) {
+func (i *MenuItem) AppendItemToParent(parentID string, item *MenuItem) (attached bool) {
 	if i.ID == parentID {
 		i.Submenu = append(i.Submenu, item)
 		return true
 	}
 	if i.Submenu != nil {
 		for _, subitem := range i.Submenu {
-			if subitem.AppendItem(parentID, item) {
+			if subitem.AppendItemToParent(parentID, item) {
 				return true
 			}
 		}
@@ -92,14 +77,14 @@ func (i *MenuItem) AppendItem(parentID string, item *MenuItem) (attached bool) {
 	return false
 }
 
-func (item *MenuItem) SetActiveMenu(menuID string) (found bool) {
+func (item *MenuItem) SetActiveMenuItem(menuID string) (found bool) {
 	if item.ID == menuID {
 		item.Active = true
 		return true
 	}
 	if item.Submenu != nil {
 		for _, subitem := range item.Submenu {
-			if subitem.SetActiveMenu(menuID) {
+			if subitem.SetActiveMenuItem(menuID) {
 				item.Active = true
 				return true
 			}
@@ -138,7 +123,7 @@ func SetMainMenu(ctx *BasePageContext) {
 	for _, item := range ModulesMenuItems {
 		parent, mitem := item(ctx)
 		if mitem != nil {
-			if !ctx.MainMenu.AppendItem(parent, mitem) {
+			if !ctx.MainMenu.AppendItemToParent(parent, mitem) {
 				itemsWithoutParent.PushBack(notAttachedItems{parent, mitem})
 			}
 		}
@@ -152,7 +137,7 @@ func SetMainMenu(ctx *BasePageContext) {
 		for e := itemsWithoutParent.Front(); e != nil; e = next {
 			next = e.Next()
 			nai := e.Value.(notAttachedItems)
-			if ctx.MainMenu.AppendItem(nai.parent, nai.item) {
+			if ctx.MainMenu.AppendItemToParent(nai.parent, nai.item) {
 				itemsWithoutParent.Remove(e)
 			}
 		}
@@ -166,24 +151,7 @@ func SetMainMenu(ctx *BasePageContext) {
 		for e := itemsWithoutParent.Front(); e != nil; e = e.Next() {
 			mitem.Submenu = append(mitem.Submenu, e.Value.(notAttachedItems).item)
 		}
-		ctx.MainMenu.AppendItem("", mitem)
-	}
-
-}
-
-func AttachSubmenu(ctx *BasePageContext, parentID string, submenu []*MenuItem) {
-	if ctx.MainMenu == nil {
-		return
-	}
-	ctx.MainMenu.AttachSubmenu(parentID, submenu)
-}
-
-// SetMenuActive add id  to menu active items
-func MenuListSetMenuActive(id string, menu []*MenuItem) {
-	for _, subitem := range menu {
-		if subitem.SetActiveMenu(id) {
-			break
-		}
+		ctx.MainMenu.AppendItemToParent("", mitem)
 	}
 	ctx.MainMenu.Sort()
 }

@@ -39,10 +39,10 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 		return "", nil
 	}
 	menu = app.NewMenuItemFromRoute("Process", "process-index").SetID("process").SetIcon("glyphicon glyphicon-cog")
-	menu.Submenu = []*app.MenuItem{app.NewMenuItemFromRoute("PS AXL", "process-psaxl").SetID("psaxl"),
+	menu.AddChild(app.NewMenuItemFromRoute("PS AXL", "process-psaxl").SetID("psaxl"),
 		app.NewMenuItemFromRoute("TOP", "process-top").SetID("top"),
 		app.NewMenuItemFromRoute("Services", "process-services").SetID("services"),
-	}
+	)
 	return "system", menu
 }
 

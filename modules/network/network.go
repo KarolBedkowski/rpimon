@@ -45,12 +45,11 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 	}
 
 	menu = app.NewMenuItemFromRoute("Network", "m-net").SetIcon("glyphicon glyphicon-dashboard")
-	menu.Submenu = []*app.MenuItem{
-		app.NewMenuItemFromRoute("Status", "m-net").SetID("m-net-index"),
+	menu.AddChild(app.NewMenuItemFromRoute("Status", "m-net").SetID("m-net-index"),
 		app.NewMenuItemFromRoute("Configuration", "m-net-conf"),
 		app.NewMenuItemFromRoute("IPTables", "m-net-iptables"),
 		app.NewMenuItemFromRoute("Netstat", "m-net-netstat"),
-	}
+	)
 	return "", menu
 }
 

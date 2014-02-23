@@ -40,7 +40,7 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 		return "", nil
 	}
 	menu = app.NewMenuItem("System", "").SetIcon("glyphicon glyphicon-wrench").SetID("system")
-	menu.Submenu = append(menu.Submenu,
+	menu.AddChild(
 		app.NewMenuItemFromRoute("Live view", "main-system").SetID("system-live").SetIcon("glyphicon glyphicon-dashboard"))
 
 	return "", menu

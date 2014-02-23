@@ -105,7 +105,7 @@ func (ctx *BasePageContext) SetMenuActive(id string) {
 	if ctx.MainMenu == nil {
 		return
 	}
-	ctx.MainMenu.SetActiveMenu(id)
+	ctx.MainMenu.SetActiveMenuItem(id)
 }
 
 // SimpleDataPageCtx - context  with data (string) + title
@@ -123,7 +123,6 @@ type SimpleDataPageCtx struct {
 func NewSimpleDataPageCtx(w http.ResponseWriter, r *http.Request,
 	title string, parentMenuId string, localMenu []*MenuItem) *SimpleDataPageCtx {
 	ctx := &SimpleDataPageCtx{BasePageContext: NewBasePageContext(title, w, r)}
-	AttachSubmenu(ctx.BasePageContext, parentMenuId, localMenu)
 	return ctx
 }
 

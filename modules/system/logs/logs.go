@@ -40,8 +40,7 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 	}
 	menu = app.NewMenuItemFromRoute("Logs", "logs-index").SetID("logs").SetIcon("glyphicon glyphicon-eye-open")
 	for _, group := range config.Groups {
-		menu.Submenu = append(menu.Submenu,
-			app.NewMenuItemFromRoute(group.Name, "logs-page", "page", group.Name).SetID(group.Name))
+		menu.AddChild(app.NewMenuItemFromRoute(group.Name, "logs-page", "page", group.Name).SetID(group.Name))
 	}
 	return "system", menu
 }

@@ -112,14 +112,14 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 	}
 
 	menu = app.NewMenuItemFromRoute("MPD", "mpd-index").SetID("mpd").SetIcon("glyphicon glyphicon-music")
-	menu.Submenu = []*app.MenuItem{app.NewMenuItemFromRoute("Status", "mpd-index").SetIcon("glyphicon glyphicon-music"),
+	menu.AddChild(app.NewMenuItemFromRoute("Status", "mpd-index").SetIcon("glyphicon glyphicon-music"),
 		app.NewMenuItemFromRoute("Playlist", "mpd-playlist").SetIcon("glyphicon glyphicon-list"),
 		app.NewMenuItemFromRoute("Library", "mpd-library").SetIcon("glyphicon glyphicon-folder-open"),
 		app.NewMenuItemFromRoute("Search", "mpd-search").SetIcon("glyphicon glyphicon-search"),
 		app.NewMenuItemFromRoute("Playlists", "mpd-playlists").SetIcon("glyphicon glyphicon-floppy-open"),
 		app.NewMenuItem("Tools", "mpd-tools").SetIcon("glyphicon glyphicon-wrench").AddChild(
 			app.NewMenuItemFromRoute("Log", "mpd-log")),
-	}
+	)
 	return "", menu
 }
 

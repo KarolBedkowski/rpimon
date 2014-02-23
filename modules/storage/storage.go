@@ -36,10 +36,10 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 		return "", nil
 	}
 	menu = app.NewMenuItemFromRoute("Storage", "storage").SetID("storage").SetIcon("glyphicon glyphicon-hdd")
-	menu.Submenu = []*app.MenuItem{app.NewMenuItemFromRoute("Disk Free", "storage-df").SetID("diskfree"),
+	menu.AddChild(app.NewMenuItemFromRoute("Disk Free", "storage-df").SetID("diskfree"),
 		app.NewMenuItemFromRoute("Mount", "storage-mount").SetID("mount"),
 		app.NewMenuItemFromRoute("Devices", "storage-page", "page", "devices").SetID("devices"),
-	}
+	)
 	return "", menu
 }
 
