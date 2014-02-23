@@ -1,15 +1,29 @@
 package users
 
+// TODO: wydzielić smart do oddzielnego modułu
+
 import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
+	"k.prv/rpimon/modules"
 	"net/http"
 	"strings"
 )
 
+func GetModule() *modules.Module {
+	return &modules.Module{
+		Name:          "storage",
+		Title:         "Storage",
+		Description:   "",
+		AllPrivilages: nil,
+		Init:          initModule,
+		GetMenu:       getMenu,
+	}
+}
+
 // CreateRoutes for /storage
-func CreateRoutes(parentRoute *mux.Route) {
+func initModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(dfPageHandler, "admin")).Name("storage-index")
 	subRouter.HandleFunc("/mount", app.VerifyPermission(mountPageHandler, "admin")).Name("storage-mount")
@@ -18,17 +32,24 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/smart", app.VerifyPermission(smartPageHandler, "admin")).Name("storage-smart")
 	subRouter.HandleFunc("/serv/smart", app.VerifyPermission(servSmartHandler, "admin")).Name("storage-serv-smart")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("storage-page")
+	return true
 }
-func buildLocalMenu() (localMenu []*app.MenuItem) {
-	return []*app.MenuItem{app.NewMenuItemFromRoute("Disk Free", "storage-df").SetID("diskfree"),
+
+func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
+	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
+		return "", nil
+	}
+	menu = app.NewMenuItemFromRoute("Storage", "storage-index").SetID("storage").SetIcon("glyphicon glyphicon-hdd")
+	menu.Submenu = []*app.MenuItem{app.NewMenuItemFromRoute("Disk Free", "storage-df").SetID("diskfree"),
 		app.NewMenuItemFromRoute("Mount", "storage-mount").SetID("mount"),
 		app.NewMenuItemFromRoute("Devices", "storage-page", "page", "devices").SetID("devices"),
 		app.NewMenuItemFromRoute("SMART", "storage-smart").SetID("smart"),
 	}
+	return "", menu
 }
 
 func newPageCtx(w http.ResponseWriter, r *http.Request, localMenuPos string, data string) *app.SimpleDataPageCtx {
-	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", buildLocalMenu())
+	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", nil)
 	ctx.SetMenuActive(localMenuPos)
 	ctx.Data = data
 	return ctx
@@ -81,7 +102,7 @@ type (
 
 func mountPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &mountPageContext{
-		SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Storage", "storage", buildLocalMenu()),
+		SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Storage", "storage", nil),
 	}
 	ctx.SetMenuActive("mount")
 	ctx.Header1 = "Storage"
@@ -121,7 +142,7 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func dfPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", buildLocalMenu())
+	ctx := app.NewSimpleDataPageCtx(w, r, "Storage", "storage", nil)
 	ctx.SetMenuActive("diskfree")
 	ctx.Header1 = "Storage"
 	ctx.Header2 = "diskfree"
@@ -143,7 +164,7 @@ type smartPageContext struct {
 
 func smartPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &smartPageContext{SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Storage - SMART", "storage",
-		buildLocalMenu())}
+		nil)}
 	ctx.SetMenuActive("smart")
 	for _, line := range strings.Split(h.ReadCommand("lsblk", "-r"), "\n") {
 		line = strings.TrimSpace(line)
