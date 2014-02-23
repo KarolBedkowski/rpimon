@@ -28,7 +28,7 @@ func GetModule() *modules.Module {
 }
 
 // CreateRoutes for /files
-func InitModule(parentRoute *mux.Route, configFilename string) bool {
+func InitModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/",
 		app.VerifyPermission(verifyAccess(mainPageHandler), "files")).Name(

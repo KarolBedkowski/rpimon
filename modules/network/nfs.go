@@ -20,7 +20,7 @@ func GetNFSModule() *modules.Module {
 	}
 }
 
-func InitNFSModule(parentRoute *mux.Route, configFilename string) bool {
+func InitNFSModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.HandleWithContext(nfsPageHandler, "Network - NFS")).Name("m-net-nfs")

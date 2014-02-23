@@ -20,7 +20,7 @@ func GetSambaModule() *modules.Module {
 	}
 }
 
-func InitSambaModule(parentRoute *mux.Route, configFilename string) bool {
+func InitSambaModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.HandleWithContext(sambaPageHandler,

@@ -23,7 +23,7 @@ func GetModule() *modules.Module {
 	}
 }
 
-func InitModule(parentRoute *mux.Route, configFilename string) bool {
+func InitModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.HandleWithContext(mainPageHandler,
