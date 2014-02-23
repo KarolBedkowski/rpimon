@@ -13,7 +13,13 @@ MPD.plist = (function(self, $) {
 	var msg_loading = null,
 		table = null,
 		currentSong = "",
-		currentSongId = -1;
+		currentSongId = -1,
+		urls = {
+			'mpd-pl-serv-info': '',
+			'mpd-song-action-play': '',
+			'mpd-song-action-remove': '',
+			"mpd-service-song-info": ''
+		};
 
 	function processServerData(sSource, aoData, fnCallback) {
 		$.ajax({
@@ -49,7 +55,7 @@ MPD.plist = (function(self, $) {
 			"sPaginationType": "bootstrap",
 			"bProcessing": true,
 			"bServerSide": true,
-			"sAjaxSource": "/mpd/playlist/serv/info",
+			"sAjaxSource": urls['mpd-pl-serv-info'],
 			"fnServerData": processServerData,
 			"aoColumns": [
 				{},
@@ -104,7 +110,7 @@ MPD.plist = (function(self, $) {
 		}
 		RPI.showLoadingMsg();
 		$.ajax({
-			url: "/mpd/song/" + id  + "/play",
+			url: urls["mpd-song-action-play"].replace("000", id),
 			method: "PUT"
 		}).done(function(result) {
 			if (result.Error === "") {
@@ -135,7 +141,7 @@ MPD.plist = (function(self, $) {
 			id = tr.data("songid");
 		RPI.showLoadingMsg();
 		$.ajax({
-			url: "/mpd/song/" + id  + "/remove",
+			url: urls["mpd-song-action-remove"].replace("000", id),
 			method: "PUT"
 		}).done(function(result) {
 			RPI.hideLoadingMsg();
@@ -153,7 +159,7 @@ MPD.plist = (function(self, $) {
 	function songInfo(event) {
 		event.preventDefault();
 		$.ajax({
-			url: '/mpd/service/song-info',
+			url: urls["mpd-service-song-info"],
 			type: "GET",
 			data: {
 				uri: $(this).data("uri")
@@ -188,8 +194,10 @@ MPD.plist = (function(self, $) {
 		});
 	}
 
-	self.init = function initF() {
+	self.init = function initF(params) {
 		RPI.showLoadingMsg();
+
+		urls = $.extend({}, urls, params.urls || {});
 
 		$('div.modal').on('shown.bs.modal', function() {
 			var inputs = $('input:first-of-type');
