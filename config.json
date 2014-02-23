@@ -13,6 +13,9 @@
     "storage": {
       "enabled": true
     },
+    "storage-smart": {
+      "enabled": true
+    },
     "system-logs": {
       "config": "logs.json",
       "enabled": true

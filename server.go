@@ -9,6 +9,7 @@ import (
 	mnet "k.prv/rpimon/modules/network"
 	mnotepad "k.prv/rpimon/modules/notepad"
 	mstorage "k.prv/rpimon/modules/storage"
+	msmart "k.prv/rpimon/modules/storage/smart"
 	msystem "k.prv/rpimon/modules/system"
 	msyslogs "k.prv/rpimon/modules/system/logs"
 	msystother "k.prv/rpimon/modules/system/other"
@@ -66,6 +67,7 @@ func main() {
 	modules.Register(msyslogs.GetModule())
 	modules.Register(msysusers.GetModule())
 	modules.Register(mstorage.GetModule())
+	modules.Register(msmart.GetModule())
 	modules.Register(mutls.GetModule())
 
 	modules.InitModules(conf, app.Router)
