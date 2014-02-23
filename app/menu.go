@@ -185,6 +185,7 @@ func MenuListSetMenuActive(id string, menu []*MenuItem) {
 			break
 		}
 	}
+	ctx.MainMenu.Sort()
 }
 
 type GetMenuFunc func(ctx *BasePageContext) (parentId string, menu *MenuItem)
