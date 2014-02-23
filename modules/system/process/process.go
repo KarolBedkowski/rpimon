@@ -5,12 +5,24 @@ import (
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
+	"k.prv/rpimon/modules"
 	"net/http"
 	"strings"
 )
 
+func GetModule() *modules.Module {
+	return &modules.Module{
+		Name:          "system-process",
+		Title:         "Process",
+		Description:   "",
+		AllPrivilages: nil,
+		Init:          initModule,
+		GetMenu:       getMenu,
+	}
+}
+
 // CreateRoutes for /process
-func CreateRoutes(parentRoute *mux.Route) {
+func initModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(psaxlPageHandler, "admin")).Name("process-index")
 	subRouter.HandleFunc("/services", app.VerifyPermission(servicesPageHangler, "admin")).Name("process-services")
@@ -19,12 +31,19 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/top", app.VerifyPermission(topPageHandler, "admin")).Name("process-top")
 	subRouter.HandleFunc("/process/action", app.VerifyPermission(processActionHandler, "admin")).Name(
 		"process-action")
+	return true
 }
 
-func buildLocalMenu() (localMenu []*app.MenuItem) {
-	return []*app.MenuItem{app.NewMenuItemFromRoute("PS AXL", "process-psaxl").SetID("psaxl"),
+func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
+	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
+		return "", nil
+	}
+	menu = app.NewMenuItemFromRoute("Process", "process-index").SetID("process").SetIcon("glyphicon glyphicon-cog")
+	menu.Submenu = []*app.MenuItem{app.NewMenuItemFromRoute("PS AXL", "process-psaxl").SetID("psaxl"),
 		app.NewMenuItemFromRoute("TOP", "process-top").SetID("top"),
-		app.NewMenuItemFromRoute("Services", "process-services").SetID("services")}
+		app.NewMenuItemFromRoute("Services", "process-services").SetID("services"),
+	}
+	return "system", menu
 }
 
 type sevicesPageCtx struct {
@@ -34,7 +53,7 @@ type sevicesPageCtx struct {
 
 func servicesPageHangler(w http.ResponseWriter, r *http.Request) {
 	ctx := &sevicesPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(
-		w, r, "Process", "process", buildLocalMenu())}
+		w, r, "Process", "process", nil)}
 	ctx.Services = make(map[string]string)
 	lines := strings.Split(h.ReadCommand("service", "--status-all"), "\n")
 	for _, line := range lines {
@@ -67,7 +86,7 @@ func serviceActionPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func psaxlPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &sevicesPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(
-		w, r, "Process", "process", buildLocalMenu())}
+		w, r, "Process", "process", nil)}
 	ctx.SetMenuActive("psaxl")
 	ctx.Header1 = "Process"
 	ctx.Header2 = "psaxl"
@@ -95,7 +114,7 @@ func psaxlPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func topPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &sevicesPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(
-		w, r, "Process", "process", buildLocalMenu())}
+		w, r, "Process", "process", nil)}
 	ctx.SetMenuActive("top")
 	ctx.Header1 = "Process"
 	ctx.Header2 = "top"

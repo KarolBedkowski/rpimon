@@ -63,6 +63,9 @@
 		"system-other": {
 			"enabled": true,
 			"config": ""
+		},
+		"system-process": {
+			"enabled": true
 		}
 }
 }
