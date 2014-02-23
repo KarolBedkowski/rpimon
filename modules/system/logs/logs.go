@@ -7,15 +7,14 @@ import (
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
-	"k.prv/rpimon/modules"
 	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
 )
 
-func GetModule() *modules.Module {
-	return &modules.Module{
+func GetModule() *app.Module {
+	return &app.Module{
 		Name:          "system-logs",
 		Title:         "Logs",
 		Description:   "System Logs",

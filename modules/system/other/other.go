@@ -4,12 +4,11 @@ import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
-	"k.prv/rpimon/modules"
 	"net/http"
 )
 
-func GetModule() *modules.Module {
-	return &modules.Module{
+func GetModule() *app.Module {
+	return &app.Module{
 		Name:          "system-other",
 		Title:         "Other",
 		Description:   "",

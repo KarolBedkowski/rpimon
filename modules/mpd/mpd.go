@@ -10,7 +10,6 @@ import (
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
-	"k.prv/rpimon/modules"
 	n "k.prv/rpimon/modules/notepad"
 	"net/http"
 	"net/url"
@@ -18,7 +17,7 @@ import (
 	"strings"
 )
 
-var mpdModule = &modules.Module{
+var mpdModule = &app.Module{
 	Name:          "mpd",
 	Title:         "MPD",
 	Description:   "",
@@ -28,7 +27,7 @@ var mpdModule = &modules.Module{
 	Shutdown:      shutdown,
 }
 
-func GetModule() *modules.Module {
+func GetModule() *app.Module {
 	return mpdModule
 }
 

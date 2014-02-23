@@ -5,14 +5,13 @@ import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
-	"k.prv/rpimon/modules"
 	"k.prv/rpimon/monitor"
 	"net/http"
 	"strings"
 )
 
-func GetModule() *modules.Module {
-	return &modules.Module{
+func GetModule() *app.Module {
+	return &app.Module{
 		Name:          "network",
 		Title:         "Network",
 		Description:   "Network",

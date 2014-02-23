@@ -1,8 +1,7 @@
-package modules
+package app
 
 import (
 	"github.com/gorilla/mux"
-	"k.prv/rpimon/app"
 	l "k.prv/rpimon/helpers/logging"
 )
 
@@ -27,10 +26,10 @@ type Module struct {
 	ConfFile string
 
 	// Initialize module (set routes etc)
-	Init func(parentRoute *mux.Route, configFilename string, globalConfig *app.AppConfiguration) bool
+	Init func(parentRoute *mux.Route, configFilename string, globalConfig *AppConfiguration) bool
 
 	// GetMenu return parent menu idand menu item (with optional submenu)
-	GetMenu func(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem)
+	GetMenu func(ctx *BasePageContext) (parentId string, menu *MenuItem)
 
 	// GetWarnings return map warning kind -> messages
 	GetWarnings func() map[string][]string
@@ -54,7 +53,7 @@ func Register(module *Module) bool {
 	return true
 }
 
-func InitModules(conf *app.AppConfiguration, router *mux.Router) {
+func InitModules(conf *AppConfiguration, router *mux.Router) {
 	for _, module := range Modules {
 		if mconfig, ok := conf.Modules[module.Name]; !ok || mconfig == nil {
 			l.Warn("Missing configuration for %v module", module)
@@ -65,7 +64,7 @@ func InitModules(conf *app.AppConfiguration, router *mux.Router) {
 				if module.Init(router.PathPrefix("/m/"+module.Name),
 					mconfig.ConfigFilename, conf) {
 					if module.GetMenu != nil {
-						app.RegisterMenuProvider(module.GetMenu)
+						RegisterMenuProvider(module.GetMenu)
 					}
 				} else {
 					l.Warn("Module %s init error; %#v", module.Name, mconfig)

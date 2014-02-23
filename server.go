@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/modules"
 	mfiles "k.prv/rpimon/modules/files"
 	mmpd "k.prv/rpimon/modules/mpd"
 	mnet "k.prv/rpimon/modules/network"
@@ -47,7 +46,7 @@ func main() {
 	go func() {
 		<-cleanChannel
 		app.Close()
-		modules.ShutdownModules()
+		app.ShutdownModules()
 		os.Exit(1)
 	}()
 
@@ -55,22 +54,22 @@ func main() {
 	auth.CreateRoutes(app.Router.PathPrefix("/auth"))
 	pmain.CreateRoutes(app.Router.PathPrefix("/main"))
 
-	modules.Register(mnet.GetModule())
-	modules.Register(mnet.GetNFSModule())
-	modules.Register(mnet.GetSambaModule())
-	modules.Register(mfiles.GetModule())
-	modules.Register(mmpd.GetModule())
-	modules.Register(mnotepad.GetModule())
-	modules.Register(msystem.GetModule())
-	modules.Register(msystother.GetModule())
-	modules.Register(msysproc.GetModule())
-	modules.Register(msyslogs.GetModule())
-	modules.Register(msysusers.GetModule())
-	modules.Register(mstorage.GetModule())
-	modules.Register(msmart.GetModule())
-	modules.Register(mutls.GetModule())
+	app.Register(mnet.GetModule())
+	app.Register(mnet.GetNFSModule())
+	app.Register(mnet.GetSambaModule())
+	app.Register(mfiles.GetModule())
+	app.Register(mmpd.GetModule())
+	app.Register(mnotepad.GetModule())
+	app.Register(msystem.GetModule())
+	app.Register(msystother.GetModule())
+	app.Register(msysproc.GetModule())
+	app.Register(msyslogs.GetModule())
+	app.Register(msysusers.GetModule())
+	app.Register(mstorage.GetModule())
+	app.Register(msmart.GetModule())
+	app.Register(mutls.GetModule())
 
-	modules.InitModules(conf, app.Router)
+	app.InitModules(conf, app.Router)
 
 	/* for filesystem store
 	go app.ClearSessionStore()

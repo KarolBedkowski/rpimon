@@ -4,12 +4,11 @@ import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
-	"k.prv/rpimon/modules"
 	"net/http"
 )
 
-func GetNFSModule() *modules.Module {
-	return &modules.Module{
+func GetNFSModule() *app.Module {
+	return &app.Module{
 		Name:          "network-nfs",
 		Title:         "Network - NFS",
 		Description:   "Network - NFS",

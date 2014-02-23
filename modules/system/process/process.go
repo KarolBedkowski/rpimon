@@ -5,13 +5,12 @@ import (
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
-	"k.prv/rpimon/modules"
 	"net/http"
 	"strings"
 )
 
-func GetModule() *modules.Module {
-	return &modules.Module{
+func GetModule() *app.Module {
+	return &app.Module{
 		Name:          "system-process",
 		Title:         "Process",
 		Description:   "",

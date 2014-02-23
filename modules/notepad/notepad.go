@@ -8,7 +8,6 @@ import (
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
-	"k.prv/rpimon/modules"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -18,8 +17,8 @@ import (
 var decoder = schema.NewDecoder()
 var ErrInvalidFilename = errors.New("invalid filename")
 
-func GetModule() *modules.Module {
-	return &modules.Module{
+func GetModule() *app.Module {
+	return &app.Module{
 		Name:          "notepad",
 		Title:         "Notepad",
 		Description:   "",
