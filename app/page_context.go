@@ -120,8 +120,7 @@ type SimpleDataPageCtx struct {
 }
 
 // NewSimpleDataPageCtx create new simple context to show text data
-func NewSimpleDataPageCtx(w http.ResponseWriter, r *http.Request,
-	title string, parentMenuId string, localMenu []*MenuItem) *SimpleDataPageCtx {
+func NewSimpleDataPageCtx(w http.ResponseWriter, r *http.Request, title string) *SimpleDataPageCtx {
 	ctx := &SimpleDataPageCtx{BasePageContext: NewBasePageContext(title, w, r)}
 	return ctx
 }

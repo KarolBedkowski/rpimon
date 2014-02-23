@@ -39,7 +39,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	if page == "" {
 		page = "acpi"
 	}
-	data := app.NewSimpleDataPageCtx(w, r, "Other", "", nil)
+	data := app.NewSimpleDataPageCtx(w, r, "Other")
 	data.Header1 = "Other"
 	data.Tabs = []*app.MenuItem{
 		app.NewMenuItemFromRoute("ACPI", "other-index").AddQuery("?sec=acpi").SetActve(page == "acpi"),

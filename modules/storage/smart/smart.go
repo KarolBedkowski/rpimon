@@ -42,8 +42,7 @@ type smartPageContext struct {
 }
 
 func smartPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &smartPageContext{SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Storage - SMART", "storage",
-		nil)}
+	ctx := &smartPageContext{SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Storage - SMART")}
 	ctx.SetMenuActive("smart")
 	for _, line := range strings.Split(h.ReadCommand("lsblk", "-r"), "\n") {
 		line = strings.TrimSpace(line)
