@@ -59,6 +59,10 @@
 		"notepad": {
 			"enabled": true,
 			"config": ""
+		},
+		"system-other": {
+			"enabled": true,
+			"config": ""
 		}
-	}
+}
 }
