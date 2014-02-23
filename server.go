@@ -4,10 +4,10 @@ import (
 	"flag"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/modules"
+	mfiles "k.prv/rpimon/modules/files"
 	mnet "k.prv/rpimon/modules/network"
 	"k.prv/rpimon/monitor"
 	"k.prv/rpimon/pages/auth"
-	pfiles "k.prv/rpimon/pages/files"
 	plogs "k.prv/rpimon/pages/logs"
 	pmain "k.prv/rpimon/pages/main"
 	pmpd "k.prv/rpimon/pages/mpd"
@@ -63,14 +63,13 @@ func main() {
 	plogs.CreateRoutes(app.Router.PathPrefix("/logs"))
 	pusers.CreateRoutes(app.Router.PathPrefix("/users"))
 	pproc.CreateRoutes(app.Router.PathPrefix("/process"))
-	pfiles.Init(conf.BrowserConf)
-	pfiles.CreateRoutes(app.Router.PathPrefix("/files"))
 	pnotepad.CreateRoutes(app.Router.PathPrefix("/notepad"))
 	pother.CreateRoutes(app.Router.PathPrefix("/other"))
 
 	modules.Register(mnet.GetModule())
 	modules.Register(mnet.GetNFSModule())
 	modules.Register(mnet.GetSambaModule())
+	modules.Register(mfiles.GetModule())
 
 	modules.InitModules(conf, app.Router)
 

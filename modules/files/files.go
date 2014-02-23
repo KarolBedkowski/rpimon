@@ -9,13 +9,26 @@ import (
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
+	"k.prv/rpimon/modules"
 	"net/http"
 	"os"
 	"path/filepath"
 )
 
+func GetModule() *modules.Module {
+	return &modules.Module{
+		Name:          "files",
+		Title:         "Files",
+		Description:   "File browser",
+		AllPrivilages: nil,
+		Init:          InitModule,
+		GetMenu:       getMenu,
+		GetWarnings:   getWarnings,
+	}
+}
+
 // CreateRoutes for /files
-func CreateRoutes(parentRoute *mux.Route) {
+func InitModule(parentRoute *mux.Route, configFilename string) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/",
 		app.VerifyPermission(verifyAccess(mainPageHandler), "files")).Name(
@@ -35,6 +48,18 @@ func CreateRoutes(parentRoute *mux.Route) {
 	subRouter.HandleFunc("/action",
 		app.VerifyPermission(verifyAccess(actionHandler), "files")).Methods(
 		"PUT").Name("files-file-action")
+	return loadConfiguration(configFilename) == nil
+}
+
+func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
+	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
+		return "", nil
+	}
+	return "", app.NewMenuItemFromRoute("Files", "files-index").SetID("files").SetIcon("glyphicon glyphicon-hdd")
+}
+
+func getWarnings() map[string][]string {
+	return nil
 }
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {

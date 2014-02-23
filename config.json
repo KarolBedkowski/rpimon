@@ -47,6 +47,10 @@
 		"network-nfs": {
 			"enabled": true,
 			"config": ""
+		},
+		"files": {
+			"enabled": true,
+			"config": "./browser.json"
 		}
 	}
 }
