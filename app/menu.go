@@ -18,7 +18,6 @@ type (
 		// RequredPrivilages as [[priv and priv ....] or [ priv ...]]
 		RequredPrivilages [][]string
 	}
-	subMenu []*MenuItem
 )
 
 // NewMenuItem create new MenuItem structure
@@ -102,6 +101,10 @@ func (i *MenuItem) Sort() {
 	}
 }
 
+// SORTING MENU ITEMS
+
+type subMenu []*MenuItem
+
 func (s subMenu) Len() int      { return len(s) }
 func (s subMenu) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 func (s subMenu) Less(i, j int) bool {
@@ -110,6 +113,8 @@ func (s subMenu) Less(i, j int) bool {
 	}
 	return s[i].SortOrder < s[j].SortOrder
 }
+
+// BUILDING MENU
 
 type notAttachedItems struct {
 	parent string
@@ -120,11 +125,13 @@ type notAttachedItems struct {
 func SetMainMenu(ctx *BasePageContext) {
 	ctx.MainMenu = &MenuItem{}
 	itemsWithoutParent := list.New()
-	for _, item := range ModulesMenuItems {
-		parent, mitem := item(ctx)
-		if mitem != nil {
-			if !ctx.MainMenu.AppendItemToParent(parent, mitem) {
-				itemsWithoutParent.PushBack(notAttachedItems{parent, mitem})
+	for _, module := range registeredModules {
+		if module.Enabled && module.GetMenu != nil {
+			parent, mitem := module.GetMenu(ctx)
+			if mitem != nil {
+				if !ctx.MainMenu.AppendItemToParent(parent, mitem) {
+					itemsWithoutParent.PushBack(notAttachedItems{parent, mitem})
+				}
 			}
 		}
 	}
@@ -154,13 +161,4 @@ func SetMainMenu(ctx *BasePageContext) {
 		ctx.MainMenu.AppendItemToParent("", mitem)
 	}
 	ctx.MainMenu.Sort()
-}
-
-type GetMenuFunc func(ctx *BasePageContext) (parentId string, menu *MenuItem)
-
-// TODO: przerobic
-var ModulesMenuItems []GetMenuFunc
-
-func RegisterMenuProvider(f GetMenuFunc) {
-	ModulesMenuItems = append(ModulesMenuItems, f)
 }

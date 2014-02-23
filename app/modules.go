@@ -38,7 +38,7 @@ type Module struct {
 	Shutdown func()
 }
 
-var Modules = make(map[string]*Module)
+var registeredModules = make(map[string]*Module)
 
 func Register(module *Module) bool {
 	if module.Name == "" {
@@ -49,12 +49,12 @@ func Register(module *Module) bool {
 		return false
 	}
 	l.Info("Registering module: [%s] %s", module.Name, module.Title)
-	Modules[module.Title] = module
+	registeredModules[module.Title] = module
 	return true
 }
 
 func InitModules(conf *AppConfiguration, router *mux.Router) {
-	for _, module := range Modules {
+	for _, module := range registeredModules {
 		if mconfig, ok := conf.Modules[module.Name]; !ok || mconfig == nil {
 			l.Warn("Missing configuration for %v module", module)
 		} else {
@@ -63,9 +63,6 @@ func InitModules(conf *AppConfiguration, router *mux.Router) {
 				l.Info("Enabling module %s", module.Name)
 				if module.Init(router.PathPrefix("/m/"+module.Name),
 					mconfig.ConfigFilename, conf) {
-					if module.GetMenu != nil {
-						RegisterMenuProvider(module.GetMenu)
-					}
 				} else {
 					l.Warn("Module %s init error; %#v", module.Name, mconfig)
 				}
@@ -75,7 +72,7 @@ func InitModules(conf *AppConfiguration, router *mux.Router) {
 }
 
 func ShutdownModules() {
-	for _, module := range Modules {
+	for _, module := range registeredModules {
 		if module.Enabled && module.Shutdown != nil {
 			module.Shutdown()
 		}
