@@ -7,18 +7,42 @@ import (
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
+	"k.prv/rpimon/modules"
 	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
 )
 
+func GetModule() *modules.Module {
+	return &modules.Module{
+		Name:          "system-logs",
+		Title:         "Logs",
+		Description:   "System Logs",
+		AllPrivilages: nil,
+		Init:          initModule,
+		GetMenu:       getMenu,
+	}
+}
+
 // CreateRoutes for /logs
-func CreateRoutes(parentRoute *mux.Route) {
+func initModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("logs-index")
 	subRouter.HandleFunc("/serv", app.VerifyPermission(servLogHandler, "admin")).Name("logs-serv")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("logs-page")
+	return loadConfiguration(configFilename) == nil
+}
+func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
+	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
+		return "", nil
+	}
+	menu = app.NewMenuItemFromRoute("Logs", "logs-index").SetID("logs").SetIcon("glyphicon glyphicon-eye-open")
+	for _, group := range config.Groups {
+		menu.Submenu = append(menu.Submenu,
+			app.NewMenuItemFromRoute(group.Name, "logs-page", "page", group.Name).SetID(group.Name))
+	}
+	return "system", menu
 }
 
 type pageCtx struct {
@@ -31,17 +55,8 @@ type pageCtx struct {
 	LogsDef     logsDef
 }
 
-func buildLocalMenu() (localMenu []*app.MenuItem) {
-	for _, group := range config.Groups {
-		localMenu = append(localMenu,
-			app.NewMenuItemFromRoute(group.Name, "logs-page", "page", group.Name).SetID(group.Name))
-	}
-	return
-}
-
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("logs", w, r)}
-	app.AttachSubmenu(ctx.BasePageContext, "logs", buildLocalMenu())
 	vars := mux.Vars(r)
 	page, ok := vars["page"]
 	if !ok {

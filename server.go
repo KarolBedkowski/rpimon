@@ -8,11 +8,11 @@ import (
 	mmpd "k.prv/rpimon/modules/mpd"
 	mnet "k.prv/rpimon/modules/network"
 	mnotepad "k.prv/rpimon/modules/notepad"
+	msyslogs "k.prv/rpimon/modules/system/logs"
 	msystother "k.prv/rpimon/modules/system/other"
 	msysproc "k.prv/rpimon/modules/system/process"
 	"k.prv/rpimon/monitor"
 	"k.prv/rpimon/pages/auth"
-	plogs "k.prv/rpimon/pages/logs"
 	pmain "k.prv/rpimon/pages/main"
 	pstorage "k.prv/rpimon/pages/storage"
 	pusers "k.prv/rpimon/pages/users"
@@ -57,8 +57,6 @@ func main() {
 	putils.CreateRoutes(app.Router.PathPrefix("/utils"))
 	pmpd.Init(conf.MpdHost)
 	pmpd.CreateRoutes(app.Router.PathPrefix("/mpd"))
-	plogs.Init(conf.Logs)
-	plogs.CreateRoutes(app.Router.PathPrefix("/logs"))
 	pusers.CreateRoutes(app.Router.PathPrefix("/users"))
 
 	modules.Register(mnet.GetModule())
@@ -69,6 +67,7 @@ func main() {
 	modules.Register(mnotepad.GetModule())
 	modules.Register(msystother.GetModule())
 	modules.Register(msysproc.GetModule())
+	modules.Register(msyslogs.GetModule())
 
 	modules.InitModules(conf, app.Router)
 

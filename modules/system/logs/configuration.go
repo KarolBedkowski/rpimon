@@ -39,7 +39,7 @@ type configuration struct {
 var config configuration
 
 // Init utils pages
-func Init(filename string) error {
+func loadConfiguration(filename string) error {
 	l.Info("pages.logs.Init configuration file: %s ", filename)
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
