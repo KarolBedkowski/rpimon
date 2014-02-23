@@ -7,11 +7,11 @@ import (
 	mfiles "k.prv/rpimon/modules/files"
 	mmpd "k.prv/rpimon/modules/mpd"
 	mnet "k.prv/rpimon/modules/network"
+	mnotepad "k.prv/rpimon/modules/notepad"
 	"k.prv/rpimon/monitor"
 	"k.prv/rpimon/pages/auth"
 	plogs "k.prv/rpimon/pages/logs"
 	pmain "k.prv/rpimon/pages/main"
-	pnotepad "k.prv/rpimon/pages/notepad"
 	pother "k.prv/rpimon/pages/other"
 	pproc "k.prv/rpimon/pages/process"
 	pstorage "k.prv/rpimon/pages/storage"
@@ -61,7 +61,6 @@ func main() {
 	plogs.CreateRoutes(app.Router.PathPrefix("/logs"))
 	pusers.CreateRoutes(app.Router.PathPrefix("/users"))
 	pproc.CreateRoutes(app.Router.PathPrefix("/process"))
-	pnotepad.CreateRoutes(app.Router.PathPrefix("/notepad"))
 	pother.CreateRoutes(app.Router.PathPrefix("/other"))
 
 	modules.Register(mnet.GetModule())
@@ -69,6 +68,7 @@ func main() {
 	modules.Register(mnet.GetSambaModule())
 	modules.Register(mfiles.GetModule())
 	modules.Register(mmpd.GetModule())
+	modules.Register(mnotepad.GetModule())
 
 	modules.InitModules(conf, app.Router)
 

@@ -55,6 +55,10 @@
 		"mpd": {
 			"enabled": true,
 			"config": ""
+		},
+		"notepad": {
+			"enabled": true,
+			"config": ""
 		}
 	}
 }

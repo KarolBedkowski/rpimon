@@ -8,6 +8,7 @@ import (
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
+	"k.prv/rpimon/modules"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -17,14 +18,34 @@ import (
 var decoder = schema.NewDecoder()
 var ErrInvalidFilename = errors.New("invalid filename")
 
+func GetModule() *modules.Module {
+	return &modules.Module{
+		Name:          "notepad",
+		Title:         "Notepad",
+		Description:   "",
+		AllPrivilages: nil,
+		Init:          initModule,
+		GetMenu:       getMenu,
+	}
+}
+
 // CreateRoutes for /mpd
-func CreateRoutes(parentRoute *mux.Route) {
+func initModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
 	subRouter := parentRoute.Subrouter()
 	// Main page
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "notepad")).Name("notepad-index")
 	subRouter.HandleFunc("/{note}", app.VerifyPermission(notePageHandler, "notepad")).Name("notepad-note")
 	subRouter.HandleFunc("/{note}/delete", app.VerifyPermission(noteDeleteHandler, "notepad")).Name("notepad-delete")
 	subRouter.HandleFunc("/{note}/download", app.VerifyPermission(noteDownloadHandler, "notepad")).Name("notepad-download")
+	return true
+}
+
+func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
+	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "notepad") {
+		return "", nil
+	}
+	menu = app.NewMenuItemFromRoute("Notepad", "notepad-index").SetID("notepad-index").SetIcon("glyphicon glyphicon-paperclip")
+	return "", menu
 }
 
 type NoteStuct struct {
