@@ -11,12 +11,7 @@ import (
 	"strings"
 )
 
-type NetworkModule struct {
-	info *modules.ModuleInfo
-	menu *app.MenuItem
-}
-
-func InitModule(parentRoute *mux.Route) modules.Module {
+func InitModule(parentRoute *mux.Route) *modules.Module {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.HandleWithContext(mainPageHandler,
@@ -34,16 +29,16 @@ func InitModule(parentRoute *mux.Route) modules.Module {
 	subRouter.HandleFunc("/serv/info", app.HandleWithContext(statusServHandler, "")).Name("m-net-serv-info")
 	subRouter.HandleFunc("/action", app.HandleWithContext(actionHandler, "")).Name("m-net-action").Methods("PUT")
 
-	return &NetworkModule{
-		info: &modules.ModuleInfo{
-			Title:         "Network",
-			Description:   "Network",
-			AllPrivilages: nil,
-		},
+	return &modules.Module{
+		Title:         "Network",
+		Description:   "Network",
+		AllPrivilages: nil,
+		GetMenu:       getMenu,
+		GetWarnings:   getWarnings,
 	}
 }
 
-func (m *NetworkModule) GetMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
+func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -60,12 +55,8 @@ func (m *NetworkModule) GetMenu(ctx *app.BasePageContext) (parentId string, menu
 	return "", menu
 }
 
-func (m *NetworkModule) GetWarnings() map[string][]string {
+func getWarnings() map[string][]string {
 	return nil
-}
-
-func (m *NetworkModule) GetInfo() *modules.ModuleInfo {
-	return m.info
 }
 
 type mainPageContext struct {

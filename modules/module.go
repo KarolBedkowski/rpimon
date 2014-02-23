@@ -10,29 +10,31 @@ type Privilage struct {
 	Description string
 }
 
-type ModuleInfo struct {
-	Title         string
-	Description   string
+type Module struct {
+	// Module Title
+	Title string
+	// Module description
+	Description string
+	// All privilages used by module
 	AllPrivilages []Privilage
-}
 
-type Module interface {
+	// Is module enabled
+	Enabled bool
+	// filename of module configuration file
+	ConfFile string
+
 	// GetMenu return parent menu idand menu item (with optional submenu)
-	GetMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem)
+	GetMenu func(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem)
 
 	// GetWarnings return map warning kind -> messages
-	GetWarnings() map[string][]string
-
-	// GetInfo about module
-	GetInfo() *ModuleInfo
+	GetWarnings func() map[string][]string
 }
 
-var Modules = make(map[string]Module)
+var Modules = make(map[string]*Module)
 
-func Register(module Module) bool {
-	info := module.GetInfo()
-	l.Info("Registering module: %s", info.Title)
-	Modules[info.Title] = module
+func Register(module *Module) bool {
+	l.Info("Registering module: %s", module.Title)
+	Modules[module.Title] = module
 	app.RegisterMenuItem(module.GetMenu)
 
 	return true
