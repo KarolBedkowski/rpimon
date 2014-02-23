@@ -55,6 +55,12 @@ func (item *MenuItem) SetActve(active bool) *MenuItem {
 	return item
 }
 
+// SetSortOrder for menu item
+func (item *MenuItem) SetSortOrder(sortOrder int) *MenuItem {
+	item.SortOrder = sortOrder
+	return item
+}
+
 // AddChild append menu item as submenu item
 func (item *MenuItem) AddChild(child ...*MenuItem) *MenuItem {
 	item.Submenu = append(item.Submenu, child...)
