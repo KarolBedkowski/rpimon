@@ -5,11 +5,13 @@ import (
 	l "k.prv/rpimon/helpers/logging"
 )
 
-type Privilage struct {
+// Privilege used for modules
+type Privilege struct {
 	Name        string
 	Description string
 }
 
+// Module definition structore
 type Module struct {
 	// module internal name
 	Name string
@@ -17,8 +19,8 @@ type Module struct {
 	Title string
 	// Module description
 	Description string
-	// All privilages used by module
-	AllPrivilages []Privilage
+	// All privileges used by module
+	AllPrivilages []Privilege
 
 	// Is module enabled
 	Enabled bool
@@ -40,7 +42,8 @@ type Module struct {
 
 var registeredModules = make(map[string]*Module)
 
-func Register(module *Module) bool {
+// RegisterModule register given module for later usage
+func RegisterModule(module *Module) bool {
 	if module.Name == "" {
 		module.Name = module.Title
 	}
@@ -53,6 +56,7 @@ func Register(module *Module) bool {
 	return true
 }
 
+// InitModules initialize and enable all modules
 func InitModules(conf *AppConfiguration, router *mux.Router) {
 	for _, module := range registeredModules {
 		if mconfig, ok := conf.Modules[module.Name]; !ok || mconfig == nil {
@@ -71,10 +75,19 @@ func InitModules(conf *AppConfiguration, router *mux.Router) {
 	}
 }
 
+// ShutdownModules
 func ShutdownModules() {
 	for _, module := range registeredModules {
 		if module.Enabled && module.Shutdown != nil {
 			module.Shutdown()
 		}
 	}
+}
+
+// IsModuleAvailable return true when given module is loaded & enable.
+func IsModuleAvailable(name string) bool {
+	if module, ok := registeredModules[name]; ok {
+		return module.Enabled
+	}
+	return false
 }
