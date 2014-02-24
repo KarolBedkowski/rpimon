@@ -99,7 +99,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageC
 	}
 	ctx.SetMenuActive(page)
 	ctx.CurrentPage = page
-	app.RenderTemplateStd(w, ctx, "logs.tmpl")
+	app.RenderTemplateStd(w, ctx, "system/logs.tmpl")
 }
 
 func servLogHandler(w http.ResponseWriter, r *http.Request) {

@@ -64,7 +64,7 @@ func servicesPageHangler(w http.ResponseWriter, r *http.Request) {
 
 	ctx.SetMenuActive("services")
 	ctx.Header1 = "Services"
-	app.RenderTemplateStd(w, ctx, "services.tmpl")
+	app.RenderTemplateStd(w, ctx, "system/process/services.tmpl")
 
 }
 
@@ -109,7 +109,7 @@ func psaxlPageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	app.RenderTemplateStd(w, ctx, "process/psaxl.tmpl")
+	app.RenderTemplateStd(w, ctx, "system/process/psaxl.tmpl")
 }
 
 func topPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -149,7 +149,7 @@ func topPageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	app.RenderTemplateStd(w, ctx, "process/top.tmpl")
+	app.RenderTemplateStd(w, ctx, "system/process/top.tmpl")
 }
 
 func processActionHandler(w http.ResponseWriter, r *http.Request) {

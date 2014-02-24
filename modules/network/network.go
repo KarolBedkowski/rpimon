@@ -44,7 +44,7 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 	}
 
 	menu = app.NewMenuItemFromRoute("Network", "m-net").SetIcon("glyphicon glyphicon-dashboard")
-	menu.AddChild(app.NewMenuItemFromRoute("Status", "m-net").SetID("m-net-index"),
+	menu.AddChild(app.NewMenuItemFromRoute("Status", "m-net").SetID("m-net-index").SetSortOrder(-1),
 		app.NewMenuItemFromRoute("Configuration", "m-net-conf"),
 		app.NewMenuItemFromRoute("IPTables", "m-net-iptables"),
 		app.NewMenuItemFromRoute("Netstat", "m-net-netstat"),
@@ -65,7 +65,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePageCo
 	c := &mainPageContext{BasePageContext: ctx}
 	c.SetMenuActive("m-net-index")
 	c.Interfaces = monitor.GetInterfacesInfo()
-	app.RenderTemplateStd(w, c, "net/status.tmpl")
+	app.RenderTemplateStd(w, c, "network/status.tmpl")
 }
 
 func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePageContext) {
@@ -163,7 +163,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePageCo
 		ctx.Current = cmd
 		ctx.Commands = &confCommands
 		ctx.Data = h.ReadCommand(cmdfields[0], cmdfields[1:]...)
-		app.RenderTemplateStd(w, ctx, "net/conf.tmpl")
+		app.RenderTemplateStd(w, ctx, "network/conf.tmpl")
 	}
 }
 
@@ -203,7 +203,7 @@ func iptablesPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePa
 		ctx.Current = table
 		ctx.Tables = &iptablesTables
 		ctx.Data = data
-		app.RenderTemplateStd(w, ctx, "net/iptables.tmpl")
+		app.RenderTemplateStd(w, ctx, "network/iptables.tmpl")
 	}
 }
 

@@ -34,7 +34,7 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
-	menu = app.NewMenuItemFromRoute("Storage", "storage").SetID("storage").SetIcon("glyphicon glyphicon-hdd")
+	menu = app.NewMenuItem("Storage", "").SetID("storage").SetIcon("glyphicon glyphicon-hdd")
 	menu.AddChild(app.NewMenuItemFromRoute("Disk Free", "storage-df").SetID("diskfree"),
 		app.NewMenuItemFromRoute("Mount", "storage-mount").SetID("mount"),
 		app.NewMenuItemFromRoute("Devices", "storage-page", "page", "devices").SetID("devices"),

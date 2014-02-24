@@ -29,7 +29,7 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
-	menu = app.NewMenuItemFromRoute("Other", "other-index").SetID("other").SetIcon("glyphicon glyphicon-cog")
+	menu = app.NewMenuItemFromRoute("Other", "other-index").SetID("other").SetIcon("glyphicon glyphicon-cog").SetSortOrder(999)
 	return "system", menu
 }
 

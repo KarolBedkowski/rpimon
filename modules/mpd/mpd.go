@@ -110,7 +110,7 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 		return "", nil
 	}
 
-	menu = app.NewMenuItemFromRoute("MPD", "mpd-index").SetID("mpd").SetIcon("glyphicon glyphicon-music")
+	menu = app.NewMenuItem("MPD", "").SetID("mpd").SetIcon("glyphicon glyphicon-music")
 	menu.AddChild(
 		app.NewMenuItemFromRoute("Status", "mpd-index").SetIcon("glyphicon glyphicon-music").SetSortOrder(-2),
 		app.NewMenuItemFromRoute("Playlist", "mpd-playlist").SetIcon("glyphicon glyphicon-list").SetSortOrder(-1),
