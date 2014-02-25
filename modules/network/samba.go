@@ -13,13 +13,13 @@ func GetSambaModule() *app.Module {
 		Title:         "Network - SAMBA",
 		Description:   "Network - SAMBA",
 		AllPrivilages: nil,
-		Init:          InitSambaModule,
+		Init:          initSambaModule,
 		GetMenu:       smbGetMenu,
 		GetWarnings:   smbGetWarnings,
 	}
 }
 
-func InitSambaModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
+func initSambaModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.HandleWithContext(sambaPageHandler,

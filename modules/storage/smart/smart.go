@@ -20,7 +20,7 @@ func GetModule() *app.Module {
 }
 
 // CreateRoutes for /storage
-func initModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
+func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(smartPageHandler, "admin")).Name("storage-smart")
 	subRouter.HandleFunc("/serv/smart", app.VerifyPermission(servSmartHandler, "admin")).Name("storage-serv-smart")

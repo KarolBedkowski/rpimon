@@ -22,7 +22,7 @@ var mpdModule = &app.Module{
 	Title:         "MPD",
 	Description:   "",
 	AllPrivilages: nil,
-	Init:          InitModule,
+	Init:          initModule,
 	GetMenu:       getMenu,
 	Shutdown:      shutdown,
 }
@@ -32,7 +32,14 @@ func GetModule() *app.Module {
 }
 
 // CreateRoutes for /mpd
-func InitModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
+func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
+	if host, ok := conf.Configuration["host"]; ok && host != "" {
+		initConnector(conf.Configuration["host"])
+	} else {
+		l.Warn("MPD missing 'host' configuration parameter")
+		return false
+	}
+
 	subRouter := parentRoute.Subrouter()
 	// Main page
 	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "MPD", "mpd"))
@@ -101,7 +108,6 @@ func InitModule(parentRoute *mux.Route, configFilename string, conf *app.AppConf
 	subRouter.HandleFunc("/file",
 		app.VerifyPermission(filePageHandler, "mpd")).Name(
 		"mpd-file")
-	initConnector(conf.MpdHost)
 	return true
 }
 

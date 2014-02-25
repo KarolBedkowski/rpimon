@@ -22,11 +22,15 @@ func GetModule() *app.Module {
 }
 
 // CreateRoutes for /pages
-func initModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
+func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
+	if err := loadConfiguration(conf.ConfigFilename); err != nil {
+		l.Warn("Utils: failed load configuration file: %s", err)
+		return false
+	}
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "Utils", "admin")).Name("utils-index")
 	subRouter.HandleFunc("/{group}/{command-id:[0-9]+}", app.HandleWithContextSec(commandPageHandler, "Utils", "admin"))
-	return loadConfiguration(configFilename) == nil
+	return true
 }
 func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {

@@ -23,7 +23,7 @@ func GetModule() *app.Module {
 }
 
 // CreateRoutes for /main
-func initModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
+func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/",
 		app.HandleWithContextSec(systemPageHandler, "System", "admin")).Name(

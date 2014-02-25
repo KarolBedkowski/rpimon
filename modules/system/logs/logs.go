@@ -25,12 +25,16 @@ func GetModule() *app.Module {
 }
 
 // CreateRoutes for /logs
-func initModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
+func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
+	if err := loadConfiguration(conf.ConfigFilename); err != nil {
+		l.Warn("System-Logs: failed load configuration: %s", err)
+		return false
+	}
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "Logs", "admin")).Name("logs-index")
 	subRouter.HandleFunc("/serv", app.VerifyPermission(servLogHandler, "admin")).Name("logs-serv")
 	subRouter.HandleFunc("/{page}", app.HandleWithContextSec(mainPageHandler, "Logs", "admin")).Name("logs-page")
-	return loadConfiguration(configFilename) == nil
+	return true
 }
 
 func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {

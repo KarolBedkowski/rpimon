@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	l "k.prv/rpimon/helpers/logging"
 )
@@ -20,6 +21,9 @@ var config configuration
 // Init utils pages
 func loadConfiguration(filename string) error {
 	l.Print("pages.utils Loading configuration file: %s ", filename)
+	if filename == "" {
+		return errors.New("missing configuration")
+	}
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
 		l.Error("pages.utils: error: %s ", err.Error())

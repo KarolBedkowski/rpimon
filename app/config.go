@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
-	"path/filepath"
 	"runtime"
 	"time"
 )
@@ -20,16 +19,11 @@ type (
 		CookieEncKey          string
 		SessionStoreDir       string
 		LogFilename           string
-		UtilsFilename         string
-		MpdHost               string
-		BrowserConf           string
 		HTTPAddress           string `json:"http_address"`
 		HTTPSAddress          string `json:"https_address"`
 		SslCert               string
 		SslKey                string
 		MonitorUpdateInterval int
-		Logs                  string
-		Notepad               string                 `json:"notepad"`
 		Monitor               MonitorConfiguration   `json:"monitor"`
 		Modules               map[string]*ModuleConf `json:"modules"`
 	}
@@ -49,8 +43,9 @@ type (
 	}
 
 	ModuleConf struct {
-		Enabled        bool   `json:"enabled"`
-		ConfigFilename string `json:"config"`
+		Enabled        bool              `json:"enabled"`
+		ConfigFilename string            `json:"config_file"`
+		Configuration  map[string]string `json:"configuration"`
 	}
 )
 
@@ -98,8 +93,6 @@ func loadConfiguration(filename string) bool {
 		log.Fatal("app.LoadConfiguration error: ", err.Error())
 		return false
 	}
-
-	Configuration.Notepad, _ = filepath.Abs(Configuration.Notepad)
 
 	if Configuration.Monitor.LoadWarning == 0 {
 		Configuration.Monitor.LoadWarning = float64(runtime.NumCPU() * 2)

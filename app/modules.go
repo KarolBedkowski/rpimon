@@ -28,7 +28,7 @@ type Module struct {
 	ConfFile string
 
 	// Initialize module (set routes etc)
-	Init func(parentRoute *mux.Route, configFilename string, globalConfig *AppConfiguration) bool
+	Init func(parentRoute *mux.Route, conf *ModuleConf, globalConfig *AppConfiguration) bool
 
 	// GetMenu return parent menu idand menu item (with optional submenu)
 	GetMenu func(ctx *BasePageContext) (parentId string, menu *MenuItem)
@@ -65,8 +65,7 @@ func InitModules(conf *AppConfiguration, router *mux.Router) {
 			module.Enabled = mconfig.Enabled
 			if module.Enabled {
 				l.Info("Enabling module %s", module.Name)
-				if module.Init(router.PathPrefix("/m/"+module.Name),
-					mconfig.ConfigFilename, conf) {
+				if module.Init(router.PathPrefix("/m/"+module.Name), mconfig, conf) {
 				} else {
 					l.Warn("Module %s init error; %#v", module.Name, mconfig)
 				}

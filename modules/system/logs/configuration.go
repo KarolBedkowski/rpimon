@@ -41,6 +41,10 @@ var config configuration
 // Init utils pages
 func loadConfiguration(filename string) error {
 	l.Info("pages.logs.Init configuration file: %s ", filename)
+
+	if filename == "" {
+		return errors.New("missing configuration")
+	}
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
 		l.Error("pages.log.Init read file error: %s", err.Error())

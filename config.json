@@ -1,7 +1,7 @@
 {
   "modules": {
     "utilities": {
-      "config": "./utils.json",
+      "config_file": "./utils.json",
       "enabled": true
     },
     "system-users": {
@@ -17,50 +17,47 @@
       "enabled": true
     },
     "system-logs": {
-      "config": "logs.json",
+      "config_file": "logs.json",
       "enabled": true
     },
     "network": {
-      "config": "",
       "enabled": true
     },
     "network-smb": {
-      "config": "",
       "enabled": true
     },
     "network-nfs": {
-      "config": "",
       "enabled": true
     },
     "files": {
-      "config": "./browser.json",
+      "config_file": "./browser.json",
       "enabled": true
     },
     "mpd": {
-      "config": "",
-      "enabled": true
+      "enabled": true,
+			"configuration" : {
+				"host": "localhost:6600"
+			}
     },
     "notepad": {
-      "config": "",
-      "enabled": true
+      "enabled": true, 
+			"configuration": {
+			  "dir": "./notepad/"
+			}
     },
     "system-other": {
-      "config": "",
       "enabled": true
     },
     "system-process": {
       "enabled": true
     }
   },
-  "MpdHost": "localhost:6600",
   "StaticDir": "./static",
   "Users": "./users.json",
   "CookieAuthKey": "12345678901234567890123456789012",
   "CookieEncKey": "12345678901234567890012345678901",
   "Debug": true,
-  "UtilsFilename": "./utils.json",
   "LogFilename": "app.log",
-  "notepad": "./notepad/",
   "monitor": {
     "cpu_temp_file": "/sys/class/thermal/thermal_zone0/temp",
     "cpu_freq_file": "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq",
@@ -85,6 +82,5 @@
   "SslCert": "cert.pem",
   "http_address": ":8000",
   "https_address": "",
-  "BrowserConf": "./browser.json",
   "SessionStoreDir": "./temp"
 }

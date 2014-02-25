@@ -28,8 +28,18 @@ func GetModule() *app.Module {
 	}
 }
 
+var notepadDir string
+
 // CreateRoutes for /mpd
-func initModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
+func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
+
+	if dir, ok := conf.Configuration["dir"]; ok && dir != "" {
+		notepadDir, _ = filepath.Abs(dir)
+	} else {
+		l.Warn("Notapad: missing 'dir' configuration parameter")
+		return false
+	}
+
 	subRouter := parentRoute.Subrouter()
 	// Main page
 	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "Notepad", "notepad")).Name("notepad-index")
@@ -155,10 +165,10 @@ func noteDownloadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func findFiles() (result []*NoteStuct) {
-	if app.Configuration.Notepad == "" {
+	if notepadDir == "" {
 		return
 	}
-	if files, err := ioutil.ReadDir(app.Configuration.Notepad); err == nil {
+	if files, err := ioutil.ReadDir(notepadDir); err == nil {
 		for _, file := range files {
 			if !file.IsDir() {
 				result = append(result, &NoteStuct{
@@ -171,12 +181,12 @@ func findFiles() (result []*NoteStuct) {
 }
 
 func getFilepath(filename string) (path string, ok bool) {
-	abspath, err := filepath.Abs(filepath.Clean(filepath.Join(app.Configuration.Notepad, filename)))
+	abspath, err := filepath.Abs(filepath.Clean(filepath.Join(notepadDir, filename)))
 	if err != nil {
 		l.Error("notepad.getFilepath %s, %s", filename, err.Error())
 		return
 	}
-	if !strings.HasPrefix(abspath, app.Configuration.Notepad) {
+	if !strings.HasPrefix(abspath, notepadDir) {
 		l.Error("notepad.getFilepath %s, bad prefix: %s", filename, abspath)
 		return
 	}

@@ -50,11 +50,11 @@ func connectWatcher() {
 	if watcher != nil {
 		return
 	}
-	l.Info("Starting mpd watcher... %#v", watcher)
+	l.Info("MPD: Starting mpd watcher... %#v", watcher)
 	var err error
 	watcher, err = mpd.NewWatcher("tcp", host, "")
 	if err != nil {
-		l.Error(err.Error())
+		l.Error("MPD: %s", err.Error())
 		return
 	}
 	go func() {
@@ -89,7 +89,7 @@ func connect() (client *mpd.Client, err error) {
 	if connection == nil {
 		connection, err = mpd.Dial("tcp", host)
 		if err != nil {
-			l.Error("Mpd connect error: %s", err.Error())
+			l.Error("MPD: connect error: %s", err.Error())
 			closeConnector()
 			return nil, err
 		}

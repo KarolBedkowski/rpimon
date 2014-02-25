@@ -20,14 +20,18 @@ func GetModule() *app.Module {
 		Title:         "Files",
 		Description:   "File browser",
 		AllPrivilages: nil,
-		Init:          InitModule,
+		Init:          initModule,
 		GetMenu:       getMenu,
 		GetWarnings:   getWarnings,
 	}
 }
 
 // CreateRoutes for /files
-func InitModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
+func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
+	if err := loadConfiguration(conf.ConfigFilename); err != nil {
+		l.Warn("Files: failed load configuration: %s", err)
+		return false
+	}
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/",
 		app.VerifyPermission(verifyAccess(mainPageHandler), "files")).Name(
@@ -47,7 +51,7 @@ func InitModule(parentRoute *mux.Route, configFilename string, conf *app.AppConf
 	subRouter.HandleFunc("/action",
 		app.VerifyPermission(verifyAccess(actionHandler), "files")).Methods(
 		"PUT").Name("files-file-action")
-	return loadConfiguration(configFilename) == nil
+	return true
 }
 
 func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {

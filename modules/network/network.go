@@ -16,13 +16,13 @@ func GetModule() *app.Module {
 		Title:         "Network",
 		Description:   "Network",
 		AllPrivilages: nil,
-		Init:          InitModule,
+		Init:          initModule,
 		GetMenu:       getMenu,
 		GetWarnings:   getWarnings,
 	}
 }
 
-func InitModule(parentRoute *mux.Route, configFilename string, conf *app.AppConfiguration) bool {
+func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.HandleWithContext(mainPageHandler,
