@@ -7,19 +7,17 @@ import (
 	"net/http"
 )
 
-func GetNFSModule() *app.Module {
-	return &app.Module{
-		Name:          "network-nfs",
-		Title:         "Network - NFS",
-		Description:   "Network - NFS",
-		AllPrivilages: nil,
-		Init:          InitNFSModule,
-		GetMenu:       nfsGetMenu,
-		GetWarnings:   nfsGetWarnings,
-	}
+var NFSModule = &app.Module{
+	Name:          "network-nfs",
+	Title:         "Network - NFS",
+	Description:   "Network - NFS",
+	AllPrivilages: nil,
+	Init:          InitNFSModule,
+	GetMenu:       nfsGetMenu,
+	GetWarnings:   nfsGetWarnings,
 }
 
-func InitNFSModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
+func InitNFSModule(parentRoute *mux.Route) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.HandleWithContext(nfsPageHandler, "Network - NFS")).Name("m-net-nfs")

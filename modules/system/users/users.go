@@ -8,19 +8,17 @@ import (
 	"strings"
 )
 
-func GetModule() *app.Module {
-	return &app.Module{
-		Name:          "system-users",
-		Title:         "Users",
-		Description:   "System users",
-		AllPrivilages: nil,
-		Init:          initModule,
-		GetMenu:       getMenu,
-	}
+var Module = &app.Module{
+	Name:          "system-users",
+	Title:         "Users",
+	Description:   "System users",
+	AllPrivilages: nil,
+	Init:          initModule,
+	GetMenu:       getMenu,
 }
 
 // CreateRoutes for /users
-func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
+func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("users-index")
 	return true

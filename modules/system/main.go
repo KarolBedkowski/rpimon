@@ -11,19 +11,17 @@ import (
 	"strings"
 )
 
-func GetModule() *app.Module {
-	return &app.Module{
-		Name:          "system",
-		Title:         "System",
-		Description:   "",
-		AllPrivilages: nil,
-		Init:          initModule,
-		GetMenu:       getMenu,
-	}
+var Module = &app.Module{
+	Name:          "system",
+	Title:         "System",
+	Description:   "",
+	AllPrivilages: nil,
+	Init:          initModule,
+	GetMenu:       getMenu,
 }
 
 // CreateRoutes for /main
-func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
+func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/",
 		app.HandleWithContextSec(systemPageHandler, "System", "admin")).Name(

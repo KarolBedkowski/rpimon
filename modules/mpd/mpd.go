@@ -17,24 +17,28 @@ import (
 	"strings"
 )
 
-var mpdModule = &app.Module{
-	Name:          "mpd",
-	Title:         "MPD",
-	Description:   "",
-	AllPrivilages: nil,
-	Init:          initModule,
-	GetMenu:       getMenu,
-	Shutdown:      shutdown,
-}
+var Module *app.Module
 
-func GetModule() *app.Module {
-	return mpdModule
+func init() {
+	Module = &app.Module{
+		Name:          "mpd",
+		Title:         "MPD",
+		Description:   "",
+		AllPrivilages: nil,
+		Init:          initModule,
+		GetMenu:       getMenu,
+		Shutdown:      shutdown,
+		Defaults: map[string]string{
+			"host": "localhost:6600",
+		},
+	}
 }
 
 // CreateRoutes for /mpd
-func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
-	if host, ok := conf.Configuration["host"]; ok && host != "" {
-		initConnector(conf.Configuration["host"])
+func initModule(parentRoute *mux.Route) bool {
+	conf := Module.GetConfiguration()
+	if host, ok := conf["host"]; ok && host != "" {
+		initConnector(conf["host"])
 	} else {
 		l.Warn("MPD missing 'host' configuration parameter")
 		return false

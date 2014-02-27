@@ -31,7 +31,7 @@ type Module struct {
 	ConfFile string
 
 	// Initialize module (set routes etc)
-	Init func(parentRoute *mux.Route, conf *ModuleConf, globalConfig *AppConfiguration) bool
+	Init func(parentRoute *mux.Route) bool
 
 	// GetMenu return parent menu idand menu item (with optional submenu)
 	GetMenu func(ctx *BasePageContext) (parentId string, menu *MenuItem)
@@ -63,7 +63,7 @@ func RegisterModule(module *Module) bool {
 func InitModules(conf *AppConfiguration, router *mux.Router) {
 	for _, module := range registeredModules {
 		mconfig := module.GetConfiguration()
-		module.enable(mconfig.Enabled)
+		module.enable(mconfig["enabled"] == "yes")
 	}
 }
 
@@ -99,9 +99,10 @@ func (m *Module) enable(enabled bool) {
 	}
 	l.Debug("enable module %s %v", m.Name, enabled)
 	mconfig := m.GetConfiguration()
-	mconfig.Enabled = enabled
+	mconfig["enabled"] = ""
 	if enabled {
-		m.initialized = m.Init(Router.PathPrefix("/m/"+m.Name), mconfig, &Configuration)
+		mconfig["enabled"] = "yes"
+		m.initialized = m.Init(Router.PathPrefix("/m/" + m.Name))
 		if !m.initialized {
 			l.Warn("Module %s init error; %#v", m.Name)
 			return
@@ -110,24 +111,22 @@ func (m *Module) enable(enabled bool) {
 	m.Enabled = enabled
 }
 
-func (m *Module) GetConfiguration() (conf *ModuleConf) {
+func (m *Module) GetConfiguration() (conf map[string]string) {
 	if mconfig, ok := Configuration.Modules[m.Name]; ok && mconfig != nil {
 		// configuration exists; add missing from defaults
 		for key, val := range m.Defaults {
-			if _, found := mconfig.Configuration[key]; !found {
-				mconfig.Configuration[key] = val
+			if _, found := mconfig[key]; !found {
+				mconfig[val] = val
 			}
 		}
 		return mconfig
 	}
 	l.Warn("Missing configuration for %v module; loading defaults - module is disabled", m.Name)
-	conf = &ModuleConf{
-		Enabled:        false,
-		ConfigFilename: "",
-		Configuration:  make(map[string]string),
+	conf = map[string]string{
+		"enabled": "",
 	}
 	for key, val := range m.Defaults {
-		conf.Configuration[key] = val
+		conf[key] = val
 	}
 	return conf
 }

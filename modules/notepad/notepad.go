@@ -17,23 +17,30 @@ import (
 var decoder = schema.NewDecoder()
 var ErrInvalidFilename = errors.New("invalid filename")
 
-func GetModule() *app.Module {
-	return &app.Module{
+var Module *app.Module
+
+func init() {
+	Module = &app.Module{
 		Name:          "notepad",
 		Title:         "Notepad",
 		Description:   "",
 		AllPrivilages: nil,
 		Init:          initModule,
 		GetMenu:       getMenu,
+		Defaults: map[string]string{
+			"dir": "./notepad/",
+		},
 	}
 }
 
 var notepadDir string
 
 // CreateRoutes for /mpd
-func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
+func initModule(parentRoute *mux.Route) bool {
 
-	if dir, ok := conf.Configuration["dir"]; ok && dir != "" {
+	conf := Module.GetConfiguration()
+
+	if dir, ok := conf["dir"]; ok && dir != "" {
 		notepadDir, _ = filepath.Abs(dir)
 	} else {
 		l.Warn("Notapad: missing 'dir' configuration parameter")

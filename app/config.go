@@ -24,8 +24,8 @@ type (
 		SslCert               string
 		SslKey                string
 		MonitorUpdateInterval int
-		Monitor               MonitorConfiguration   `json:"monitor"`
-		Modules               map[string]*ModuleConf `json:"modules"`
+		Monitor               MonitorConfiguration         `json:"monitor"`
+		Modules               map[string]map[string]string `json:"modules"`
 	}
 	// monitor configuration
 	MonitorConfiguration struct {
@@ -40,12 +40,6 @@ type (
 		MonitoredServices     map[string]string `json:"monitored_services"`
 		CPUFreqFile           string            `json:"cpu_freq_file"`
 		CPUTempFile           string            `json:"cpu_temp_file"`
-	}
-
-	ModuleConf struct {
-		Enabled        bool              `json:"enabled"`
-		ConfigFilename string            `json:"config_file"`
-		Configuration  map[string]string `json:"configuration"`
 	}
 )
 

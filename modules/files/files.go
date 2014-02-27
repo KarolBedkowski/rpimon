@@ -14,8 +14,10 @@ import (
 	"path/filepath"
 )
 
-func GetModule() *app.Module {
-	return &app.Module{
+var Module *app.Module
+
+func init() {
+	Module = &app.Module{
 		Name:          "files",
 		Title:         "Files",
 		Description:   "File browser",
@@ -23,12 +25,21 @@ func GetModule() *app.Module {
 		Init:          initModule,
 		GetMenu:       getMenu,
 		GetWarnings:   getWarnings,
+		Defaults: map[string]string{
+			"config_file": "./browser.json",
+		},
 	}
 }
 
+func GetModule() *app.Module {
+	return Module
+}
+
 // CreateRoutes for /files
-func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
-	if err := loadConfiguration(conf.ConfigFilename); err != nil {
+func initModule(parentRoute *mux.Route) bool {
+	conf := Module.GetConfiguration()
+	configFilename := conf["config_file"]
+	if err := loadConfiguration(configFilename); err != nil {
 		l.Warn("Files: failed load configuration: %s", err)
 		return false
 	}

@@ -10,19 +10,17 @@ import (
 	"strings"
 )
 
-func GetModule() *app.Module {
-	return &app.Module{
-		Name:          "network",
-		Title:         "Network",
-		Description:   "Network",
-		AllPrivilages: nil,
-		Init:          initModule,
-		GetMenu:       getMenu,
-		GetWarnings:   getWarnings,
-	}
+var Module = &app.Module{
+	Name:          "network",
+	Title:         "Network",
+	Description:   "Network",
+	AllPrivilages: nil,
+	Init:          initModule,
+	GetMenu:       getMenu,
+	GetWarnings:   getWarnings,
 }
 
-func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
+func initModule(parentRoute *mux.Route) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.HandleWithContext(mainPageHandler,

@@ -13,20 +13,26 @@ import (
 	"strings"
 )
 
-func GetModule() *app.Module {
-	return &app.Module{
+var Module *app.Module
+
+func init() {
+	Module = &app.Module{
 		Name:          "system-logs",
 		Title:         "Logs",
 		Description:   "System Logs",
 		AllPrivilages: nil,
 		Init:          initModule,
 		GetMenu:       getMenu,
+		Defaults: map[string]string{
+			"config_file": "logs.json",
+		},
 	}
 }
 
 // CreateRoutes for /logs
-func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
-	if err := loadConfiguration(conf.ConfigFilename); err != nil {
+func initModule(parentRoute *mux.Route) bool {
+	conf := Module.GetConfiguration()
+	if err := loadConfiguration(conf["config_file"]); err != nil {
 		l.Warn("System-Logs: failed load configuration: %s", err)
 		return false
 	}

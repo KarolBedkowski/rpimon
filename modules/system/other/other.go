@@ -7,19 +7,17 @@ import (
 	"net/http"
 )
 
-func GetModule() *app.Module {
-	return &app.Module{
-		Name:          "system-other",
-		Title:         "Other",
-		Description:   "",
-		AllPrivilages: nil,
-		Init:          initModule,
-		GetMenu:       getMenu,
-	}
+var Module = &app.Module{
+	Name:          "system-other",
+	Title:         "Other",
+	Description:   "",
+	AllPrivilages: nil,
+	Init:          initModule,
+	GetMenu:       getMenu,
 }
 
 // CreateRoutes for /users
-func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
+func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "Other", "admin")).Name("other-index")
 	return true

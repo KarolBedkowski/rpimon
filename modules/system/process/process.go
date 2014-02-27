@@ -9,19 +9,17 @@ import (
 	"strings"
 )
 
-func GetModule() *app.Module {
-	return &app.Module{
-		Name:          "system-process",
-		Title:         "Process",
-		Description:   "",
-		AllPrivilages: nil,
-		Init:          initModule,
-		GetMenu:       getMenu,
-	}
+var Module = &app.Module{
+	Name:          "system-process",
+	Title:         "Process",
+	Description:   "",
+	AllPrivilages: nil,
+	Init:          initModule,
+	GetMenu:       getMenu,
 }
 
 // CreateRoutes for /process
-func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
+func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(psaxlPageHandler, "admin")).Name("process-index")
 	subRouter.HandleFunc("/services", app.VerifyPermission(servicesPageHangler, "admin")).Name("process-services")

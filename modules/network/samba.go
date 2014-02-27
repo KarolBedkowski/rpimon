@@ -7,19 +7,17 @@ import (
 	"net/http"
 )
 
-func GetSambaModule() *app.Module {
-	return &app.Module{
-		Name:          "network-smb",
-		Title:         "Network - SAMBA",
-		Description:   "Network - SAMBA",
-		AllPrivilages: nil,
-		Init:          initSambaModule,
-		GetMenu:       smbGetMenu,
-		GetWarnings:   smbGetWarnings,
-	}
+var SambaModule = &app.Module{
+	Name:          "network-smb",
+	Title:         "Network - SAMBA",
+	Description:   "Network - SAMBA",
+	AllPrivilages: nil,
+	Init:          initSambaModule,
+	GetMenu:       smbGetMenu,
+	GetWarnings:   smbGetWarnings,
 }
 
-func initSambaModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
+func initSambaModule(parentRoute *mux.Route) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.HandleWithContext(sambaPageHandler,

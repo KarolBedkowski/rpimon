@@ -10,20 +10,26 @@ import (
 	"strings"
 )
 
-func GetModule() *app.Module {
-	return &app.Module{
+var Module *app.Module
+
+func init() {
+	Module = &app.Module{
 		Name:          "utilities",
 		Title:         "Utilities",
 		Description:   "Various utilities",
 		AllPrivilages: nil,
 		Init:          initModule,
 		GetMenu:       getMenu,
+		Defaults: map[string]string{
+			"config_file": "./utils.json",
+		},
 	}
 }
 
 // CreateRoutes for /pages
-func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
-	if err := loadConfiguration(conf.ConfigFilename); err != nil {
+func initModule(parentRoute *mux.Route) bool {
+	conf := Module.GetConfiguration()
+	if err := loadConfiguration(conf["config_file"]); err != nil {
 		l.Warn("Utils: failed load configuration file: %s", err)
 		return false
 	}

@@ -8,19 +8,17 @@ import (
 	"strings"
 )
 
-func GetModule() *app.Module {
-	return &app.Module{
-		Name:          "storage-smart",
-		Title:         "Storage - SMART",
-		Description:   "",
-		AllPrivilages: nil,
-		Init:          initModule,
-		GetMenu:       getMenu,
-	}
+var Module = &app.Module{
+	Name:          "storage-smart",
+	Title:         "Storage - SMART",
+	Description:   "",
+	AllPrivilages: nil,
+	Init:          initModule,
+	GetMenu:       getMenu,
 }
 
 // CreateRoutes for /storage
-func initModule(parentRoute *mux.Route, conf *app.ModuleConf, gconf *app.AppConfiguration) bool {
+func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(smartPageHandler, "admin")).Name("storage-smart")
 	subRouter.HandleFunc("/serv/smart", app.VerifyPermission(servSmartHandler, "admin")).Name("storage-serv-smart")
