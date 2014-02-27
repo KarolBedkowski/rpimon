@@ -41,6 +41,9 @@ type Module struct {
 
 	// Shutdown module
 	Shutdown func()
+
+	//default configuration
+	Defaults map[string]string
 }
 
 var registeredModules = make(map[string]*Module)
@@ -59,11 +62,8 @@ func RegisterModule(module *Module) bool {
 // InitModules initialize and enable all modules
 func InitModules(conf *AppConfiguration, router *mux.Router) {
 	for _, module := range registeredModules {
-		if mconfig, ok := conf.Modules[module.Name]; !ok || mconfig == nil {
-			l.Warn("Missing configuration for %v module", module)
-		} else {
-			module.enable(mconfig.Enabled)
-		}
+		mconfig := module.GetConfiguration()
+		module.enable(mconfig.Enabled)
 	}
 }
 
@@ -108,6 +108,28 @@ func (m *Module) enable(enabled bool) {
 		}
 	}
 	m.Enabled = enabled
+}
+
+func (m *Module) GetConfiguration() (conf *ModuleConf) {
+	if mconfig, ok := Configuration.Modules[m.Name]; ok && mconfig != nil {
+		// configuration exists; add missing from defaults
+		for key, val := range m.Defaults {
+			if _, found := mconfig.Configuration[key]; !found {
+				mconfig.Configuration[key] = val
+			}
+		}
+		return mconfig
+	}
+	l.Warn("Missing configuration for %v module; loading defaults - module is disabled", m.Name)
+	conf = &ModuleConf{
+		Enabled:        false,
+		ConfigFilename: "",
+		Configuration:  make(map[string]string),
+	}
+	for key, val := range m.Defaults {
+		conf.Configuration[key] = val
+	}
+	return conf
 }
 
 func SetModuleEnabled(name string, enabled bool) {
