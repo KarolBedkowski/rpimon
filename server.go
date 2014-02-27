@@ -18,6 +18,7 @@ import (
 	"k.prv/rpimon/monitor"
 	"k.prv/rpimon/pages/auth"
 	pmain "k.prv/rpimon/pages/main"
+	pmodules "k.prv/rpimon/pages/preferences/modules"
 	"log"
 	"net/http"
 	// _ "net/http/pprof" // /debug/pprof/
@@ -53,6 +54,7 @@ func main() {
 	app.Router.HandleFunc("/", handleHome)
 	auth.CreateRoutes(app.Router.PathPrefix("/auth"))
 	pmain.CreateRoutes(app.Router.PathPrefix("/main"))
+	pmodules.CreateRoutes(app.Router.PathPrefix("/pref/modules"))
 
 	app.RegisterModule(mnet.GetModule())
 	app.RegisterModule(mnet.GetNFSModule())

@@ -166,5 +166,11 @@ func SetMainMenu(ctx *BasePageContext) {
 		}
 		ctx.MainMenu.AppendItemToParent("", mitem)
 	}
+
+	// Prerfernects
+	pref := NewMenuItem("Preferences", "preferences").SetSortOrder(999).SetIcon("glyphicon glyphicon-wrench")
+	pref.AddChild(NewMenuItemFromRoute("Modules", "modules-index"))
+	ctx.MainMenu.AddChild(pref)
+
 	ctx.MainMenu.Sort()
 }
