@@ -48,6 +48,8 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageC
 			ctx.BasePageContext.AddFlashMessage("Configuration saved.", "success")
 		}
 		ctx.Save()
+		http.Redirect(w, r, r.URL.String(), http.StatusFound)
+		return
 	}
 	ctx.Form.Modules = app.GetModulesList()
 	app.RenderTemplateStd(w, ctx, "pref/modules/index.tmpl")
