@@ -35,11 +35,19 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageC
 		r.ParseForm()
 		if err := decoder.Decode(&ctx.Form, r.Form); err != nil {
 			l.Warn("Decode form error", err, r.Form)
+			return
 		}
 		for _, module := range ctx.Form.Modules {
 			app.SetModuleEnabled(module.Name, module.Enabled)
 		}
 		app.SetMainMenu(ctx.BasePageContext)
+		if err := app.SaveConfiguration(); err != nil {
+			ctx.BasePageContext.AddFlashMessage("Saving configuration error: "+err.Error(),
+				"error")
+		} else {
+			ctx.BasePageContext.AddFlashMessage("Configuration saved.", "success")
+		}
+		ctx.Save()
 	}
 	ctx.Form.Modules = app.GetModulesList()
 	app.RenderTemplateStd(w, ctx, "pref/modules/index.tmpl")

@@ -98,8 +98,9 @@ func (m *Module) enable(enabled bool) {
 		return
 	}
 	l.Debug("enable module %s %v", m.Name, enabled)
+	mconfig := m.GetConfiguration()
+	mconfig.Enabled = enabled
 	if enabled {
-		mconfig := Configuration.Modules[m.Name]
 		m.initialized = m.Init(Router.PathPrefix("/m/"+m.Name), mconfig, &Configuration)
 		if !m.initialized {
 			l.Warn("Module %s init error; %#v", m.Name)
