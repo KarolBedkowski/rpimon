@@ -138,6 +138,7 @@ type (
 	confCommandPageContext struct {
 		*app.BasePageContext
 		Form utility
+		New  bool
 	}
 )
 
@@ -153,6 +154,14 @@ func (u *utility) validate() (errors []string) {
 	return
 }
 
+func (f *confGroupForm) validate() (errors []string) {
+	f.Name = strings.TrimSpace(f.Name)
+	if f.Name == "" {
+		errors = append(errors, "Missing name")
+	}
+	return
+}
+
 func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
 	vars := mux.Vars(r)
 	groupName, _ := vars["group"]
@@ -161,38 +170,41 @@ func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Base
 		r.ParseForm()
 		if err := decoder.Decode(&ctx.Form, r.Form); err != nil {
 			l.Warn("Decode form error", err, r.Form)
-			return
 		}
-		if ctx.Form.Name == groupName {
-			// no changes
-			http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
-			return
-		}
-		if groupName == "<new>" {
-			// new group
-			config.Utils[ctx.Form.Name] = make([]*utility, 0)
-		} else if _, found := config.Utils[ctx.Form.Name]; found {
-			// group already exists - join
-			config.Utils[ctx.Form.Name] = append(config.Utils[ctx.Form.Name], config.Utils[groupName]...)
-			delete(config.Utils, groupName)
+		errors := ctx.Form.validate()
+		if errors == nil || len(errors) == 0 {
+			if ctx.Form.Name == groupName {
+				// no changes
+				http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
+				return
+			}
+			if groupName == "<new>" {
+				// new group
+				config.Utils[ctx.Form.Name] = make([]*utility, 0)
+			} else if _, found := config.Utils[ctx.Form.Name]; found {
+				// group already exists - join
+				config.Utils[ctx.Form.Name] = append(config.Utils[ctx.Form.Name], config.Utils[groupName]...)
+				delete(config.Utils, groupName)
+			} else {
+				// rename group
+				config.Utils[ctx.Form.Name] = config.Utils[groupName]
+				delete(config.Utils, groupName)
+			}
+			if saveConf(ctx.BasePageContext) {
+				http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
+				return
+			}
 		} else {
-			// rename group
-			config.Utils[ctx.Form.Name] = config.Utils[groupName]
-			delete(config.Utils, groupName)
-		}
-		conf := Module.GetConfiguration()
-		if err := saveConfiguration(conf["config_file"]); err != nil {
-			ctx.BasePageContext.AddFlashMessage("Saving configuration error: "+err.Error(),
-				"error")
-		} else {
-			ctx.BasePageContext.AddFlashMessage("Configuration saved.", "success")
+			for _, err := range errors {
+				ctx.BasePageContext.AddFlashMessage("Validation error: "+err, "error")
+			}
 			ctx.Save()
-			http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
-			return
 		}
 	}
 	ctx.Save()
-	ctx.Form.Name = groupName
+	if groupName != "<new>" {
+		ctx.Form.Name = groupName
+	}
 	app.RenderTemplateStd(w, ctx, "utils/conf-group.tmpl")
 }
 
@@ -202,11 +214,14 @@ func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Ba
 	cmd, _ := vars["util"]
 	ctx := &confCommandPageContext{BasePageContext: bctx}
 	group := config.Utils[groupName]
-	if r.Method == "POST" {
+	if r.Method == "POST" && r.FormValue("_method") != "" {
+		r.Method = r.FormValue("_method")
+	}
+	switch r.Method {
+	case "POST":
 		r.ParseForm()
 		if err := decoder.Decode(&ctx.Form, r.Form); err != nil {
 			l.Warn("Decode form error", err, r.Form)
-			return
 		}
 		errors := ctx.Form.validate()
 		if errors == nil || len(errors) == 0 {
@@ -229,14 +244,7 @@ func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Ba
 				group = append(group, &ctx.Form)
 				config.Utils[groupName] = group
 			}
-			conf := Module.GetConfiguration()
-			if err := saveConfiguration(conf["config_file"]); err != nil {
-				ctx.BasePageContext.AddFlashMessage("Saving configuration error: "+err.Error(),
-					"error")
-				ctx.Save()
-			} else {
-				ctx.BasePageContext.AddFlashMessage("Configuration saved.", "success")
-				ctx.Save()
+			if saveConf(ctx.BasePageContext) {
 				http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
 				return
 			}
@@ -246,8 +254,21 @@ func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Ba
 			}
 			ctx.Save()
 		}
-	} else {
-		if cmd != "<new>" {
+	case "DELETE":
+		for idx, u := range group {
+			if cmd == u.Name {
+				config.Utils[groupName] = append(group[:idx], group[idx+1:]...)
+				break
+			}
+		}
+		if saveConf(ctx.BasePageContext) {
+			http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
+			return
+		}
+
+	case "GET":
+		ctx.New = cmd == "<new>"
+		if !ctx.New {
 			for _, u := range config.Utils[groupName] {
 				if cmd == u.Name {
 					ctx.Form = *u
@@ -257,4 +278,18 @@ func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Ba
 		}
 	}
 	app.RenderTemplateStd(w, ctx, "utils/conf-cmd.tmpl")
+}
+
+// save configuration and add apriopriate flash message
+func saveConf(bctx *app.BasePageContext) (success bool) {
+	conf := Module.GetConfiguration()
+	err := saveConfiguration(conf["config_file"])
+	if err != nil {
+		bctx.AddFlashMessage("Saving configuration error: "+err.Error(),
+			"error")
+	} else {
+		bctx.AddFlashMessage("Configuration saved.", "success")
+	}
+	bctx.Save()
+	return err == nil
 }
