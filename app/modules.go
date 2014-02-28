@@ -23,8 +23,6 @@ type Module struct {
 	// All privileges used by module
 	AllPrivilages []Privilege
 
-	// Is module enabled
-	Enabled bool
 	// Is module initialized
 	initialized bool
 	// filename of module configuration file
@@ -44,6 +42,9 @@ type Module struct {
 
 	//default configuration
 	Defaults map[string]string
+
+	// Page hadler for custom configuration page
+	ConfigurePageUrl string
 }
 
 var registeredModules = make(map[string]*Module)
@@ -70,7 +71,7 @@ func InitModules(conf *AppConfiguration, router *mux.Router) {
 // ShutdownModules
 func ShutdownModules() {
 	for _, module := range registeredModules {
-		if module.Enabled && module.Shutdown != nil {
+		if module.Enabled() && module.Shutdown != nil {
 			module.Shutdown()
 		}
 	}
@@ -79,7 +80,7 @@ func ShutdownModules() {
 // IsModuleAvailable return true when given module is loaded & enable.
 func IsModuleAvailable(name string) bool {
 	if module, ok := registeredModules[name]; ok {
-		return module.Enabled
+		return module.Enabled()
 	}
 	return false
 }
@@ -93,10 +94,15 @@ func GetModulesList() (modules []*Module) {
 	return
 }
 
+func GetModule(name string) (module *Module) {
+	return registeredModules[name]
+}
+
+func (m *Module) Enabled() (enabled bool) {
+	return m.GetConfiguration()["enabled"] == "yes"
+}
+
 func (m *Module) enable(enabled bool) {
-	if m.Enabled == enabled {
-		return
-	}
 	l.Debug("enable module %s %v", m.Name, enabled)
 	mconfig := m.GetConfiguration()
 	mconfig["enabled"] = ""
@@ -108,7 +114,6 @@ func (m *Module) enable(enabled bool) {
 			return
 		}
 	}
-	m.Enabled = enabled
 }
 
 func (m *Module) GetConfiguration() (conf map[string]string) {

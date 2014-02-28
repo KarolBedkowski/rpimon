@@ -345,7 +345,7 @@ var mpdShortStatusCache = h.NewSimpleCache(5)
 
 // GetShortStatus return cached MPD status
 func GetShortStatus() (status map[string]string, err error) {
-	if !Module.Enabled {
+	if !Module.Enabled() {
 		return nil, nil
 	}
 	if result, ok := mpdShortStatusCache.GetValue(); ok && result != nil {

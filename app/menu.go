@@ -132,7 +132,7 @@ func SetMainMenu(ctx *BasePageContext) {
 	ctx.MainMenu = &MenuItem{}
 	itemsWithoutParent := list.New()
 	for _, module := range registeredModules {
-		if module.Enabled && module.GetMenu != nil {
+		if module.Enabled() && module.GetMenu != nil {
 			parent, mitem := module.GetMenu(ctx)
 			if mitem != nil {
 				if !ctx.MainMenu.AppendItemToParent(parent, mitem) {

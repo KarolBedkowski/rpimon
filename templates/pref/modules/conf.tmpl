@@ -1,0 +1,51 @@
+{{define "body"}}
+
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">Module <small>{{.Module.Title}}</small></h1>
+		{{if .Module.Description}}
+		<div class="well">
+			{{.Module.Description}}
+		</div>
+		{{end}}
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-lg-12">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Configuration</h3>
+			</div>
+			<div class="panel-body">
+				<form method="POST">
+					<div class="form-group">
+						<div class="checkbox">
+							<label>
+								<input type="checkbox" name="Enabled" {{if .Form.Enabled}}checked="checked"{{end}}> Enabled
+							</label>
+						</div>
+					</div>
+					{{range $idx, $v := .Form.Params}}
+						<div class="form-group">
+							<label for="name-{{$idx}}">{{$v.Name}}</label>
+							<input type="hidden" name="Params.{{$idx}}.Name" value="{{$v.Name}}" />
+							<input type="text" name="Params.{{$idx}}.Value" id="name-{{$idx}}" value="{{$v.Value}}" class="form-control" />
+						</div>
+					{{end}}
+				<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
+				<button type="submit" class="btn btn-primary">Save</button>
+				<a href="{{namedurl "modules-index"}}" type="button" class="btn btn-default">Cancel</a>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script type="text/javascript">
+	$(function() {
+	});
+</script>
+{{end}}
