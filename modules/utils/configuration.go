@@ -13,14 +13,14 @@ type utility struct {
 }
 
 type configuration struct {
-	Utils map[string]([]utility) `json:"utils"`
+	Utils map[string]([]*utility) `json:"utils"`
 }
 
 var config configuration
 
 // Init utils pages
 func loadConfiguration(filename string) error {
-	l.Print("pages.utils Loading configuration file: %s ", filename)
+	l.Print("modules.utils Loading configuration file: %s ", filename)
 	if filename == "" {
 		return errors.New("missing configuration")
 	}
@@ -35,4 +35,14 @@ func loadConfiguration(filename string) error {
 	}
 	l.Print("pages.utils Loaded groups: %d ", len(config.Utils))
 	return err
+}
+
+func saveConfiguration(filename string) error {
+	l.Printf("modules.utils.saveConfiguration: Writing configuration to %s\n", filename)
+	data, err := json.Marshal(config)
+	if err != nil {
+		l.Printf("modiles.utils.saveConfiguration: error marshal configuration: %s\n", err)
+		return err
+	}
+	return ioutil.WriteFile(filename, data, 0)
 }

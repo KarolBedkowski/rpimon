@@ -2,6 +2,7 @@ package utils
 
 import (
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
@@ -10,6 +11,7 @@ import (
 	"strings"
 )
 
+var decoder = schema.NewDecoder()
 var Module *app.Module
 
 func init() {
@@ -36,6 +38,12 @@ func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "Utils", "admin")).Name("utils-index")
 	subRouter.HandleFunc("/{group}/{command-id:[0-9]+}", app.HandleWithContextSec(commandPageHandler, "Utils", "admin"))
+	subRouter.HandleFunc("/configure", app.HandleWithContextSec(configurePageHandler, "Utils - Configuration", "admin")).Name("utils-conf")
+	subRouter.HandleFunc("/configure/{group}", app.HandleWithContextSec(confGroupPageHandler, "Utils - Configuration", "admin")).Name("utils-group")
+	subRouter.HandleFunc("/configure/{group}/{util}", app.HandleWithContextSec(confCommandPageHandler, "Utils - Configuration", "admin")).Name("utils-cmd")
+
+	Module.ConfigurePageUrl = app.GetNamedURL("utils-conf")
+
 	return true
 }
 func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
@@ -102,4 +110,151 @@ func commandPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePag
 	data.CurrentPage = "Utils " + groupName + ": " + group[commandID].Name
 	data.Data = h.ReadCommand(command[0], command[1:]...)
 	app.RenderTemplateStd(w, data, "data.tmpl")
+}
+
+type (
+	configurePageContext struct {
+		*app.BasePageContext
+		Utils map[string][]*utility
+	}
+)
+
+func configurePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+	ctx := &configurePageContext{BasePageContext: bctx}
+	ctx.Utils = config.Utils
+	app.RenderTemplateStd(w, ctx, "utils/conf-index.tmpl")
+}
+
+type (
+	confGroupForm struct {
+		Name string
+	}
+
+	confGroupPageContext struct {
+		*app.BasePageContext
+		Form confGroupForm
+	}
+
+	confCommandPageContext struct {
+		*app.BasePageContext
+		Form utility
+	}
+)
+
+func (u *utility) validate() (errors []string) {
+	u.Name = strings.TrimSpace(u.Name)
+	u.Command = strings.TrimSpace(u.Command)
+	if u.Name == "" {
+		errors = append(errors, "Missing name")
+	}
+	if u.Command == "" {
+		errors = append(errors, "Missing command")
+	}
+	return
+}
+
+func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+	vars := mux.Vars(r)
+	groupName, _ := vars["group"]
+	ctx := &confGroupPageContext{BasePageContext: bctx}
+	if r.Method == "POST" {
+		r.ParseForm()
+		if err := decoder.Decode(&ctx.Form, r.Form); err != nil {
+			l.Warn("Decode form error", err, r.Form)
+			return
+		}
+		if ctx.Form.Name == groupName {
+			// no changes
+			http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
+			return
+		}
+		if groupName == "<new>" {
+			// new group
+			config.Utils[ctx.Form.Name] = make([]*utility, 0)
+		} else if _, found := config.Utils[ctx.Form.Name]; found {
+			// group already exists - join
+			config.Utils[ctx.Form.Name] = append(config.Utils[ctx.Form.Name], config.Utils[groupName]...)
+			delete(config.Utils, groupName)
+		} else {
+			// rename group
+			config.Utils[ctx.Form.Name] = config.Utils[groupName]
+			delete(config.Utils, groupName)
+		}
+		conf := Module.GetConfiguration()
+		if err := saveConfiguration(conf["config_file"]); err != nil {
+			ctx.BasePageContext.AddFlashMessage("Saving configuration error: "+err.Error(),
+				"error")
+		} else {
+			ctx.BasePageContext.AddFlashMessage("Configuration saved.", "success")
+			ctx.Save()
+			http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
+			return
+		}
+	}
+	ctx.Save()
+	ctx.Form.Name = groupName
+	app.RenderTemplateStd(w, ctx, "utils/conf-group.tmpl")
+}
+
+func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+	vars := mux.Vars(r)
+	groupName, _ := vars["group"]
+	cmd, _ := vars["util"]
+	ctx := &confCommandPageContext{BasePageContext: bctx}
+	group := config.Utils[groupName]
+	if r.Method == "POST" {
+		r.ParseForm()
+		if err := decoder.Decode(&ctx.Form, r.Form); err != nil {
+			l.Warn("Decode form error", err, r.Form)
+			return
+		}
+		errors := ctx.Form.validate()
+		if errors == nil || len(errors) == 0 {
+			if group == nil {
+				// create group when no exists
+				group = make([]*utility, 0)
+				config.Utils[groupName] = group
+			}
+			found := false
+			for _, u := range group {
+				if cmd == u.Name {
+					u.Name = ctx.Form.Name
+					u.Command = ctx.Form.Command
+					found = true
+					break
+				}
+			}
+			if !found {
+				// add new command
+				group = append(group, &ctx.Form)
+				config.Utils[groupName] = group
+			}
+			conf := Module.GetConfiguration()
+			if err := saveConfiguration(conf["config_file"]); err != nil {
+				ctx.BasePageContext.AddFlashMessage("Saving configuration error: "+err.Error(),
+					"error")
+				ctx.Save()
+			} else {
+				ctx.BasePageContext.AddFlashMessage("Configuration saved.", "success")
+				ctx.Save()
+				http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
+				return
+			}
+		} else {
+			for _, err := range errors {
+				ctx.BasePageContext.AddFlashMessage("Validation error: "+err, "error")
+			}
+			ctx.Save()
+		}
+	} else {
+		if cmd != "<new>" {
+			for _, u := range config.Utils[groupName] {
+				if cmd == u.Name {
+					ctx.Form = *u
+					break
+				}
+			}
+		}
+	}
+	app.RenderTemplateStd(w, ctx, "utils/conf-cmd.tmpl")
 }
