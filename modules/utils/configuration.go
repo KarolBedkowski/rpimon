@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/ioutil"
 	l "k.prv/rpimon/helpers/logging"
+	"sort"
 )
 
 type utility struct {
@@ -17,6 +18,12 @@ type configuration struct {
 }
 
 var config configuration
+
+type UtilitiesByName []*utility
+
+func (s UtilitiesByName) Len() int           { return len(s) }
+func (s UtilitiesByName) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s UtilitiesByName) Less(i, j int) bool { return s[i].Name < s[j].Name }
 
 // Init utils pages
 func loadConfiguration(filename string) error {
@@ -39,6 +46,9 @@ func loadConfiguration(filename string) error {
 
 func saveConfiguration(filename string) error {
 	l.Printf("modules.utils.saveConfiguration: Writing configuration to %s\n", filename)
+	for _, utils := range config.Utils {
+		sort.Sort(UtilitiesByName(utils))
+	}
 	data, err := json.Marshal(config)
 	if err != nil {
 		l.Printf("modiles.utils.saveConfiguration: error marshal configuration: %s\n", err)
