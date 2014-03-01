@@ -4,24 +4,16 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	h "k.prv/rpimon/helpers"
+	"k.prv/rpimon/modules/mpd"
 	"k.prv/rpimon/monitor"
-	"k.prv/rpimon/pages/mpd"
 	"net/http"
 	"runtime"
-	"strings"
 )
 
 // CreateRoutes for /main
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", mainPageHandler).Name("main-index")
-	subRouter.HandleFunc("/system",
-		app.VerifyPermission(systemPageHandler, "admin")).Name(
-		"main-system")
-	subRouter.HandleFunc("/serv/status",
-		app.VerifyPermission(statusServHandler, "admin")).Name(
-		"main-serv-status")
+	subRouter.HandleFunc("/", app.HandleWithContext(mainPageHandler, "Main")).Name("main-index")
 	subRouter.HandleFunc("/serv/alerts",
 		app.VerifyPermission(alertsServHandler, "admin")).Name(
 		"main-serv-alerts")
@@ -42,8 +34,8 @@ type pageCtx struct {
 	LoadTrucated      float64
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &pageCtx{BasePageContext: app.NewBasePageContext("Main", w, r)}
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+	ctx := &pageCtx{BasePageContext: bctx}
 	ctx.SetMenuActive("main")
 	ctx.Warnings = monitor.GetWarnings()
 	ctx.Uptime = monitor.GetUptimeInfo()
@@ -63,43 +55,6 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 		ctx.MpdStatus = mpdStatus
 	}
 	app.RenderTemplateStd(w, ctx, "main/index.tmpl")
-}
-
-type pageSystemCtx struct {
-	*app.BasePageContext
-	Warnings          *monitor.WarningsStruct
-	MaxAcceptableLoad int
-}
-
-func systemPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &pageSystemCtx{BasePageContext: app.NewBasePageContext("System", w, r),
-		Warnings: monitor.GetWarnings()}
-	ctx.SetMenuActive("system-live")
-	ctx.MaxAcceptableLoad = runtime.NumCPU() * 2
-	app.RenderTemplateStd(w, ctx, "main/system.tmpl")
-}
-
-var statusServCache = h.NewSimpleCache(1)
-
-func statusServHandler(w http.ResponseWriter, r *http.Request) {
-	data := statusServCache.Get(func() h.Value {
-		res := map[string]interface{}{"cpu": strings.Join(monitor.GetCPUHistory(), ","),
-			"load":     strings.Join(monitor.GetLoadHistory(), ","),
-			"mem":      strings.Join(monitor.GetMemoryHistory(), ","),
-			"meminfo":  monitor.GetMemoryInfo(),
-			"cpuusage": monitor.GetCPUUsageInfo(),
-			"cpuinfo":  monitor.GetCPUInfo(),
-			"loadinfo": monitor.GetLoadInfo(),
-			"fs":       monitor.GetFilesystemsInfo(),
-			"iface":    monitor.GetInterfacesInfo(),
-			"uptime":   monitor.GetUptimeInfo(),
-			"netusage": monitor.GetTotalNetHistory(),
-		}
-		encoded, _ := json.Marshal(res)
-		return encoded
-	}).([]byte)
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Write(data)
 }
 
 func alertsServHandler(w http.ResponseWriter, r *http.Request) {

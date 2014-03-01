@@ -20,7 +20,7 @@ type BasePageContext struct {
 	Hostname         string
 	CurrentUser      string
 	CurrentUserPerms []string
-	MainMenu         []*MenuItem
+	MainMenu         *MenuItem
 	Now              string
 	FlashMessages    map[string][]interface{}
 	Tabs             []*MenuItem
@@ -105,11 +105,7 @@ func (ctx *BasePageContext) SetMenuActive(id string) {
 	if ctx.MainMenu == nil {
 		return
 	}
-	for _, subitem := range ctx.MainMenu {
-		if subitem.SetActiveMenu(id) {
-			break
-		}
-	}
+	ctx.MainMenu.SetActiveMenuItem(id)
 }
 
 // SimpleDataPageCtx - context  with data (string) + title
@@ -124,9 +120,32 @@ type SimpleDataPageCtx struct {
 }
 
 // NewSimpleDataPageCtx create new simple context to show text data
-func NewSimpleDataPageCtx(w http.ResponseWriter, r *http.Request,
-	title string, parentMenuId string, localMenu []*MenuItem) *SimpleDataPageCtx {
+func NewSimpleDataPageCtx(w http.ResponseWriter, r *http.Request, title string) *SimpleDataPageCtx {
 	ctx := &SimpleDataPageCtx{BasePageContext: NewBasePageContext(title, w, r)}
-	AttachSubmenu(ctx.BasePageContext, parentMenuId, localMenu)
 	return ctx
+}
+
+type BaseContextHandlerFunc func(w http.ResponseWriter, r *http.Request, ctx *BasePageContext)
+
+// HandleWithContext create BasePageContext for request
+func HandleWithContext(h BaseContextHandlerFunc, title string) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := NewBasePageContext(title, w, r)
+		h(w, r, ctx)
+	})
+}
+
+// HandleWithContextSec check logged user persmissions; if ok - create BasePageContext; otherwise
+// redirect to login.
+func HandleWithContextSec(h BaseContextHandlerFunc, title string, permission string) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if login, perms := CheckUserLoggerOrRedirect(w, r); login != "" {
+			if CheckPermission(perms, permission) {
+				ctx := NewBasePageContext(title, w, r)
+				h(w, r, ctx)
+				return
+			}
+			http.Error(w, "Fobidden/Privilages", http.StatusForbidden)
+		}
+	})
 }

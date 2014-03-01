@@ -1,0 +1,56 @@
+{{define "body"}}
+
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">Utils <small>Configuration</small></h1>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-lg-12">
+		<table class="table table-hover table-bordered table-condensed" id="data-table">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Command</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{range $group, $utls := .Utils}}
+				<tr>
+					<th colspan="2">{{$group}}</th>
+					<td>
+					<a href="{{namedurl "utils-group" "group" $group}}">Edit</a> |
+					<a href="{{namedurl "utils-cmd" "group" $group "util" "<new>"}}">Add command</a>
+					</td>
+				</tr>
+				{{range $utls}}
+				<tr>
+					<td>{{.Name}}</td>
+					<td>{{.Command}}</td>
+					<td><a href="{{namedurl "utils-cmd" "group" $group "util" .Name}}">Edit</a>
+					</td>
+				</tr>
+				{{end}}
+			{{end}}
+				<tr>
+					<th colspan="2">&nbsp;</th>
+					<td>
+					<a href="{{namedurl "utils-group" "group" "<new>"}}">New group</a>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<a href="{{namedurl "utils-index"}}" class="btn btn-default">Utils</a>
+		<a href="{{namedurl "modules-index"}}" class="btn btn-default">Modules configuration</a>
+	</div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script type="text/javascript">
+	$(function() {
+	});
+</script>
+{{end}}

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
-	"path/filepath"
 	"runtime"
 	"time"
 )
@@ -20,17 +19,13 @@ type (
 		CookieEncKey          string
 		SessionStoreDir       string
 		LogFilename           string
-		UtilsFilename         string
-		MpdHost               string
-		BrowserConf           string
 		HTTPAddress           string `json:"http_address"`
 		HTTPSAddress          string `json:"https_address"`
 		SslCert               string
 		SslKey                string
 		MonitorUpdateInterval int
-		Logs                  string
-		Notepad               string               `json:"notepad"`
-		Monitor               MonitorConfiguration `json:"monitor"`
+		Monitor               MonitorConfiguration         `json:"monitor"`
+		Modules               map[string]map[string]string `json:"modules"`
 	}
 	// monitor configuration
 	MonitorConfiguration struct {
@@ -51,10 +46,12 @@ type (
 // Configuration - main app configuration instance
 var Configuration AppConfiguration
 var quitReloaderChan = make(chan string)
+var configFilename string
 
 // LoadConfiguration from given file
 func LoadConfiguration(filename string) *AppConfiguration {
 	log.Print("Loading configuration file ", filename)
+	configFilename = filename
 
 	if !loadConfiguration(filename) {
 		return nil
@@ -93,8 +90,6 @@ func loadConfiguration(filename string) bool {
 		return false
 	}
 
-	Configuration.Notepad, _ = filepath.Abs(Configuration.Notepad)
-
 	if Configuration.Monitor.LoadWarning == 0 {
 		Configuration.Monitor.LoadWarning = float64(runtime.NumCPU() * 2)
 	}
@@ -120,4 +115,14 @@ func loadConfiguration(filename string) bool {
 		Configuration.Monitor.CPUTempError = 80
 	}
 	return true
+}
+
+func SaveConfiguration() error {
+	log.Printf("SaveConfiguration: Writing configuration to %s\n", configFilename)
+	data, err := json.Marshal(Configuration)
+	if err != nil {
+		log.Printf("SaveConfiguration: error marshal configuration: %s\n", err)
+		return err
+	}
+	return ioutil.WriteFile(configFilename, data, 0)
 }

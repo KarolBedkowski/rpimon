@@ -109,7 +109,14 @@
 <script type="text/javascript">
 	$(function() {
 		$("#main-alert").hide();
-		MPD.plist.init();
+		MPD.plist.init({
+			urls: {
+				'mpd-pl-serv-info': '{{namedurl "mpd-pl-serv-info"}}',
+				'mpd-song-action-play': '{{namedurl "mpd-song-action" "song-id" "000" "action" "play"}}',
+				'mpd-song-action-remove': '{{namedurl "mpd-song-action" "song-id" "000" "action" "remove"}}',
+				"mpd-service-song-info": '{{namedurl "mpd-service-song-info" }}'
+			}
+		});
 	});
 </script>
 

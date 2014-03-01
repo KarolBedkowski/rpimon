@@ -1,14 +1,24 @@
 package app
 
+import (
+	"container/list"
+	"sort"
+)
+
 // MenuItem - one position in menu
-type MenuItem struct {
-	Title   string
-	Href    string
-	ID      string
-	Submenu []*MenuItem
-	Icon    string
-	Active  bool
-}
+type (
+	MenuItem struct {
+		Title     string
+		Href      string
+		ID        string
+		Submenu   []*MenuItem
+		Icon      string
+		Active    bool
+		SortOrder int
+		// RequredPrivilages as [[priv and priv ....] or [ priv ...]]
+		RequredPrivilages [][]string
+	}
+)
 
 // NewMenuItem create new MenuItem structure
 func NewMenuItem(title, href string) *MenuItem {
@@ -45,20 +55,26 @@ func (item *MenuItem) SetActve(active bool) *MenuItem {
 	return item
 }
 
-// AddChild append menu item as submenu item
-func (item *MenuItem) AddChild(child *MenuItem) *MenuItem {
-	item.Submenu = append(item.Submenu, child)
+// SetSortOrder for menu item
+func (item *MenuItem) SetSortOrder(sortOrder int) *MenuItem {
+	item.SortOrder = sortOrder
 	return item
 }
 
-func (item *MenuItem) AttachSubmenu(parentID string, submenu []*MenuItem) (attached bool) {
-	if item.ID == parentID {
-		item.Submenu = append(item.Submenu, submenu...)
+// AddChild append menu item as submenu item
+func (item *MenuItem) AddChild(child ...*MenuItem) *MenuItem {
+	item.Submenu = append(item.Submenu, child...)
+	return item
+}
+
+func (i *MenuItem) AppendItemToParent(parentID string, item *MenuItem) (attached bool) {
+	if i.ID == parentID {
+		i.Submenu = append(i.Submenu, item)
 		return true
 	}
-	if item.Submenu != nil {
-		for _, subitem := range item.Submenu {
-			if subitem.AttachSubmenu(parentID, submenu) {
+	if i.Submenu != nil {
+		for _, subitem := range i.Submenu {
+			if subitem.AppendItemToParent(parentID, item) {
 				return true
 			}
 		}
@@ -66,14 +82,14 @@ func (item *MenuItem) AttachSubmenu(parentID string, submenu []*MenuItem) (attac
 	return false
 }
 
-func (item *MenuItem) SetActiveMenu(menuID string) (found bool) {
+func (item *MenuItem) SetActiveMenuItem(menuID string) (found bool) {
 	if item.ID == menuID {
 		item.Active = true
 		return true
 	}
 	if item.Submenu != nil {
 		for _, subitem := range item.Submenu {
-			if subitem.SetActiveMenu(menuID) {
+			if subitem.SetActiveMenuItem(menuID) {
 				item.Active = true
 				return true
 			}
@@ -82,66 +98,81 @@ func (item *MenuItem) SetActiveMenu(menuID string) (found bool) {
 	return false
 }
 
+func (i *MenuItem) Sort() {
+	if i.Submenu != nil {
+		sort.Sort(subMenu(i.Submenu))
+		for _, item := range i.Submenu {
+			item.Sort()
+		}
+	}
+}
+
+// SORTING MENU ITEMS
+
+type subMenu []*MenuItem
+
+func (s subMenu) Len() int      { return len(s) }
+func (s subMenu) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+func (s subMenu) Less(i, j int) bool {
+	if s[i].SortOrder == s[j].SortOrder {
+		return s[i].Title < s[j].Title
+	}
+	return s[i].SortOrder < s[j].SortOrder
+}
+
+// BUILDING MENU
+
+type notAttachedItems struct {
+	parent string
+	item   *MenuItem
+}
+
 // SetMainMenu - fill MainMenu in BasePageContext
 func SetMainMenu(ctx *BasePageContext) {
-	if ctx.CurrentUser != "" {
-		ctx.MainMenu = []*MenuItem{NewMenuItemFromRoute("Home", "main-index").SetID("main").SetIcon("glyphicon glyphicon-home")}
-		if CheckPermission(ctx.CurrentUserPerms, "admin") {
-			sysMI := NewMenuItem("System", "").SetIcon("glyphicon glyphicon-wrench").SetID("system")
-			sysMI.Submenu = []*MenuItem{
-				NewMenuItemFromRoute("Live view", "main-system").SetID("system-live").SetIcon("glyphicon glyphicon-dashboard"),
-				NewMenuItem("-", ""),
-				NewMenuItemFromRoute("Network", "net-index").SetID("net").SetIcon("glyphicon glyphicon-transfer"),
-				NewMenuItemFromRoute("Storage", "storage-index").SetID("storage").SetIcon("glyphicon glyphicon-hdd"),
-				NewMenuItemFromRoute("Logs", "logs-index").SetID("logs").SetIcon("glyphicon glyphicon-eye-open"),
-				NewMenuItemFromRoute("Process", "process-index").SetID("process").SetIcon("glyphicon glyphicon-cog"),
-				NewMenuItemFromRoute("Users", "users-index").SetID("users").SetIcon("glyphicon glyphicon-user"),
-				NewMenuItem("-", ""),
-				NewMenuItemFromRoute("Other", "other-index").SetID("other").SetIcon("glyphicon glyphicon-cog"),
+	ctx.MainMenu = &MenuItem{}
+	itemsWithoutParent := list.New()
+	for _, module := range registeredModules {
+		if module.Enabled() && module.GetMenu != nil {
+			parent, mitem := module.GetMenu(ctx)
+			if mitem != nil {
+				if !ctx.MainMenu.AppendItemToParent(parent, mitem) {
+					itemsWithoutParent.PushBack(notAttachedItems{parent, mitem})
+				}
 			}
-			ctx.MainMenu = append(ctx.MainMenu, sysMI)
-		}
-		if CheckPermission(ctx.CurrentUserPerms, "mpd") {
-			ctx.MainMenu = append(ctx.MainMenu,
-				NewMenuItemFromRoute("MPD", "mpd-index").SetID("mpd").SetIcon("glyphicon glyphicon-music"))
-		}
-		if CheckPermission(ctx.CurrentUserPerms, "files") {
-			ctx.MainMenu = append(ctx.MainMenu,
-				NewMenuItemFromRoute("Files", "files-index").SetID("files").SetIcon("glyphicon glyphicon-hdd"))
-		}
-		// Tools
-		toolsMenu := NewMenuItem("Tools", "").SetIcon("glyphicon glyphicon-briefcase").SetID("tools")
-		if CheckPermission(ctx.CurrentUserPerms, "admin") {
-			toolsMenu.Submenu = append(toolsMenu.Submenu,
-				NewMenuItemFromRoute("Utilities", "utils-index").SetID("utils").SetIcon("glyphicon glyphicon-wrench"),
-				NewMenuItem("-", ""))
-		}
-		if CheckPermission(ctx.CurrentUserPerms, "notepad") {
-			toolsMenu.Submenu = append(toolsMenu.Submenu,
-				NewMenuItemFromRoute("Notepad", "notepad-index").SetID("notepad-index").SetIcon("glyphicon glyphicon-paperclip"))
-		}
-		if toolsMenu.Submenu != nil {
-			ctx.MainMenu = append(ctx.MainMenu, toolsMenu)
 		}
 	}
-}
-
-func AttachSubmenu(ctx *BasePageContext, parentID string, submenu []*MenuItem) {
-	if ctx.MainMenu == nil {
-		return
-	}
-	for _, subitem := range ctx.MainMenu {
-		if subitem.AttachSubmenu(parentID, submenu) {
-			return
+	itemsLen := itemsWithoutParent.Len()
+	for {
+		if itemsWithoutParent.Len() == 0 {
+			break
 		}
-	}
-}
-
-// SetMenuActive add id  to menu active items
-func MenuListSetMenuActive(id string, menu []*MenuItem) {
-	for _, subitem := range menu {
-		if subitem.SetActiveMenu(id) {
+		var next *list.Element
+		for e := itemsWithoutParent.Front(); e != nil; e = next {
+			next = e.Next()
+			nai := e.Value.(notAttachedItems)
+			if ctx.MainMenu.AppendItemToParent(nai.parent, nai.item) {
+				itemsWithoutParent.Remove(e)
+			}
+		}
+		if itemsLen == itemsWithoutParent.Len() {
+			// items list not changed
 			break
 		}
 	}
+	if itemsWithoutParent.Len() > 0 {
+		mitem := &MenuItem{Title: "Other"}
+		for e := itemsWithoutParent.Front(); e != nil; e = e.Next() {
+			mitem.Submenu = append(mitem.Submenu, e.Value.(notAttachedItems).item)
+		}
+		ctx.MainMenu.AppendItemToParent("", mitem)
+	}
+
+	// Preferences
+	if CheckPermission(ctx.CurrentUserPerms, "admin") {
+		pref := NewMenuItem("Preferences", "preferences").SetSortOrder(999).SetIcon("glyphicon glyphicon-wrench")
+		pref.AddChild(NewMenuItemFromRoute("Modules", "modules-index"))
+		ctx.MainMenu.AddChild(pref)
+	}
+
+	ctx.MainMenu.Sort()
 }

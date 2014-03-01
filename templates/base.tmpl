@@ -64,17 +64,29 @@
 			<nav class="navbar-default navbar-static-side" role="navigation">
 				<div class="sidebar-collapse">
 					<ul class="nav" id="side-menu">
-					{{range .MainMenu}}
-						{{if .Submenu}}
-						<li class="{{if .Active}}active{{end}}">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="{{.Icon}}"></span>&nbsp;{{.Title}} <b class="caret"></b></a>
-							<ul class="nav nav-second-level">
-							{{range .Submenu}}
-								{{if .Submenu}}
-								<li class="{{if .Active}}active{{end}}">
-									<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="{{.Icon}}"></span>&nbsp;{{.Title}} <b class="caret"></b></a>
-									<ul class="nav nav-third-level">
-									{{range .Submenu}}
+					{{if .MainMenu}}
+						{{range .MainMenu.Submenu}}
+							{{if .Submenu}}
+							<li class="{{if .Active}}active{{end}}">
+								<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="{{.Icon}}"></span>&nbsp;{{.Title}} <b class="caret"></b></a>
+								<ul class="nav nav-second-level">
+								{{range .Submenu}}
+									{{if .Submenu}}
+									<li class="{{if .Active}}active{{end}}">
+										<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="{{.Icon}}"></span>&nbsp;{{.Title}} <b class="caret"></b></a>
+										<ul class="nav nav-third-level">
+										{{range .Submenu}}
+											{{if .Href}}
+											<li {{if .Active}}class="active"{{end}}>
+												<a class="" href="{{.Href}}"><span class="{{.Icon}}"></span>&nbsp;{{.Title}}</a>
+											</li>
+											{{else}}
+											<li class="divider"></li>
+											{{end}}
+										{{end}}
+										</ul>
+									</li>
+									{{else}} <!-- submenu -->
 										{{if .Href}}
 										<li {{if .Active}}class="active"{{end}}>
 											<a class="" href="{{.Href}}"><span class="{{.Icon}}"></span>&nbsp;{{.Title}}</a>
@@ -82,25 +94,19 @@
 										{{else}}
 										<li class="divider"></li>
 										{{end}}
-									{{end}}
-									</ul>
+									{{end}} <!-- submenu -->
+								{{end}}
+								</ul>
+							</li>
+							{{else}} <!-- if .Submenu -->
+								{{if .Href}}
+								<li {{if .Active}}class="active"{{end}}>
+									<a class="" href="{{.Href}}"><span class="{{.Icon}}"></span>&nbsp;{{.Title}}</a>
 								</li>
-								{{else}} <!-- submenu -->
-									{{if .Href}}
-									<li {{if .Active}}class="active"{{end}}>
-										<a class="" href="{{.Href}}"><span class="{{.Icon}}"></span>&nbsp;{{.Title}}</a>
-									</li>
-									{{else}}
-									<li class="divider"></li>
-									{{end}}
-								{{end}} <!-- submenu -->
-							{{end}}
-							</ul>
-						</li>
-						{{else}}
-						<li class="{{if .Active}}active{{end}}">
-							<a class="" href="{{.Href}}"><span class="{{.Icon}}"></span>&nbsp;{{.Title}}</a>
-						</li>
+								{{else}}
+								<li class="divider"></li>
+								{{end}}
+							{{end}} <!-- if .Submenu -->
 						{{end}}
 					{{end}}
 						<li class="divider"></li>

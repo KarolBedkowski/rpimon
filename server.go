@@ -3,19 +3,22 @@ package main
 import (
 	"flag"
 	"k.prv/rpimon/app"
+	mfiles "k.prv/rpimon/modules/files"
+	mmpd "k.prv/rpimon/modules/mpd"
+	mnet "k.prv/rpimon/modules/network"
+	mnotepad "k.prv/rpimon/modules/notepad"
+	mstorage "k.prv/rpimon/modules/storage"
+	msmart "k.prv/rpimon/modules/storage/smart"
+	msystem "k.prv/rpimon/modules/system"
+	msyslogs "k.prv/rpimon/modules/system/logs"
+	msystother "k.prv/rpimon/modules/system/other"
+	msysproc "k.prv/rpimon/modules/system/process"
+	msysusers "k.prv/rpimon/modules/system/users"
+	mutls "k.prv/rpimon/modules/utils"
 	"k.prv/rpimon/monitor"
 	"k.prv/rpimon/pages/auth"
-	pfiles "k.prv/rpimon/pages/files"
-	plogs "k.prv/rpimon/pages/logs"
 	pmain "k.prv/rpimon/pages/main"
-	pmpd "k.prv/rpimon/pages/mpd"
-	pnet "k.prv/rpimon/pages/net"
-	pnotepad "k.prv/rpimon/pages/notepad"
-	pother "k.prv/rpimon/pages/other"
-	pproc "k.prv/rpimon/pages/process"
-	pstorage "k.prv/rpimon/pages/storage"
-	pusers "k.prv/rpimon/pages/users"
-	putils "k.prv/rpimon/pages/utils"
+	pmodules "k.prv/rpimon/pages/preferences/modules"
 	"log"
 	"net/http"
 	// _ "net/http/pprof" // /debug/pprof/
@@ -44,27 +47,31 @@ func main() {
 	go func() {
 		<-cleanChannel
 		app.Close()
-		pmpd.Close()
+		app.ShutdownModules()
 		os.Exit(1)
 	}()
 
 	app.Router.HandleFunc("/", handleHome)
 	auth.CreateRoutes(app.Router.PathPrefix("/auth"))
 	pmain.CreateRoutes(app.Router.PathPrefix("/main"))
-	pnet.CreateRoutes(app.Router.PathPrefix("/net"))
-	pstorage.CreateRoutes(app.Router.PathPrefix("/storage"))
-	putils.Init(conf.UtilsFilename)
-	putils.CreateRoutes(app.Router.PathPrefix("/utils"))
-	pmpd.Init(conf.MpdHost)
-	pmpd.CreateRoutes(app.Router.PathPrefix("/mpd"))
-	plogs.Init(conf.Logs)
-	plogs.CreateRoutes(app.Router.PathPrefix("/logs"))
-	pusers.CreateRoutes(app.Router.PathPrefix("/users"))
-	pproc.CreateRoutes(app.Router.PathPrefix("/process"))
-	pfiles.Init(conf.BrowserConf)
-	pfiles.CreateRoutes(app.Router.PathPrefix("/files"))
-	pnotepad.CreateRoutes(app.Router.PathPrefix("/notepad"))
-	pother.CreateRoutes(app.Router.PathPrefix("/other"))
+	pmodules.CreateRoutes(app.Router.PathPrefix("/pref/modules"))
+
+	app.RegisterModule(mnet.Module)
+	app.RegisterModule(mnet.NFSModule)
+	app.RegisterModule(mnet.SambaModule)
+	app.RegisterModule(mfiles.Module)
+	app.RegisterModule(mmpd.Module)
+	app.RegisterModule(mnotepad.Module)
+	app.RegisterModule(msystem.Module)
+	app.RegisterModule(msystother.Module)
+	app.RegisterModule(msysproc.Module)
+	app.RegisterModule(msyslogs.Module)
+	app.RegisterModule(msysusers.Module)
+	app.RegisterModule(mstorage.Module)
+	app.RegisterModule(msmart.Module)
+	app.RegisterModule(mutls.Module)
+
+	app.InitModules(conf, app.Router)
 
 	/* for filesystem store
 	go app.ClearSessionStore()

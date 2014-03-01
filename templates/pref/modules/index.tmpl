@@ -1,0 +1,44 @@
+{{define "body"}}
+
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">Modules <small>Enabled modules</small></h1>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-lg-12">
+		<form method="POST">
+		<table class="table table-hover table-bordered table-condensed" id="data-table">
+			<thead>
+				<tr>
+					<th>Module</th>
+					<th>Description</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{range $idx, $m := .Form.Modules}}
+				<tr>
+					<td><input type="checkbox" name="Modules.{{$idx}}.Enabled" {{if $m.Enabled}}checked="checked"{{end}}> {{$m.Title}} </td>
+					<td><input type="hidden" name="Modules.{{$idx}}.Name" value="{{$m.Name}}"><small>{{$m.Description}}</small></td>
+					<td>
+						{{if $m.ConfigurePageUrl}}<a href="{{$m.ConfigurePageUrl}}">{{else}}<a href="{{namedurl "modules-module" "module" $m.Name}}">{{end}}
+						Configure</a></td>
+				</tr>
+			{{end}}
+			</tbody>
+		</table>
+		<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
+		<button type="submit">Save</button>
+		</form>
+	</div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script type="text/javascript">
+	$(function() {
+	});
+</script>
+{{end}}
