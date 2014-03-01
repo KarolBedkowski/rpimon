@@ -133,6 +133,7 @@ type (
 	confGroupPageContext struct {
 		*app.BasePageContext
 		Form confGroupForm
+		New  bool
 	}
 
 	confCommandPageContext struct {
@@ -166,7 +167,12 @@ func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Base
 	vars := mux.Vars(r)
 	groupName, _ := vars["group"]
 	ctx := &confGroupPageContext{BasePageContext: bctx}
-	if r.Method == "POST" {
+
+	if r.Method == "POST" && r.FormValue("_method") != "" {
+		r.Method = r.FormValue("_method")
+	}
+	switch r.Method {
+	case "POST":
 		r.ParseForm()
 		if err := decoder.Decode(&ctx.Form, r.Form); err != nil {
 			l.Warn("Decode form error", err, r.Form)
@@ -200,11 +206,19 @@ func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Base
 			}
 			ctx.Save()
 		}
+	case "DELETE":
+		delete(config.Utils, groupName)
+		if saveConf(ctx.BasePageContext) {
+			http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
+			return
+		}
+	case "GET":
+		ctx.New = groupName == "<new>"
+		if !ctx.New {
+			ctx.Form.Name = groupName
+		}
 	}
 	ctx.Save()
-	if groupName != "<new>" {
-		ctx.Form.Name = groupName
-	}
 	app.RenderTemplateStd(w, ctx, "utils/conf-group.tmpl")
 }
 
