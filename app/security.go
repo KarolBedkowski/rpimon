@@ -89,6 +89,9 @@ func LoginUser(w http.ResponseWriter, r *http.Request, user *database.User) erro
 
 // CheckPermission return true if requred permission is on list
 func CheckPermission(userPermissions []string, required string) bool {
+	if required == "" {
+		return true
+	}
 	for _, p := range userPermissions {
 		if p == required {
 			return true

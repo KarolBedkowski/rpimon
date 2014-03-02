@@ -1,0 +1,58 @@
+{{define "body"}}
+{{$ctx := .}}
+
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">User <small></small></h1>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-lg-12">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Change password</h3>
+			</div>
+			<div class="panel-body">
+				<form method="POST" id="form">
+					<div class="form-group">
+						<div class="checkbox">
+							 <label><input type="checkbox" name="ChangePass" id="cbChangePass">Change password</label>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="OldPassword">Current password</label>
+						<input type="password" class="form-control" id="OldPassword" name="OldPassword">
+					</div>
+					<div class="form-group">
+						<label for="NewPassword">New password</label>
+						<input type="password" class="form-control" id="NewPassword" name="NewPassword">
+						<label for="NewPasswordC">Confirm password</label>
+						<input type="password" class="form-control" id="NewPasswordC" name="NewPasswordC">
+					</div>
+					<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
+					<button type="submit" class="btn btn-primary">Save</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script type="text/javascript">
+	$(function() {
+		$("#form").validate();
+		$("#cbChangePass").change(function(e) {
+			if ($(this).prop("checked")) {
+				$("#NewPassword,#NewPasswordC,#OldPassword").prop("disabled", false);
+				$("#NewPasswordC").rules("add", {equalTo: "#NewPassword", required: true});
+			} else {
+				$("#NewPasswordC").rules("remove");
+				$("#NewPassword,#NewPasswordC,#OldPassword").prop("disabled", true);
+			}
+		});
+		$("#NewPassword,#NewPasswordC,#OldPassword").prop("disabled", true);
+	});
+</script>
+{{end}}

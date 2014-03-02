@@ -14,8 +14,9 @@ var decoder = schema.NewDecoder()
 // CreateRoutes for /main
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "Preferences - Users", "admin")).Name("p-users-index")
-	subRouter.HandleFunc("/{user}", app.HandleWithContextSec(userPageHandler, "Preferences - User", "admin")).Name("p-users-user")
+	subRouter.HandleFunc("/users", app.HandleWithContextSec(mainPageHandler, "Preferences - Users", "admin")).Name("p-users-index")
+	subRouter.HandleFunc("/users/{user}", app.HandleWithContextSec(userPageHandler, "Preferences - User", "admin")).Name("p-users-user")
+	subRouter.HandleFunc("/profile", app.HandleWithContextSec(profilePageHandler, "Profile", "")).Name("p-user-profile")
 }
 
 type (
@@ -126,6 +127,53 @@ func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageC
 		}
 	}
 	ctx.Save()
+	ctx.SetMenuActive("p-users")
 	app.RenderTemplateStd(w, ctx, "pref/users/user.tmpl")
 
+}
+
+type (
+	chgPassForm struct {
+		ChangePass   bool
+		OldPassword  string
+		NewPassword  string
+		NewPasswordC string
+	}
+
+	profileContext struct {
+		*app.BasePageContext
+		CPForm chgPassForm
+		User   *database.User
+	}
+)
+
+func profilePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+	ctx := &profileContext{
+		BasePageContext: bctx,
+		User:            database.GetUserByLogin(bctx.CurrentUser),
+	}
+	switch r.Method {
+	case "POST":
+		r.ParseForm()
+		var err error
+		if err = decoder.Decode(&ctx.CPForm, r.Form); err != nil {
+			l.Warn("Decode form error", err, r.Form)
+		}
+		if ctx.CPForm.ChangePass {
+			if ctx.User.CheckPassword(ctx.CPForm.OldPassword) {
+				ctx.User.Password = database.CreatePassword(ctx.CPForm.NewPassword)
+				if err = database.UpdateUser(ctx.User); err == nil {
+					ctx.AddFlashMessage("User updated", "success")
+				} else {
+					ctx.AddFlashMessage("Update user errror: "+err.Error(), "error")
+				}
+			} else {
+				l.Info("Change password for user error: wrong password")
+				ctx.AddFlashMessage("Wrong old password", "error")
+			}
+		}
+	}
+	ctx.Save()
+	ctx.SetMenuActive("p-user-profile")
+	app.RenderTemplateStd(w, ctx, "pref/users/profile.tmpl")
 }

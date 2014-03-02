@@ -167,11 +167,16 @@ func SetMainMenu(ctx *BasePageContext) {
 		ctx.MainMenu.AppendItemToParent("", mitem)
 	}
 
+	pref := NewMenuItem("Preferences", "preferences").SetSortOrder(999).SetIcon("glyphicon glyphicon-wrench")
 	// Preferences
 	if CheckPermission(ctx.CurrentUserPerms, "admin") {
-		pref := NewMenuItem("Preferences", "preferences").SetSortOrder(999).SetIcon("glyphicon glyphicon-wrench")
 		pref.AddChild(NewMenuItemFromRoute("Modules", "modules-index").SetID("p-modules"))
 		pref.AddChild(NewMenuItemFromRoute("Users", "p-users-index").SetID("p-users"))
+	}
+	if ctx.CurrentUser != "" {
+		pref.AddChild(NewMenuItemFromRoute("Profile", "p-user-profile").SetID("p-user-profile"))
+	}
+	if len(pref.Submenu) > 0 {
 		ctx.MainMenu.AddChild(pref)
 	}
 
