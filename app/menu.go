@@ -171,6 +171,7 @@ func SetMainMenu(ctx *BasePageContext) {
 	if CheckPermission(ctx.CurrentUserPerms, "admin") {
 		pref := NewMenuItem("Preferences", "preferences").SetSortOrder(999).SetIcon("glyphicon glyphicon-wrench")
 		pref.AddChild(NewMenuItemFromRoute("Modules", "modules-index"))
+		pref.AddChild(NewMenuItemFromRoute("Users", "p-users-index").SetID("p-users"))
 		ctx.MainMenu.AddChild(pref)
 	}
 
