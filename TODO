@@ -1,5 +1,4 @@
 * własne strony błędów
-* notatnik
 * konfiguracja smb
 * konfiguracja openvpn
 * konfiguracja nfs
@@ -24,3 +23,6 @@
 
 * sprawdzanie stanu dostępu do internetu / dostępności bramy
 
+* własne hasło / profil
+
+* baza danych
