@@ -58,7 +58,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageC
 		http.Redirect(w, r, r.URL.String(), http.StatusFound)
 		return
 	}
-	ctx.SetMenuActive("modules")
+	ctx.SetMenuActive("p-modules")
 	for _, m := range app.GetModulesList() {
 		ctx.Form.Modules = append(ctx.Form.Modules, &moduleSt{
 			m.Name, m.Title, m.Description, m.Enabled(),
@@ -121,12 +121,12 @@ func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Bas
 		http.Redirect(w, r, app.GetNamedURL("module-index"), http.StatusFound)
 		return
 	}
-	ctx.SetMenuActive("modules")
 	for key, val := range conf {
 		if key != "enabled" {
 			ctx.Form.Params = append(ctx.Form.Params, confParam{key, val})
 		}
 	}
 	ctx.Form.Enabled = conf["enabled"] == "yes"
+	ctx.SetMenuActive("p-modules")
 	app.RenderTemplateStd(w, ctx, "pref/modules/conf.tmpl")
 }
