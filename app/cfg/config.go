@@ -124,5 +124,5 @@ func SaveConfiguration() error {
 		log.Printf("SaveConfiguration: error marshal configuration: %s\n", err)
 		return err
 	}
-	return ioutil.WriteFile(configFilename, data, 0)
+	return ioutil.WriteFile(configFilename, data, 0600)
 }

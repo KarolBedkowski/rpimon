@@ -54,5 +54,5 @@ func saveConfiguration(filename string) error {
 		l.Printf("modiles.utils.saveConfiguration: error marshal configuration: %s\n", err)
 		return err
 	}
-	return ioutil.WriteFile(filename, data, 0)
+	return ioutil.WriteFile(filename, data, 0600)
 }
