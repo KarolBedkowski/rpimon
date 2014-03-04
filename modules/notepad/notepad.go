@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/schema"
 	"io/ioutil"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
@@ -119,13 +120,13 @@ func notePageHandler(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		note := new(NoteStuct)
 		decoder.Decode(note, r.Form)
-		sess := app.GetSessionStore(w, r)
+		sess := session.GetSessionStore(w, r)
 		if err := SaveNote(filename, note.Content); err == nil {
 			sess.AddFlash("Note saved", "success")
 		} else {
 			sess.AddFlash(err.Error(), "error")
 		}
-		app.SaveSession(w, r)
+		session.SaveSession(w, r)
 		http.Redirect(w, r, app.GetNamedURL("notepad-index"), http.StatusFound)
 		return
 	case "DELETE":
@@ -146,13 +147,13 @@ func noteDeleteHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing filename", http.StatusBadRequest)
 		return
 	}
-	sess := app.GetSessionStore(w, r)
+	sess := session.GetSessionStore(w, r)
 	if err := DeleteNote(filename); err == nil {
 		sess.AddFlash("Note deleted", "success")
 	} else {
 		sess.AddFlash(err.Error(), "error")
 	}
-	app.SaveSession(w, r)
+	session.SaveSession(w, r)
 	http.Redirect(w, r, app.GetNamedURL("notepad-index"), http.StatusFound)
 }
 

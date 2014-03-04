@@ -1,4 +1,4 @@
-package app
+package session
 
 import (
 	"github.com/gorilla/securecookie"
@@ -16,7 +16,7 @@ const storesession = "SESSION"
 
 var store *sessions.CookieStore
 
-func initSessionStore(conf *cfg.AppConfiguration) error {
+func InitSessionStore(conf *cfg.AppConfiguration) error {
 	if len(conf.CookieAuthKey) < 32 {
 		l.Info("Random CookieAuthKey")
 		conf.CookieAuthKey = string(securecookie.GenerateRandomKey(32))

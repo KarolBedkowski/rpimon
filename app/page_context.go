@@ -3,6 +3,8 @@ package app
 import (
 	"github.com/gorilla/sessions"
 	"io/ioutil"
+	"k.prv/rpimon/app/mw"
+	"k.prv/rpimon/app/session"
 	"k.prv/rpimon/helpers"
 	//	l "k.prv/rpimon/helpers/logging"
 	"net/http"
@@ -40,18 +42,18 @@ var FlashKind = []string{"error", "info", "success"}
 // NewBasePageContext create base page context for request
 func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *BasePageContext {
 
-	session := GetSessionStore(w, r)
-	csrfToken := session.Values[CONTEXTCSRFTOKEN]
+	s := session.GetSessionStore(w, r)
+	csrfToken := s.Values[mw.CONTEXTCSRFTOKEN]
 	if csrfToken == nil {
-		csrfToken = createNewCsrfToken()
-		session.Values[CONTEXTCSRFTOKEN] = csrfToken
+		csrfToken = mw.CreateNewCsrfToken()
+		s.Values[mw.CONTEXTCSRFTOKEN] = csrfToken
 	}
 
 	login, perms := GetLoggedUserInfo(w, r)
 	ctx := &BasePageContext{Title: title,
 		ResponseWriter:   w,
 		Request:          r,
-		Session:          session,
+		Session:          s,
 		CsrfToken:        csrfToken.(string),
 		Hostname:         hostname,
 		CurrentUser:      login,
@@ -97,7 +99,7 @@ func (ctx *BasePageContext) Get(key string) interface{} {
 
 // Save session by page context
 func (ctx *BasePageContext) Save() error {
-	return SaveSession(ctx.ResponseWriter, ctx.Request)
+	return session.SaveSession(ctx.ResponseWriter, ctx.Request)
 }
 
 // SetMenuActive add id  to menu active items

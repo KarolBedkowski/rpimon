@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/cfg"
+	"k.prv/rpimon/app/session"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 )
@@ -78,6 +79,6 @@ func handleLoginError(message string, w http.ResponseWriter, ctx *loginPageCtx) 
 }
 
 func logoffHandler(w http.ResponseWriter, r *http.Request) {
-	app.ClearSession(w, r)
+	session.ClearSession(w, r)
 	http.Redirect(w, r, "/", http.StatusFound)
 }

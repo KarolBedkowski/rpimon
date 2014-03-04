@@ -3,6 +3,7 @@ package users
 import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	"net/http"
 	"strings"
@@ -123,7 +124,7 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := h.ReadCommand("sudo", "umount", fs)
-	sess := app.GetSessionStore(w, r)
+	sess := session.GetSessionStore(w, r)
 	if data != "" {
 		sess.AddFlash("Umount "+fs+" error: "+data, "error")
 	} else {

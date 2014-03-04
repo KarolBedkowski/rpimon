@@ -1,4 +1,4 @@
-package app
+package mw
 
 import (
 	l "k.prv/rpimon/helpers/logging"
@@ -20,7 +20,7 @@ func (writer *loggingResponseWriter) WriteHeader(status int) {
 }
 
 // Logging middleware
-func logHandler(h http.Handler) http.HandlerFunc {
+func LogHandler(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		writer := &loggingResponseWriter{ResponseWriter: w, status: 200}

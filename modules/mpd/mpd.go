@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	n "k.prv/rpimon/modules/notepad"
@@ -190,9 +191,9 @@ func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	case "playlist-clear":
 		if err = mpdAction(action); err != nil {
-			sess := app.GetSessionStore(w, r)
-			sess.AddFlash(err.Error(), "error")
-			app.SaveSession(w, r)
+			s := session.GetSessionStore(w, r)
+			s.AddFlash(err.Error(), "error")
+			session.SaveSession(w, r)
 		}
 		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 	default:

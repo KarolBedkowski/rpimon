@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/schema"
 	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/session"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"strconv"
@@ -55,9 +56,9 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write(encoded)
 	} else {
 		if err != nil {
-			session := app.GetSessionStore(w, r)
-			session.AddFlash(err.Error(), "error")
-			session.Save(r, w)
+			s := session.GetSessionStore(w, r)
+			s.AddFlash(err.Error(), "error")
+			s.Save(r, w)
 		}
 		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 	}

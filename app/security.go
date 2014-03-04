@@ -2,6 +2,7 @@ package app
 
 import (
 	"k.prv/rpimon/app/cfg"
+	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"log"
@@ -23,16 +24,16 @@ const (
 
 // GetLoggedUserInfo returns current login and permission
 func GetLoggedUserInfo(w http.ResponseWriter, r *http.Request) (login string, perm []string) {
-	session := GetSessionStore(w, r)
-	if ts, ok := session.Values[sessionTimestampKey]; ok {
+	s := session.GetSessionStore(w, r)
+	if ts, ok := s.Values[sessionTimestampKey]; ok {
 		timestamp := time.Unix(ts.(int64), 0)
 		now := time.Now()
 		if now.Sub(timestamp) < maxSessionAge {
-			session.Values[sessionTimestampKey] = now.Unix()
-			session.Save(r, w)
-			if sessLogin := session.Values[sessionLoginKey]; sessLogin != nil {
+			s.Values[sessionTimestampKey] = now.Unix()
+			s.Save(r, w)
+			if sessLogin := s.Values[sessionLoginKey]; sessLogin != nil {
 				login = sessLogin.(string)
-				if sessPerm := session.Values[sessionPermissionKey]; sessPerm != nil {
+				if sessPerm := s.Values[sessionPermissionKey]; sessPerm != nil {
 					perm = sessPerm.([]string)
 				}
 			}
@@ -79,11 +80,11 @@ func VerifyLogged(h http.HandlerFunc) http.HandlerFunc {
 // LoginUser - update session
 func LoginUser(w http.ResponseWriter, r *http.Request, user *cfg.User) error {
 	l.Info("User %s log in", user.Login)
-	session := GetSessionStore(w, r)
-	session.Values[sessionLoginKey] = user.Login
-	session.Values[sessionPermissionKey] = user.Privs
-	session.Values[sessionTimestampKey] = time.Now().Unix()
-	session.Save(r, w)
+	s := session.GetSessionStore(w, r)
+	s.Values[sessionLoginKey] = user.Login
+	s.Values[sessionPermissionKey] = user.Privs
+	s.Values[sessionTimestampKey] = time.Now().Unix()
+	s.Save(r, w)
 	return nil
 }
 
