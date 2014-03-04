@@ -4,7 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/database"
+	"k.prv/rpimon/app/cfg"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 )
@@ -54,7 +54,7 @@ func loginPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePage
 			handleLoginError(err, w, ctx)
 			return
 		}
-		user := database.GetUserByLogin(ctx.Login)
+		user := cfg.GetUserByLogin(ctx.Login)
 		if user == nil || !user.CheckPassword(ctx.Password) {
 			handleLoginError("Wrong user or password", w, ctx)
 			return

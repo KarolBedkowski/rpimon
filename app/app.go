@@ -3,7 +3,7 @@ package app
 import (
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"k.prv/rpimon/database"
+	"k.prv/rpimon/app/cfg"
 	l "k.prv/rpimon/helpers/logging"
 	gzip "k.prv/rpimon/lib/gziphander"
 	"net/http"
@@ -26,7 +26,7 @@ func Init(appConfFile string, debug int) *AppConfiguration {
 	l.Print("Debug=", conf.Debug)
 
 	initSessionStore(conf)
-	database.Init(conf.Users, conf.Debug)
+	cfg.InitUsers(conf.Users, conf.Debug)
 
 	http.Handle("/static/", http.StripPrefix("/static",
 		gzip.FileServer(http.Dir(conf.StaticDir), !conf.Debug)))
