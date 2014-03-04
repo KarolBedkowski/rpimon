@@ -13,9 +13,9 @@ import (
 var Router = mux.NewRouter()
 
 // Init - Initialize application
-func Init(appConfFile string, debug int) *AppConfiguration {
+func Init(appConfFile string, debug int) *cfg.AppConfiguration {
 
-	conf := LoadConfiguration(appConfFile)
+	conf := cfg.LoadConfiguration(appConfFile)
 	if debug == 0 {
 		conf.Debug = false
 	} else if debug == 1 {
@@ -38,7 +38,7 @@ func Init(appConfFile string, debug int) *AppConfiguration {
 // Close application
 func Close() {
 	l.Info("Closing...")
-	closeConf()
+	cfg.CloseConf()
 }
 
 // GetNamedURL - Return url for named route and parameters

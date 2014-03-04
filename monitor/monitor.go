@@ -4,7 +4,7 @@ package monitor
 import (
 	"bufio"
 	"io"
-	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/cfg"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"os"
@@ -240,10 +240,10 @@ func GetCPUInfo() *CPUInfoStruct {
 
 func gatherCPUInfo() *CPUInfoStruct {
 	info := &CPUInfoStruct{}
-	if val, err := h.ReadIntFromFile(app.Configuration.Monitor.CPUFreqFile); err == nil {
+	if val, err := h.ReadIntFromFile(cfg.Configuration.Monitor.CPUFreqFile); err == nil {
 		info.Freq = val / 1000
 	}
-	if val, err := h.ReadIntFromFile(app.Configuration.Monitor.CPUTempFile); err == nil {
+	if val, err := h.ReadIntFromFile(cfg.Configuration.Monitor.CPUTempFile); err == nil {
 		info.Temp = val / 1000
 	}
 	return info

@@ -1,4 +1,4 @@
-package app
+package cfg
 
 import (
 	"encoding/json"
@@ -74,7 +74,7 @@ func LoadConfiguration(filename string) *AppConfiguration {
 	return &Configuration
 }
 
-func closeConf() {
+func CloseConf() {
 	quitReloaderChan <- "END"
 }
 

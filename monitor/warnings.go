@@ -2,7 +2,7 @@
 package monitor
 
 import (
-	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/cfg"
 	h "k.prv/rpimon/helpers"
 	//	l "k.prv/rpimon/helpers/logging"
 	"strings"
@@ -23,7 +23,7 @@ var warningsCache = h.NewSimpleCache(warningsCacheTTL)
 // GetWarnings return current warnings to show
 func GetWarnings() *WarningsStruct {
 	result := warningsCache.Get(func() h.Value {
-		conf := app.Configuration.Monitor
+		conf := cfg.Configuration.Monitor
 		warnings := &WarningsStruct{}
 		// high load
 		if lastLoadInfo != nil {

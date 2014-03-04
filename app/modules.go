@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/gorilla/mux"
+	"k.prv/rpimon/app/cfg"
 	l "k.prv/rpimon/helpers/logging"
 	"sort"
 )
@@ -61,7 +62,7 @@ func RegisterModule(module *Module) bool {
 }
 
 // InitModules initialize and enable all modules
-func InitModules(conf *AppConfiguration, router *mux.Router) {
+func InitModules(conf *cfg.AppConfiguration, router *mux.Router) {
 	for _, module := range registeredModules {
 		mconfig := module.GetConfiguration()
 		module.enable(mconfig["enabled"] == "yes")
@@ -117,7 +118,7 @@ func (m *Module) enable(enabled bool) {
 }
 
 func (m *Module) GetConfiguration() (conf map[string]string) {
-	if mconfig, ok := Configuration.Modules[m.Name]; ok && mconfig != nil {
+	if mconfig, ok := cfg.Configuration.Modules[m.Name]; ok && mconfig != nil {
 		// configuration exists; add missing from defaults
 		for key, val := range m.Defaults {
 			if _, found := mconfig[key]; !found {

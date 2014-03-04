@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/cfg"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 )
@@ -48,7 +49,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageC
 			app.SetModuleEnabled(module.Name, module.Enabled)
 		}
 		app.SetMainMenu(ctx.BasePageContext)
-		if err := app.SaveConfiguration(); err != nil {
+		if err := cfg.SaveConfiguration(); err != nil {
 			ctx.BasePageContext.AddFlashMessage("Saving configuration error: "+err.Error(),
 				"error")
 		} else {
@@ -111,7 +112,7 @@ func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Bas
 		} else {
 			conf["enabled"] = "no"
 		}
-		if err := app.SaveConfiguration(); err != nil {
+		if err := cfg.SaveConfiguration(); err != nil {
 			ctx.BasePageContext.AddFlashMessage("Saving configuration error: "+err.Error(),
 				"error")
 		} else {
