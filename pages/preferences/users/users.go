@@ -28,7 +28,7 @@ type (
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
 	ctx := &usersPageCtx{BasePageContext: bctx}
-	ctx.Users = cfg.GetUsers()
+	ctx.Users = cfg.GetAllUsers()
 	ctx.SetMenuActive("p-users")
 	app.RenderTemplateStd(w, ctx, "pref/users/index.tmpl")
 }
@@ -79,7 +79,7 @@ func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageC
 		}
 		if login == "<new>" {
 			user.Login = ctx.Form.Login
-			user.Password = cfg.CreatePassword(ctx.Form.NewPassword)
+			user.UpdatePassword(ctx.Form.NewPassword)
 			if err = cfg.AddUser(user); err == nil {
 				ctx.BasePageContext.AddFlashMessage("User added", "success")
 				ctx.Save()
@@ -92,7 +92,7 @@ func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageC
 			// update user
 			user.Login = login
 			if ctx.Form.NewPassword != "" {
-				user.Password = cfg.CreatePassword(ctx.Form.NewPassword)
+				user.UpdatePassword(ctx.Form.NewPassword)
 			}
 			if err = cfg.UpdateUser(user); err == nil {
 				ctx.AddFlashMessage("User updated", "success")
@@ -161,7 +161,7 @@ func profilePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePa
 		}
 		if ctx.CPForm.ChangePass {
 			if ctx.User.CheckPassword(ctx.CPForm.OldPassword) {
-				ctx.User.Password = cfg.CreatePassword(ctx.CPForm.NewPassword)
+				ctx.User.UpdatePassword(ctx.CPForm.NewPassword)
 				if err = cfg.UpdateUser(ctx.User); err == nil {
 					ctx.AddFlashMessage("User updated", "success")
 				} else {

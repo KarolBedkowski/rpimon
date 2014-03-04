@@ -1,11 +1,12 @@
 package cfg
 
+// User configuration
+// Dummy json file database
+
 import (
-	"crypto/md5"
+	"code.google.com/p/go.crypto/bcrypt"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"io/ioutil"
 	l "k.prv/rpimon/helpers/logging"
 )
@@ -15,20 +16,24 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 )
 
-// User structure
-type User struct {
-	Login    string
-	Password string
-	Privs    []string
-}
+type (
+	// User structure
+	User struct {
+		Login    string
+		Password string
+		Privs    []string
+	}
 
-// UserDB - virtual database
-type UserDB struct {
-	Users []*User
-}
+	// UserDB - virtual database
+	UserDB struct {
+		// User login -> User
+		Users map[string]*User
+	}
+)
 
 var database UserDB
 
+// TODO: read from modules
 var AllPrivs = []string{
 	"admin", "mpd", "files", "notepad",
 }
@@ -43,50 +48,61 @@ func InitUsers(filename string, debug bool) {
 	if err != nil {
 		l.Error("UserDB.Init Error:", err)
 		createDummyDatabase()
+		saveUsers()
 		return
 	}
 	err = json.Unmarshal(file, &database)
 	if err != nil {
 		l.Error("UserDB.Init Error: %s", err.Error())
 		createDummyDatabase()
+		saveUsers()
 	}
 	l.Info("UserDB.Init loaded users: %d", len(database.Users))
 	return
 }
 
-func usersSave() error {
-	l.Printf("UserDB.usersSave %s\n", dbfilename)
+// save changes to database
+func saveUsers() error {
+	l.Printf("UserDB.saveUsers %s\n", dbfilename)
 	data, err := json.Marshal(database)
 	if err != nil {
-		l.Printf("UserDB.usersSave: error marshal configuration: %s\n", err)
+		l.Error("UserDB.saveUsers: error marshal configuration: %s\n", err)
 		return err
 	}
-	return ioutil.WriteFile(dbfilename, data, 0)
+	err = ioutil.WriteFile(dbfilename, data, 0600)
+	if err != nil {
+		l.Error("UserDB.saveUsers: error writing file %s: %s\nData: %v", dbfilename, err.Error(), data)
+	}
+	return err
 }
 
 func createDummyDatabase() {
 	l.Info("Creating default user 'user', 'guest', 'admin'")
 	//Create fake user
-	database.Users = []*User{
-		&User{
+	database.Users = map[string]*User{
+		"guest": &User{
 			Login:    "guest",
-			Password: "",
+			Password: CreatePassword("guest"),
 			Privs:    nil,
 		},
-		&User{
+		"user": &User{
 			Login:    "user",
-			Password: "",
+			Password: CreatePassword("user"),
 			Privs:    []string{"mpd", "files"},
 		},
-		&User{
+		"admin": &User{
 			Login:    "admin",
-			Password: "",
+			Password: CreatePassword("admin"),
 			Privs:    []string{"admin", "mpd", "files"},
 		},
 	}
 }
-func GetUsers() []*User {
-	return database.Users
+
+func GetAllUsers() (users []*User) {
+	for _, u := range database.Users {
+		users = append(users, u)
+	}
+	return
 }
 
 // GetUserByLogin - find user by login
@@ -97,6 +113,54 @@ func GetUserByLogin(login string) *User {
 		}
 	}
 	return nil
+}
+
+// Create password
+func CreatePassword(password string) (encoded string) {
+	if password == "" {
+		return ""
+	}
+
+	data, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		l.Error("CreatePassword error: %s", err.Error())
+		return ""
+	}
+	return string(data)
+}
+
+// AddUser into database; check is login unique
+func AddUser(user *User) error {
+	// check is login unique
+	if _, found := database.Users[user.Login]; found {
+		return ErrUserExists
+	}
+	database.Users[user.Login] = user
+	return saveUsers()
+}
+
+// UpdateUser in database.
+func UpdateUser(user *User) error {
+	if u, found := database.Users[user.Login]; found {
+		u.Privs = user.Privs
+		if user.Password != "" {
+			u.Password = user.Password
+		}
+		return saveUsers()
+	}
+	return ErrUserNotFound
+}
+
+// DeleteUser from database by login
+func DeleteUser(login string) error {
+	if login == "admin" {
+		return errors.New("can't remove admin")
+	}
+	if _, found := database.Users[login]; found {
+		delete(database.Users, login)
+		return nil
+	}
+	return ErrUserNotFound
 }
 
 // HasPermission check is user has given permission
@@ -116,52 +180,20 @@ func (user *User) HasPermission(permission string) bool {
 func (user *User) CheckPassword(candidatePassword string) bool {
 	l.Info("%#v %v", user, candidatePassword)
 	if user.Password == "" {
-		return candidatePassword == user.Login
+		return candidatePassword == ""
 	}
-	pass := CreatePassword(candidatePassword)
-	return user.Password == pass
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(candidatePassword))
+	if err != nil {
+		l.Warn("CheckPassword for user %s error: %s", user.Login, err.Error())
+		return false
+	}
+	return true
 }
 
-func CreatePassword(password string) (encoded string) {
-	if password == "" {
-		return ""
+// UpdatePassword for user
+func (user *User) UpdatePassword(password string) {
+	pass := CreatePassword(password)
+	if pass != "" {
+		user.Password = pass
 	}
-	hash := md5.New()
-	io.WriteString(hash, password)
-	return fmt.Sprintf("%x", hash.Sum(nil))
-}
-
-func AddUser(user *User) error {
-	// check is login unique
-	if GetUserByLogin(user.Login) != nil {
-		return ErrUserExists
-	}
-	database.Users = append(database.Users, user)
-	return usersSave()
-}
-
-func UpdateUser(user *User) error {
-	for _, u := range database.Users {
-		if u.Login == user.Login {
-			u.Privs = user.Privs
-			if user.Password != "" {
-				u.Password = user.Password
-			}
-			return usersSave()
-		}
-	}
-	return ErrUserNotFound
-}
-
-func DeleteUser(login string) error {
-	if login == "admin" {
-		return errors.New("can't remove admin")
-	}
-	for idx, u := range database.Users {
-		if u.Login == login {
-			database.Users = append(database.Users[:idx], database.Users[idx+1:]...)
-			return nil
-		}
-	}
-	return ErrUserNotFound
 }
