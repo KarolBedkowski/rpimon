@@ -5,8 +5,8 @@ import (
 	"sort"
 )
 
-// MenuItem - one position in menu
 type (
+	// MenuItem - one position in menu
 	MenuItem struct {
 		Title     string
 		Href      string
@@ -18,6 +18,8 @@ type (
 		// RequredPrivilages as [[priv and priv ....] or [ priv ...]]
 		RequredPrivilages [][]string
 	}
+
+	MenuGenerator func(ctx *BasePageContext) (parentId string, menu *MenuItem)
 )
 
 // NewMenuItem create new MenuItem structure

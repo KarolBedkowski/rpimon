@@ -33,7 +33,7 @@ type Module struct {
 	Init func(parentRoute *mux.Route) bool
 
 	// GetMenu return parent menu idand menu item (with optional submenu)
-	GetMenu func(ctx *BasePageContext) (parentId string, menu *MenuItem)
+	GetMenu MenuGenerator
 
 	// GetWarnings return map warning kind -> messages
 	GetWarnings func() map[string][]string
