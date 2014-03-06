@@ -9,10 +9,21 @@ import (
 	"net/http"
 	//	"os"
 	//	"path/filepath"
-	//	"time"
+	"time"
 )
 
 const storesession = "SESSION"
+
+const (
+	SessionLoginKey      = "USERID"
+	SessionPermissionKey = "USER_PERM"
+)
+
+// Sessions settings
+const (
+	SessionTimestampKey = "timestamp"
+	MaxSessionAge       = time.Duration(24) * time.Hour
+)
 
 var store *sessions.CookieStore
 

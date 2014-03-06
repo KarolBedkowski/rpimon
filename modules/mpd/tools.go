@@ -2,12 +2,13 @@ package mpd
 
 import (
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	"net/http"
 )
 
 func mpdLogPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := app.NewSimpleDataPageCtx(w, r, "mpd")
+	ctx := context.NewSimpleDataPageCtx(w, r, "mpd")
 	ctx.SetMenuActive("mpd-log")
 	ctx.Header1 = "Logs"
 

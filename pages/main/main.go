@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/context"
 	"k.prv/rpimon/modules/mpd"
 	"k.prv/rpimon/monitor"
 	"net/http"
@@ -13,14 +14,14 @@ import (
 // CreateRoutes for /main
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.HandleWithContext(mainPageHandler, "Main")).Name("main-index")
+	subRouter.HandleFunc("/", context.HandleWithContext(mainPageHandler, "Main")).Name("main-index")
 	subRouter.HandleFunc("/serv/alerts",
 		app.VerifyPermission(alertsServHandler, "admin")).Name(
 		"main-serv-alerts")
 }
 
 type pageCtx struct {
-	*app.BasePageContext
+	*context.BasePageContext
 	Uptime            *monitor.UptimeInfoStruct
 	Load              *monitor.LoadInfoStruct
 	CPUUsage          *monitor.CPUUsageInfoStruct
@@ -34,7 +35,7 @@ type pageCtx struct {
 	LoadTrucated      float64
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &pageCtx{BasePageContext: bctx}
 	ctx.SetMenuActive("main")
 	ctx.Warnings = monitor.GetWarnings()

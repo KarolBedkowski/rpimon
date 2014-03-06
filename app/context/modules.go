@@ -1,4 +1,4 @@
-package app
+package context
 
 import (
 	"github.com/gorilla/mux"
@@ -48,7 +48,10 @@ type Module struct {
 	ConfigurePageUrl string
 }
 
-var registeredModules = make(map[string]*Module)
+var (
+	registeredModules = make(map[string]*Module)
+	appRouter         *mux.Router
+)
 
 // RegisterModule register given module for later usage
 func RegisterModule(module *Module) bool {
@@ -61,8 +64,13 @@ func RegisterModule(module *Module) bool {
 	return true
 }
 
+func GetModules() map[string]*Module {
+	return registeredModules
+}
+
 // InitModules initialize and enable all modules
 func InitModules(conf *cfg.AppConfiguration, router *mux.Router) {
+	appRouter = router
 	for _, module := range registeredModules {
 		mconfig := module.GetConfiguration()
 		module.enable(mconfig["enabled"] == "yes")
@@ -109,7 +117,7 @@ func (m *Module) enable(enabled bool) {
 	mconfig["enabled"] = ""
 	if enabled {
 		mconfig["enabled"] = "yes"
-		m.initialized = m.Init(Router.PathPrefix("/m/" + m.Name))
+		m.initialized = m.Init(appRouter.PathPrefix("/m/" + m.Name))
 		if !m.initialized {
 			l.Warn("Module %s init error; %#v", m.Name)
 			return

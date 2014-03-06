@@ -1,6 +1,8 @@
 package mw
 
 import (
+	"github.com/gorilla/context"
+	"k.prv/rpimon/app/session"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"runtime/debug"
@@ -35,5 +37,29 @@ func LogHandler(h http.Handler) http.HandlerFunc {
 			}
 		}()
 		h.ServeHTTP(writer, r)
+	})
+}
+
+func SessionHandler(h http.Handler) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		s := session.GetSessionStore(w, r)
+		context.Set(r, "session", s)
+		// FIXME: przenieść do session ?
+		if ts, ok := s.Values[session.SessionTimestampKey]; ok {
+			timestamp := time.Unix(ts.(int64), 0)
+			now := time.Now()
+			if now.Sub(timestamp) < session.MaxSessionAge {
+				s.Values[session.SessionTimestampKey] = now.Unix()
+				s.Save(r, w)
+				if sessLogin := s.Values[session.SessionLoginKey]; sessLogin != nil {
+					context.Set(r, "logged_user", sessLogin)
+					if sessPerm := s.Values[session.SessionPermissionKey]; sessPerm != nil {
+						context.Set(r, "logged_user_prem", sessPerm)
+					}
+				}
+			}
+		}
+
+		h.ServeHTTP(w, r)
 	})
 }

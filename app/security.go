@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/gorilla/context"
 	"k.prv/rpimon/app/cfg"
 	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
@@ -22,32 +23,13 @@ const (
 	maxSessionAge       = time.Duration(24) * time.Hour
 )
 
-// GetLoggedUserInfo returns current login and permission
-func GetLoggedUserInfo(w http.ResponseWriter, r *http.Request) (login string, perm []string) {
-	s := session.GetSessionStore(w, r)
-	if ts, ok := s.Values[sessionTimestampKey]; ok {
-		timestamp := time.Unix(ts.(int64), 0)
-		now := time.Now()
-		if now.Sub(timestamp) < maxSessionAge {
-			s.Values[sessionTimestampKey] = now.Unix()
-			s.Save(r, w)
-			if sessLogin := s.Values[sessionLoginKey]; sessLogin != nil {
-				login = sessLogin.(string)
-				if sessPerm := s.Values[sessionPermissionKey]; sessPerm != nil {
-					perm = sessPerm.([]string)
-				}
-			}
-		}
-	}
-	return
-}
-
 // CheckUserLoggerOrRedirect for request; if user is not logged - redirect to login page
 func CheckUserLoggerOrRedirect(w http.ResponseWriter, r *http.Request) (login string, perm []string) {
-	login, perm = GetLoggedUserInfo(w, r)
+	login = context.Get(r, "logged_user").(string)
 	if login != "" {
 		return
 	}
+	perm = context.Get(r, "logged_user_prem").([]string)
 	log.Print("Access denied")
 	url := GetNamedURL("auth-login")
 	url += h.BuildQuery("back", r.URL.String())

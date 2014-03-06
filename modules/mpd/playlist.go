@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/schema"
 	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/context"
 	"k.prv/rpimon/app/session"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
@@ -19,14 +20,14 @@ import (
 var decoder = schema.NewDecoder()
 
 type playlistPageCtx struct {
-	*app.BasePageContext
+	*context.BasePageContext
 	Playlist      []mpd.Attrs
 	CurrentSongID string
 	CurrentSong   string
 	Error         error
 }
 
-func playlistPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func playlistPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &playlistPageCtx{BasePageContext: bctx}
 	ctx.SetMenuActive("mpd-playlist")
 	app.RenderTemplateStd(w, ctx, "mpd/playlist.tmpl")

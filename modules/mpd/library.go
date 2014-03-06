@@ -3,6 +3,7 @@ package mpd
 import (
 	"encoding/json"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/context"
 	//	h "k.prv/rpimon/helpers"
 	//"code.google.com/p/gompd/mpd"
 	"github.com/turbowookie/gompd/mpd"
@@ -12,7 +13,7 @@ import (
 	"strings"
 )
 
-func libraryPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func libraryPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	bctx.SetMenuActive("mpd-library")
 	app.RenderTemplateStd(w, bctx, "mpd/library.tmpl")
 }
@@ -83,7 +84,7 @@ type (
 	}
 
 	searchPageContext struct {
-		*app.BasePageContext
+		*context.BasePageContext
 		Form   searchForm
 		Result []mpd.Attrs
 	}
@@ -98,7 +99,7 @@ func (f *searchForm) getQueryString() (query string) {
 	return f.Field + " \"" + f.Value + "\""
 }
 
-func searchPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func searchPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &searchPageContext{BasePageContext: bctx}
 	ctx.SetMenuActive("mpd-search")
 

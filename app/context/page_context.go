@@ -1,4 +1,4 @@
-package app
+package context
 
 import (
 	"github.com/gorilla/sessions"
@@ -7,6 +7,7 @@ import (
 	"k.prv/rpimon/app/session"
 	"k.prv/rpimon/helpers"
 	//	l "k.prv/rpimon/helpers/logging"
+	"github.com/gorilla/context"
 	"net/http"
 	"strings"
 	"time"
@@ -49,26 +50,30 @@ func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *B
 		s.Values[mw.CONTEXTCSRFTOKEN] = csrfToken
 	}
 
-	login, perms := GetLoggedUserInfo(w, r)
 	ctx := &BasePageContext{Title: title,
-		ResponseWriter:   w,
-		Request:          r,
-		Session:          s,
-		CsrfToken:        csrfToken.(string),
-		Hostname:         hostname,
-		CurrentUser:      login,
-		CurrentUserPerms: perms,
-		Now:              time.Now().Format("2006-01-02 15:04:05"),
-		FlashMessages:    make(map[string][]interface{}),
+		ResponseWriter: w,
+		Request:        r,
+		Session:        s,
+		CsrfToken:      csrfToken.(string),
+		Hostname:       hostname,
+		Now:            time.Now().Format("2006-01-02 15:04:05"),
+		FlashMessages:  make(map[string][]interface{}),
 	}
-
-	SetMainMenu(ctx)
+	if login, ok := context.GetOk(r, "logged_user"); ok {
+		ctx.CurrentUser = login.(string)
+		if perm, ok := context.GetOk(r, "logged_user_prem"); ok {
+			ctx.CurrentUserPerms = perm.([]string)
+		}
+	}
 
 	for _, kind := range FlashKind {
 		if flashes := ctx.Session.Flashes(kind); flashes != nil && len(flashes) > 0 {
 			ctx.FlashMessages[kind] = flashes
 		}
 	}
+
+	SetMainMenu(ctx)
+
 	ctx.Save()
 	return ctx
 }
@@ -137,17 +142,18 @@ func HandleWithContext(h BaseContextHandlerFunc, title string) http.HandlerFunc 
 	})
 }
 
-// HandleWithContextSec check logged user persmissions; if ok - create BasePageContext; otherwise
-// redirect to login.
+// HandleWithContext create BasePageContext for request
 func HandleWithContextSec(h BaseContextHandlerFunc, title string, permission string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if login, perms := CheckUserLoggerOrRedirect(w, r); login != "" {
-			if CheckPermission(perms, permission) {
-				ctx := NewBasePageContext(title, w, r)
-				h(w, r, ctx)
-				return
+		ctx := NewBasePageContext(title, w, r)
+		if ctx.CurrentUser != "" && ctx.CurrentUserPerms != nil {
+			for _, p := range ctx.CurrentUserPerms {
+				if p == permission {
+					h(w, r, ctx)
+					return
+				}
 			}
-			http.Error(w, "Fobidden/Privilages", http.StatusForbidden)
 		}
+		http.Error(w, "forbidden", http.StatusForbidden)
 	})
 }

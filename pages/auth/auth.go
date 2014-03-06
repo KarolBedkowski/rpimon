@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/cfg"
+	"k.prv/rpimon/app/context"
 	"k.prv/rpimon/app/session"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
@@ -17,7 +18,7 @@ var subRouter *mux.Router
 // CreateRoutes for /auth
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/login", app.HandleWithContext(loginPageHandler, "Login")).Name("auth-login")
+	subRouter.HandleFunc("/login", context.HandleWithContext(loginPageHandler, "Login")).Name("auth-login")
 	subRouter.HandleFunc("/logoff", logoffHandler).Name("auth-logoff")
 }
 
@@ -29,7 +30,7 @@ type (
 	}
 
 	loginPageCtx struct {
-		*app.BasePageContext
+		*context.BasePageContext
 		*loginForm
 		back string
 	}
@@ -42,7 +43,7 @@ func (ctx loginPageCtx) Validate() (err string) {
 	return
 }
 
-func loginPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func loginPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &loginPageCtx{bctx, new(loginForm), ""}
 	if r.Method == "POST" {
 		r.ParseForm()

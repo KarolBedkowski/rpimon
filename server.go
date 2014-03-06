@@ -3,18 +3,21 @@ package main
 import (
 	"flag"
 	"k.prv/rpimon/app"
-	mfiles "k.prv/rpimon/modules/files"
-	mmpd "k.prv/rpimon/modules/mpd"
-	mnet "k.prv/rpimon/modules/network"
-	mnotepad "k.prv/rpimon/modules/notepad"
-	mstorage "k.prv/rpimon/modules/storage"
-	msmart "k.prv/rpimon/modules/storage/smart"
-	msystem "k.prv/rpimon/modules/system"
-	msyslogs "k.prv/rpimon/modules/system/logs"
-	msystother "k.prv/rpimon/modules/system/other"
-	msysproc "k.prv/rpimon/modules/system/process"
-	msysusers "k.prv/rpimon/modules/system/users"
-	mutls "k.prv/rpimon/modules/utils"
+	/*
+		mfiles "k.prv/rpimon/modules/files"
+		mmpd "k.prv/rpimon/modules/mpd"
+		mnet "k.prv/rpimon/modules/network"
+		mnotepad "k.prv/rpimon/modules/notepad"
+		mstorage "k.prv/rpimon/modules/storage"
+		msmart "k.prv/rpimon/modules/storage/smart"
+		msystem "k.prv/rpimon/modules/system"
+		msyslogs "k.prv/rpimon/modules/system/logs"
+		msystother "k.prv/rpimon/modules/system/other"
+		msysproc "k.prv/rpimon/modules/system/process"
+		msysusers "k.prv/rpimon/modules/system/users"
+		mutls "k.prv/rpimon/modules/utils"
+	*/
+	"k.prv/rpimon/app/context"
 	"k.prv/rpimon/monitor"
 	"k.prv/rpimon/pages/auth"
 	pmain "k.prv/rpimon/pages/main"
@@ -48,7 +51,7 @@ func main() {
 	go func() {
 		<-cleanChannel
 		app.Close()
-		app.ShutdownModules()
+		context.ShutdownModules()
 		os.Exit(1)
 	}()
 
@@ -57,23 +60,23 @@ func main() {
 	pmain.CreateRoutes(app.Router.PathPrefix("/main"))
 	pmodules.CreateRoutes(app.Router.PathPrefix("/pref/modules"))
 	pusers.CreateRoutes(app.Router.PathPrefix("/pref/users"))
-
-	app.RegisterModule(mnet.Module)
-	app.RegisterModule(mnet.NFSModule)
-	app.RegisterModule(mnet.SambaModule)
-	app.RegisterModule(mfiles.Module)
-	app.RegisterModule(mmpd.Module)
-	app.RegisterModule(mnotepad.Module)
-	app.RegisterModule(msystem.Module)
-	app.RegisterModule(msystother.Module)
-	app.RegisterModule(msysproc.Module)
-	app.RegisterModule(msyslogs.Module)
-	app.RegisterModule(msysusers.Module)
-	app.RegisterModule(mstorage.Module)
-	app.RegisterModule(msmart.Module)
-	app.RegisterModule(mutls.Module)
-
-	app.InitModules(conf, app.Router)
+	/*
+		app.RegisterModule(mnet.Module)
+		app.RegisterModule(mnet.NFSModule)
+		app.RegisterModule(mnet.SambaModule)
+		app.RegisterModule(mfiles.Module)
+		app.RegisterModule(mmpd.Module)
+		app.RegisterModule(mnotepad.Module)
+		app.RegisterModule(msystem.Module)
+		app.RegisterModule(msystother.Module)
+		app.RegisterModule(msysproc.Module)
+		app.RegisterModule(msyslogs.Module)
+		app.RegisterModule(msysusers.Module)
+		app.RegisterModule(mstorage.Module)
+		app.RegisterModule(msmart.Module)
+		app.RegisterModule(mutls.Module)
+	*/
+	context.InitModules(conf, app.Router)
 
 	/* for filesystem store
 	go app.ClearSessionStore()

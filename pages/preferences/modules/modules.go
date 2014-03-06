@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/cfg"
+	"k.prv/rpimon/app/context"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 )
@@ -14,8 +15,8 @@ var decoder = schema.NewDecoder()
 // CreateRoutes for /main
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "Main", "admin")).Name("modules-index")
-	subRouter.HandleFunc("/{module}", app.HandleWithContextSec(confModulePageHandler, "Main", "admin")).Name("modules-module")
+	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Main", "admin")).Name("modules-index")
+	subRouter.HandleFunc("/{module}", context.HandleWithContextSec(confModulePageHandler, "Main", "admin")).Name("modules-module")
 }
 
 type (
@@ -32,12 +33,12 @@ type (
 	}
 
 	pageCtx struct {
-		*app.BasePageContext
+		*context.BasePageContext
 		Form modulesListForm
 	}
 )
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &pageCtx{BasePageContext: bctx}
 	if r.Method == "POST" {
 		r.ParseForm()
@@ -46,9 +47,9 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageC
 			return
 		}
 		for _, module := range ctx.Form.Modules {
-			app.SetModuleEnabled(module.Name, module.Enabled)
+			context.SetModuleEnabled(module.Name, module.Enabled)
 		}
-		app.SetMainMenu(ctx.BasePageContext)
+		context.SetMainMenu(ctx.BasePageContext)
 		if err := cfg.SaveConfiguration(); err != nil {
 			ctx.BasePageContext.AddFlashMessage("Saving configuration error: "+err.Error(),
 				"error")
@@ -60,7 +61,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageC
 		return
 	}
 	ctx.SetMenuActive("p-modules")
-	for _, m := range app.GetModulesList() {
+	for _, m := range context.GetModulesList() {
 		ctx.Form.Modules = append(ctx.Form.Modules, &moduleSt{
 			m.Name, m.Title, m.Description, m.Enabled(),
 			m.ConfigurePageUrl,
@@ -81,17 +82,17 @@ type (
 	}
 
 	confModulePageContext struct {
-		*app.BasePageContext
+		*context.BasePageContext
 		Form   confModuleForm
-		Module *app.Module
+		Module *context.Module
 	}
 )
 
-func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	vars := mux.Vars(r)
 	moduleName, _ := vars["module"]
 	ctx := &confModulePageContext{BasePageContext: bctx}
-	ctx.Module = app.GetModule(moduleName)
+	ctx.Module = context.GetModule(moduleName)
 	if ctx.Module == nil {
 		http.Error(w, "invalid module "+moduleName, http.StatusBadRequest)
 		return

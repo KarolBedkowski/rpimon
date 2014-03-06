@@ -33,7 +33,7 @@ func Init(appConfFile string, debug int) *cfg.AppConfiguration {
 	http.Handle("/static/", http.StripPrefix("/static",
 		gzip.FileServer(http.Dir(conf.StaticDir), !conf.Debug)))
 	http.Handle("/favicon.ico", gzip.FileServer(http.Dir(conf.StaticDir), !conf.Debug))
-	http.Handle("/", mw.LogHandler(mw.CsrfHandler(context.ClearHandler(Router))))
+	http.Handle("/", mw.LogHandler(mw.CsrfHandler(context.ClearHandler(mw.SessionHandler(Router)))))
 	return conf
 }
 

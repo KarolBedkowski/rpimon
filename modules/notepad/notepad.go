@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/schema"
 	"io/ioutil"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/context"
 	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
@@ -18,10 +19,10 @@ import (
 var decoder = schema.NewDecoder()
 var ErrInvalidFilename = errors.New("invalid filename")
 
-var Module *app.Module
+var Module *context.Module
 
 func init() {
-	Module = &app.Module{
+	Module = &context.Module{
 		Name:          "notepad",
 		Title:         "Notepad",
 		Description:   "",
@@ -50,18 +51,18 @@ func initModule(parentRoute *mux.Route) bool {
 
 	subRouter := parentRoute.Subrouter()
 	// Main page
-	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "Notepad", "notepad")).Name("notepad-index")
+	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Notepad", "notepad")).Name("notepad-index")
 	subRouter.HandleFunc("/{note}", app.VerifyPermission(notePageHandler, "notepad")).Name("notepad-note")
 	subRouter.HandleFunc("/{note}/delete", app.VerifyPermission(noteDeleteHandler, "notepad")).Name("notepad-delete")
 	subRouter.HandleFunc("/{note}/download", app.VerifyPermission(noteDownloadHandler, "notepad")).Name("notepad-download")
 	return true
 }
 
-func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
+func getMenu(ctx *context.BasePageContext) (parentId string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "notepad") {
 		return "", nil
 	}
-	menu = app.NewMenuItemFromRoute("Notepad", "notepad-index").SetID("notepad-index").SetIcon("glyphicon glyphicon-paperclip")
+	menu = context.NewMenuItem("Notepad", app.GetNamedURL("notepad-index")).SetID("notepad-index").SetIcon("glyphicon glyphicon-paperclip")
 	return "", menu
 }
 
@@ -78,11 +79,11 @@ func (n *NoteStuct) Validate() (errors []string) {
 }
 
 type mainPageContext struct {
-	*app.BasePageContext
+	*context.BasePageContext
 	NoteList []*NoteStuct
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &mainPageContext{BasePageContext: bctx}
 	ctx.SetMenuActive("notepad-index")
 	ctx.NoteList = findFiles()
@@ -90,7 +91,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageC
 }
 
 type notePageContext struct {
-	*app.BasePageContext
+	*context.BasePageContext
 	Note *NoteStuct
 	New  bool
 }
@@ -105,7 +106,7 @@ func notePageHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		// display note
-		ctx := &notePageContext{BasePageContext: app.NewBasePageContext("Notepad", w, r)}
+		ctx := &notePageContext{BasePageContext: context.NewBasePageContext("Notepad", w, r)}
 		if note, err := getNote(filename); err == nil {
 			ctx.Note = note
 		} else {
