@@ -32,7 +32,7 @@ func initModule(parentRoute *mux.Route) bool {
 		"Network - Iptables")).Name("m-net-iptables")
 	subRouter.HandleFunc("/netstat", context.HandleWithContext(netstatPageHandler,
 		"Network - Netstat")).Name("m-net-netstat")
-	subRouter.HandleFunc("/serv/info", context.HandleWithContext(statusServHandler, "")).Name("m-net-serv-info")
+	subRouter.HandleFunc("/serv/info", app.VerifyPermission(statusServHandler, "")).Name("m-net-serv-info")
 	subRouter.HandleFunc("/action", context.HandleWithContext(actionHandler, "")).Name("m-net-action").Methods("PUT")
 	return true
 }
@@ -248,7 +248,7 @@ func netstat(command string, args ...string) ([][]string, error) {
 
 var statusServCache = h.NewSimpleCache(1)
 
-func statusServHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
+func statusServHandler(w http.ResponseWriter, r *http.Request) {
 	data := statusServCache.Get(func() h.Value {
 		res := map[string]interface{}{
 			"netusage": monitor.GetNetHistory(),
