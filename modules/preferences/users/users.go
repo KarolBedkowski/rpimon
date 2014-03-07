@@ -15,9 +15,9 @@ var decoder = schema.NewDecoder()
 // CreateRoutes for /main
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/users", context.HandleWithContextSec(mainPageHandler, "Preferences - Users", "admin")).Name("p-users-index")
-	subRouter.HandleFunc("/users/{user}", context.HandleWithContextSec(userPageHandler, "Preferences - User", "admin")).Name("p-users-user")
-	subRouter.HandleFunc("/profile", context.HandleWithContextSec(profilePageHandler, "Profile", "")).Name("p-user-profile")
+	subRouter.HandleFunc("/users", context.HandleWithContextSec(mainPageHandler, "Preferences - Users", "admin")).Name("m-pref-users-index")
+	subRouter.HandleFunc("/users/{user}", context.HandleWithContextSec(userPageHandler, "Preferences - User", "admin")).Name("m-pref-users-user")
+	subRouter.HandleFunc("/profile", context.HandleWithContextSec(profilePageHandler, "Profile", "")).Name("m-pref-user-profile")
 }
 
 type (

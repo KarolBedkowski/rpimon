@@ -161,20 +161,6 @@ func SetMainMenu(ctx *BasePageContext) {
 		ctx.MainMenu.AppendItemToParent("", mitem)
 	}
 
-	pref := NewMenuItem("Preferences", "preferences").SetSortOrder(999).SetIcon("glyphicon glyphicon-wrench")
-	// Preferences
-	if CheckPermission(ctx.CurrentUserPerms, "admin") {
-		//TODO: named routes
-		pref.AddChild(NewMenuItem("Modules", "/pref/modules/").SetID("p-modules"))
-		pref.AddChild(NewMenuItem("Users", "/pref/users/users/").SetID("p-users"))
-	}
-	if ctx.CurrentUser != "" {
-		pref.AddChild(NewMenuItem("Profile", "/pref/users/profile").SetID("p-user-profile"))
-	}
-	if len(pref.Submenu) > 0 {
-		ctx.MainMenu.AddChild(pref)
-	}
-
 	ctx.MainMenu.Sort()
 }
 func CheckPermission(userPermissions []string, required string) bool {

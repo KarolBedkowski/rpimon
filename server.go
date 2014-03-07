@@ -18,11 +18,10 @@ import (
 		mutls "k.prv/rpimon/modules/utils"
 	*/
 	"k.prv/rpimon/app/context"
+	mpref "k.prv/rpimon/modules/preferences"
 	"k.prv/rpimon/monitor"
 	"k.prv/rpimon/pages/auth"
 	pmain "k.prv/rpimon/pages/main"
-	pmodules "k.prv/rpimon/pages/preferences/modules"
-	pusers "k.prv/rpimon/pages/preferences/users"
 	"log"
 	"net/http"
 	// _ "net/http/pprof" // /debug/pprof/
@@ -58,8 +57,7 @@ func main() {
 	app.Router.HandleFunc("/", handleHome)
 	auth.CreateRoutes(app.Router.PathPrefix("/auth"))
 	pmain.CreateRoutes(app.Router.PathPrefix("/main"))
-	pmodules.CreateRoutes(app.Router.PathPrefix("/pref/modules"))
-	pusers.CreateRoutes(app.Router.PathPrefix("/pref/users"))
+	context.RegisterModule(mpref.Module)
 	/*
 		app.RegisterModule(mnet.Module)
 		app.RegisterModule(mnet.NFSModule)

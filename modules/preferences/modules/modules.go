@@ -15,8 +15,8 @@ var decoder = schema.NewDecoder()
 // CreateRoutes for /main
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Main", "admin")).Name("modules-index")
-	subRouter.HandleFunc("/{module}", context.HandleWithContextSec(confModulePageHandler, "Main", "admin")).Name("modules-module")
+	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Main", "admin")).Name("m-pref-modules-index")
+	subRouter.HandleFunc("/{module}", context.HandleWithContextSec(confModulePageHandler, "Main", "admin")).Name("m-pref-modules-module")
 }
 
 type (
