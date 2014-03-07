@@ -130,7 +130,7 @@ func getMenu(ctx *context.BasePageContext) (parentId string, menu *context.MenuI
 		context.NewMenuItem("Library", app.GetNamedURL("mpd-library")).SetIcon("glyphicon glyphicon-folder-open").SetID("mpd-library"),
 		context.NewMenuItem("Search", app.GetNamedURL("mpd-search")).SetIcon("glyphicon glyphicon-search").SetID("mpd-search"),
 		context.NewMenuItem("Playlists", app.GetNamedURL("mpd-playlists")).SetIcon("glyphicon glyphicon-floppy-open").SetID("mpd-playlists"),
-		context.NewMenuItem("Tools", app.GetNamedURL("mpd-tools")).SetIcon("glyphicon glyphicon-wrench").SetID("mpd-tools").AddChild(
+		context.NewMenuItem("Tools", "").SetIcon("glyphicon glyphicon-wrench").SetID("mpd-tools").AddChild(
 			context.NewMenuItem("Log", app.GetNamedURL("mpd-log")).SetID("mpd-log"),
 		))
 	return "", menu
