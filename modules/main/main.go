@@ -11,13 +11,22 @@ import (
 	"runtime"
 )
 
+var Module = &context.Module{
+	Name:          "main",
+	Title:         "Main",
+	Description:   "Main",
+	AllPrivilages: nil,
+	Init:          initModule,
+}
+
 // CreateRoutes for /main
-func CreateRoutes(parentRoute *mux.Route) {
+func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", context.HandleWithContext(mainPageHandler, "Main")).Name("main-index")
 	subRouter.HandleFunc("/serv/alerts",
 		app.VerifyPermission(alertsServHandler, "admin")).Name(
 		"main-serv-alerts")
+	return true
 }
 
 type pageCtx struct {

@@ -1,1 +1,85 @@
-{"StaticDir":"./static","TemplatesDir":"./templates","Users":"./users.json","Debug":true,"CookieAuthKey":"12345678901234567890123456789012","CookieEncKey":"12345678901234567890012345678901","SessionStoreDir":"./temp","LogFilename":"app.log","http_address":":8000","https_address":"","SslCert":"cert.pem","SslKey":"key.pem","MonitorUpdateInterval":5,"monitor":{"load_warning":4,"load_error":8,"ram_usage_warning":75,"swap_usage_warning":50,"fs_usage_warning":25,"fs_usage_error":15,"cpu_temp_warning":70,"cpu_temp_error":80,"monitored_services":{"21":"FTP Connected","22":"SSH Connected","445":"SAMBA Connected","8200":"MiniDLNA Connected"},"cpu_freq_file":"/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq","cpu_temp_file":"/sys/class/thermal/thermal_zone0/temp"},"modules":{"files":{"config_file":"./browser.json","enabled":"yes"},"mpd":{"enabled":"yes","host":"localhost:6600"},"network":{"enabled":"yes"},"network-nfs":{"enabled":"yes"},"network-smb":{"enabled":"yes"},"notepad":{"dir":"./notepad/","enabled":"yes"},"storage":{"enabled":"yes"},"storage-smart":{"enabled":"yes"},"system":{"enabled":"yes"},"system-logs":{"config_file":"logs.json","enabled":"yes"},"system-other":{"enabled":"yes"},"system-process":{"enabled":"yes"},"system-users":{"enabled":"yes"},"utilities":{"config_file":"./utils.json","enabled":"yes"}}}
+{
+  "modules": {
+    "utilities": {
+      "enabled": "yes",
+      "config_file": "./utils.json"
+    },
+    "system-users": {
+      "enabled": "yes"
+    },
+    "system-process": {
+      "enabled": "yes"
+    },
+    "preferences": {
+      "enabled": "yes"
+    },
+    "system-other": {
+      "enabled": "yes"
+    },
+    "system-logs": {
+      "enabled": "yes",
+      "config_file": "logs.json"
+    },
+    "system": {
+      "enabled": "yes"
+    },
+    "files": {
+      "enabled": "yes",
+      "config_file": "./browser.json"
+    },
+    "mpd": {
+      "host": "localhost:6600",
+      "enabled": "yes"
+    },
+    "network": {
+      "enabled": "yes"
+    },
+    "network-nfs": {
+      "enabled": "yes"
+    },
+    "network-smb": {
+      "enabled": "yes"
+    },
+    "notepad": {
+      "enabled": "yes",
+      "dir": "./notepad/"
+    },
+    "storage": {
+      "enabled": "yes"
+    },
+    "storage-smart": {
+      "enabled": "yes"
+    }
+  },
+  "monitor": {
+    "cpu_temp_file": "/sys/class/thermal/thermal_zone0/temp",
+    "cpu_freq_file": "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq",
+    "monitored_services": {
+      "8200": "MiniDLNA Connected",
+      "445": "SAMBA Connected",
+      "22": "SSH Connected",
+      "21": "FTP Connected"
+    },
+    "load_warning": 4,
+    "load_error": 8,
+    "ram_usage_warning": 75,
+    "swap_usage_warning": 50,
+    "fs_usage_warning": 25,
+    "fs_usage_error": 15,
+    "cpu_temp_warning": 70,
+    "cpu_temp_error": 80
+  },
+  "MonitorUpdateInterval": 5,
+  "SslKey": "key.pem",
+  "SslCert": "cert.pem",
+  "https_address": "",
+  "http_address": ":8000",
+  "StaticDir": "./static",
+  "TemplatesDir": "./templates",
+  "Users": "./users.json",
+  "Debug": true,
+  "CookieAuthKey": "12345678901234567890123456789012",
+  "CookieEncKey": "12345678901234567890012345678901",
+  "SessionStoreDir": "./temp",
+  "LogFilename": "app.log"
+}

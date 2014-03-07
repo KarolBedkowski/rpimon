@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
@@ -14,10 +15,10 @@ import (
 	"path/filepath"
 )
 
-var Module *app.Module
+var Module *context.Module
 
 func init() {
-	Module = &app.Module{
+	Module = &context.Module{
 		Name:          "files",
 		Title:         "Files",
 		Description:   "File browser",
@@ -28,10 +29,11 @@ func init() {
 		Defaults: map[string]string{
 			"config_file": "./browser.json",
 		},
+		Configurable: true,
 	}
 }
 
-func GetModule() *app.Module {
+func GetModule() *context.Module {
 	return Module
 }
 
@@ -65,11 +67,11 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
+func getMenu(ctx *context.BasePageContext) (parentId string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "files") {
 		return "", nil
 	}
-	return "", app.NewMenuItemFromRoute("Files", "files-index").SetID("files").SetIcon("glyphicon glyphicon-hdd")
+	return "", context.NewMenuItem("Files", app.GetNamedURL("files-index")).SetID("files").SetIcon("glyphicon glyphicon-hdd")
 }
 
 func getWarnings() map[string][]string {
@@ -77,7 +79,7 @@ func getWarnings() map[string][]string {
 }
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
-	ctx := app.NewBasePageContext("Files", w, r)
+	ctx := context.NewBasePageContext("Files", w, r)
 	ctx.SetMenuActive("files")
 	r.ParseForm()
 	var relpath, abspath = ".", config.BaseDir

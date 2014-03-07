@@ -23,8 +23,11 @@
 					<td><input type="checkbox" name="Modules.{{$idx}}.Enabled" {{if $m.Enabled}}checked="checked"{{end}}> {{$m.Title}} </td>
 					<td><input type="hidden" name="Modules.{{$idx}}.Name" value="{{$m.Name}}"><small>{{$m.Description}}</small></td>
 					<td>
-						{{if $m.ConfigurePageUrl}}<a href="{{$m.ConfigurePageUrl}}">{{else}}<a href="{{namedurl "modules-module" "module" $m.Name}}">{{end}}
-						Configure</a></td>
+					{{if $m.Configurable}}
+						{{if $m.ConfigurePageUrl}}<a href="{{$m.ConfigurePageUrl}}">{{else}}<a href="{{namedurl "m-pref-modules-module" "module" $m.Name}}">{{end}}
+						Configure</a>
+					{{end}}
+					</td>
 				</tr>
 			{{end}}
 			</tbody>

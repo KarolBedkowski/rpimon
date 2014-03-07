@@ -32,6 +32,7 @@ func init() {
 		Defaults: map[string]string{
 			"dir": "./notepad/",
 		},
+		Configurable: true,
 	}
 }
 

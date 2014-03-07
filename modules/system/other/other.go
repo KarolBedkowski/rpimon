@@ -3,11 +3,12 @@ package logs
 import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	"net/http"
 )
 
-var Module = &app.Module{
+var Module = &context.Module{
 	Name:          "system-other",
 	Title:         "Other",
 	Description:   "",
@@ -19,11 +20,11 @@ var Module = &app.Module{
 // CreateRoutes for /users
 func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "Other", "admin")).Name("other-index")
+	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Other", "admin")).Name("other-index")
 	return true
 }
 
-func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
+func getMenu(ctx *context.BasePageContext) (parentId string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -31,14 +32,14 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 	return "system", menu
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	page := r.FormValue("sec")
 	if page == "" {
 		page = "acpi"
 	}
-	data := &app.SimpleDataPageCtx{BasePageContext: bctx}
+	data := &context.SimpleDataPageCtx{BasePageContext: bctx}
 	data.Header1 = "Other"
-	data.Tabs = []*app.MenuItem{
+	data.Tabs = []*context.MenuItem{
 		app.NewMenuItemFromRoute("ACPI", "other-index").AddQuery("?sec=acpi").SetActve(page == "acpi"),
 		app.NewMenuItemFromRoute("Sensors", "other-index").AddQuery("?sec=sensors").SetActve(page == "sensors"),
 	}

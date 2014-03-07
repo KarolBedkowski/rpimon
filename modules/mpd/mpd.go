@@ -33,6 +33,7 @@ func init() {
 		Defaults: map[string]string{
 			"host": "localhost:6600",
 		},
+		Configurable: true,
 	}
 }
 
@@ -124,13 +125,13 @@ func getMenu(ctx *context.BasePageContext) (parentId string, menu *context.MenuI
 
 	menu = context.NewMenuItem("MPD", "").SetID("mpd").SetIcon("glyphicon glyphicon-music")
 	menu.AddChild(
-		context.NewMenuItem("Status", app.GetNamedURL("mpd-index")).SetIcon("glyphicon glyphicon-music").SetSortOrder(-2),
-		context.NewMenuItem("Playlist", app.GetNamedURL("mpd-playlist")).SetIcon("glyphicon glyphicon-list").SetSortOrder(-1),
-		context.NewMenuItem("Library", app.GetNamedURL("mpd-library")).SetIcon("glyphicon glyphicon-folder-open"),
-		context.NewMenuItem("Search", app.GetNamedURL("mpd-search")).SetIcon("glyphicon glyphicon-search"),
-		context.NewMenuItem("Playlists", app.GetNamedURL("mpd-playlists")).SetIcon("glyphicon glyphicon-floppy-open"),
-		context.NewMenuItem("Tools", app.GetNamedURL("mpd-tools")).SetIcon("glyphicon glyphicon-wrench").AddChild(
-			context.NewMenuItem("Log", app.GetNamedURL("mpd-log")),
+		context.NewMenuItem("Status", app.GetNamedURL("mpd-index")).SetIcon("glyphicon glyphicon-music").SetSortOrder(-2).SetID("mpd-index"),
+		context.NewMenuItem("Playlist", app.GetNamedURL("mpd-playlist")).SetIcon("glyphicon glyphicon-list").SetSortOrder(-1).SetID("mpd-playlist"),
+		context.NewMenuItem("Library", app.GetNamedURL("mpd-library")).SetIcon("glyphicon glyphicon-folder-open").SetID("mpd-library"),
+		context.NewMenuItem("Search", app.GetNamedURL("mpd-search")).SetIcon("glyphicon glyphicon-search").SetID("mpd-search"),
+		context.NewMenuItem("Playlists", app.GetNamedURL("mpd-playlists")).SetIcon("glyphicon glyphicon-floppy-open").SetID("mpd-playlists"),
+		context.NewMenuItem("Tools", app.GetNamedURL("mpd-tools")).SetIcon("glyphicon glyphicon-wrench").SetID("mpd-tools").AddChild(
+			context.NewMenuItem("Log", app.GetNamedURL("mpd-log")).SetID("mpd-log"),
 		))
 	return "", menu
 }

@@ -26,10 +26,10 @@ const (
 // CheckUserLoggerOrRedirect for request; if user is not logged - redirect to login page
 func CheckUserLoggerOrRedirect(w http.ResponseWriter, r *http.Request) (login string, perm []string) {
 	login = context.Get(r, "logged_user").(string)
+	perm = context.Get(r, "logged_user_prem").([]string)
 	if login != "" {
 		return
 	}
-	perm = context.Get(r, "logged_user_prem").([]string)
 	log.Print("Access denied")
 	url := GetNamedURL("auth-login")
 	url += h.BuildQuery("back", r.URL.String())
@@ -45,6 +45,7 @@ func VerifyPermission(h http.HandlerFunc, permission string) http.HandlerFunc {
 				h(w, r)
 				return
 			}
+			l.Warn("access %s forbidden - missing %s for %s %s", r.URL, permission, login, perms)
 			http.Error(w, "Fobidden/Privilages", http.StatusForbidden)
 		}
 	})

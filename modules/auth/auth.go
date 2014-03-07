@@ -15,11 +15,21 @@ var decoder = schema.NewDecoder()
 
 var subRouter *mux.Router
 
+var Module = &context.Module{
+	Name:          "auth",
+	Title:         "Authentication",
+	Description:   "",
+	AllPrivilages: nil,
+	Init:          initModule,
+	Internal:      true,
+}
+
 // CreateRoutes for /auth
-func CreateRoutes(parentRoute *mux.Route) {
+func initModule(parentRoute *mux.Route) bool {
 	subRouter = parentRoute.Subrouter()
 	subRouter.HandleFunc("/login", context.HandleWithContext(loginPageHandler, "Login")).Name("auth-login")
 	subRouter.HandleFunc("/logoff", logoffHandler).Name("auth-logoff")
+	return true
 }
 
 type (

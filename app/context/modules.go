@@ -21,13 +21,12 @@ type Module struct {
 	Title string
 	// Module description
 	Description string
-	// All privileges used by module
-	AllPrivilages []Privilege
+
+	// internal / always enabled
+	Internal bool
 
 	// Is module initialized
 	initialized bool
-	// filename of module configuration file
-	ConfFile string
 
 	// Initialize module (set routes etc)
 	Init func(parentRoute *mux.Route) bool
@@ -41,11 +40,18 @@ type Module struct {
 	// Shutdown module
 	Shutdown func()
 
+	// Configuration
+	// Is module allow configuration
+	Configurable bool
+	// filename of module configuration file
+	ConfFile string
 	//default configuration
 	Defaults map[string]string
-
-	// Page hadler for custom configuration page
+	// Page href for custom configuration page
 	ConfigurePageUrl string
+
+	// All privileges used by module
+	AllPrivilages []Privilege
 }
 
 var (
@@ -108,7 +114,7 @@ func GetModule(name string) (module *Module) {
 }
 
 func (m *Module) Enabled() (enabled bool) {
-	return m.GetConfiguration()["enabled"] == "yes"
+	return m.Internal || m.GetConfiguration()["enabled"] == "yes"
 }
 
 func (m *Module) enable(enabled bool) {
@@ -141,6 +147,9 @@ func (m *Module) GetConfiguration() (conf map[string]string) {
 	}
 	for key, val := range m.Defaults {
 		conf[key] = val
+	}
+	if m.Internal || !m.Configurable {
+		conf["enabled"] = "yes"
 	}
 	return conf
 }

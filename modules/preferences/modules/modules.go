@@ -26,6 +26,7 @@ type (
 		Description      string
 		Enabled          bool
 		ConfigurePageUrl string
+		Configurable     bool
 	}
 
 	modulesListForm struct {
@@ -62,9 +63,13 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 	}
 	ctx.SetMenuActive("p-modules")
 	for _, m := range context.GetModulesList() {
+		if m.Internal {
+			continue
+		}
 		ctx.Form.Modules = append(ctx.Form.Modules, &moduleSt{
 			m.Name, m.Title, m.Description, m.Enabled(),
 			m.ConfigurePageUrl,
+			m.Configurable,
 		})
 	}
 	app.RenderTemplateStd(w, ctx, "pref/modules/index.tmpl")
@@ -95,6 +100,10 @@ func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *context
 	ctx.Module = context.GetModule(moduleName)
 	if ctx.Module == nil {
 		http.Error(w, "invalid module "+moduleName, http.StatusBadRequest)
+		return
+	}
+	if !ctx.Module.Configurable {
+		http.Error(w, "module not confiugrable", http.StatusBadRequest)
 		return
 	}
 	conf := ctx.Module.GetConfiguration()

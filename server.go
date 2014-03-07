@@ -3,25 +3,23 @@ package main
 import (
 	"flag"
 	"k.prv/rpimon/app"
-	/*
-		mfiles "k.prv/rpimon/modules/files"
-		mmpd "k.prv/rpimon/modules/mpd"
-		mnet "k.prv/rpimon/modules/network"
-		mnotepad "k.prv/rpimon/modules/notepad"
-		mstorage "k.prv/rpimon/modules/storage"
-		msmart "k.prv/rpimon/modules/storage/smart"
-		msystem "k.prv/rpimon/modules/system"
-		msyslogs "k.prv/rpimon/modules/system/logs"
-		msystother "k.prv/rpimon/modules/system/other"
-		msysproc "k.prv/rpimon/modules/system/process"
-		msysusers "k.prv/rpimon/modules/system/users"
-		mutls "k.prv/rpimon/modules/utils"
-	*/
 	"k.prv/rpimon/app/context"
+	mauth "k.prv/rpimon/modules/auth"
+	mfiles "k.prv/rpimon/modules/files"
+	mmain "k.prv/rpimon/modules/main"
+	mmpd "k.prv/rpimon/modules/mpd"
+	mnet "k.prv/rpimon/modules/network"
+	mnotepad "k.prv/rpimon/modules/notepad"
 	mpref "k.prv/rpimon/modules/preferences"
+	mstorage "k.prv/rpimon/modules/storage"
+	msmart "k.prv/rpimon/modules/storage/smart"
+	msystem "k.prv/rpimon/modules/system"
+	msyslogs "k.prv/rpimon/modules/system/logs"
+	msystother "k.prv/rpimon/modules/system/other"
+	msysproc "k.prv/rpimon/modules/system/process"
+	msysusers "k.prv/rpimon/modules/system/users"
+	mutls "k.prv/rpimon/modules/utils"
 	"k.prv/rpimon/monitor"
-	"k.prv/rpimon/pages/auth"
-	pmain "k.prv/rpimon/pages/main"
 	"log"
 	"net/http"
 	// _ "net/http/pprof" // /debug/pprof/
@@ -55,25 +53,23 @@ func main() {
 	}()
 
 	app.Router.HandleFunc("/", handleHome)
-	auth.CreateRoutes(app.Router.PathPrefix("/auth"))
-	pmain.CreateRoutes(app.Router.PathPrefix("/main"))
+	context.RegisterModule(mauth.Module)
+	context.RegisterModule(mmain.Module)
 	context.RegisterModule(mpref.Module)
-	/*
-		app.RegisterModule(mnet.Module)
-		app.RegisterModule(mnet.NFSModule)
-		app.RegisterModule(mnet.SambaModule)
-		app.RegisterModule(mfiles.Module)
-		app.RegisterModule(mmpd.Module)
-		app.RegisterModule(mnotepad.Module)
-		app.RegisterModule(msystem.Module)
-		app.RegisterModule(msystother.Module)
-		app.RegisterModule(msysproc.Module)
-		app.RegisterModule(msyslogs.Module)
-		app.RegisterModule(msysusers.Module)
-		app.RegisterModule(mstorage.Module)
-		app.RegisterModule(msmart.Module)
-		app.RegisterModule(mutls.Module)
-	*/
+	context.RegisterModule(mfiles.Module)
+	context.RegisterModule(mmpd.Module)
+	context.RegisterModule(mnet.Module)
+	context.RegisterModule(mnet.NFSModule)
+	context.RegisterModule(mnet.SambaModule)
+	context.RegisterModule(mnotepad.Module)
+	context.RegisterModule(mstorage.Module)
+	context.RegisterModule(msmart.Module)
+	context.RegisterModule(msyslogs.Module)
+	context.RegisterModule(msystother.Module)
+	context.RegisterModule(msysproc.Module)
+	context.RegisterModule(msysusers.Module)
+	context.RegisterModule(mutls.Module)
+	context.RegisterModule(msystem.Module)
 	context.InitModules(conf, app.Router)
 
 	/* for filesystem store
@@ -122,5 +118,5 @@ func main() {
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/main/", http.StatusFound)
+	http.Redirect(w, r, app.GetNamedURL("main-index"), http.StatusFound)
 }

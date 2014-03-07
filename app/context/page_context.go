@@ -147,6 +147,10 @@ func HandleWithContextSec(h BaseContextHandlerFunc, title string, permission str
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := NewBasePageContext(title, w, r)
 		if ctx.CurrentUser != "" && ctx.CurrentUserPerms != nil {
+			if permission == "" {
+				h(w, r, ctx)
+				return
+			}
 			for _, p := range ctx.CurrentUserPerms {
 				if p == permission {
 					h(w, r, ctx)

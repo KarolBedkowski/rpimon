@@ -59,7 +59,7 @@ func SessionHandler(h http.Handler) http.HandlerFunc {
 				}
 			}
 		}
-
+		//l.Debug("Context: %v", context.GetAll(r))
 		h.ServeHTTP(w, r)
 	})
 }

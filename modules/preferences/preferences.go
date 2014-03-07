@@ -19,6 +19,7 @@ func init() {
 		Init:          initModule,
 		GetMenu:       getMenu,
 		Internal:      true,
+		Configurable:  false,
 	}
 }
 
