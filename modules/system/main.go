@@ -6,7 +6,7 @@ import (
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
-	"k.prv/rpimon/monitor"
+	"k.prv/rpimon/modules/monitor"
 	"net/http"
 	"runtime"
 	"strings"

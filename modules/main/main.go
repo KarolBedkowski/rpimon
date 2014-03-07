@@ -5,8 +5,8 @@ import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
+	"k.prv/rpimon/modules/monitor"
 	"k.prv/rpimon/modules/mpd"
-	"k.prv/rpimon/monitor"
 	"net/http"
 	"runtime"
 )

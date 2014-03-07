@@ -3,8 +3,10 @@ package monitor
 
 import (
 	"bufio"
+	"github.com/gorilla/mux"
 	"io"
 	"k.prv/rpimon/app/cfg"
+	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"os"
@@ -24,8 +26,25 @@ const (
 	netHistoryLimit    = 30
 )
 
+var Module *context.Module
+
+func init() {
+	Module = &context.Module{
+		Name:  "monitor",
+		Title: "Monitor",
+		Init:  initModule,
+		Defaults: map[string]string{
+			"interval": "5",
+		},
+		Configurable: true,
+		Internal:     true,
+	}
+}
+
 // Init monitor, start background go routine
-func Init(interval int) {
+func initModule(parentRoute *mux.Route) bool {
+	conf := Module.GetConfiguration()
+	interval, _ := strconv.Atoi(conf["interval"])
 	ticker := time.NewTicker(time.Duration(interval) * time.Second)
 	quit := make(chan struct{})
 	go func() {
@@ -42,6 +61,7 @@ func Init(interval int) {
 			}
 		}
 	}()
+	return true
 }
 
 // CPUUsageInfoStruct - information about cpu usage

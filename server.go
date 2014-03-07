@@ -7,6 +7,7 @@ import (
 	mauth "k.prv/rpimon/modules/auth"
 	mfiles "k.prv/rpimon/modules/files"
 	mmain "k.prv/rpimon/modules/main"
+	mmonitor "k.prv/rpimon/modules/monitor"
 	mmpd "k.prv/rpimon/modules/mpd"
 	mnet "k.prv/rpimon/modules/network"
 	mnotepad "k.prv/rpimon/modules/notepad"
@@ -19,7 +20,6 @@ import (
 	msysproc "k.prv/rpimon/modules/system/process"
 	msysusers "k.prv/rpimon/modules/system/users"
 	mutls "k.prv/rpimon/modules/utils"
-	"k.prv/rpimon/monitor"
 	"log"
 	"net/http"
 	// _ "net/http/pprof" // /debug/pprof/
@@ -70,6 +70,7 @@ func main() {
 	context.RegisterModule(msysusers.Module)
 	context.RegisterModule(mutls.Module)
 	context.RegisterModule(msystem.Module)
+	context.RegisterModule(mmonitor.Module)
 	context.InitModules(conf, app.Router)
 
 	/* for filesystem store
@@ -89,8 +90,6 @@ func main() {
 		}
 	}()
 	*/
-
-	monitor.Init(conf.MonitorUpdateInterval)
 
 	if conf.HTTPSAddress != "" {
 		log.Printf("Listen: %s", conf.HTTPSAddress)
