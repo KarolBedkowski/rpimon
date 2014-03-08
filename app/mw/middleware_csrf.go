@@ -19,7 +19,7 @@ const FORMCSRFTOKEN = "BasePageContext.CsrfToken"
 // alternative csrf token name
 const FORMCSRFTOKEN2 = "CsrfToken"
 
-// CSRT Token middleware
+// CsrfHandler - middleware verify CSRF token in request.
 func CsrfHandler(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sess := session.GetSessionStore(w, r)
@@ -28,6 +28,7 @@ func CsrfHandler(h http.Handler) http.HandlerFunc {
 			http.Error(w, "Fobidden/CSRF", http.StatusForbidden)
 			//h.ServeHTTP(w, r)
 		} else {
+			// Remove token from request params
 			delete(r.Form, FORMCSRFTOKEN)
 			delete(r.Form, FORMCSRFTOKEN2)
 			h.ServeHTTP(w, r)
@@ -35,6 +36,7 @@ func CsrfHandler(h http.Handler) http.HandlerFunc {
 	})
 }
 
+// CreateNewCsrfToken create new CSRF token
 func CreateNewCsrfToken() string {
 	token := make([]byte, csrftokenlen)
 	rand.Read(token)

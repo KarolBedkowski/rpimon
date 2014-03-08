@@ -19,7 +19,7 @@ func (writer *loggingResponseWriter) WriteHeader(status int) {
 	writer.status = status
 }
 
-// Logging middleware
+// LogHandler log all requests.
 func LogHandler(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
