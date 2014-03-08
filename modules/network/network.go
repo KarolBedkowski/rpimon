@@ -25,7 +25,7 @@ func initModule(parentRoute *mux.Route) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", context.HandleWithContext(mainPageHandler,
-		"Network")).Name("m-net")
+		"Network")).Name("m-net-index")
 	subRouter.HandleFunc("/conf", context.HandleWithContext(confPageHandler,
 		"Network - Configuration")).Name("m-net-conf")
 	subRouter.HandleFunc("/iptables", context.HandleWithContext(iptablesPageHandler,
@@ -42,8 +42,8 @@ func getMenu(ctx *context.BasePageContext) (parentId string, menu *context.MenuI
 		return "", nil
 	}
 
-	menu = app.NewMenuItemFromRoute("Network", "m-net").SetIcon("glyphicon glyphicon-dashboard")
-	menu.AddChild(app.NewMenuItemFromRoute("Status", "m-net").SetID("m-net-index").SetSortOrder(-1),
+	menu = context.NewMenuItem("Network", "").SetIcon("glyphicon glyphicon-dashboard")
+	menu.AddChild(app.NewMenuItemFromRoute("Status", "m-net-index").SetID("m-net-index").SetSortOrder(-1),
 		app.NewMenuItemFromRoute("Configuration", "m-net-conf"),
 		app.NewMenuItemFromRoute("IPTables", "m-net-iptables"),
 		app.NewMenuItemFromRoute("Netstat", "m-net-netstat"),
