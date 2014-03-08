@@ -46,7 +46,7 @@ type (
 		*context.BasePageContext
 		Form     userForm
 		New      bool
-		AllPrivs []string
+		AllPrivs map[string]context.Privilege
 	}
 )
 
@@ -58,7 +58,7 @@ func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 	vars := mux.Vars(r)
 	login, _ := vars["user"]
 	ctx := &userPageCtx{BasePageContext: bctx,
-		AllPrivs: cfg.AllPrivs,
+		AllPrivs: context.AllPrivilages,
 	}
 
 	if login == "<new>" {

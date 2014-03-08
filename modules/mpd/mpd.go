@@ -23,17 +23,17 @@ var Module *context.Module
 
 func init() {
 	Module = &context.Module{
-		Name:          "mpd",
-		Title:         "MPD",
-		Description:   "",
-		AllPrivilages: nil,
-		Init:          initModule,
-		GetMenu:       getMenu,
-		Shutdown:      shutdown,
+		Name:        "mpd",
+		Title:       "MPD",
+		Description: "",
+		Init:        initModule,
+		GetMenu:     getMenu,
+		Shutdown:    shutdown,
 		Defaults: map[string]string{
 			"host": "localhost:6600",
 		},
-		Configurable: true,
+		Configurable:  true,
+		AllPrivilages: []context.Privilege{context.Privilege{"mpd", "manage mpd player"}},
 	}
 }
 

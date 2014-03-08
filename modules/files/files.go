@@ -19,17 +19,17 @@ var Module *context.Module
 
 func init() {
 	Module = &context.Module{
-		Name:          "files",
-		Title:         "Files",
-		Description:   "File browser",
-		AllPrivilages: nil,
-		Init:          initModule,
-		GetMenu:       getMenu,
-		GetWarnings:   getWarnings,
+		Name:        "files",
+		Title:       "Files",
+		Description: "File browser",
+		Init:        initModule,
+		GetMenu:     getMenu,
+		GetWarnings: getWarnings,
 		Defaults: map[string]string{
 			"config_file": "./browser.json",
 		},
-		Configurable: true,
+		Configurable:  true,
+		AllPrivilages: []context.Privilege{context.Privilege{"files", "access to file browser"}},
 	}
 }
 

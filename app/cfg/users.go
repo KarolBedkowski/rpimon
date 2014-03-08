@@ -33,11 +33,6 @@ type (
 
 var database UserDB
 
-// TODO: read from modules
-var AllPrivs = []string{
-	"admin", "mpd", "files", "notepad",
-}
-
 var dbfilename string
 
 // Init structures

@@ -23,16 +23,16 @@ var Module *context.Module
 
 func init() {
 	Module = &context.Module{
-		Name:          "notepad",
-		Title:         "Notepad",
-		Description:   "",
-		AllPrivilages: nil,
-		Init:          initModule,
-		GetMenu:       getMenu,
+		Name:        "notepad",
+		Title:       "Notepad",
+		Description: "",
+		Init:        initModule,
+		GetMenu:     getMenu,
 		Defaults: map[string]string{
 			"dir": "./notepad/",
 		},
-		Configurable: true,
+		Configurable:  true,
+		AllPrivilages: []context.Privilege{context.Privilege{"notepad", "access to notepad"}},
 	}
 }
 

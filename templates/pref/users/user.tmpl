@@ -25,9 +25,9 @@
 					</div>
 					<div class="form-group">
 						<label for="">Permissions</label>
-						{{range $idx, $m := .AllPrivs}}
+						{{range $m, $desc := .AllPrivs}}
 						<div class="checkbox">
-							 <label><input type="checkbox" name="Privs" value="{{$m}}" {{if $ctx.HasPriv $m}}checked="checked"{{end}}>{{$m}}</label>
+							 <label><input type="checkbox" name="Privs" value="{{$m}}" {{if $ctx.HasPriv $m}}checked="checked"{{end}}>{{$m}}: {{$desc.Description}}</label>
 						</div>
 						{{end}}
 					</div>

@@ -59,6 +59,7 @@ type Module struct {
 var (
 	registeredModules = make(map[string]*Module)
 	appRouter         *mux.Router
+	AllPrivilages     = make(map[string]Privilege)
 )
 
 // RegisterModule register given module for later usage
@@ -81,6 +82,14 @@ func InitModules(conf *cfg.AppConfiguration, router *mux.Router) {
 	appRouter = router
 	for _, module := range registeredModules {
 		module.enable(module.Internal || module.GetConfiguration()["enabled"] == "yes")
+		if module.AllPrivilages != nil {
+			for _, priv := range module.AllPrivilages {
+				if _, found := AllPrivilages[priv.Name]; !found {
+					AllPrivilages[priv.Name] = priv
+					l.Debug("InitModules: add privilage %v", priv)
+				}
+			}
+		}
 	}
 }
 
