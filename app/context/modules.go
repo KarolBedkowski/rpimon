@@ -50,7 +50,7 @@ type Module struct {
 	//default configuration
 	Defaults map[string]string
 	// Page href for custom configuration page
-	ConfigurePageUrl string
+	ConfigurePageURL string
 
 	// All privileges used by module
 	AllPrivilages []Privilege
@@ -59,7 +59,8 @@ type Module struct {
 var (
 	registeredModules = make(map[string]*Module)
 	appRouter         *mux.Router
-	AllPrivilages     = make(map[string]Privilege)
+	// AllPrivilages privilages defined in all modules
+	AllPrivilages = make(map[string]Privilege)
 )
 
 // RegisterModule register given module for later usage
@@ -73,6 +74,7 @@ func RegisterModule(module *Module) bool {
 	return true
 }
 
+// GetModules return all registered modules
 func GetModules() map[string]*Module {
 	return registeredModules
 }
@@ -93,7 +95,7 @@ func InitModules(conf *cfg.AppConfiguration, router *mux.Router) {
 	}
 }
 
-// ShutdownModules
+// ShutdownModules shutdown all enabled modules; call Shutdown method for modules.
 func ShutdownModules() {
 	for _, module := range registeredModules {
 		if module.Enabled() && module.Shutdown != nil {
@@ -110,6 +112,7 @@ func IsModuleAvailable(name string) bool {
 	return false
 }
 
+// GetModulesList returns all registered modules as sorted by title list.
 func GetModulesList() (modules []*Module) {
 	modules = make([]*Module, 0, len(registeredModules))
 	for _, module := range registeredModules {
@@ -119,10 +122,12 @@ func GetModulesList() (modules []*Module) {
 	return
 }
 
+// GetModule return module by name
 func GetModule(name string) (module *Module) {
 	return registeredModules[name]
 }
 
+// Enabled check is module enabled
 func (m *Module) Enabled() (enabled bool) {
 	return m.Internal || m.GetConfiguration()["enabled"] == "yes"
 }
@@ -143,6 +148,7 @@ func (m *Module) enable(enabled bool) {
 	}
 }
 
+// GetConfiguration get configuration for current module; load default if not exists
 func (m *Module) GetConfiguration() (conf map[string]string) {
 	if mconfig, ok := cfg.Configuration.Modules[m.Name]; ok && mconfig != nil {
 		// configuration exists; add missing from defaults
@@ -167,17 +173,19 @@ func (m *Module) GetConfiguration() (conf map[string]string) {
 	return conf
 }
 
-func SetModuleEnabled(name string, enabled bool) {
+// EnableModule enable or disable module by name.
+func EnableModule(name string, enabled bool) {
 	if module, ok := registeredModules[name]; ok {
 		module.enable(enabled)
 	} else {
-		l.Warn("SetModuleEnabled wrong module %s", name)
+		l.Warn("EnableModule wrong module %s", name)
 		l.Debug("%v", registeredModules)
 	}
 }
 
 // SORTING Modules ITEMS
 
+// ModulesByTitle type for sorting Modules by title
 type ModulesByTitle []*Module
 
 func (s ModulesByTitle) Len() int           { return len(s) }

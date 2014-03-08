@@ -19,6 +19,7 @@ type (
 		RequredPrivilages [][]string
 	}
 
+	// MenuGenerator function generate menu items in given context
 	MenuGenerator func(ctx *BasePageContext) (parentId string, menu *MenuItem)
 )
 
@@ -63,14 +64,15 @@ func (item *MenuItem) AddChild(child ...*MenuItem) *MenuItem {
 	return item
 }
 
-func (i *MenuItem) AppendItemToParent(parentID string, item *MenuItem) (attached bool) {
-	if i.ID == parentID {
-		i.Submenu = append(i.Submenu, item)
+//AppendItemToParent look for given menu by id in menu and append item as sub menu
+func (item *MenuItem) AppendItemToParent(parentID string, newitem *MenuItem) (attached bool) {
+	if item.ID == parentID {
+		item.Submenu = append(item.Submenu, newitem)
 		return true
 	}
-	if i.Submenu != nil {
-		for _, subitem := range i.Submenu {
-			if subitem.AppendItemToParent(parentID, item) {
+	if item.Submenu != nil {
+		for _, subitem := range item.Submenu {
+			if subitem.AppendItemToParent(parentID, newitem) {
 				return true
 			}
 		}
@@ -78,6 +80,7 @@ func (i *MenuItem) AppendItemToParent(parentID string, item *MenuItem) (attached
 	return false
 }
 
+// SetActiveMenuItem find menu item by id and set it active; also update all parents
 func (item *MenuItem) SetActiveMenuItem(menuID string) (found bool) {
 	if item.ID == menuID {
 		item.Active = true
@@ -94,11 +97,12 @@ func (item *MenuItem) SetActiveMenuItem(menuID string) (found bool) {
 	return false
 }
 
-func (i *MenuItem) Sort() {
-	if i.Submenu != nil {
-		sort.Sort(subMenu(i.Submenu))
-		for _, item := range i.Submenu {
-			item.Sort()
+// Sort menu item and all submenu
+func (item *MenuItem) Sort() {
+	if item.Submenu != nil {
+		sort.Sort(subMenu(item.Submenu))
+		for _, sitem := range item.Submenu {
+			sitem.Sort()
 		}
 	}
 }
@@ -163,6 +167,8 @@ func SetMainMenu(ctx *BasePageContext) {
 
 	ctx.MainMenu.Sort()
 }
+
+// CheckPermission check if required permission is in the list.
 func CheckPermission(userPermissions []string, required string) bool {
 	if required == "" {
 		return true

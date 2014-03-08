@@ -25,7 +25,7 @@ type (
 		Title            string
 		Description      string
 		Enabled          bool
-		ConfigurePageUrl string
+		ConfigurePageURL string
 		Configurable     bool
 	}
 
@@ -48,7 +48,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 			return
 		}
 		for _, module := range ctx.Form.Modules {
-			context.SetModuleEnabled(module.Name, module.Enabled)
+			context.EnableModule(module.Name, module.Enabled)
 		}
 		context.SetMainMenu(ctx.BasePageContext)
 		if err := cfg.SaveConfiguration(); err != nil {
@@ -68,7 +68,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 		}
 		ctx.Form.Modules = append(ctx.Form.Modules, &moduleSt{
 			m.Name, m.Title, m.Description, m.Enabled(),
-			m.ConfigurePageUrl,
+			m.ConfigurePageURL,
 			m.Configurable,
 		})
 	}

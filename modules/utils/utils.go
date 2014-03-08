@@ -44,7 +44,7 @@ func initModule(parentRoute *mux.Route) bool {
 	subRouter.HandleFunc("/configure/{group}", context.HandleWithContextSec(confGroupPageHandler, "Utils - Configuration", "admin")).Name("utils-group")
 	subRouter.HandleFunc("/configure/{group}/{util}", context.HandleWithContextSec(confCommandPageHandler, "Utils - Configuration", "admin")).Name("utils-cmd")
 
-	Module.ConfigurePageUrl = app.GetNamedURL("utils-conf")
+	Module.ConfigurePageURL = app.GetNamedURL("utils-conf")
 
 	return true
 }

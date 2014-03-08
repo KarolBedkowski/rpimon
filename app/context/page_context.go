@@ -126,6 +126,7 @@ func NewSimpleDataPageCtx(w http.ResponseWriter, r *http.Request, title string) 
 	return ctx
 }
 
+// BaseContextHandlerFunc - handler function called by HandleWithContext and HandleWithContextSec
 type BaseContextHandlerFunc func(w http.ResponseWriter, r *http.Request, ctx *BasePageContext)
 
 // HandleWithContext create BasePageContext for request
@@ -136,7 +137,7 @@ func HandleWithContext(h BaseContextHandlerFunc, title string) http.HandlerFunc 
 	})
 }
 
-// HandleWithContext create BasePageContext for request
+// HandleWithContextSec create BasePageContext for request and check user permissions.
 func HandleWithContextSec(h BaseContextHandlerFunc, title string, permission string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := NewBasePageContext(title, w, r)

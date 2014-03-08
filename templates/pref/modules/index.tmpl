@@ -24,7 +24,7 @@
 					<td><input type="hidden" name="Modules.{{$idx}}.Name" value="{{$m.Name}}"><small>{{$m.Description}}</small></td>
 					<td>
 					{{if $m.Configurable}}
-						{{if $m.ConfigurePageUrl}}<a href="{{$m.ConfigurePageUrl}}">{{else}}<a href="{{namedurl "m-pref-modules-module" "module" $m.Name}}">{{end}}
+						{{if $m.ConfigurePageURL}}<a href="{{$m.ConfigurePageURL}}">{{else}}<a href="{{namedurl "m-pref-modules-module" "module" $m.Name}}">{{end}}
 						Configure</a>
 					{{end}}
 					</td>
