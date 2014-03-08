@@ -8,6 +8,7 @@ import (
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	//	"os"
+	//	"github.com/gorilla/context"
 	//	"path/filepath"
 	"time"
 )
@@ -107,4 +108,24 @@ func SetLoggedUser(s *sessions.Session, login string, privs []string) {
 	s.Values[SessionLoginKey] = login
 	s.Values[SessionPermissionKey] = privs
 	s.Values[SessionTimestampKey] = time.Now().Unix()
+}
+
+func SessionHandler(h http.Handler) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		s := GetSessionStore(w, r)
+		//		context.Set(r, "session", s)
+		if ts, ok := s.Values[SessionTimestampKey]; ok {
+			timestamp := time.Unix(ts.(int64), 0)
+			now := time.Now()
+			if now.Sub(timestamp) < MaxSessionAge {
+				s.Values[SessionTimestampKey] = now.Unix()
+			} else {
+				// Clear session when expired
+				s.Values = nil
+			}
+			s.Save(r, w)
+		}
+		//l.Debug("Context: %v", context.GetAll(r))
+		h.ServeHTTP(w, r)
+	})
 }
