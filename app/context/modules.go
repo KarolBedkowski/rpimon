@@ -153,7 +153,6 @@ func (m *Module) GetConfiguration() (conf map[string]string) {
 	if m.NeedConfiguration {
 		l.Warn("Missing configuration for %v module; loading defaults - module is disabled", m.Name)
 	} else {
-		l.Info("Missing configuration for %v module; loading defaults", m.Name)
 		conf["enabled"] = "yes"
 	}
 	return conf
