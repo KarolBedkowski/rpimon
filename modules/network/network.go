@@ -43,7 +43,7 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 		return "", nil
 	}
 
-	menu = context.NewMenuItem("Network", "").SetIcon("glyphicon glyphicon-dashboard")
+	menu = context.NewMenuItem("Network", "").SetIcon("glyphicon glyphicon-dashboard").SetID("m-net")
 	menu.AddChild(app.NewMenuItemFromRoute("Status", "m-net-index").SetID("m-net-index").SetSortOrder(-1),
 		app.NewMenuItemFromRoute("Configuration", "m-net-conf"),
 		app.NewMenuItemFromRoute("IPTables", "m-net-iptables"),
