@@ -12,7 +12,9 @@ import (
 )
 
 var (
-	ErrUserExists   = errors.New("user already exists")
+	// ErrUserExists - user already exists in system
+	ErrUserExists = errors.New("user already exists")
+	// ErrUserNotFound - user not exists in system
 	ErrUserNotFound = errors.New("user not found")
 )
 
@@ -35,7 +37,7 @@ var database UserDB
 
 var dbfilename string
 
-// Init structures
+// InitUsers initialize users database
 func InitUsers(filename string, debug bool) {
 	l.Info("UserDB.Init from: %s", filename)
 	dbfilename = filename
@@ -93,6 +95,7 @@ func createDummyDatabase() {
 	}
 }
 
+// GetAllUsers returns all known users as list
 func GetAllUsers() (users []*User) {
 	for _, u := range database.Users {
 		users = append(users, u)
@@ -110,7 +113,7 @@ func GetUserByLogin(login string) *User {
 	return nil
 }
 
-// Create password
+// CreatePassword create safe password from given string
 func CreatePassword(password string) (encoded string) {
 	if password == "" {
 		return ""

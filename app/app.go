@@ -41,7 +41,6 @@ func Init(appConfFile string, debug int) *cfg.AppConfiguration {
 // Close application
 func Close() {
 	l.Info("Closing...")
-	cfg.CloseConf()
 }
 
 // GetNamedURL - Return url for named route and parameters
