@@ -8,24 +8,26 @@ import (
 	"net/http"
 )
 
+// NFSModule information
 var NFSModule = &context.Module{
 	Name:          "network-nfs",
 	Title:         "Network - NFS",
 	Description:   "Network - NFS",
 	AllPrivilages: nil,
-	Init:          InitNFSModule,
+	Init:          initNFSModule,
 	GetMenu:       nfsGetMenu,
 	GetWarnings:   nfsGetWarnings,
 }
 
-func InitNFSModule(parentRoute *mux.Route) bool {
+// initNFSModule initialize module
+func initNFSModule(parentRoute *mux.Route) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", context.HandleWithContext(nfsPageHandler, "Network - NFS")).Name("m-net-nfs")
 	return true
 }
 
-func nfsGetMenu(ctx *context.BasePageContext) (parentId string, menu *context.MenuItem) {
+func nfsGetMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}

@@ -10,6 +10,7 @@ import (
 
 // WARNINGS
 
+// WarningsStruct holds current warnings, errors and informations.
 type WarningsStruct struct {
 	Warnings []string
 	Errors   []string

@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 )
 
+// Module information
 var Module *context.Module
 
 func init() {
@@ -31,10 +32,6 @@ func init() {
 		Configurable:  true,
 		AllPrivilages: []context.Privilege{context.Privilege{"files", "access to file browser"}},
 	}
-}
-
-func GetModule() *context.Module {
-	return Module
 }
 
 // CreateRoutes for /files
@@ -67,7 +64,7 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *context.BasePageContext) (parentId string, menu *context.MenuItem) {
+func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "files") {
 		return "", nil
 	}

@@ -17,8 +17,11 @@ import (
 )
 
 var decoder = schema.NewDecoder()
+
+// ErrInvalidFilename error - invalid filename
 var ErrInvalidFilename = errors.New("invalid filename")
 
+// Module information
 var Module *context.Module
 
 func init() {
@@ -59,7 +62,7 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *context.BasePageContext) (parentId string, menu *context.MenuItem) {
+func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "notepad") {
 		return "", nil
 	}
@@ -67,11 +70,13 @@ func getMenu(ctx *context.BasePageContext) (parentId string, menu *context.MenuI
 	return "", menu
 }
 
+// NoteStuct keep information about one note
 type NoteStuct struct {
 	Filename string
 	Content  string
 }
 
+// Validate note
 func (n *NoteStuct) Validate() (errors []string) {
 	if n.Filename == "" {
 		errors = append(errors, "missing filename")

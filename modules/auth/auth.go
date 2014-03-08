@@ -15,6 +15,7 @@ var decoder = schema.NewDecoder()
 
 var subRouter *mux.Router
 
+// Module information
 var Module = &context.Module{
 	Name:          "auth",
 	Title:         "Authentication",

@@ -26,6 +26,7 @@ const (
 	netHistoryLimit    = 30
 )
 
+// Module information
 var Module *context.Module
 
 func init() {

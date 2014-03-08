@@ -11,6 +11,7 @@ import (
 	"runtime"
 )
 
+// Module information
 var Module = &context.Module{
 	Name:          "main",
 	Title:         "Main",

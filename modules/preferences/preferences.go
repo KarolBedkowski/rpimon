@@ -8,6 +8,7 @@ import (
 	"k.prv/rpimon/modules/preferences/users"
 )
 
+// Module information
 var Module *context.Module
 
 func init() {
@@ -30,7 +31,7 @@ func initModule(parentRoute *mux.Route) bool {
 	users.CreateRoutes(subRouter.PathPrefix("/pref/users"))
 	return true
 }
-func getMenu(ctx *context.BasePageContext) (parentId string, menu *context.MenuItem) {
+func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}

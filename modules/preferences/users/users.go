@@ -68,10 +68,10 @@ func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 	if r.Method == "POST" && r.FormValue("_method") != "" {
 		r.Method = r.FormValue("_method")
 	}
+	var err error
 	switch r.Method {
 	case "POST":
 		r.ParseForm()
-		var err error
 		if err = decoder.Decode(&ctx.Form, r.Form); err != nil {
 			l.Warn("Decode form error", err, r.Form)
 		}
@@ -86,9 +86,8 @@ func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 				ctx.Save()
 				http.Redirect(w, r, app.GetNamedURL("p-users-index"), http.StatusFound)
 				return
-			} else {
-				ctx.AddFlashMessage("Add user errror: "+err.Error(), "error")
 			}
+			ctx.AddFlashMessage("Add user errror: "+err.Error(), "error")
 		} else {
 			// update user
 			user.Login = login
@@ -100,23 +99,21 @@ func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 				ctx.Save()
 				http.Redirect(w, r, app.GetNamedURL("p-users-index"), http.StatusFound)
 				return
-			} else {
-				ctx.AddFlashMessage("Update user errror: "+err.Error(), "error")
 			}
+			ctx.AddFlashMessage("Update user errror: "+err.Error(), "error")
 		}
 		if err != nil {
 			ctx.AddFlashMessage("Error: "+err.Error(), "error")
 		}
 
 	case "DELETE":
-		if err := cfg.DeleteUser(login); err == nil {
+		if err = cfg.DeleteUser(login); err == nil {
 			ctx.AddFlashMessage("User deleted", "success")
 			ctx.Save()
 			http.Redirect(w, r, app.GetNamedURL("p-users-index"), http.StatusFound)
 			return
-		} else {
-			ctx.AddFlashMessage("Update user errror: "+err.Error(), "error")
 		}
+		ctx.AddFlashMessage("Update user errror: "+err.Error(), "error")
 
 	case "GET":
 		if !ctx.New {

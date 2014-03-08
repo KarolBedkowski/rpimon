@@ -8,6 +8,7 @@ import (
 	"net/http"
 )
 
+// SambaModule - module information
 var SambaModule = &context.Module{
 	Name:          "network-smb",
 	Title:         "Network - SAMBA",
@@ -26,7 +27,7 @@ func initSambaModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func smbGetMenu(ctx *context.BasePageContext) (parentId string, menu *context.MenuItem) {
+func smbGetMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
