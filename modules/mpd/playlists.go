@@ -7,19 +7,20 @@ import (
 	"encoding/json"
 	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	//l "k.prv/rpimon/helpers/logging"
 	"net/http"
 )
 
 type playlistsPageCtx struct {
-	*app.BasePageContext
+	*context.BasePageContext
 	CurrentPage string
 	Playlists   []mpd.Attrs
 	Error       string
 }
 
-func playlistsPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func playlistsPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &playlistsPageCtx{BasePageContext: bctx}
 	ctx.SetMenuActive("mpd-playlists")
 	app.RenderTemplateStd(w, ctx, "mpd/playlists.tmpl")

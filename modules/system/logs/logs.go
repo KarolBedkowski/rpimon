@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
@@ -13,10 +14,11 @@ import (
 	"strings"
 )
 
-var Module *app.Module
+// Module information
+var Module *context.Module
 
 func init() {
-	Module = &app.Module{
+	Module = &context.Module{
 		Name:          "system-logs",
 		Title:         "Logs",
 		Description:   "System Logs",
@@ -26,6 +28,7 @@ func init() {
 		Defaults: map[string]string{
 			"config_file": "logs.json",
 		},
+		Configurable: true,
 	}
 }
 
@@ -37,13 +40,13 @@ func initModule(parentRoute *mux.Route) bool {
 		return false
 	}
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "Logs", "admin")).Name("logs-index")
+	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Logs", "admin")).Name("logs-index")
 	subRouter.HandleFunc("/serv", app.VerifyPermission(servLogHandler, "admin")).Name("logs-serv")
-	subRouter.HandleFunc("/{page}", app.HandleWithContextSec(mainPageHandler, "Logs", "admin")).Name("logs-page")
+	subRouter.HandleFunc("/{page}", context.HandleWithContextSec(mainPageHandler, "Logs", "admin")).Name("logs-page")
 	return true
 }
 
-func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
+func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -55,7 +58,7 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 }
 
 type pageCtx struct {
-	*app.BasePageContext
+	*context.BasePageContext
 	CurrentPage string
 	Data        string
 	Files       []string
@@ -64,7 +67,7 @@ type pageCtx struct {
 	LogsDef     logsDef
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &pageCtx{BasePageContext: bctx}
 	vars := mux.Vars(r)
 	page, ok := vars["page"]

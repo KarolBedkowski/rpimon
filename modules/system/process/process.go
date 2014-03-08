@@ -3,13 +3,16 @@ package process
 import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/context"
+	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"strings"
 )
 
-var Module = &app.Module{
+// Module information
+var Module = &context.Module{
 	Name:          "system-process",
 	Title:         "Process",
 	Description:   "",
@@ -31,7 +34,7 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
+func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -44,12 +47,12 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 }
 
 type sevicesPageCtx struct {
-	*app.SimpleDataPageCtx
+	*context.SimpleDataPageCtx
 	Services map[string]string
 }
 
 func servicesPageHangler(w http.ResponseWriter, r *http.Request) {
-	ctx := &sevicesPageCtx{SimpleDataPageCtx: app.NewSimpleDataPageCtx(
+	ctx := &sevicesPageCtx{SimpleDataPageCtx: context.NewSimpleDataPageCtx(
 		w, r, "Process")}
 	ctx.Services = make(map[string]string)
 	lines := strings.Split(h.ReadCommand("service", "--status-all"), "\n")
@@ -75,15 +78,15 @@ func serviceActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	l.Info("process serviceActionPageHandler %s %s", service, action)
 	result := h.ReadCommand("sudo", "service", service, action)
-	session := app.GetSessionStore(w, r)
-	session.AddFlash(result, "info")
-	session.Save(r, w)
+	s := session.GetSessionStore(w, r)
+	s.AddFlash(result, "info")
+	s.Save(r, w)
 	http.Redirect(w, r, app.GetNamedURL("process-services"), http.StatusFound)
 }
 
 func psaxlPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &sevicesPageCtx{
-		SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Process"),
+		SimpleDataPageCtx: context.NewSimpleDataPageCtx(w, r, "Process"),
 	}
 	ctx.SetMenuActive("psaxl")
 	ctx.Header1 = "Process"
@@ -112,7 +115,7 @@ func psaxlPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func topPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &sevicesPageCtx{
-		SimpleDataPageCtx: app.NewSimpleDataPageCtx(w, r, "Process"),
+		SimpleDataPageCtx: context.NewSimpleDataPageCtx(w, r, "Process"),
 	}
 	ctx.SetMenuActive("top")
 	ctx.Header1 = "Process"
@@ -170,13 +173,13 @@ func processActionHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid action", http.StatusBadRequest)
 		return
 	}
-	session := app.GetSessionStore(w, r)
+	s := session.GetSessionStore(w, r)
 	if result == "" {
-		session.AddFlash("Process killed", "success")
+		s.AddFlash("Process killed", "success")
 	} else {
-		session.AddFlash(result, "error")
+		s.AddFlash(result, "error")
 	}
-	session.Save(r, w)
+	s.Save(r, w)
 	if back == "" {
 		back = app.GetNamedURL("process-index")
 	}

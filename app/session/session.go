@@ -1,21 +1,32 @@
-package app
+package session
 
 import (
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	//	"k.prv/rpimon/helpers"
+	"k.prv/rpimon/app/cfg"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	//	"os"
+	//	"github.com/gorilla/context"
 	//	"path/filepath"
-	//	"time"
+	"time"
 )
 
 const storesession = "SESSION"
 
+// Sessions settings
+const (
+	sessionLoginKey      = "USERID"
+	sessionPermissionKey = "USER_PERM"
+	sessionTimestampKey  = "timestamp"
+	maxSessionAge        = time.Duration(24) * time.Hour
+)
+
 var store *sessions.CookieStore
 
-func initSessionStore(conf *AppConfiguration) error {
+// InitSessionStore initialize sessions support
+func InitSessionStore(conf *cfg.AppConfiguration) error {
 	if len(conf.CookieAuthKey) < 32 {
 		l.Info("Random CookieAuthKey")
 		conf.CookieAuthKey = string(securecookie.GenerateRandomKey(32))
@@ -79,3 +90,43 @@ func ClearSessionStore() error {
 	return nil
 }
 */
+
+// GetLoggerUser return login and permission of logged user
+func GetLoggerUser(session *sessions.Session) (login string, permissions []string, ok bool) {
+	if slogin := session.Values[sessionLoginKey]; slogin != nil {
+		login = slogin.(string)
+		ok = true
+		if sPerm := session.Values[sessionPermissionKey]; sPerm != nil {
+			permissions = sPerm.([]string)
+		}
+	}
+	return
+}
+
+// SetLoggedUser save logged user information in session
+func SetLoggedUser(s *sessions.Session, login string, privs []string) {
+	s.Values[sessionLoginKey] = login
+	s.Values[sessionPermissionKey] = privs
+	s.Values[sessionTimestampKey] = time.Now().Unix()
+}
+
+// SessionHandler check validity of session
+func SessionHandler(h http.Handler) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		s := GetSessionStore(w, r)
+		//		context.Set(r, "session", s)
+		if ts, ok := s.Values[sessionTimestampKey]; ok {
+			timestamp := time.Unix(ts.(int64), 0)
+			now := time.Now()
+			if now.Sub(timestamp) < maxSessionAge {
+				s.Values[sessionTimestampKey] = now.Unix()
+			} else {
+				// Clear session when expired
+				s.Values = nil
+			}
+			s.Save(r, w)
+		}
+		//l.Debug("Context: %v", context.GetAll(r))
+		h.ServeHTTP(w, r)
+	})
+}

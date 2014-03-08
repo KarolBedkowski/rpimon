@@ -6,6 +6,8 @@ import (
 	"github.com/gorilla/schema"
 	"io/ioutil"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/context"
+	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
@@ -15,21 +17,25 @@ import (
 )
 
 var decoder = schema.NewDecoder()
+
+// ErrInvalidFilename error - invalid filename
 var ErrInvalidFilename = errors.New("invalid filename")
 
-var Module *app.Module
+// Module information
+var Module *context.Module
 
 func init() {
-	Module = &app.Module{
-		Name:          "notepad",
-		Title:         "Notepad",
-		Description:   "",
-		AllPrivilages: nil,
-		Init:          initModule,
-		GetMenu:       getMenu,
+	Module = &context.Module{
+		Name:        "notepad",
+		Title:       "Notepad",
+		Description: "",
+		Init:        initModule,
+		GetMenu:     getMenu,
 		Defaults: map[string]string{
 			"dir": "./notepad/",
 		},
+		Configurable:  true,
+		AllPrivilages: []context.Privilege{context.Privilege{"notepad", "access to notepad"}},
 	}
 }
 
@@ -49,26 +55,28 @@ func initModule(parentRoute *mux.Route) bool {
 
 	subRouter := parentRoute.Subrouter()
 	// Main page
-	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "Notepad", "notepad")).Name("notepad-index")
+	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Notepad", "notepad")).Name("notepad-index")
 	subRouter.HandleFunc("/{note}", app.VerifyPermission(notePageHandler, "notepad")).Name("notepad-note")
 	subRouter.HandleFunc("/{note}/delete", app.VerifyPermission(noteDeleteHandler, "notepad")).Name("notepad-delete")
 	subRouter.HandleFunc("/{note}/download", app.VerifyPermission(noteDownloadHandler, "notepad")).Name("notepad-download")
 	return true
 }
 
-func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
+func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "notepad") {
 		return "", nil
 	}
-	menu = app.NewMenuItemFromRoute("Notepad", "notepad-index").SetID("notepad-index").SetIcon("glyphicon glyphicon-paperclip")
+	menu = context.NewMenuItem("Notepad", app.GetNamedURL("notepad-index")).SetID("notepad-index").SetIcon("glyphicon glyphicon-paperclip")
 	return "", menu
 }
 
+// NoteStuct keep information about one note
 type NoteStuct struct {
 	Filename string
 	Content  string
 }
 
+// Validate note
 func (n *NoteStuct) Validate() (errors []string) {
 	if n.Filename == "" {
 		errors = append(errors, "missing filename")
@@ -77,11 +85,11 @@ func (n *NoteStuct) Validate() (errors []string) {
 }
 
 type mainPageContext struct {
-	*app.BasePageContext
+	*context.BasePageContext
 	NoteList []*NoteStuct
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &mainPageContext{BasePageContext: bctx}
 	ctx.SetMenuActive("notepad-index")
 	ctx.NoteList = findFiles()
@@ -89,7 +97,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageC
 }
 
 type notePageContext struct {
-	*app.BasePageContext
+	*context.BasePageContext
 	Note *NoteStuct
 	New  bool
 }
@@ -104,7 +112,7 @@ func notePageHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		// display note
-		ctx := &notePageContext{BasePageContext: app.NewBasePageContext("Notepad", w, r)}
+		ctx := &notePageContext{BasePageContext: context.NewBasePageContext("Notepad", w, r)}
 		if note, err := getNote(filename); err == nil {
 			ctx.Note = note
 		} else {
@@ -119,13 +127,13 @@ func notePageHandler(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		note := new(NoteStuct)
 		decoder.Decode(note, r.Form)
-		sess := app.GetSessionStore(w, r)
+		sess := session.GetSessionStore(w, r)
 		if err := SaveNote(filename, note.Content); err == nil {
 			sess.AddFlash("Note saved", "success")
 		} else {
 			sess.AddFlash(err.Error(), "error")
 		}
-		app.SaveSession(w, r)
+		session.SaveSession(w, r)
 		http.Redirect(w, r, app.GetNamedURL("notepad-index"), http.StatusFound)
 		return
 	case "DELETE":
@@ -146,13 +154,13 @@ func noteDeleteHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing filename", http.StatusBadRequest)
 		return
 	}
-	sess := app.GetSessionStore(w, r)
+	sess := session.GetSessionStore(w, r)
 	if err := DeleteNote(filename); err == nil {
 		sess.AddFlash("Note deleted", "success")
 	} else {
 		sess.AddFlash(err.Error(), "error")
 	}
-	app.SaveSession(w, r)
+	session.SaveSession(w, r)
 	http.Redirect(w, r, app.GetNamedURL("notepad-index"), http.StatusFound)
 }
 

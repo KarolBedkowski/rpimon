@@ -3,10 +3,15 @@ package main
 import (
 	"flag"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/context"
+	mauth "k.prv/rpimon/modules/auth"
 	mfiles "k.prv/rpimon/modules/files"
+	mmain "k.prv/rpimon/modules/main"
+	mmonitor "k.prv/rpimon/modules/monitor"
 	mmpd "k.prv/rpimon/modules/mpd"
 	mnet "k.prv/rpimon/modules/network"
 	mnotepad "k.prv/rpimon/modules/notepad"
+	mpref "k.prv/rpimon/modules/preferences"
 	mstorage "k.prv/rpimon/modules/storage"
 	msmart "k.prv/rpimon/modules/storage/smart"
 	msystem "k.prv/rpimon/modules/system"
@@ -15,11 +20,6 @@ import (
 	msysproc "k.prv/rpimon/modules/system/process"
 	msysusers "k.prv/rpimon/modules/system/users"
 	mutls "k.prv/rpimon/modules/utils"
-	"k.prv/rpimon/monitor"
-	"k.prv/rpimon/pages/auth"
-	pmain "k.prv/rpimon/pages/main"
-	pmodules "k.prv/rpimon/pages/preferences/modules"
-	pusers "k.prv/rpimon/pages/preferences/users"
 	"log"
 	"net/http"
 	// _ "net/http/pprof" // /debug/pprof/
@@ -48,32 +48,30 @@ func main() {
 	go func() {
 		<-cleanChannel
 		app.Close()
-		app.ShutdownModules()
+		context.ShutdownModules()
 		os.Exit(1)
 	}()
 
 	app.Router.HandleFunc("/", handleHome)
-	auth.CreateRoutes(app.Router.PathPrefix("/auth"))
-	pmain.CreateRoutes(app.Router.PathPrefix("/main"))
-	pmodules.CreateRoutes(app.Router.PathPrefix("/pref/modules"))
-	pusers.CreateRoutes(app.Router.PathPrefix("/pref/users"))
-
-	app.RegisterModule(mnet.Module)
-	app.RegisterModule(mnet.NFSModule)
-	app.RegisterModule(mnet.SambaModule)
-	app.RegisterModule(mfiles.Module)
-	app.RegisterModule(mmpd.Module)
-	app.RegisterModule(mnotepad.Module)
-	app.RegisterModule(msystem.Module)
-	app.RegisterModule(msystother.Module)
-	app.RegisterModule(msysproc.Module)
-	app.RegisterModule(msyslogs.Module)
-	app.RegisterModule(msysusers.Module)
-	app.RegisterModule(mstorage.Module)
-	app.RegisterModule(msmart.Module)
-	app.RegisterModule(mutls.Module)
-
-	app.InitModules(conf, app.Router)
+	context.RegisterModule(mauth.Module)
+	context.RegisterModule(mmain.Module)
+	context.RegisterModule(mpref.Module)
+	context.RegisterModule(mfiles.Module)
+	context.RegisterModule(mmpd.Module)
+	context.RegisterModule(mnet.Module)
+	context.RegisterModule(mnet.NFSModule)
+	context.RegisterModule(mnet.SambaModule)
+	context.RegisterModule(mnotepad.Module)
+	context.RegisterModule(mstorage.Module)
+	context.RegisterModule(msmart.Module)
+	context.RegisterModule(msyslogs.Module)
+	context.RegisterModule(msystother.Module)
+	context.RegisterModule(msysproc.Module)
+	context.RegisterModule(msysusers.Module)
+	context.RegisterModule(mutls.Module)
+	context.RegisterModule(msystem.Module)
+	context.RegisterModule(mmonitor.Module)
+	context.InitModules(conf, app.Router)
 
 	/* for filesystem store
 	go app.ClearSessionStore()
@@ -92,8 +90,6 @@ func main() {
 		}
 	}()
 	*/
-
-	monitor.Init(conf.MonitorUpdateInterval)
 
 	if conf.HTTPSAddress != "" {
 		log.Printf("Listen: %s", conf.HTTPSAddress)
@@ -121,5 +117,5 @@ func main() {
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/main/", http.StatusFound)
+	http.Redirect(w, r, app.GetNamedURL("main-index"), http.StatusFound)
 }

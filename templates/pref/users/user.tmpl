@@ -25,9 +25,9 @@
 					</div>
 					<div class="form-group">
 						<label for="">Permissions</label>
-						{{range $idx, $m := .AllPrivs}}
+						{{range $m, $desc := .AllPrivs}}
 						<div class="checkbox">
-							 <label><input type="checkbox" name="Privs" value="{{$m}}" {{if $ctx.HasPriv $m}}checked="checked"{{end}}>{{$m}}</label>
+							 <label><input type="checkbox" name="Privs" value="{{$m}}" {{if $ctx.HasPriv $m}}checked="checked"{{end}}>{{$m}}: {{$desc.Description}}</label>
 						</div>
 						{{end}}
 					</div>
@@ -40,7 +40,7 @@
 					<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
 					<input type="hidden" name="_method" value="" id="form-method" />
 					<button type="submit" class="btn btn-primary">Save</button>
-					<a href="{{namedurl "p-users-index"}}" type="button" class="btn btn-default">Cancel</a>
+					<a href="{{namedurl "m-pref-users-index"}}" type="button" class="btn btn-default">Cancel</a>
 					{{if not .New}}
 					<button type="button" class="btn btn-danger" id="btn-delete" formnovalidate>Delete</a>
 					{{end}}

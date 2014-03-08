@@ -2,7 +2,7 @@
 package monitor
 
 import (
-	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/cfg"
 	h "k.prv/rpimon/helpers"
 	//	l "k.prv/rpimon/helpers/logging"
 	"strings"
@@ -10,6 +10,7 @@ import (
 
 // WARNINGS
 
+// WarningsStruct holds current warnings, errors and informations.
 type WarningsStruct struct {
 	Warnings []string
 	Errors   []string
@@ -23,7 +24,7 @@ var warningsCache = h.NewSimpleCache(warningsCacheTTL)
 // GetWarnings return current warnings to show
 func GetWarnings() *WarningsStruct {
 	result := warningsCache.Get(func() h.Value {
-		conf := app.Configuration.Monitor
+		conf := cfg.Configuration.Monitor
 		warnings := &WarningsStruct{}
 		// high load
 		if lastLoadInfo != nil {
@@ -35,7 +36,7 @@ func GetWarnings() *WarningsStruct {
 		}
 		// low mem
 		if lastMemInfo != nil {
-			if lastMemInfo.UsedPerc > conf.RamUsageWarning {
+			if lastMemInfo.UsedPerc > conf.RAMUsageWarning {
 				if lastMemInfo.SwapTotal > 0 && lastMemInfo.SwapFreePerc < 100-conf.SwapUsageWarning {
 					warnings.Errors = append(warnings.Errors, "CRITICAL RAM/SWAP ussage")
 				} else {

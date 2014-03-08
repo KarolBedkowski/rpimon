@@ -4,6 +4,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/cfg"
+	"k.prv/rpimon/app/context"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 )
@@ -13,8 +15,8 @@ var decoder = schema.NewDecoder()
 // CreateRoutes for /main
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.HandleWithContextSec(mainPageHandler, "Main", "admin")).Name("modules-index")
-	subRouter.HandleFunc("/{module}", app.HandleWithContextSec(confModulePageHandler, "Main", "admin")).Name("modules-module")
+	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Main", "admin")).Name("m-pref-modules-index")
+	subRouter.HandleFunc("/{module}", context.HandleWithContextSec(confModulePageHandler, "Main", "admin")).Name("m-pref-modules-module")
 }
 
 type (
@@ -23,7 +25,8 @@ type (
 		Title            string
 		Description      string
 		Enabled          bool
-		ConfigurePageUrl string
+		ConfigurePageURL string
+		Configurable     bool
 	}
 
 	modulesListForm struct {
@@ -31,12 +34,12 @@ type (
 	}
 
 	pageCtx struct {
-		*app.BasePageContext
+		*context.BasePageContext
 		Form modulesListForm
 	}
 )
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &pageCtx{BasePageContext: bctx}
 	if r.Method == "POST" {
 		r.ParseForm()
@@ -45,10 +48,10 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageC
 			return
 		}
 		for _, module := range ctx.Form.Modules {
-			app.SetModuleEnabled(module.Name, module.Enabled)
+			context.EnableModule(module.Name, module.Enabled)
 		}
-		app.SetMainMenu(ctx.BasePageContext)
-		if err := app.SaveConfiguration(); err != nil {
+		context.SetMainMenu(ctx.BasePageContext)
+		if err := cfg.SaveConfiguration(); err != nil {
 			ctx.BasePageContext.AddFlashMessage("Saving configuration error: "+err.Error(),
 				"error")
 		} else {
@@ -59,10 +62,14 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageC
 		return
 	}
 	ctx.SetMenuActive("p-modules")
-	for _, m := range app.GetModulesList() {
+	for _, m := range context.GetModulesList() {
+		if m.Internal {
+			continue
+		}
 		ctx.Form.Modules = append(ctx.Form.Modules, &moduleSt{
 			m.Name, m.Title, m.Description, m.Enabled(),
-			m.ConfigurePageUrl,
+			m.ConfigurePageURL,
+			m.Configurable,
 		})
 	}
 	app.RenderTemplateStd(w, ctx, "pref/modules/index.tmpl")
@@ -80,19 +87,23 @@ type (
 	}
 
 	confModulePageContext struct {
-		*app.BasePageContext
+		*context.BasePageContext
 		Form   confModuleForm
-		Module *app.Module
+		Module *context.Module
 	}
 )
 
-func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	vars := mux.Vars(r)
 	moduleName, _ := vars["module"]
 	ctx := &confModulePageContext{BasePageContext: bctx}
-	ctx.Module = app.GetModule(moduleName)
+	ctx.Module = context.GetModule(moduleName)
 	if ctx.Module == nil {
 		http.Error(w, "invalid module "+moduleName, http.StatusBadRequest)
+		return
+	}
+	if !ctx.Module.Configurable {
+		http.Error(w, "module not confiugrable", http.StatusBadRequest)
 		return
 	}
 	conf := ctx.Module.GetConfiguration()
@@ -111,7 +122,7 @@ func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Bas
 		} else {
 			conf["enabled"] = "no"
 		}
-		if err := app.SaveConfiguration(); err != nil {
+		if err := cfg.SaveConfiguration(); err != nil {
 			ctx.BasePageContext.AddFlashMessage("Saving configuration error: "+err.Error(),
 				"error")
 		} else {

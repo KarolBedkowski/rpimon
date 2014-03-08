@@ -4,13 +4,15 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
-	"k.prv/rpimon/monitor"
+	"k.prv/rpimon/modules/monitor"
 	"net/http"
 	"strings"
 )
 
-var Module = &app.Module{
+// Module information
+var Module = &context.Module{
 	Name:          "network",
 	Title:         "Network",
 	Description:   "Network",
@@ -23,26 +25,26 @@ var Module = &app.Module{
 func initModule(parentRoute *mux.Route) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.HandleWithContext(mainPageHandler,
-		"Network")).Name("m-net")
-	subRouter.HandleFunc("/conf", app.HandleWithContext(confPageHandler,
+	subRouter.HandleFunc("/", context.HandleWithContext(mainPageHandler,
+		"Network")).Name("m-net-index")
+	subRouter.HandleFunc("/conf", context.HandleWithContext(confPageHandler,
 		"Network - Configuration")).Name("m-net-conf")
-	subRouter.HandleFunc("/iptables", app.HandleWithContext(iptablesPageHandler,
+	subRouter.HandleFunc("/iptables", context.HandleWithContext(iptablesPageHandler,
 		"Network - Iptables")).Name("m-net-iptables")
-	subRouter.HandleFunc("/netstat", app.HandleWithContext(netstatPageHandler,
+	subRouter.HandleFunc("/netstat", context.HandleWithContext(netstatPageHandler,
 		"Network - Netstat")).Name("m-net-netstat")
-	subRouter.HandleFunc("/serv/info", app.HandleWithContext(statusServHandler, "")).Name("m-net-serv-info")
-	subRouter.HandleFunc("/action", app.HandleWithContext(actionHandler, "")).Name("m-net-action").Methods("PUT")
+	subRouter.HandleFunc("/serv/info", app.VerifyPermission(statusServHandler, "")).Name("m-net-serv-info")
+	subRouter.HandleFunc("/action", context.HandleWithContext(actionHandler, "")).Name("m-net-action").Methods("PUT")
 	return true
 }
 
-func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
+func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
 
-	menu = app.NewMenuItemFromRoute("Network", "m-net").SetIcon("glyphicon glyphicon-dashboard")
-	menu.AddChild(app.NewMenuItemFromRoute("Status", "m-net").SetID("m-net-index").SetSortOrder(-1),
+	menu = context.NewMenuItem("Network", "").SetIcon("glyphicon glyphicon-dashboard").SetID("m-net")
+	menu.AddChild(app.NewMenuItemFromRoute("Status", "m-net-index").SetID("m-net-index").SetSortOrder(-1),
 		app.NewMenuItemFromRoute("Configuration", "m-net-conf"),
 		app.NewMenuItemFromRoute("IPTables", "m-net-iptables"),
 		app.NewMenuItemFromRoute("Netstat", "m-net-netstat"),
@@ -55,23 +57,23 @@ func getWarnings() map[string][]string {
 }
 
 type mainPageContext struct {
-	*app.BasePageContext
+	*context.BasePageContext
 	Interfaces *monitor.InterfacesStruct
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePageContext) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
 	c := &mainPageContext{BasePageContext: ctx}
 	c.SetMenuActive("m-net-index")
 	c.Interfaces = monitor.GetInterfacesInfo()
 	app.RenderTemplateStd(w, c, "network/status.tmpl")
 }
 
-func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePageContext) {
+func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
 	page := r.FormValue("sec")
 	if page == "" {
 		page = "listen"
 	}
-	data := &app.SimpleDataPageCtx{BasePageContext: ctx}
+	data := &context.SimpleDataPageCtx{BasePageContext: ctx}
 	data.SetMenuActive("m-net-netstat")
 	data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
 	data.Header1 = "Netstat"
@@ -86,7 +88,7 @@ func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePag
 		data.Header2 = "all"
 		data.TData, _ = netstat("sudo", "netstat", "-apn", "-t", "-u")
 	}
-	data.Tabs = []*app.MenuItem{
+	data.Tabs = []*context.MenuItem{
 		app.NewMenuItemFromRoute("Listen", "m-net-netstat").AddQuery("?sec=listen").SetActve(page == "listen"),
 		app.NewMenuItemFromRoute("Connections", "m-net-netstat").AddQuery("?sec=connections").SetActve(page == "connections"),
 		app.NewMenuItemFromRoute("All", "m-net-netstat").AddQuery("?sec=all").SetActve(page == "all"),
@@ -95,7 +97,7 @@ func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePag
 }
 
 type confPageContext struct {
-	*app.BasePageContext
+	*context.BasePageContext
 	Current  string
 	Data     string
 	Commands *map[string][]string
@@ -140,7 +142,7 @@ var confCommands = map[string][]string{
 	},
 }
 
-func confPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePageContext) {
+func confPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
 	cmd := r.FormValue("cmd")
 	if cmd == "" {
 		cmd = confCommands["Base"][0]
@@ -166,7 +168,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePageCo
 }
 
 type iptablesPageContext struct {
-	*app.BasePageContext
+	*context.BasePageContext
 	Current string
 	Data    string
 	Tables  *[]string
@@ -180,7 +182,7 @@ var iptablesTables = []string{
 	"security",
 }
 
-func iptablesPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePageContext) {
+func iptablesPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
 	table := r.FormValue("table")
 	if table == "" {
 		table = iptablesTables[0]
@@ -247,7 +249,7 @@ func netstat(command string, args ...string) ([][]string, error) {
 
 var statusServCache = h.NewSimpleCache(1)
 
-func statusServHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePageContext) {
+func statusServHandler(w http.ResponseWriter, r *http.Request) {
 	data := statusServCache.Get(func() h.Value {
 		res := map[string]interface{}{
 			"netusage": monitor.GetNetHistory(),
@@ -260,7 +262,7 @@ func statusServHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePage
 	w.Write(data)
 }
 
-func actionHandler(w http.ResponseWriter, r *http.Request, ctx *app.BasePageContext) {
+func actionHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
 	action := r.FormValue("action")
 	iface := r.FormValue("iface")
 	if action == "" || iface == "" {

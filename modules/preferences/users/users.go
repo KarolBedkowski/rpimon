@@ -4,7 +4,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/database"
+	"k.prv/rpimon/app/cfg"
+	"k.prv/rpimon/app/context"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 )
@@ -14,21 +15,21 @@ var decoder = schema.NewDecoder()
 // CreateRoutes for /main
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/users", app.HandleWithContextSec(mainPageHandler, "Preferences - Users", "admin")).Name("p-users-index")
-	subRouter.HandleFunc("/users/{user}", app.HandleWithContextSec(userPageHandler, "Preferences - User", "admin")).Name("p-users-user")
-	subRouter.HandleFunc("/profile", app.HandleWithContextSec(profilePageHandler, "Profile", "")).Name("p-user-profile")
+	subRouter.HandleFunc("/users", context.HandleWithContextSec(mainPageHandler, "Preferences - Users", "admin")).Name("m-pref-users-index")
+	subRouter.HandleFunc("/users/{user}", context.HandleWithContextSec(userPageHandler, "Preferences - User", "admin")).Name("m-pref-users-user")
+	subRouter.HandleFunc("/profile", context.HandleWithContextSec(profilePageHandler, "Profile", "")).Name("m-pref-user-profile")
 }
 
 type (
 	usersPageCtx struct {
-		*app.BasePageContext
-		Users []*database.User
+		*context.BasePageContext
+		Users []*cfg.User
 	}
 )
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &usersPageCtx{BasePageContext: bctx}
-	ctx.Users = database.GetUsers()
+	ctx.Users = cfg.GetAllUsers()
 	ctx.SetMenuActive("p-users")
 	app.RenderTemplateStd(w, ctx, "pref/users/index.tmpl")
 }
@@ -42,10 +43,10 @@ type (
 	}
 
 	userPageCtx struct {
-		*app.BasePageContext
+		*context.BasePageContext
 		Form     userForm
 		New      bool
-		AllPrivs []string
+		AllPrivs map[string]context.Privilege
 	}
 )
 
@@ -53,11 +54,11 @@ func (c *userPageCtx) HasPriv(perm string) bool {
 	return app.CheckPermission(c.Form.Privs, perm)
 }
 
-func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	vars := mux.Vars(r)
 	login, _ := vars["user"]
 	ctx := &userPageCtx{BasePageContext: bctx,
-		AllPrivs: database.AllPrivs,
+		AllPrivs: context.AllPrivilages,
 	}
 
 	if login == "<new>" {
@@ -67,59 +68,56 @@ func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageC
 	if r.Method == "POST" && r.FormValue("_method") != "" {
 		r.Method = r.FormValue("_method")
 	}
+	var err error
 	switch r.Method {
 	case "POST":
 		r.ParseForm()
-		var err error
 		if err = decoder.Decode(&ctx.Form, r.Form); err != nil {
 			l.Warn("Decode form error", err, r.Form)
 		}
-		user := &database.User{
+		user := &cfg.User{
 			Privs: ctx.Form.Privs,
 		}
 		if login == "<new>" {
 			user.Login = ctx.Form.Login
-			user.Password = database.CreatePassword(ctx.Form.NewPassword)
-			if err = database.AddUser(user); err == nil {
+			user.UpdatePassword(ctx.Form.NewPassword)
+			if err = cfg.AddUser(user); err == nil {
 				ctx.BasePageContext.AddFlashMessage("User added", "success")
 				ctx.Save()
 				http.Redirect(w, r, app.GetNamedURL("p-users-index"), http.StatusFound)
 				return
-			} else {
-				ctx.AddFlashMessage("Add user errror: "+err.Error(), "error")
 			}
+			ctx.AddFlashMessage("Add user errror: "+err.Error(), "error")
 		} else {
 			// update user
 			user.Login = login
 			if ctx.Form.NewPassword != "" {
-				user.Password = database.CreatePassword(ctx.Form.NewPassword)
+				user.UpdatePassword(ctx.Form.NewPassword)
 			}
-			if err = database.UpdateUser(user); err == nil {
+			if err = cfg.UpdateUser(user); err == nil {
 				ctx.AddFlashMessage("User updated", "success")
 				ctx.Save()
 				http.Redirect(w, r, app.GetNamedURL("p-users-index"), http.StatusFound)
 				return
-			} else {
-				ctx.AddFlashMessage("Update user errror: "+err.Error(), "error")
 			}
+			ctx.AddFlashMessage("Update user errror: "+err.Error(), "error")
 		}
 		if err != nil {
 			ctx.AddFlashMessage("Error: "+err.Error(), "error")
 		}
 
 	case "DELETE":
-		if err := database.DeleteUser(login); err == nil {
+		if err = cfg.DeleteUser(login); err == nil {
 			ctx.AddFlashMessage("User deleted", "success")
 			ctx.Save()
 			http.Redirect(w, r, app.GetNamedURL("p-users-index"), http.StatusFound)
 			return
-		} else {
-			ctx.AddFlashMessage("Update user errror: "+err.Error(), "error")
 		}
+		ctx.AddFlashMessage("Update user errror: "+err.Error(), "error")
 
 	case "GET":
 		if !ctx.New {
-			user := database.GetUserByLogin(login)
+			user := cfg.GetUserByLogin(login)
 			ctx.Form = userForm{
 				Login: user.Login,
 				Privs: user.Privs,
@@ -141,16 +139,16 @@ type (
 	}
 
 	profileContext struct {
-		*app.BasePageContext
+		*context.BasePageContext
 		CPForm chgPassForm
-		User   *database.User
+		User   *cfg.User
 	}
 )
 
-func profilePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func profilePageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &profileContext{
 		BasePageContext: bctx,
-		User:            database.GetUserByLogin(bctx.CurrentUser),
+		User:            cfg.GetUserByLogin(bctx.CurrentUser),
 	}
 	switch r.Method {
 	case "POST":
@@ -161,8 +159,8 @@ func profilePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePa
 		}
 		if ctx.CPForm.ChangePass {
 			if ctx.User.CheckPassword(ctx.CPForm.OldPassword) {
-				ctx.User.Password = database.CreatePassword(ctx.CPForm.NewPassword)
-				if err = database.UpdateUser(ctx.User); err == nil {
+				ctx.User.UpdatePassword(ctx.CPForm.NewPassword)
+				if err = cfg.UpdateUser(ctx.User); err == nil {
 					ctx.AddFlashMessage("User updated", "success")
 				} else {
 					ctx.AddFlashMessage("Update user errror: "+err.Error(), "error")

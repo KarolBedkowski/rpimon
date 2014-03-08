@@ -4,23 +4,34 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/context"
+	"k.prv/rpimon/modules/monitor"
 	"k.prv/rpimon/modules/mpd"
-	"k.prv/rpimon/monitor"
 	"net/http"
 	"runtime"
 )
 
+// Module information
+var Module = &context.Module{
+	Name:          "main",
+	Title:         "Main",
+	Description:   "Main",
+	AllPrivilages: nil,
+	Init:          initModule,
+}
+
 // CreateRoutes for /main
-func CreateRoutes(parentRoute *mux.Route) {
+func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.HandleWithContext(mainPageHandler, "Main")).Name("main-index")
+	subRouter.HandleFunc("/", context.HandleWithContext(mainPageHandler, "Main")).Name("main-index")
 	subRouter.HandleFunc("/serv/alerts",
 		app.VerifyPermission(alertsServHandler, "admin")).Name(
 		"main-serv-alerts")
+	return true
 }
 
 type pageCtx struct {
-	*app.BasePageContext
+	*context.BasePageContext
 	Uptime            *monitor.UptimeInfoStruct
 	Load              *monitor.LoadInfoStruct
 	CPUUsage          *monitor.CPUUsageInfoStruct
@@ -34,7 +45,7 @@ type pageCtx struct {
 	LoadTrucated      float64
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &pageCtx{BasePageContext: bctx}
 	ctx.SetMenuActive("main")
 	ctx.Warnings = monitor.GetWarnings()

@@ -1,11 +1,10 @@
-package app
+package cfg
 
 import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
 	"runtime"
-	"time"
 )
 
 type (
@@ -27,11 +26,11 @@ type (
 		Monitor               MonitorConfiguration         `json:"monitor"`
 		Modules               map[string]map[string]string `json:"modules"`
 	}
-	// monitor configuration
+	// MonitorConfiguration hold configuration for Monitor module
 	MonitorConfiguration struct {
 		LoadWarning           float64           `json:"load_warning"`
 		LoadError             float64           `json:"load_error"`
-		RamUsageWarning       int               `json:"ram_usage_warning"`
+		RAMUsageWarning       int               `json:"ram_usage_warning"`
 		SwapUsageWarning      int               `json:"swap_usage_warning"`
 		DefaultFSUsageWarning int               `json:"fs_usage_warning"`
 		DefaultFSUsageError   int               `json:"fs_usage_error"`
@@ -45,7 +44,6 @@ type (
 
 // Configuration - main app configuration instance
 var Configuration AppConfiguration
-var quitReloaderChan = make(chan string)
 var configFilename string
 
 // LoadConfiguration from given file
@@ -57,25 +55,7 @@ func LoadConfiguration(filename string) *AppConfiguration {
 		return nil
 	}
 
-	ticker := time.NewTicker(time.Minute)
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				//log.Print("Reloading configuration")
-				loadConfiguration(filename)
-			case <-quitReloaderChan:
-				ticker.Stop()
-				return
-			}
-		}
-	}()
-
 	return &Configuration
-}
-
-func closeConf() {
-	quitReloaderChan <- "END"
 }
 
 func loadConfiguration(filename string) bool {
@@ -96,8 +76,8 @@ func loadConfiguration(filename string) bool {
 	if Configuration.Monitor.LoadError == 0 {
 		Configuration.Monitor.LoadError = float64(runtime.NumCPU() * 4)
 	}
-	if Configuration.Monitor.RamUsageWarning == 0 {
-		Configuration.Monitor.RamUsageWarning = 90
+	if Configuration.Monitor.RAMUsageWarning == 0 {
+		Configuration.Monitor.RAMUsageWarning = 90
 	}
 	if Configuration.Monitor.SwapUsageWarning == 0 {
 		Configuration.Monitor.SwapUsageWarning = 75
@@ -117,6 +97,7 @@ func loadConfiguration(filename string) bool {
 	return true
 }
 
+// SaveConfiguration write current configuration to json file
 func SaveConfiguration() error {
 	log.Printf("SaveConfiguration: Writing configuration to %s\n", configFilename)
 	data, err := json.Marshal(Configuration)
@@ -124,5 +105,5 @@ func SaveConfiguration() error {
 		log.Printf("SaveConfiguration: error marshal configuration: %s\n", err)
 		return err
 	}
-	return ioutil.WriteFile(configFilename, data, 0)
+	return ioutil.WriteFile(configFilename, data, 0600)
 }

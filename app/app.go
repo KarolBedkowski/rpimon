@@ -1,11 +1,13 @@
 package app
 
 import (
-	"github.com/gorilla/context"
+	//	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"k.prv/rpimon/database"
+	"k.prv/rpimon/app/cfg"
+	"k.prv/rpimon/app/mw"
+	gzip "k.prv/rpimon/app/mw/gziphander"
+	"k.prv/rpimon/app/session"
 	l "k.prv/rpimon/helpers/logging"
-	gzip "k.prv/rpimon/lib/gziphander"
 	"net/http"
 )
 
@@ -13,9 +15,9 @@ import (
 var Router = mux.NewRouter()
 
 // Init - Initialize application
-func Init(appConfFile string, debug int) *AppConfiguration {
+func Init(appConfFile string, debug int) *cfg.AppConfiguration {
 
-	conf := LoadConfiguration(appConfFile)
+	conf := cfg.LoadConfiguration(appConfFile)
 	if debug == 0 {
 		conf.Debug = false
 	} else if debug == 1 {
@@ -25,20 +27,20 @@ func Init(appConfFile string, debug int) *AppConfiguration {
 	l.Init(conf.LogFilename, conf.Debug)
 	l.Print("Debug=", conf.Debug)
 
-	initSessionStore(conf)
-	database.Init(conf.Users, conf.Debug)
+	session.InitSessionStore(conf)
+	cfg.InitUsers(conf.Users, conf.Debug)
 
 	http.Handle("/static/", http.StripPrefix("/static",
 		gzip.FileServer(http.Dir(conf.StaticDir), !conf.Debug)))
 	http.Handle("/favicon.ico", gzip.FileServer(http.Dir(conf.StaticDir), !conf.Debug))
-	http.Handle("/", logHandler(csrfHandler(context.ClearHandler(Router))))
+	//context.ClearHandler()
+	http.Handle("/", mw.LogHandler(mw.CsrfHandler(session.SessionHandler(Router))))
 	return conf
 }
 
 // Close application
 func Close() {
 	l.Info("Closing...")
-	closeConf()
 }
 
 // GetNamedURL - Return url for named route and parameters

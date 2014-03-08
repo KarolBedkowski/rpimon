@@ -4,27 +4,30 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
+	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
-	"k.prv/rpimon/monitor"
+	"k.prv/rpimon/modules/monitor"
 	"net/http"
 	"runtime"
 	"strings"
 )
 
-var Module = &app.Module{
+// Module information
+var Module = &context.Module{
 	Name:          "system",
 	Title:         "System",
 	Description:   "",
-	AllPrivilages: nil,
 	Init:          initModule,
 	GetMenu:       getMenu,
+	Internal:      true,
+	AllPrivilages: []context.Privilege{context.Privilege{"admin", "system administrator"}},
 }
 
 // CreateRoutes for /main
 func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/",
-		app.HandleWithContextSec(systemPageHandler, "System", "admin")).Name(
+		context.HandleWithContextSec(systemPageHandler, "System", "admin")).Name(
 		"main-system")
 	subRouter.HandleFunc("/serv/status",
 		app.VerifyPermission(statusServHandler, "admin")).Name(
@@ -32,11 +35,11 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
+func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
-	menu = app.NewMenuItem("System", "").SetIcon("glyphicon glyphicon-wrench").SetID("system")
+	menu = context.NewMenuItem("System", "").SetIcon("glyphicon glyphicon-wrench").SetID("system")
 	menu.AddChild(
 		app.NewMenuItemFromRoute("Live view", "main-system").SetID("system-live").SetIcon("glyphicon glyphicon-dashboard"))
 
@@ -44,12 +47,12 @@ func getMenu(ctx *app.BasePageContext) (parentId string, menu *app.MenuItem) {
 }
 
 type pageSystemCtx struct {
-	*app.BasePageContext
+	*context.BasePageContext
 	Warnings          *monitor.WarningsStruct
 	MaxAcceptableLoad int
 }
 
-func systemPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BasePageContext) {
+func systemPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &pageSystemCtx{BasePageContext: bctx,
 		Warnings: monitor.GetWarnings()}
 	ctx.SetMenuActive("system-live")
