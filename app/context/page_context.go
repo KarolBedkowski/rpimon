@@ -4,10 +4,9 @@ import (
 	"github.com/gorilla/sessions"
 	"io/ioutil"
 	"k.prv/rpimon/app/mw"
-	"k.prv/rpimon/app/session"
+	asess "k.prv/rpimon/app/session"
 	"k.prv/rpimon/helpers"
 	//	l "k.prv/rpimon/helpers/logging"
-	"github.com/gorilla/context"
 	"net/http"
 	"strings"
 	"time"
@@ -43,7 +42,7 @@ var FlashKind = []string{"error", "info", "success"}
 // NewBasePageContext create base page context for request
 func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *BasePageContext {
 
-	s := session.GetSessionStore(w, r)
+	s := asess.GetSessionStore(w, r)
 	csrfToken := s.Values[mw.CONTEXTCSRFTOKEN]
 	if csrfToken == nil {
 		csrfToken = mw.CreateNewCsrfToken()
@@ -59,12 +58,7 @@ func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *B
 		Now:            time.Now().Format("2006-01-02 15:04:05"),
 		FlashMessages:  make(map[string][]interface{}),
 	}
-	if login, ok := context.GetOk(r, "logged_user"); ok {
-		ctx.CurrentUser = login.(string)
-		if perm, ok := context.GetOk(r, "logged_user_prem"); ok {
-			ctx.CurrentUserPerms = perm.([]string)
-		}
-	}
+	ctx.CurrentUser, ctx.CurrentUserPerms, _ = asess.GetLoggerUser(s)
 
 	for _, kind := range FlashKind {
 		if flashes := ctx.Session.Flashes(kind); flashes != nil && len(flashes) > 0 {
@@ -104,7 +98,7 @@ func (ctx *BasePageContext) Get(key string) interface{} {
 
 // Save session by page context
 func (ctx *BasePageContext) Save() error {
-	return session.SaveSession(ctx.ResponseWriter, ctx.Request)
+	return asess.SaveSession(ctx.ResponseWriter, ctx.Request)
 }
 
 // SetMenuActive add id  to menu active items

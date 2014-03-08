@@ -1,33 +1,19 @@
 package app
 
 import (
-	"github.com/gorilla/context"
 	"k.prv/rpimon/app/cfg"
 	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"log"
 	"net/http"
-	"time"
-)
-
-// Session key
-const (
-	sessionLoginKey      = "USERID"
-	sessionPermissionKey = "USER_PERM"
-)
-
-// Sessions settings
-const (
-	sessionTimestampKey = "timestamp"
-	maxSessionAge       = time.Duration(24) * time.Hour
 )
 
 // CheckUserLoggerOrRedirect for request; if user is not logged - redirect to login page
 func CheckUserLoggerOrRedirect(w http.ResponseWriter, r *http.Request) (login string, perm []string) {
-	login = context.Get(r, "logged_user").(string)
-	perm = context.Get(r, "logged_user_prem").([]string)
-	if login != "" {
+	s := session.GetSessionStore(w, r)
+	var ok bool
+	if login, perm, ok = session.GetLoggerUser(s); ok && login != "" {
 		return
 	}
 	log.Print("Access denied")
@@ -64,11 +50,8 @@ func VerifyLogged(h http.HandlerFunc) http.HandlerFunc {
 func LoginUser(w http.ResponseWriter, r *http.Request, user *cfg.User) error {
 	l.Info("User %s log in", user.Login)
 	s := session.GetSessionStore(w, r)
-	s.Values[sessionLoginKey] = user.Login
-	s.Values[sessionPermissionKey] = user.Privs
-	s.Values[sessionTimestampKey] = time.Now().Unix()
-	s.Save(r, w)
-	return nil
+	session.SetLoggedUser(s, user.Login, user.Privs)
+	return s.Save(r, w)
 }
 
 // CheckPermission return true if requred permission is on list

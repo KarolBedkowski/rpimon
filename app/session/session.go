@@ -91,3 +91,20 @@ func ClearSessionStore() error {
 	return nil
 }
 */
+
+func GetLoggerUser(session *sessions.Session) (login string, permissions []string, ok bool) {
+	if slogin := session.Values[SessionLoginKey]; slogin != nil {
+		login = slogin.(string)
+		ok = true
+		if sPerm := session.Values[SessionPermissionKey]; sPerm != nil {
+			permissions = sPerm.([]string)
+		}
+	}
+	return
+}
+
+func SetLoggedUser(s *sessions.Session, login string, privs []string) {
+	s.Values[SessionLoginKey] = login
+	s.Values[SessionPermissionKey] = privs
+	s.Values[SessionTimestampKey] = time.Now().Unix()
+}
