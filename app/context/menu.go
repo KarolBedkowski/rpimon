@@ -159,6 +159,7 @@ func SetMainMenu(ctx *BasePageContext) {
 	}
 	if itemsWithoutParent.Len() > 0 {
 		mitem := &MenuItem{Title: "Other"}
+		mitem.SetSortOrder(998)
 		for e := itemsWithoutParent.Front(); e != nil; e = e.Next() {
 			mitem.Submenu = append(mitem.Submenu, e.Value.(notAttachedItems).item)
 		}
