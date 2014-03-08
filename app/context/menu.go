@@ -2,6 +2,7 @@ package context
 
 import (
 	"container/list"
+	l "k.prv/rpimon/helpers/logging"
 	"sort"
 )
 
@@ -139,8 +140,8 @@ func SetMainMenu(ctx *BasePageContext) {
 			}
 		}
 	}
-	itemsLen := itemsWithoutParent.Len()
 	for {
+		itemsLen := itemsWithoutParent.Len()
 		if itemsWithoutParent.Len() == 0 {
 			break
 		}
@@ -158,10 +159,13 @@ func SetMainMenu(ctx *BasePageContext) {
 		}
 	}
 	if itemsWithoutParent.Len() > 0 {
+		l.Warn("Items without parent len=%d", itemsWithoutParent.Len())
 		mitem := &MenuItem{Title: "Other"}
 		mitem.SetSortOrder(998)
 		for e := itemsWithoutParent.Front(); e != nil; e = e.Next() {
-			mitem.Submenu = append(mitem.Submenu, e.Value.(notAttachedItems).item)
+			item := e.Value.(notAttachedItems).item
+			l.Debug("Item without parent %#v", item)
+			mitem.Submenu = append(mitem.Submenu, item)
 		}
 		ctx.MainMenu.AppendItemToParent("", mitem)
 	}
