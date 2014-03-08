@@ -31,7 +31,7 @@ type Module struct {
 	// Initialize module (set routes etc)
 	Init func(parentRoute *mux.Route) bool
 
-	// GetMenu return parent menu idand menu item (with optional submenu)
+	// GetMenu return parent menu id and menu item (with optional submenu)
 	GetMenu MenuGenerator
 
 	// GetWarnings return map warning kind -> messages
@@ -43,6 +43,8 @@ type Module struct {
 	// Configuration
 	// Is module allow configuration
 	Configurable bool
+	// Is module requred configuration (except defaults) to start
+	NeedConfiguration bool
 	// filename of module configuration file
 	ConfFile string
 	//default configuration
@@ -78,8 +80,7 @@ func GetModules() map[string]*Module {
 func InitModules(conf *cfg.AppConfiguration, router *mux.Router) {
 	appRouter = router
 	for _, module := range registeredModules {
-		mconfig := module.GetConfiguration()
-		module.enable(mconfig["enabled"] == "yes")
+		module.enable(module.Internal || module.GetConfiguration()["enabled"] == "yes")
 	}
 }
 
@@ -123,10 +124,12 @@ func (m *Module) enable(enabled bool) {
 	mconfig["enabled"] = ""
 	if enabled {
 		mconfig["enabled"] = "yes"
-		m.initialized = m.Init(appRouter.PathPrefix("/m/" + m.Name))
 		if !m.initialized {
-			l.Warn("Module %s init error; %#v", m.Name)
-			return
+			m.initialized = m.Init(appRouter.PathPrefix("/m/" + m.Name))
+			if !m.initialized {
+				l.Warn("Module %s init error; %#v", m.Name)
+				return
+			}
 		}
 	}
 }
@@ -141,14 +144,16 @@ func (m *Module) GetConfiguration() (conf map[string]string) {
 		}
 		return mconfig
 	}
-	l.Warn("Missing configuration for %v module; loading defaults - module is disabled", m.Name)
 	conf = map[string]string{
 		"enabled": "",
 	}
 	for key, val := range m.Defaults {
 		conf[key] = val
 	}
-	if m.Internal || !m.Configurable {
+	if m.NeedConfiguration {
+		l.Warn("Missing configuration for %v module; loading defaults - module is disabled", m.Name)
+	} else {
+		l.Info("Missing configuration for %v module; loading defaults", m.Name)
 		conf["enabled"] = "yes"
 	}
 	return conf
