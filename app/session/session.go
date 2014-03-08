@@ -15,19 +15,17 @@ import (
 
 const storesession = "SESSION"
 
-const (
-	SessionLoginKey      = "USERID"
-	SessionPermissionKey = "USER_PERM"
-)
-
 // Sessions settings
 const (
-	SessionTimestampKey = "timestamp"
-	MaxSessionAge       = time.Duration(24) * time.Hour
+	sessionLoginKey      = "USERID"
+	sessionPermissionKey = "USER_PERM"
+	sessionTimestampKey  = "timestamp"
+	maxSessionAge        = time.Duration(24) * time.Hour
 )
 
 var store *sessions.CookieStore
 
+// InitSessionStore initialize sessions support
 func InitSessionStore(conf *cfg.AppConfiguration) error {
 	if len(conf.CookieAuthKey) < 32 {
 		l.Info("Random CookieAuthKey")
@@ -93,32 +91,35 @@ func ClearSessionStore() error {
 }
 */
 
+// GetLoggerUser return login and permission of logged user
 func GetLoggerUser(session *sessions.Session) (login string, permissions []string, ok bool) {
-	if slogin := session.Values[SessionLoginKey]; slogin != nil {
+	if slogin := session.Values[sessionLoginKey]; slogin != nil {
 		login = slogin.(string)
 		ok = true
-		if sPerm := session.Values[SessionPermissionKey]; sPerm != nil {
+		if sPerm := session.Values[sessionPermissionKey]; sPerm != nil {
 			permissions = sPerm.([]string)
 		}
 	}
 	return
 }
 
+// SetLoggedUser save logged user information in session
 func SetLoggedUser(s *sessions.Session, login string, privs []string) {
-	s.Values[SessionLoginKey] = login
-	s.Values[SessionPermissionKey] = privs
-	s.Values[SessionTimestampKey] = time.Now().Unix()
+	s.Values[sessionLoginKey] = login
+	s.Values[sessionPermissionKey] = privs
+	s.Values[sessionTimestampKey] = time.Now().Unix()
 }
 
+// SessionHandler check validity of session
 func SessionHandler(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		s := GetSessionStore(w, r)
 		//		context.Set(r, "session", s)
-		if ts, ok := s.Values[SessionTimestampKey]; ok {
+		if ts, ok := s.Values[sessionTimestampKey]; ok {
 			timestamp := time.Unix(ts.(int64), 0)
 			now := time.Now()
-			if now.Sub(timestamp) < MaxSessionAge {
-				s.Values[SessionTimestampKey] = now.Unix()
+			if now.Sub(timestamp) < maxSessionAge {
+				s.Values[sessionTimestampKey] = now.Unix()
 			} else {
 				// Clear session when expired
 				s.Values = nil
