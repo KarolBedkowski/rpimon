@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"github.com/gorilla/mux"
 	"io"
+	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/cfg"
 	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
@@ -31,9 +32,10 @@ var Module *context.Module
 
 func init() {
 	Module = &context.Module{
-		Name:  "monitor",
-		Title: "Monitor",
-		Init:  initModule,
+		Name:        "monitor",
+		Title:       "Monitor",
+		Description: "Background system monitors",
+		Init:        initModule,
 		Defaults: map[string]string{
 			"interval": "5",
 		},
@@ -46,6 +48,9 @@ func init() {
 func initModule(parentRoute *mux.Route) bool {
 	//	conf := Module.GetConfiguration()
 	//	interval, _ := strconv.Atoi(conf["interval"])
+	subRouter := parentRoute.Subrouter()
+	subRouter.HandleFunc("/configure", context.HandleWithContextSec(confPageHandler, "Monitor - Configuration", "admin")).Name("m-monitor-conf")
+	Module.ConfigurePageURL = app.GetNamedURL("m-monitor-conf")
 	// Configuration for monitor is in main config
 	// TODO: przenieść
 	interval := cfg.Configuration.Monitor.UpdateInterval
