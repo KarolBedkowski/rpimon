@@ -10,9 +10,6 @@
     "system-process": {
       "enabled": "yes"
     },
-    "preferences": {
-      "enabled": "yes"
-    },
     "system-other": {
       "enabled": "yes"
     },
@@ -21,6 +18,9 @@
       "config_file": "logs.json"
     },
     "system": {
+      "enabled": "yes"
+    },
+    "storage-smart": {
       "enabled": "yes"
     },
     "files": {
@@ -44,10 +44,10 @@
       "enabled": "yes",
       "dir": "./notepad/"
     },
-    "storage": {
+    "preferences": {
       "enabled": "yes"
     },
-    "storage-smart": {
+    "storage": {
       "enabled": "yes"
     }
   },
@@ -68,8 +68,8 @@
     "fs_usage_error": 15,
     "cpu_temp_warning": 70,
     "cpu_temp_error": 80
+  	"update_interval": 5,
   },
-  "MonitorUpdateInterval": 5,
   "SslKey": "key.pem",
   "SslCert": "cert.pem",
   "https_address": "",

@@ -44,8 +44,11 @@ func init() {
 
 // Init monitor, start background go routine
 func initModule(parentRoute *mux.Route) bool {
-	conf := Module.GetConfiguration()
-	interval, _ := strconv.Atoi(conf["interval"])
+	//	conf := Module.GetConfiguration()
+	//	interval, _ := strconv.Atoi(conf["interval"])
+	// Configuration for monitor is in main config
+	// TODO: przenieść
+	interval := cfg.Configuration.Monitor.UpdateInterval
 	ticker := time.NewTicker(time.Duration(interval) * time.Second)
 	quit := make(chan struct{})
 	go func() {
