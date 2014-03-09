@@ -10,24 +10,24 @@ import (
 type (
 	// AppConfiguration Main app configuration.
 	AppConfiguration struct {
-		StaticDir             string
-		TemplatesDir          string
-		Users                 string
-		Debug                 bool
-		CookieAuthKey         string
-		CookieEncKey          string
-		SessionStoreDir       string
-		LogFilename           string
-		HTTPAddress           string `json:"http_address"`
-		HTTPSAddress          string `json:"https_address"`
-		SslCert               string
-		SslKey                string
-		MonitorUpdateInterval int
-		Monitor               MonitorConfiguration         `json:"monitor"`
-		Modules               map[string]map[string]string `json:"modules"`
+		StaticDir       string
+		TemplatesDir    string
+		Users           string
+		Debug           bool
+		CookieAuthKey   string
+		CookieEncKey    string
+		SessionStoreDir string
+		LogFilename     string
+		HTTPAddress     string `json:"http_address"`
+		HTTPSAddress    string `json:"https_address"`
+		SslCert         string
+		SslKey          string
+		Monitor         MonitorConfiguration         `json:"monitor"`
+		Modules         map[string]map[string]string `json:"modules"`
 	}
 	// MonitorConfiguration hold configuration for Monitor module
 	MonitorConfiguration struct {
+		UpdateInterval        int               `json:"update_interval"`
 		LoadWarning           float64           `json:"load_warning"`
 		LoadError             float64           `json:"load_error"`
 		RAMUsageWarning       int               `json:"ram_usage_warning"`

@@ -51,9 +51,9 @@ func GetWarnings() *WarningsStruct {
 			if fsinfo.Size == "0" {
 				continue
 			}
-			if fsinfo.FreePerc < conf.DefaultFSUsageError {
+			if fsinfo.FreePerc < 100-conf.DefaultFSUsageError {
 				warnings.Errors = append(warnings.Errors, "Low free space on "+fsinfo.Name)
-			} else if fsinfo.FreePerc < conf.DefaultFSUsageWarning {
+			} else if fsinfo.FreePerc < 100-conf.DefaultFSUsageWarning {
 				warnings.Warnings = append(warnings.Warnings, "Low free space on "+fsinfo.Name)
 			}
 		}

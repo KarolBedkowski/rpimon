@@ -20,7 +20,13 @@
 			<tbody>
 			{{range $idx, $m := .Form.Modules}}
 				<tr>
-					<td><input type="checkbox" name="Modules.{{$idx}}.Enabled" {{if $m.Enabled}}checked="checked"{{end}}> {{$m.Title}} </td>
+					<td>
+					{{if $m.Internal}}
+						<input type="checkbox" name="Modules.{{$idx}}.Enabled" {{if $m.Enabled}}checked="checked"{{end}} disabled> <i>{{$m.Title}}</i>
+					{{else}}
+						<input type="checkbox" name="Modules.{{$idx}}.Enabled" {{if $m.Enabled}}checked="checked"{{end}}> {{$m.Title}}
+					{{end}}
+					</td>
 					<td><input type="hidden" name="Modules.{{$idx}}.Name" value="{{$m.Name}}"><small>{{$m.Description}}</small></td>
 					<td>
 					{{if $m.Configurable}}
