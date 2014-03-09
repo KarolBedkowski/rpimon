@@ -27,6 +27,7 @@ type (
 		Enabled          bool
 		ConfigurePageURL string
 		Configurable     bool
+		Internal         bool
 	}
 
 	modulesListForm struct {
@@ -63,13 +64,11 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 	}
 	ctx.SetMenuActive("p-modules")
 	for _, m := range context.GetModulesList() {
-		if m.Internal {
-			continue
-		}
 		ctx.Form.Modules = append(ctx.Form.Modules, &moduleSt{
 			m.Name, m.Title, m.Description, m.Enabled(),
 			m.ConfigurePageURL,
 			m.Configurable,
+			m.Internal,
 		})
 	}
 	app.RenderTemplateStd(w, ctx, "pref/modules/index.tmpl")
