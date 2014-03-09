@@ -7,17 +7,22 @@
 </div>
 
 <div class="row">
-	<div class="col-lg-12">
-		{{if .Errors}}
-		<div class="alert alert-danger">
-			<ul>
-			{{range .Errors}}<li>{{.}}</li>{{end}}
-			</ul>
+	<form method="POST" id="form">
+		<div class="col-lg-12">
+			{{if .Errors}}
+			<div class="alert alert-danger">
+				<ul>
+				{{range .Errors}}<li>{{.}}</li>{{end}}
+				</ul>
+			</div>
+			{{end}}
 		</div>
-		{{end}}
-		<div class="panel panel-default">
-			<div class="panel-body">
-				<form method="POST" id="form">
+		<div class="col-lg-6 col-xs-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Main</h3>
+				</div>
+				<div class="panel-body">
 					<div class="form-group">
 						<label for="UpdateInterval">Update interval</label>
 						<input type="number" name="UpdateInterval" id="UpdateInterval" value="{{.Form.UpdateInterval}}" class="form-control" required />
@@ -66,6 +71,15 @@
 							<input type="number" name="CPUTempError" id="CPUTempError" value="{{.Form.CPUTempError}}" class="form-control"/>
 						</div>
 					</fieldset>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-6 col-xs-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">System</h3>
+				</div>
+				<div class="panel-body">
 					<fieldset>
 						<legend>/proc/files</legend>
 						<div class="form-group">
@@ -77,13 +91,15 @@
 							<input type="text" name="CPUTempFile" id="CPUTempFile" value="{{.Form.CPUTempFile}}" class="form-control"/>
 						</div>
 					</fieldset>
-					<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
-					<button type="submit" class="btn btn-primary">Save</button>
-					<a href="{{namedurl "m-pref-modules-index"}}" type="button" class="btn btn-default">Cancel</a>
-				</form>
+				</div>
 			</div>
 		</div>
-	</div>
+		<div class="col-xs-12">
+			<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
+			<button type="submit" class="btn btn-primary">Save</button>
+			<a href="{{namedurl "m-pref-modules-index"}}" type="button" class="btn btn-default">Cancel</a>
+		</div>
+	</form>
 </div>
 {{end}}
 
