@@ -28,21 +28,21 @@ func GetWarnings() *WarningsStruct {
 		warnings := &WarningsStruct{}
 		// high load
 		if lastLoadInfo != nil {
-			if lastLoadInfo.Load5 > conf.LoadError {
+			if conf.LoadError > 0 && lastLoadInfo.Load5 > conf.LoadError {
 				warnings.Errors = append(warnings.Errors, "Critical system Load")
-			} else if lastLoadInfo.Load5 > conf.LoadWarning {
+			} else if conf.LoadWarning > 0 && lastLoadInfo.Load5 > conf.LoadWarning {
 				warnings.Warnings = append(warnings.Warnings, "High system Load")
 			}
 		}
 		// low mem
 		if lastMemInfo != nil {
-			if lastMemInfo.UsedPerc > conf.RAMUsageWarning {
-				if lastMemInfo.SwapTotal > 0 && lastMemInfo.SwapFreePerc < 100-conf.SwapUsageWarning {
+			if conf.RAMUsageWarning > 0 && lastMemInfo.UsedPerc > conf.RAMUsageWarning {
+				if conf.SwapUsageWarning > 0 && lastMemInfo.SwapTotal > 0 && lastMemInfo.SwapFreePerc < 100-conf.SwapUsageWarning {
 					warnings.Errors = append(warnings.Errors, "CRITICAL RAM/SWAP ussage")
 				} else {
 					warnings.Warnings = append(warnings.Warnings, "High memory ussage")
 				}
-			} else if lastMemInfo.SwapTotal > 0 && lastMemInfo.SwapFreePerc < 100-conf.SwapUsageWarning {
+			} else if conf.SwapUsageWarning > 0 && lastMemInfo.SwapTotal > 0 && lastMemInfo.SwapFreePerc < 100-conf.SwapUsageWarning {
 				warnings.Warnings = append(warnings.Warnings, "High SWAP ussage")
 			}
 		}
@@ -51,17 +51,17 @@ func GetWarnings() *WarningsStruct {
 			if fsinfo.Size == "0" {
 				continue
 			}
-			if fsinfo.FreePerc < 100-conf.DefaultFSUsageError {
+			if conf.DefaultFSUsageError > 0 && fsinfo.FreePerc < 100-conf.DefaultFSUsageError {
 				warnings.Errors = append(warnings.Errors, "Low free space on "+fsinfo.Name)
-			} else if fsinfo.FreePerc < 100-conf.DefaultFSUsageWarning {
+			} else if conf.DefaultFSUsageWarning > 0 && fsinfo.FreePerc < 100-conf.DefaultFSUsageWarning {
 				warnings.Warnings = append(warnings.Warnings, "Low free space on "+fsinfo.Name)
 			}
 		}
 		// cpu temp
 		cputemp := GetCPUInfo().Temp
-		if cputemp > conf.CPUTempError {
+		if conf.CPUTempError > 0 && cputemp > conf.CPUTempError {
 			warnings.Errors = append(warnings.Errors, "Critical CPU temperature")
-		} else if cputemp > conf.CPUTempWarning {
+		} else if conf.CPUTempWarning > 0 && cputemp > conf.CPUTempWarning {
 			warnings.Warnings = append(warnings.Warnings, "High CPU temperature")
 		}
 		// Services

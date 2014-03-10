@@ -65,10 +65,10 @@ func (f *confForm) validate() (errors []string) {
 }
 
 func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
-	form := &confForm{}
-	*form = confForm(cfg.Configuration.Monitor)
+	form := confForm{}
+	form = confForm(*cfg.Configuration.Monitor)
 	ctx := &confPageContext{BasePageContext: bctx,
-		Form: form,
+		Form: &form,
 	}
 
 	switch r.Method {
@@ -79,7 +79,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 		}
 		errors := ctx.Form.validate()
 		if errors == nil || len(errors) == 0 {
-			cfg.Configuration.Monitor = cfg.MonitorConfiguration(*form)
+			*cfg.Configuration.Monitor = cfg.MonitorConfiguration(form)
 			err := cfg.SaveConfiguration()
 			if err != nil {
 				ctx.AddFlashMessage("Saving configuration error: "+err.Error(),

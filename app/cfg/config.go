@@ -22,7 +22,7 @@ type (
 		HTTPSAddress    string `json:"https_address"`
 		SslCert         string
 		SslKey          string
-		Monitor         MonitorConfiguration         `json:"monitor"`
+		Monitor         *MonitorConfiguration        `json:"monitor"`
 		Modules         map[string]map[string]string `json:"modules"`
 	}
 	// MonitorConfiguration hold configuration for Monitor module
@@ -62,38 +62,15 @@ func loadConfiguration(filename string) bool {
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatal("app.LoadConfiguration error: ", err.Error())
-		return false
+		Configuration.loadDefaults()
+	} else {
+		if err = json.Unmarshal(file, &Configuration); err != nil {
+			log.Fatal("app.LoadConfiguration error: ", err.Error())
+			log.Fatal("Loading default configuration")
+			Configuration.loadDefaults()
+		}
 	}
-
-	if err = json.Unmarshal(file, &Configuration); err != nil {
-		log.Fatal("app.LoadConfiguration error: ", err.Error())
-		return false
-	}
-
-	if Configuration.Monitor.LoadWarning == 0 {
-		Configuration.Monitor.LoadWarning = float64(runtime.NumCPU() * 2)
-	}
-	if Configuration.Monitor.LoadError == 0 {
-		Configuration.Monitor.LoadError = float64(runtime.NumCPU() * 4)
-	}
-	if Configuration.Monitor.RAMUsageWarning == 0 {
-		Configuration.Monitor.RAMUsageWarning = 90
-	}
-	if Configuration.Monitor.SwapUsageWarning == 0 {
-		Configuration.Monitor.SwapUsageWarning = 75
-	}
-	if Configuration.Monitor.DefaultFSUsageWarning == 0 {
-		Configuration.Monitor.DefaultFSUsageWarning = 90
-	}
-	if Configuration.Monitor.DefaultFSUsageError == 0 {
-		Configuration.Monitor.DefaultFSUsageError = 95
-	}
-	if Configuration.Monitor.CPUTempWarning == 0 {
-		Configuration.Monitor.CPUTempWarning = 60
-	}
-	if Configuration.Monitor.CPUTempError == 0 {
-		Configuration.Monitor.CPUTempError = 80
-	}
+	Configuration.validate()
 	return true
 }
 
@@ -106,4 +83,75 @@ func SaveConfiguration() error {
 		return err
 	}
 	return ioutil.WriteFile(configFilename, data, 0600)
+}
+
+func (ac *AppConfiguration) loadDefaults() {
+	ac.StaticDir = "./static"
+	ac.TemplatesDir = "./templates"
+	ac.Users = "./users.json"
+	ac.Debug = true
+	ac.CookieAuthKey = "12345678901234567890123456789012"
+	ac.CookieEncKey = "12345678901234567890123456789012"
+	ac.SessionStoreDir = "./temp"
+	ac.LogFilename = "app.log"
+	ac.HTTPAddress = ":8000"
+	ac.HTTPSAddress = ""
+	ac.SslCert = "key.pem"
+	ac.SslKey = "cert.pem"
+	ac.Monitor = &MonitorConfiguration{}
+	ac.Monitor.loadDefaults()
+}
+
+func (ac *AppConfiguration) validate() {
+	ac.Monitor.validate()
+}
+
+func (mc *MonitorConfiguration) loadDefaults() {
+	mc.UpdateInterval = 5
+	mc.LoadWarning = float64(runtime.NumCPU() * 2)
+	mc.LoadError = float64(runtime.NumCPU() * 4)
+	mc.RAMUsageWarning = 90
+	mc.SwapUsageWarning = 75
+	mc.DefaultFSUsageWarning = 90
+	mc.DefaultFSUsageError = 95
+	mc.CPUTempWarning = 60
+	mc.CPUTempError = 80
+	mc.CPUFreqFile = "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq"
+	mc.CPUTempFile = "/sys/class/thermal/thermal_zone0/temp"
+}
+
+func (mc *MonitorConfiguration) validate() {
+	if mc.UpdateInterval < 0 {
+		mc.UpdateInterval = 5
+	}
+	if mc.LoadWarning < 0 {
+		mc.LoadWarning = float64(runtime.NumCPU() * 2)
+	}
+	if mc.LoadError < 0 {
+		mc.LoadError = mc.LoadWarning * 2
+	}
+	if mc.RAMUsageWarning < 0 || mc.RAMUsageWarning > 100 {
+		mc.RAMUsageWarning = 90
+	}
+	if mc.SwapUsageWarning < 0 || mc.SwapUsageWarning > 100 {
+		mc.SwapUsageWarning = 75
+	}
+	if mc.DefaultFSUsageWarning < 0 || mc.DefaultFSUsageWarning > 100 {
+		mc.DefaultFSUsageWarning = 90
+	}
+	if mc.DefaultFSUsageError < 0 || mc.DefaultFSUsageError > 100 {
+		mc.DefaultFSUsageError = 95
+	}
+	if mc.DefaultFSUsageError < mc.DefaultFSUsageWarning && mc.DefaultFSUsageError > 0 {
+		mc.DefaultFSUsageError = 0
+	}
+	if mc.CPUTempWarning < 0 {
+		mc.CPUTempWarning = 60
+	}
+	if mc.CPUTempError < 0 {
+		mc.CPUTempError = 80
+	}
+	if mc.CPUTempError < mc.CPUTempWarning && mc.CPUTempError > 0 {
+		mc.CPUTempError = 0
+	}
 }

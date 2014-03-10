@@ -54,6 +54,10 @@ func initModule(parentRoute *mux.Route) bool {
 	// Configuration for monitor is in main config
 	// TODO: przenieść
 	interval := cfg.Configuration.Monitor.UpdateInterval
+	if interval == 0 {
+		l.Info("Monitor: refresh in background is disabled")
+		return true
+	}
 	ticker := time.NewTicker(time.Duration(interval) * time.Second)
 	quit := make(chan struct{})
 	go func() {
