@@ -17,6 +17,8 @@ var Router = mux.NewRouter()
 // Init - Initialize application
 func Init(appConfFile string, debug int) *cfg.AppConfiguration {
 
+	Router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
+
 	conf := cfg.LoadConfiguration(appConfFile)
 	if debug == 0 {
 		conf.Debug = false
@@ -56,4 +58,8 @@ func GetNamedURL(name string, pairs ...string) (url string) {
 		return ""
 	}
 	return rurl.String()
+}
+
+func notFoundHandler(w http.ResponseWriter, r *http.Request) {
+	Render404(w, r)
 }
