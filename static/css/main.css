@@ -157,8 +157,10 @@ footer {
 	border-top: 1px solid #e5e5e5;
 }
 
-.row div {
+
+.row > div {
 	margin-bottom: 10px;
+	margin-top: 10px;
 }
 
 div.pager input {
