@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
+	"k.prv/rpimon/app/errors"
 	h "k.prv/rpimon/helpers"
 	"k.prv/rpimon/modules/monitor"
 	"net/http"
@@ -148,7 +149,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePa
 		cmd = confCommands["Base"][0]
 	} else {
 		if !h.CheckValueInDictOfList(confCommands, cmd) {
-			http.Error(w, "invalid request", http.StatusBadRequest)
+			errors.Render400(w, r)
 			return
 		}
 	}
@@ -188,7 +189,7 @@ func iptablesPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.Ba
 		table = iptablesTables[0]
 	} else {
 		if !h.CheckValueInStrList(iptablesTables, table) {
-			http.Error(w, "invalid request", http.StatusBadRequest)
+			errors.Render400(w, r)
 			return
 		}
 	}
@@ -266,7 +267,7 @@ func actionHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePage
 	action := r.FormValue("action")
 	iface := r.FormValue("iface")
 	if action == "" || iface == "" {
-		http.Error(w, "missing action and/or iface", http.StatusBadRequest)
+		errors.Render400(w, r, "Invalid Request: missing action and/or iface")
 		return
 	}
 
@@ -279,7 +280,7 @@ func actionHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePage
 	case "up":
 		result = h.ReadCommand("sudo", "ifconfig", iface, "up")
 	default:
-		http.Error(w, "wrong action", http.StatusBadRequest)
+		errors.Render400(w, r, "Invalid Request: wrong action")
 		return
 	}
 

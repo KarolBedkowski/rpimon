@@ -10,8 +10,8 @@ import (
 	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
+	"k.prv/rpimon/app/errors"
 	"k.prv/rpimon/app/session"
-	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"strconv"
 	"strings"
@@ -37,8 +37,7 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	action, ok := vars["action"]
 	if !ok || action == "" {
-		l.Warn("page.mpd.songActionPageHandler: missing action ", vars)
-		http.Error(w, "missing action", http.StatusBadRequest)
+		errors.Render400(w, r, "Invalid Request: missing action")
 		return
 	}
 	var songID = -2
@@ -46,8 +45,7 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 		songID, _ = strconv.Atoi(songIDStr)
 	}
 	if songID == -2 {
-		l.Warn("page.mpd.songActionPageHandler: missing or invalid songID ", vars)
-		http.Error(w, "missing or invalid songID", http.StatusBadRequest)
+		errors.Render400(w, r, "Invalid Request: missing or invalid songID")
 		return
 	}
 	err := mpdSongAction(songID, action)
@@ -83,11 +81,11 @@ func playlistSavePageHandler(w http.ResponseWriter, r *http.Request) {
 	form := &savePlaylistForm{}
 	decoder.Decode(form, r.Form)
 	if form.Name == "" {
-		http.Error(w, "Missing name", http.StatusBadRequest)
+		errors.Render400(w, r, "Invalid Request: missing name")
 		return
 	}
 	if err := playlistSave(form.Name); err != nil {
-		http.Error(w, "Saving playlist error: "+err.Error(), http.StatusInternalServerError)
+		errors.Render500(w, r, "Saving playlist error: "+err.Error())
 	} else {
 		w.Write([]byte("Playlist saved"))
 	}
@@ -103,11 +101,11 @@ func addToPlaylistActionHandler(w http.ResponseWriter, r *http.Request) {
 	form := &addToPlaylistForm{}
 	decoder.Decode(form, r.Form)
 	if form.Uri == "" {
-		http.Error(w, "Missing URI", http.StatusBadRequest)
+		errors.Render400(w, r, "Invalid Request: missing URI")
 		return
 	}
 	if err := addToPlaylist(form.Uri); err != nil {
-		http.Error(w, "Adding to playlist error: "+err.Error(), http.StatusInternalServerError)
+		errors.Render500(w, r, "Adding to playlist error: "+err.Error())
 	} else {
 		w.Write([]byte("URI added"))
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
+	aerrors "k.prv/rpimon/app/errors"
 	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
@@ -207,7 +208,7 @@ func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=UTF-8")
 		w.Write([]byte(result))
 	} else {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		aerrors.Render400(w, r, "Invalid Request:  "+err.Error())
 	}
 }
 
@@ -247,14 +248,12 @@ func songInfoStubHandler(w http.ResponseWriter, r *http.Request) {
 func filePageHandler(w http.ResponseWriter, r *http.Request) {
 	action := r.FormValue("action")
 	if action == "" {
-		l.Warn("page.mpd filePageHandler: missing action ", r.Form)
-		http.Error(w, "missing action", http.StatusBadRequest)
+		aerrors.Render400(w, r, "Invalid Request:  missing action")
 		return
 	}
 	uri := r.FormValue("uri")
 	if uri == "" {
-		l.Warn("page.mpd filePageHandler: missing uri ", r.Form)
-		http.Error(w, "missing uri", http.StatusBadRequest)
+		aerrors.Render400(w, r, "Invalid Request:  missing uri")
 		return
 	}
 	uri, _ = url.QueryUnescape(uri)
@@ -264,6 +263,6 @@ func filePageHandler(w http.ResponseWriter, r *http.Request) {
 		encoded, _ := json.Marshal("OK")
 		w.Write(encoded)
 	} else {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		aerrors.Render400(w, r, "Internal Server Errror: "+err.Error())
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
+	"k.prv/rpimon/app/errors"
 	h "k.prv/rpimon/helpers"
 	//l "k.prv/rpimon/helpers/logging"
 	"net/http"
@@ -40,7 +41,7 @@ func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		w.Write([]byte(status))
 	} else {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		errors.Render500(w, r, "Playlist action error: "+err.Error())
 	}
 }
 
