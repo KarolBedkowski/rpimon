@@ -17,6 +17,7 @@ func Render400(w http.ResponseWriter, r *http.Request, msgs ...string) {
 	l.Debug("400: user=%s, url=%s", ctx.CurrentUser, r.URL.String())
 }
 
+//Render404 render Not Found error page
 func Render404(w http.ResponseWriter, r *http.Request, msgs ...string) {
 	msg := "Not found"
 	if msgs != nil && len(msgs) > 0 {
@@ -26,6 +27,7 @@ func Render404(w http.ResponseWriter, r *http.Request, msgs ...string) {
 	l.Debug("404: user=%s, url=%s", ctx.CurrentUser, r.URL.String())
 }
 
+//Render401 render Unauthorized error page
 func Render401(w http.ResponseWriter, r *http.Request, msgs ...string) {
 	msg := "Unauthorized"
 	if msgs != nil && len(msgs) > 0 {
@@ -35,6 +37,7 @@ func Render401(w http.ResponseWriter, r *http.Request, msgs ...string) {
 	l.Warn("401: user=%s, url=%s", ctx.CurrentUser, r.URL.String())
 }
 
+//Render403 render Forbidden error page
 func Render403(w http.ResponseWriter, r *http.Request, msgs ...string) {
 	msg := "Forbidden"
 	if msgs != nil && len(msgs) > 0 {
@@ -44,6 +47,7 @@ func Render403(w http.ResponseWriter, r *http.Request, msgs ...string) {
 	l.Warn("403: user=%s, url=%s", ctx.CurrentUser, r.URL.String())
 }
 
+//Render500 render Internal Server Error page
 func Render500(w http.ResponseWriter, r *http.Request, msgs ...string) {
 	msg := "Internal Server Error"
 	if msgs != nil && len(msgs) > 0 {
@@ -53,6 +57,7 @@ func Render500(w http.ResponseWriter, r *http.Request, msgs ...string) {
 	l.Warn("500: user=%s, url=%s", ctx.CurrentUser, r.URL.String())
 }
 
+//RenderError render custom error page
 func RenderError(w http.ResponseWriter, r *http.Request, status int, message string) {
 	ctx := renderError(w, r, status, message)
 	l.Debug("%d: %s; user=%s, url=%s", status, message, ctx.CurrentUser, r.URL.String())
