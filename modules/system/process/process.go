@@ -73,7 +73,7 @@ func serviceActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	service := r.FormValue("service")
 	action := r.FormValue("action")
 	if service == "" || action == "" {
-		http.Error(w, "invalid request; missing service and/or action", http.StatusBadRequest)
+		app.Render400(w, r, "invalid request; missing service and/or action")
 		return
 	}
 	l.Info("process serviceActionPageHandler %s %s", service, action)
@@ -157,7 +157,7 @@ func processActionHandler(w http.ResponseWriter, r *http.Request) {
 	action := r.FormValue("a")
 	pid := r.FormValue("pid")
 	if action == "" || pid == "" {
-		http.Error(w, "invalid request", http.StatusBadRequest)
+		app.Render400(w, r)
 		return
 	}
 
@@ -170,7 +170,7 @@ func processActionHandler(w http.ResponseWriter, r *http.Request) {
 	case "stop":
 		result = h.ReadCommand("sudo", "kill", pid)
 	default:
-		http.Error(w, "invalid action", http.StatusBadRequest)
+		app.Render400(w, r)
 		return
 	}
 	s := session.GetSessionStore(w, r)

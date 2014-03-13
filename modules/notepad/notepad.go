@@ -106,7 +106,7 @@ func notePageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	filename, _ := vars["note"]
 	if filename == "" {
-		http.Error(w, "missing filename", http.StatusBadRequest)
+		app.Render400(w, r, "Invalid request: missing filename")
 		return
 	}
 	switch r.Method {
@@ -140,18 +140,18 @@ func notePageHandler(w http.ResponseWriter, r *http.Request) {
 		// delete note
 		filepath, _ := getFilepath(filename)
 		if filepath == "" {
-			http.Error(w, "invalid filename", http.StatusBadRequest)
+			app.Render400(w, r, "Invalid request: invalid filename")
 			return
 		}
 	}
-	http.Error(w, "bad request", http.StatusBadRequest)
+	app.Render400(w, r)
 }
 
 func noteDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	filename, _ := vars["note"]
 	if filename == "" {
-		http.Error(w, "missing filename", http.StatusBadRequest)
+		app.Render400(w, r, "Invalid Request: missing filename")
 		return
 	}
 	sess := session.GetSessionStore(w, r)
@@ -168,14 +168,14 @@ func noteDownloadHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	filename, _ := vars["note"]
 	if filename == "" {
-		http.Error(w, "missing filename", http.StatusBadRequest)
+		app.Render400(w, r, "Invalid Request: missing filename")
 		return
 	}
 	if filepath, ok := getFilepath(filename); ok {
 		w.Header().Set("Content-Disposition", "attachment; filename=\""+filename+"\"")
 		http.ServeFile(w, r, filepath)
 	} else {
-		http.Error(w, "File not found", http.StatusNotFound)
+		app.Render404(w, r, "File not found")
 	}
 }
 

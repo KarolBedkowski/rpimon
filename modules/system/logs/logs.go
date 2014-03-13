@@ -78,7 +78,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 	logname := r.FormValue("log")
 	logs, group, err := findGroup(page, logname)
 	if err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
+		app.Render400(w, r)
 		return
 	}
 
@@ -122,7 +122,7 @@ func servLogHandler(w http.ResponseWriter, r *http.Request) {
 
 	logs, _, err := findGroup(page, logname)
 	if err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
+		app.Render400(w, r)
 		return
 	}
 

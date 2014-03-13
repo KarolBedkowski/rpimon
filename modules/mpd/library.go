@@ -30,18 +30,18 @@ func libraryActionHandler(w http.ResponseWriter, r *http.Request) {
 			if err == nil {
 				w.Write([]byte("Added to playlist"))
 			} else {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				app.Render400(w, r)
 			}
 			return
 		}
 	case "update":
 		err := mpdActionUpdate(r.FormValue("uri"))
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			app.Render400(w, r)
 		}
 		return
 	}
-	http.Error(w, "Invalid request", http.StatusBadRequest)
+	app.Render400(w, r)
 }
 
 func libraryServHandler(w http.ResponseWriter, r *http.Request) {

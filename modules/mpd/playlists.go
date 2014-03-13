@@ -40,7 +40,7 @@ func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		w.Write([]byte(status))
 	} else {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		app.Render500(w, r, "Playlist action error: "+err.Error())
 	}
 }
 

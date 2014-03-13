@@ -98,11 +98,11 @@ func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *context
 	ctx := &confModulePageContext{BasePageContext: bctx}
 	ctx.Module = context.GetModule(moduleName)
 	if ctx.Module == nil {
-		http.Error(w, "invalid module "+moduleName, http.StatusBadRequest)
+		app.Render400(w, r, "Invalid module "+moduleName)
 		return
 	}
 	if !ctx.Module.Configurable {
-		http.Error(w, "module not confiugrable", http.StatusBadRequest)
+		app.Render400(w, r, "Module not configurable")
 		return
 	}
 	conf := ctx.Module.GetConfiguration()

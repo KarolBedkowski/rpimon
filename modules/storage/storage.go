@@ -75,7 +75,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 			app.NewMenuItemFromRoute("Fdisk", "storage-page", "page", page).AddQuery("?sec=fdisk").SetActve(sec == "fdisk"),
 		}
 	default:
-		http.Error(w, "invalid request", http.StatusBadRequest)
+		app.Render400(w, r)
 		return
 	}
 	app.RenderTemplateStd(w, ctx, "data.tmpl", "tabs.tmpl")
@@ -123,7 +123,7 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	fs := r.FormValue("fs")
 	if fs == "" {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
+		app.Render400(w, r)
 		return
 	}
 	data := h.ReadCommand("sudo", "umount", fs)
