@@ -5,7 +5,6 @@ import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
-	"k.prv/rpimon/app/errors"
 	h "k.prv/rpimon/helpers"
 	"k.prv/rpimon/modules/monitor"
 	"net/http"
@@ -149,7 +148,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePa
 		cmd = confCommands["Base"][0]
 	} else {
 		if !h.CheckValueInDictOfList(confCommands, cmd) {
-			errors.Render400(w, r)
+			app.Render400(w, r)
 			return
 		}
 	}
@@ -189,7 +188,7 @@ func iptablesPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.Ba
 		table = iptablesTables[0]
 	} else {
 		if !h.CheckValueInStrList(iptablesTables, table) {
-			errors.Render400(w, r)
+			app.Render400(w, r)
 			return
 		}
 	}
@@ -267,7 +266,7 @@ func actionHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePage
 	action := r.FormValue("action")
 	iface := r.FormValue("iface")
 	if action == "" || iface == "" {
-		errors.Render400(w, r, "Invalid Request: missing action and/or iface")
+		app.Render400(w, r, "Invalid Request: missing action and/or iface")
 		return
 	}
 
@@ -280,7 +279,7 @@ func actionHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePage
 	case "up":
 		result = h.ReadCommand("sudo", "ifconfig", iface, "up")
 	default:
-		errors.Render400(w, r, "Invalid Request: wrong action")
+		app.Render400(w, r, "Invalid Request: wrong action")
 		return
 	}
 

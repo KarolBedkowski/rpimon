@@ -2,7 +2,7 @@ package utils
 
 import (
 	"errors"
-	aerrors "k.prv/rpimon/app/errors"
+	"k.prv/rpimon/app"
 	"net/http"
 	"net/url"
 	"os"
@@ -24,7 +24,7 @@ var errNotFound = errors.New("not found")
 func verifyAccess(h pathHandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if config.BaseDir == "" {
-			aerrors.Render500(w, r, "Missing module configuration. Check browser.josm")
+			app.Render500(w, r, "Missing module configuration. Check browser.josm")
 			return
 		}
 		r.ParseForm()
@@ -33,7 +33,7 @@ func verifyAccess(h pathHandlerFunc) http.HandlerFunc {
 		if ok {
 			abspath, relpath, err := isPathValid(pathD[0])
 			if err != nil {
-				aerrors.Render403(w, r, "Fobidden/wrong path "+err.Error())
+				app.Render403(w, r, "Fobidden/wrong path "+err.Error())
 				return
 			}
 			if abspath != "" {

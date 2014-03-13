@@ -10,7 +10,6 @@ import (
 	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
-	"k.prv/rpimon/app/errors"
 	"k.prv/rpimon/app/session"
 	"net/http"
 	"strconv"
@@ -37,7 +36,7 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	action, ok := vars["action"]
 	if !ok || action == "" {
-		errors.Render400(w, r, "Invalid Request: missing action")
+		app.Render400(w, r, "Invalid Request: missing action")
 		return
 	}
 	var songID = -2
@@ -45,7 +44,7 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 		songID, _ = strconv.Atoi(songIDStr)
 	}
 	if songID == -2 {
-		errors.Render400(w, r, "Invalid Request: missing or invalid songID")
+		app.Render400(w, r, "Invalid Request: missing or invalid songID")
 		return
 	}
 	err := mpdSongAction(songID, action)
@@ -81,11 +80,11 @@ func playlistSavePageHandler(w http.ResponseWriter, r *http.Request) {
 	form := &savePlaylistForm{}
 	decoder.Decode(form, r.Form)
 	if form.Name == "" {
-		errors.Render400(w, r, "Invalid Request: missing name")
+		app.Render400(w, r, "Invalid Request: missing name")
 		return
 	}
 	if err := playlistSave(form.Name); err != nil {
-		errors.Render500(w, r, "Saving playlist error: "+err.Error())
+		app.Render500(w, r, "Saving playlist error: "+err.Error())
 	} else {
 		w.Write([]byte("Playlist saved"))
 	}
@@ -101,11 +100,11 @@ func addToPlaylistActionHandler(w http.ResponseWriter, r *http.Request) {
 	form := &addToPlaylistForm{}
 	decoder.Decode(form, r.Form)
 	if form.Uri == "" {
-		errors.Render400(w, r, "Invalid Request: missing URI")
+		app.Render400(w, r, "Invalid Request: missing URI")
 		return
 	}
 	if err := addToPlaylist(form.Uri); err != nil {
-		errors.Render500(w, r, "Adding to playlist error: "+err.Error())
+		app.Render500(w, r, "Adding to playlist error: "+err.Error())
 	} else {
 		w.Write([]byte("URI added"))
 	}

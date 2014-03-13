@@ -4,7 +4,6 @@ import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
-	"k.prv/rpimon/app/errors"
 	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
@@ -74,7 +73,7 @@ func serviceActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	service := r.FormValue("service")
 	action := r.FormValue("action")
 	if service == "" || action == "" {
-		errors.Render400(w, r, "invalid request; missing service and/or action")
+		app.Render400(w, r, "invalid request; missing service and/or action")
 		return
 	}
 	l.Info("process serviceActionPageHandler %s %s", service, action)
@@ -158,7 +157,7 @@ func processActionHandler(w http.ResponseWriter, r *http.Request) {
 	action := r.FormValue("a")
 	pid := r.FormValue("pid")
 	if action == "" || pid == "" {
-		errors.Render400(w, r)
+		app.Render400(w, r)
 		return
 	}
 
@@ -171,7 +170,7 @@ func processActionHandler(w http.ResponseWriter, r *http.Request) {
 	case "stop":
 		result = h.ReadCommand("sudo", "kill", pid)
 	default:
-		errors.Render400(w, r)
+		app.Render400(w, r)
 		return
 	}
 	s := session.GetSessionStore(w, r)

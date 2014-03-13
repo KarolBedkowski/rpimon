@@ -1,7 +1,6 @@
-package errors
+package app
 
 import (
-	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
@@ -75,6 +74,6 @@ func renderError(w http.ResponseWriter, r *http.Request, status int, message str
 		Error:           err,
 	}
 	w.WriteHeader(status)
-	app.RenderTemplateStd(w, ctx, "errors/error.tmpl")
+	RenderTemplateStd(w, ctx, "errors/error.tmpl")
 	return ctx
 }

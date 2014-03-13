@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
-	aerrors "k.prv/rpimon/app/errors"
 	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
@@ -107,7 +106,7 @@ func notePageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	filename, _ := vars["note"]
 	if filename == "" {
-		aerrors.Render400(w, r, "Invalid request: missing filename")
+		app.Render400(w, r, "Invalid request: missing filename")
 		return
 	}
 	switch r.Method {
@@ -141,18 +140,18 @@ func notePageHandler(w http.ResponseWriter, r *http.Request) {
 		// delete note
 		filepath, _ := getFilepath(filename)
 		if filepath == "" {
-			aerrors.Render400(w, r, "Invalid request: invalid filename")
+			app.Render400(w, r, "Invalid request: invalid filename")
 			return
 		}
 	}
-	aerrors.Render400(w, r)
+	app.Render400(w, r)
 }
 
 func noteDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	filename, _ := vars["note"]
 	if filename == "" {
-		aerrors.Render400(w, r, "Invalid Request: missing filename")
+		app.Render400(w, r, "Invalid Request: missing filename")
 		return
 	}
 	sess := session.GetSessionStore(w, r)
@@ -169,14 +168,14 @@ func noteDownloadHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	filename, _ := vars["note"]
 	if filename == "" {
-		aerrors.Render400(w, r, "Invalid Request: missing filename")
+		app.Render400(w, r, "Invalid Request: missing filename")
 		return
 	}
 	if filepath, ok := getFilepath(filename); ok {
 		w.Header().Set("Content-Disposition", "attachment; filename=\""+filename+"\"")
 		http.ServeFile(w, r, filepath)
 	} else {
-		aerrors.Render404(w, r, "File not found")
+		app.Render404(w, r, "File not found")
 	}
 }
 

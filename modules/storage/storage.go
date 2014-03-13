@@ -4,7 +4,6 @@ import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
-	"k.prv/rpimon/app/errors"
 	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	"net/http"
@@ -76,7 +75,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 			app.NewMenuItemFromRoute("Fdisk", "storage-page", "page", page).AddQuery("?sec=fdisk").SetActve(sec == "fdisk"),
 		}
 	default:
-		errors.Render400(w, r)
+		app.Render400(w, r)
 		return
 	}
 	app.RenderTemplateStd(w, ctx, "data.tmpl", "tabs.tmpl")
@@ -124,7 +123,7 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	fs := r.FormValue("fs")
 	if fs == "" {
-		errors.Render400(w, r)
+		app.Render400(w, r)
 		return
 	}
 	data := h.ReadCommand("sudo", "umount", fs)

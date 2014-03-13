@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
-	aerrors "k.prv/rpimon/app/errors"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
@@ -79,7 +78,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 	logname := r.FormValue("log")
 	logs, group, err := findGroup(page, logname)
 	if err != nil {
-		aerrors.Render400(w, r)
+		app.Render400(w, r)
 		return
 	}
 
@@ -123,7 +122,7 @@ func servLogHandler(w http.ResponseWriter, r *http.Request) {
 
 	logs, _, err := findGroup(page, logname)
 	if err != nil {
-		aerrors.Render400(w, r)
+		app.Render400(w, r)
 		return
 	}
 

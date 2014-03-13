@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
-	"k.prv/rpimon/app/errors"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
@@ -89,7 +88,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) 
 	l.Debug("mainPageHandler: %v", relpath)
 	isDirectory, err := isDir(abspath)
 	if err != nil {
-		errors.Render404(w, r, "Error: "+err.Error())
+		app.Render404(w, r, "Error: "+err.Error())
 		return
 	}
 	// Serve file
@@ -106,18 +105,18 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) 
 
 func uploadPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
 	if pctx == nil {
-		errors.Render404(w, r, "Error: missing path")
+		app.Render404(w, r, "Error: missing path")
 		return
 	}
 	var relpath, abspath = pctx.relpath, pctx.abspath
 	if isDirectory, err := isDir(abspath); !isDirectory || err != nil {
-		errors.Render400(w, r, "Error: wrong path "+err.Error())
+		app.Render400(w, r, "Error: wrong path "+err.Error())
 		return
 	}
 
 	f, handler, err := r.FormFile("upload")
 	if err != nil {
-		errors.Render400(w, r, "Error: missing file "+err.Error())
+		app.Render400(w, r, "Error: missing file "+err.Error())
 		return
 	}
 	defer f.Close()
@@ -126,7 +125,7 @@ func uploadPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext
 	l.Debug("files: upload files %s", fabspath)
 	file, err := os.Create(fabspath)
 	if err != nil {
-		errors.Render400(w, r, "Error: error creating file "+err.Error())
+		app.Render400(w, r, "Error: error creating file "+err.Error())
 		return
 	}
 	defer file.Close()
@@ -140,7 +139,7 @@ func uploadPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext
 
 func actionHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
 	if pctx == nil {
-		errors.Render404(w, r, "Error: missing path")
+		app.Render404(w, r, "Error: missing path")
 		return
 	}
 	action, ok := h.GetParam(w, r, "action")
@@ -156,7 +155,7 @@ func actionHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
 		if err == nil {
 			w.Write([]byte(abspath + " deleted"))
 		} else {
-			errors.Render500(w, r, "Error: "+err.Error())
+			app.Render500(w, r, "Error: "+err.Error())
 		}
 		return
 	case "move":
@@ -172,13 +171,13 @@ func actionHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
 				if err == nil {
 					w.Write([]byte(relpath + " moved to " + rdest))
 				} else {
-					errors.Render404(w, r, "Error: "+err.Error())
+					app.Render404(w, r, "Error: "+err.Error())
 				}
 				return
 			}
 		}
 	}
-	errors.Render400(w, r, "Error: invalid action")
+	app.Render400(w, r, "Error: invalid action")
 }
 
 type dirInfo struct {
@@ -190,7 +189,7 @@ type dirInfo struct {
 
 func dirServHandler(w http.ResponseWriter, r *http.Request) {
 	if config.BaseDir == "" {
-		errors.Render400(w, r, "Missing module configuration. Check browser.json")
+		app.Render400(w, r, "Missing module configuration. Check browser.json")
 		return
 	}
 	r.ParseForm()
@@ -201,7 +200,7 @@ func dirServHandler(w http.ResponseWriter, r *http.Request) {
 
 	abspath, relpath, err := isPathValid(id2Dir(path))
 	if err != nil {
-		errors.Render400(w, r, "Invalid id")
+		app.Render400(w, r, "Invalid id")
 		return
 	}
 
@@ -238,7 +237,7 @@ func dirServHandler(w http.ResponseWriter, r *http.Request) {
 
 func filesServHandler(w http.ResponseWriter, r *http.Request) {
 	if config.BaseDir == "" {
-		errors.Render500(w, r, "Missing module configuration. Check browser.josm")
+		app.Render500(w, r, "Missing module configuration. Check browser.josm")
 		return
 	}
 	r.ParseForm()
@@ -248,7 +247,7 @@ func filesServHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	abspath, relpath, err := isPathValid(path)
 	if err != nil {
-		errors.Render400(w, r, "invalid id")
+		app.Render400(w, r, "invalid id")
 		return
 	}
 	children := make([][]interface{}, 0)
@@ -292,14 +291,14 @@ func filesServHandler(w http.ResponseWriter, r *http.Request) {
 
 func mkdirServHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
 	if pctx == nil {
-		errors.Render400(w, r, "Error: missing path")
+		app.Render400(w, r, "Error: missing path")
 		return
 	}
 	if dirname, ok := h.GetParam(w, r, "name"); ok {
 		dirpath := filepath.Join(pctx.abspath, dirname)
 		l.Debug("files: create dir %s", dirpath)
 		if err := os.MkdirAll(dirpath, os.ModePerm|0770); err != nil {
-			errors.Render500(w, r, "Error: creating directory: "+err.Error())
+			app.Render500(w, r, "Error: creating directory: "+err.Error())
 		}
 		w.Write([]byte("OK"))
 	}
