@@ -20,7 +20,8 @@ const (
 	sessionLoginKey      = "USERID"
 	sessionPermissionKey = "USER_PERM"
 	sessionTimestampKey  = "timestamp"
-	maxSessionAge        = time.Duration(24) * time.Hour
+	maxSessionAgeDays    = 5
+	maxSessionAge        = time.Duration(24*maxSessionAgeDays) * time.Hour
 )
 
 var store *sessions.CookieStore
@@ -53,7 +54,7 @@ func GetSessionStore(w http.ResponseWriter, r *http.Request) *sessions.Session {
 	session, _ := store.Get(r, storesession)
 	session.Options = &sessions.Options{
 		Path:   "/",
-		MaxAge: 86400 * 1,
+		MaxAge: 86400 * maxSessionAgeDays,
 	}
 	return session
 }
