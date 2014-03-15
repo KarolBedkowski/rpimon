@@ -61,12 +61,12 @@ func LoadConfiguration(filename string) *AppConfiguration {
 func loadConfiguration(filename string) bool {
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Fatal("app.LoadConfiguration error: ", err.Error())
+		log.Print("Errors: app.LoadConfiguration error: ", err.Error())
 		Configuration.loadDefaults()
 	} else {
 		if err = json.Unmarshal(file, &Configuration); err != nil {
-			log.Fatal("app.LoadConfiguration error: ", err.Error())
-			log.Fatal("Loading default configuration")
+			log.Print("Error: app.LoadConfiguration error: ", err.Error())
+			log.Print("Error: Loading default configuration")
 			Configuration.loadDefaults()
 		}
 	}
