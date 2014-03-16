@@ -13,6 +13,13 @@ type Privilege struct {
 	Description string
 }
 
+// WarningsStruct holds current warnings, errors and informations.
+type WarningsStruct struct {
+	Warnings []string
+	Errors   []string
+	Infos    []string
+}
+
 // Module definition structore
 type Module struct {
 	// module internal name
@@ -35,7 +42,7 @@ type Module struct {
 	GetMenu MenuGenerator
 
 	// GetWarnings return map warning kind -> messages
-	GetWarnings func() map[string][]string
+	GetWarnings func() *WarningsStruct
 
 	// Shutdown module
 	Shutdown func()
@@ -191,3 +198,18 @@ type ModulesByTitle []*Module
 func (s ModulesByTitle) Len() int           { return len(s) }
 func (s ModulesByTitle) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 func (s ModulesByTitle) Less(i, j int) bool { return s[i].Title < s[j].Title }
+
+// GetWarnings from enabled modules
+func GetWarnings() *WarningsStruct {
+	w := &WarningsStruct{}
+	for _, mod := range registeredModules {
+		if mod.Enabled() && mod.GetWarnings != nil {
+			if mw := mod.GetWarnings(); mw != nil {
+				w.Infos = append(w.Infos, mw.Infos...)
+				w.Warnings = append(w.Warnings, mw.Warnings...)
+				w.Errors = append(w.Errors, mw.Errors...)
+			}
+		}
+	}
+	return w
+}

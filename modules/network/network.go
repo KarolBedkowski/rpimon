@@ -19,7 +19,6 @@ var Module = &context.Module{
 	AllPrivilages: nil,
 	Init:          initModule,
 	GetMenu:       getMenu,
-	GetWarnings:   getWarnings,
 }
 
 func initModule(parentRoute *mux.Route) bool {
@@ -50,10 +49,6 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 		app.NewMenuItemFromRoute("Netstat", "m-net-netstat"),
 	)
 	return "", menu
-}
-
-func getWarnings() map[string][]string {
-	return nil
 }
 
 type mainPageContext struct {

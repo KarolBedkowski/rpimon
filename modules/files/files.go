@@ -25,7 +25,6 @@ func init() {
 		Description: "File browser",
 		Init:        initModule,
 		GetMenu:     getMenu,
-		GetWarnings: getWarnings,
 		Defaults: map[string]string{
 			"config_file": "./browser.json",
 		},
@@ -69,10 +68,6 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 		return "", nil
 	}
 	return "", context.NewMenuItem("Files", app.GetNamedURL("files-index")).SetID("files").SetIcon("glyphicon glyphicon-hdd")
-}
-
-func getWarnings() map[string][]string {
-	return nil
 }
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {

@@ -3,6 +3,7 @@ package monitor
 
 import (
 	"k.prv/rpimon/app/cfg"
+	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	//	l "k.prv/rpimon/helpers/logging"
 	"strings"
@@ -10,22 +11,15 @@ import (
 
 // WARNINGS
 
-// WarningsStruct holds current warnings, errors and informations.
-type WarningsStruct struct {
-	Warnings []string
-	Errors   []string
-	Infos    []string
-}
-
 const warningsCacheTTL = 5
 
 var warningsCache = h.NewSimpleCache(warningsCacheTTL)
 
 // GetWarnings return current warnings to show
-func GetWarnings() *WarningsStruct {
+func getWarnings() *context.WarningsStruct {
 	result := warningsCache.Get(func() h.Value {
 		conf := cfg.Configuration.Monitor
-		warnings := &WarningsStruct{}
+		warnings := &context.WarningsStruct{}
 		// high load
 		if lastLoadInfo != nil {
 			if conf.LoadError > 0 && lastLoadInfo.Load5 > conf.LoadError {
@@ -89,7 +83,7 @@ func GetWarnings() *WarningsStruct {
 		*/
 		return warnings
 
-	}).(*WarningsStruct)
+	}).(*context.WarningsStruct)
 	return result
 }
 

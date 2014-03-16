@@ -16,7 +16,6 @@ var SambaModule = &context.Module{
 	AllPrivilages: nil,
 	Init:          initSambaModule,
 	GetMenu:       smbGetMenu,
-	GetWarnings:   smbGetWarnings,
 }
 
 func initSambaModule(parentRoute *mux.Route) bool {
@@ -34,10 +33,6 @@ func smbGetMenu(ctx *context.BasePageContext) (parentID string, menu *context.Me
 
 	menu = app.NewMenuItemFromRoute("Samba", "m-net-samba")
 	return "m-net", menu
-}
-
-func smbGetWarnings() map[string][]string {
-	return nil
 }
 
 func sambaPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {

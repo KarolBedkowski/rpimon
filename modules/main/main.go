@@ -40,7 +40,7 @@ type pageCtx struct {
 	Filesystems       *monitor.FilesystemsStruct
 	Interfaces        *monitor.InterfacesStruct
 	MpdStatus         map[string]string
-	Warnings          *monitor.WarningsStruct
+	Warnings          *context.WarningsStruct
 	MaxAcceptableLoad int
 	LoadTrucated      float64
 }
@@ -48,7 +48,7 @@ type pageCtx struct {
 func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &pageCtx{BasePageContext: bctx}
 	ctx.SetMenuActive("main")
-	ctx.Warnings = monitor.GetWarnings()
+	ctx.Warnings = context.GetWarnings()
 	ctx.Uptime = monitor.GetUptimeInfo()
 	ctx.CPUUsage = monitor.GetCPUUsageInfo()
 	ctx.CPUInfo = monitor.GetCPUInfo()
@@ -70,7 +70,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 
 func alertsServHandler(w http.ResponseWriter, r *http.Request) {
 	data := make(map[string]interface{})
-	data["warnings"] = monitor.GetWarnings()
+	data["warnings"] = context.GetWarnings()
 	encoded, _ := json.Marshal(data)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(encoded)

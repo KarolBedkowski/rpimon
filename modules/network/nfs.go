@@ -16,7 +16,6 @@ var NFSModule = &context.Module{
 	AllPrivilages: nil,
 	Init:          initNFSModule,
 	GetMenu:       nfsGetMenu,
-	GetWarnings:   nfsGetWarnings,
 }
 
 // initNFSModule initialize module
@@ -34,10 +33,6 @@ func nfsGetMenu(ctx *context.BasePageContext) (parentID string, menu *context.Me
 
 	menu = app.NewMenuItemFromRoute("NFS", "m-net-nfs")
 	return "m-net", menu
-}
-
-func nfsGetWarnings() map[string][]string {
-	return nil
 }
 
 func nfsPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {

@@ -48,13 +48,13 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 
 type pageSystemCtx struct {
 	*context.BasePageContext
-	Warnings          *monitor.WarningsStruct
+	Warnings          *context.WarningsStruct
 	MaxAcceptableLoad int
 }
 
 func systemPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &pageSystemCtx{BasePageContext: bctx,
-		Warnings: monitor.GetWarnings()}
+		Warnings: context.GetWarnings()}
 	ctx.SetMenuActive("system-live")
 	ctx.MaxAcceptableLoad = runtime.NumCPU() * 2
 	app.RenderTemplateStd(w, ctx, "main/system.tmpl")

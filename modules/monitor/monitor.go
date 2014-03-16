@@ -41,6 +41,7 @@ func init() {
 		},
 		Configurable: true,
 		Internal:     true,
+		GetWarnings:  getWarnings,
 	}
 }
 
@@ -102,6 +103,9 @@ var (
 func GetCPUUsageInfo() *CPUUsageInfoStruct {
 	cpuUsageMutex.RLock()
 	defer cpuUsageMutex.RUnlock()
+	if cfg.Configuration.Monitor.UpdateInterval == 0 {
+		return gatherCPUUsageInfo()
+	}
 	if lastCPUUsage == nil {
 		return &CPUUsageInfoStruct{}
 	}
