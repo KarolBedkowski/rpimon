@@ -26,9 +26,11 @@ type BasePageContext struct {
 	Now              string
 	FlashMessages    map[string][]interface{}
 	Tabs             []*MenuItem
+	Version          string
 }
 
 var hostname string
+var AppVersion = "dev"
 
 func init() {
 	file, err := ioutil.ReadFile("/etc/hostname")
@@ -57,6 +59,7 @@ func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *B
 		Hostname:       hostname,
 		Now:            time.Now().Format("2006-01-02 15:04:05"),
 		FlashMessages:  make(map[string][]interface{}),
+		Version:        AppVersion,
 	}
 	ctx.CurrentUser, ctx.CurrentUserPerms, _ = asess.GetLoggerUser(s)
 

@@ -31,6 +31,7 @@ import (
 )
 
 func main() {
+	log.Printf("Starting... ver %s", context.AppVersion)
 	configFilename := flag.String("conf", "./config.json", "Configuration filename")
 	debug := flag.Int("debug", -1, "Run in debug mode (1) or normal (0)")
 	flag.Parse()
