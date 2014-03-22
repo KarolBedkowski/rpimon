@@ -100,18 +100,19 @@
 					<h3 class="panel-title">Connection to services</h3>
 				</div>
 				<table class="table table-condensed table-bordered" data-numserv="{{len .Form.MonitoredServices}}" id="table-services">
-					<thead><tr><th width="25%">Port</th><th width="75%">Name</th></tr></thead>
+					<thead><tr><th width="20%">Port</th><th width="70%">Name</th><th></th></tr></thead>
 					<tbody>
 					{{range $idx, $serv := .Form.MonitoredServices}}
 						<tr>
 							<td><input type="number" name="MonitoredServices.{{$idx}}.Port" value="{{$serv.Port}}" /></td>
 							<td><input type="text" name="MonitoredServices.{{$idx}}.Name" value="{{$serv.Name}}" /></td>
+							<td><a href="#" class="serv-delete">Remove</a></td>
 						</tr>
 					{{end}}
 					</tbody>
 				</table>
 				<div class="panel-footer">
-					<button id="services-add-row">Add row</button>
+					<a href="#" id="services-add-row">Add row</a>
 				</div>
 			</div>
 		</div>
@@ -127,10 +128,19 @@
 {{define "scripts"}}
 <script type="text/javascript">
 	$(function() {
-		function updateValidators(parent) {
+
+		function onRemoveServRow(event) {
+			event.preventDefault();
+			if (confirm("Remove row?")) {
+				$(this).closest('tr').remove();
+			}
+		}
+
+		function updateServTableRows(parent) {
 			$('input[type="number"]', parent).rules("add", {
 				range: [1, 65535]
 			});
+			$('a.serv-delete', parent).on("click", onRemoveServRow);
 		};
 
 		$("form").validate({
@@ -147,15 +157,15 @@
 			}
 		});
 
-		updateValidators($("#table-services"));
+		updateServTableRows($("#table-services"));
 
 		$("#services-add-row").on("click", function(event) {
 			event.preventDefault();
 			var lastId = $("#table-services").data("numserv"),
-				newRow = $('<tr><td><input type="number" name="MonitoredServices.' + lastId + '.Port" /></td><td><input type="text" name="MonitoredServices.' + lastId + '.Name" /></td></tr>');
+				newRow = $('<tr><td><input type="number" name="MonitoredServices.' + lastId + '.Port" /></td><td><input type="text" name="MonitoredServices.' + lastId + '.Name" /></td><td><a href="#" class="serv-delete">Remove</a></td></tr>');
 			$('#table-services tbody').append(newRow);
 			$("#table-services").data("numserv", lastId + 1);
-			updateValidators(newRow);
+			updateServTableRows(newRow);
 		});
 	});
 </script>
