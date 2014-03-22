@@ -25,20 +25,26 @@ type (
 		Monitor         *MonitorConfiguration        `json:"monitor"`
 		Modules         map[string]map[string]string `json:"modules"`
 	}
+
+	MonitoredService struct {
+		Port uint32 `json:"port"`
+		Name string `json:"name"`
+	}
+
 	// MonitorConfiguration hold configuration for Monitor module
 	MonitorConfiguration struct {
-		UpdateInterval        int               `json:"update_interval"`
-		LoadWarning           float64           `json:"load_warning"`
-		LoadError             float64           `json:"load_error"`
-		RAMUsageWarning       int               `json:"ram_usage_warning"`
-		SwapUsageWarning      int               `json:"swap_usage_warning"`
-		DefaultFSUsageWarning int               `json:"fs_usage_warning"`
-		DefaultFSUsageError   int               `json:"fs_usage_error"`
-		CPUTempWarning        int               `json:"cpu_temp_warning"`
-		CPUTempError          int               `json:"cpu_temp_error"`
-		MonitoredServices     map[string]string `json:"monitored_services"`
-		CPUFreqFile           string            `json:"cpu_freq_file"`
-		CPUTempFile           string            `json:"cpu_temp_file"`
+		UpdateInterval        int                `json:"update_interval"`
+		LoadWarning           float64            `json:"load_warning"`
+		LoadError             float64            `json:"load_error"`
+		RAMUsageWarning       int                `json:"ram_usage_warning"`
+		SwapUsageWarning      int                `json:"swap_usage_warning"`
+		DefaultFSUsageWarning int                `json:"fs_usage_warning"`
+		DefaultFSUsageError   int                `json:"fs_usage_error"`
+		CPUTempWarning        int                `json:"cpu_temp_warning"`
+		CPUTempError          int                `json:"cpu_temp_error"`
+		MonitoredServices     []MonitoredService `json:"monitored_services"`
+		CPUFreqFile           string             `json:"cpu_freq_file"`
+		CPUTempFile           string             `json:"cpu_temp_file"`
 	}
 )
 

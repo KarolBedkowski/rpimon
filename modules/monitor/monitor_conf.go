@@ -8,7 +8,7 @@ import (
 	//	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
-	//	"strconv"
+	"strconv"
 )
 
 var decoder = schema.NewDecoder()
@@ -74,11 +74,24 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 	switch r.Method {
 	case "POST":
 		r.ParseForm()
+		// remove monitored services - fill in only with new data
+		form.MonitoredServices = nil
 		if err := decoder.Decode(ctx.Form, r.Form); err != nil {
 			l.Warn("Decode form error", err, r.Form)
 		}
 		errors := ctx.Form.validate()
 		if errors == nil || len(errors) == 0 {
+			// cleanup monitored services
+			var servs []cfg.MonitoredService
+			for _, serv := range form.MonitoredServices {
+				if serv.Port > 0 {
+					if serv.Name == "" {
+						serv.Name = "Connection to port " + strconv.Itoa(int(serv.Port))
+					}
+					servs = append(servs, serv)
+				}
+			}
+			form.MonitoredServices = servs
 			*cfg.Configuration.Monitor = cfg.MonitorConfiguration(form)
 			err := cfg.SaveConfiguration()
 			if err != nil {

@@ -6,6 +6,7 @@ import (
 	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	//	l "k.prv/rpimon/helpers/logging"
+	"strconv"
 	"strings"
 )
 
@@ -70,10 +71,10 @@ func getWarnings() *context.WarningsStruct {
 				warnings.Infos = append(warnings.Infos, "FTP Connected")
 			}
 		*/
-		for port, comment := range conf.MonitoredServices {
+		for _, serv := range conf.MonitoredServices {
 			//l.Debug("checking %v -> %v", port, comment)
-			if checkIsServiceConnected(port) {
-				warnings.Infos = append(warnings.Infos, comment)
+			if checkIsServiceConnected(serv.Port) {
+				warnings.Infos = append(warnings.Infos, serv.Name)
 			}
 		}
 		/* test
@@ -89,7 +90,7 @@ func getWarnings() *context.WarningsStruct {
 
 var netstatCache = h.NewSimpleCache(warningsCacheTTL)
 
-func checkIsServiceConnected(port string) (result bool) {
+func checkIsServiceConnected(port uint32) (result bool) {
 	result = false
 	out := netstatCache.Get(func() h.Value {
 		return string(h.ReadCommand("netstat", "-pn", "-tu"))
@@ -97,7 +98,7 @@ func checkIsServiceConnected(port string) (result bool) {
 	if out == "" {
 		return
 	}
-	lookingFor := ":" + port
+	lookingFor := ":" + strconv.Itoa(int(port))
 	if !strings.Contains(out, lookingFor) {
 		return false
 	}
