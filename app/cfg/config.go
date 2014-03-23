@@ -41,7 +41,9 @@ type (
 		Method string `json:"method"`
 		// inteval in sec.
 		Interval int `json:"interval"`
-		// Alarm level: 0=none, 1=info, 2=warn, 3=error
+		// Alarm level: 0=none;
+		// when unavailable 1=info, 2=warn, 3=error
+		// when available: 11=info, 12=warn, 13=error
 		Alarm int `json:"alarm"`
 	}
 

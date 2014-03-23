@@ -159,9 +159,12 @@
 							<td><input type="number" name="MonitoredHosts.{{$idx}}.Interval" maxlenght="4" size="4" value="{{$serv.Interval}}"  class="form-control input-sm"/></td>
 							<td><select name="MonitoredHosts.{{$idx}}.Alarm" class="form-control input-sm">
 									<option value="0" {{if eq $serv.Alarm 0}}selected{{end}}>none</option>
-									<option value="1" {{if eq $serv.Alarm 1}}selected{{end}}>info</option>
-									<option value="2" {{if eq $serv.Alarm 2}}selected{{end}}>warn</option>
-									<option value="3" {{if eq $serv.Alarm 3}}selected{{end}}>error</option>
+									<option value="1" {{if eq $serv.Alarm 1}}selected{{end}}>info when unavailable</option>
+									<option value="2" {{if eq $serv.Alarm 2}}selected{{end}}>warn when unavailable</option>
+									<option value="3" {{if eq $serv.Alarm 3}}selected{{end}}>error when unavailable</option>
+									<option value="11" {{if eq $serv.Alarm 11}}selected{{end}}>info when available</option>
+									<option value="12" {{if eq $serv.Alarm 12}}selected{{end}}>warn when available</option>
+									<option value="13" {{if eq $serv.Alarm 13}}selected{{end}}>error when available</option>
 								</select>
 							</td>
 							<td><a href="#" class="serv-delete">Remove</a></td>
@@ -194,9 +197,12 @@
 		<td><input type="number" name="MonitoredHosts.[[idx]].Interval" maxlenght="4" size="4"  class="form-control input-sm"/></td>
 		<td><select name="MonitoredHosts.[[idx]].Alarm" class="form-control input-sm">
 				<option value="0">none</option>
-				<option value="1">info</option>
-				<option value="2">warn</option>
-				<option value="3">error</option>
+				<option value="1">info when unavailable</option>
+				<option value="2">warn when unavailable</option>
+				<option value="3">error when unavailable</option>
+				<option value="11">info when available</option>
+				<option value="12">warn when available</option>
+				<option value="13">error when available</option>
 			</select>
 		</td>
 		<td><a href="#" class="serv-delete">Remove</a></td>
