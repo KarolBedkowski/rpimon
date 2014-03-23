@@ -26,11 +26,13 @@ type (
 		Modules         map[string]map[string]string `json:"modules"`
 	}
 
+	// MonitoredService configure one service to monitor in Monitor module
 	MonitoredService struct {
 		Port uint32 `json:"port"`
 		Name string `json:"name"`
 	}
 
+	// MonitoredHost defuine one host to monitor by Monitor module
 	MonitoredHost struct {
 		Name string `json:"name"`
 

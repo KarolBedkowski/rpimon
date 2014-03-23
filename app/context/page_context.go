@@ -30,6 +30,8 @@ type BasePageContext struct {
 }
 
 var hostname string
+
+// AppVersion holds application build version
 var AppVersion = "dev"
 
 func init() {
