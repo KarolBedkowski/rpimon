@@ -31,6 +31,18 @@ type (
 		Name string `json:"name"`
 	}
 
+	MonitoredHost struct {
+		Name string `json:"name"`
+
+		Address string `json:"address"`
+		// checking method: ping, tcp
+		Method string `json:"method"`
+		// inteval in sec.
+		Interval int `json:"interval"`
+		// Alarm level: 0=none, 1=info, 2=warn, 3=error
+		Alarm int `json:"alarm"`
+	}
+
 	// MonitorConfiguration hold configuration for Monitor module
 	MonitorConfiguration struct {
 		UpdateInterval        int                `json:"update_interval"`
@@ -45,6 +57,7 @@ type (
 		MonitoredServices     []MonitoredService `json:"monitored_services"`
 		CPUFreqFile           string             `json:"cpu_freq_file"`
 		CPUTempFile           string             `json:"cpu_temp_file"`
+		MonitoredHosts        []MonitoredHost    `json:"monitored_hosts"`
 	}
 )
 

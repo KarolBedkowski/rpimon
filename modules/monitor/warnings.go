@@ -82,6 +82,22 @@ func getWarnings() *context.WarningsStruct {
 		warnings.Errors = append(warnings.Errors, "Err1", "Err2")
 		warnings.Infos = append(warnings.Infos, "Info1", "Info2")
 		*/
+
+		// Avalable hosts
+
+		for _, host := range GetHostsStatus() {
+			if !host.Available {
+				switch host.MonitoredHost.Alarm {
+				case 1: // info
+					warnings.Infos = append(warnings.Infos, "Host "+host.MonitoredHost.Name+" unavalable")
+				case 2: // info
+					warnings.Warnings = append(warnings.Warnings, "Host "+host.MonitoredHost.Name+" unavalable")
+				case 3: // info
+					warnings.Errors = append(warnings.Errors, "Host "+host.MonitoredHost.Name+" unavalable")
+				}
+			}
+		}
+
 		return warnings
 
 	}).(*context.WarningsStruct)

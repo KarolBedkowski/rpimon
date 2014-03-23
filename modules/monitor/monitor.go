@@ -10,7 +10,9 @@ import (
 	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
+	"net"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
@@ -73,6 +75,13 @@ func initModule(parentRoute *mux.Route) bool {
 				ticker.Stop()
 				return
 			}
+		}
+	}()
+
+	go func() {
+		for {
+			time.Sleep(time.Duration(1) * time.Second)
+			checkHosts()
 		}
 	}()
 	return true
@@ -572,4 +581,70 @@ func gatherNetworkUsage() {
 	netTotalUsage.lastTS = ts
 	netTotalUsage.lastInput = sumRecv
 	netTotalUsage.lastOutput = sumTrans
+}
+
+type (
+	hostStatus struct {
+		lastCheck int
+		available bool
+	}
+
+	Host struct {
+		cfg.MonitoredHost
+		Available bool
+	}
+)
+
+var (
+	lastHostStatus      map[string]hostStatus
+	monitoredHostsMutex sync.RWMutex
+)
+
+// GetHostStatus
+func GetHostsStatus() []*Host {
+	monitoredHostsMutex.RLock()
+	defer monitoredHostsMutex.RUnlock()
+	result := make([]*Host, 0)
+	for _, host := range cfg.Configuration.Monitor.MonitoredHosts {
+		status, ok := lastHostStatus[host.Name]
+		if ok {
+			result = append(result, &Host{host, status.available})
+		} else {
+			result = append(result, &Host{host, false})
+		}
+	}
+	return result
+}
+
+func checkHosts() {
+	// 1. remove invalid hosts
+	hosts := make(map[string]hostStatus, 0)
+	now := int(time.Now().Unix())
+	for _, chost := range cfg.Configuration.Monitor.MonitoredHosts {
+		status, ok := lastHostStatus[chost.Name]
+		if ok && status.lastCheck+chost.Interval < now {
+			hosts[chost.Name] = status
+		} else {
+			l.Debug("checkHosts: checking %v", chost)
+			available := false
+			switch chost.Method {
+			case "tcp":
+				//_, err := exec.Command("nping", "--tcp-connect", "-H", "-N", "-c", "1", "-v-4", "-p", port, addr).CombinedOutput()
+				conn, err := net.DialTimeout("tcp", chost.Address, time.Duration(1)*time.Second)
+				if err == nil {
+					defer conn.Close()
+					_, err = conn.Write([]byte("\n"))
+				}
+				available = err == nil
+			default:
+				_, err := exec.Command("ping", "-c", "1", "-i", "1", chost.Address).CombinedOutput()
+				available = err == nil
+			}
+			now = int(time.Now().Unix())
+			hosts[chost.Name] = hostStatus{now, available}
+		}
+	}
+	monitoredHostsMutex.Lock()
+	defer monitoredHostsMutex.Unlock()
+	lastHostStatus = hosts
 }
