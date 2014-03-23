@@ -104,8 +104,8 @@
 					<tbody>
 					{{range $idx, $serv := .Form.MonitoredServices}}
 						<tr>
-							<td><input type="number" name="MonitoredServices.{{$idx}}.Port" value="{{$serv.Port}}" /></td>
-							<td><input type="text" name="MonitoredServices.{{$idx}}.Name" value="{{$serv.Name}}" /></td>
+							<td><input type="number" name="MonitoredServices.{{$idx}}.Port" value="{{$serv.Port}}" class="form-control input-sm"/></td>
+							<td><input type="text" name="MonitoredServices.{{$idx}}.Name" value="{{$serv.Name}}" class="form-control input-sm" /></td>
 							<td><a href="#" class="serv-delete">Remove</a></td>
 						</tr>
 					{{end}}
@@ -126,15 +126,15 @@
 					<tbody>
 					{{range $idx, $serv := .Form.MonitoredHosts}}
 						<tr>
-							<td><input type="text" name="MonitoredHosts.{{$idx}}.Name" value="{{$serv.Name}}" /></td>
-							<td><select name="MonitoredHosts.{{$idx}}.Method">
+							<td><input type="text" name="MonitoredHosts.{{$idx}}.Name" value="{{$serv.Name}}"  class="form-control input-sm"/></td>
+							<td><select name="MonitoredHosts.{{$idx}}.Method" class="form-control input-sm">
 									<option value="ping" {{if eq $serv.Method "ping"}}selected{{end}}>ping</option>
 									<option value="tcp" {{if eq $serv.Method "tcp"}}selected{{end}}>tcp</option>
 								</select>
 							</td>
-							<td><input type="text" name="MonitoredHosts.{{$idx}}.Address" value="{{$serv.Address}}" /></td>
-							<td><input type="number" name="MonitoredHosts.{{$idx}}.Interval" maxlenght="4" size="4" value="{{$serv.Interval}}" /></td>
-							<td><select name="MonitoredHosts.{{$idx}}.Alarm">
+							<td><input type="text" name="MonitoredHosts.{{$idx}}.Address" value="{{$serv.Address}}"  class="form-control input-sm"/></td>
+							<td><input type="number" name="MonitoredHosts.{{$idx}}.Interval" maxlenght="4" size="4" value="{{$serv.Interval}}"  class="form-control input-sm"/></td>
+							<td><select name="MonitoredHosts.{{$idx}}.Alarm" class="form-control input-sm">
 									<option value="0" {{if eq $serv.Alarm 0}}selected{{end}}>none</option>
 									<option value="1" {{if eq $serv.Alarm 1}}selected{{end}}>info</option>
 									<option value="2" {{if eq $serv.Alarm 2}}selected{{end}}>warn</option>
@@ -158,6 +158,35 @@
 		</div>
 	</form>
 </div>
+
+<script type="template" id="tmpl-hosts-row">
+	<tr>
+		<td><input type="text" name="MonitoredHosts.[[idx]].Name"  class="form-control input-sm"/></td>
+		<td><select name="MonitoredHosts.[[idx]].Method" class="form-control input-sm">
+				<option value="ping">ping</option>
+				<option value="tcp">tcp</option>
+			</select>
+		</td>
+		<td><input type="text" name="MonitoredHosts.[[idx]].Address"  class="form-control input-sm"/></td>
+		<td><input type="number" name="MonitoredHosts.[[idx]].Interval" maxlenght="4" size="4"  class="form-control input-sm"/></td>
+		<td><select name="MonitoredHosts.[[idx]].Alarm" class="form-control input-sm">
+				<option value="0">none</option>
+				<option value="1">info</option>
+				<option value="2">warn</option>
+				<option value="3">error</option>
+			</select>
+		</td>
+		<td><a href="#" class="serv-delete">Remove</a></td>
+	</tr>
+</script>
+
+<script type="template" id="tmpl-services-row">
+	<tr>
+		<td><input type="number" name="MonitoredServices.[[id]].Port"  class="form-control input-sm" /></td>
+		<td><input type="text" name="MonitoredServices.[[id]].Name" class="form-control input-sm" /></td>
+		<td><a href="#" class="serv-delete">Remove</a></td>
+	</tr>
+</script>
 {{end}}
 
 {{define "scripts"}}
@@ -173,7 +202,10 @@
 
 		function updateServTableRows(parent) {
 			$('input[type="number"]', parent).each(function (i) {
-				$(this).rules("add", {range: [1, 65535]});
+				$(this).rules("add", {
+					range: [1, 65535],
+					required: true
+				});
 			});
 			$('a.serv-delete', parent).on("click", onRemoveRow);
 		};
@@ -197,7 +229,8 @@
 		$("#services-add-row").on("click", function(event) {
 			event.preventDefault();
 			var lastId = $("#table-services").data("numserv"),
-				newRow = $('<tr><td><input type="number" name="MonitoredServices.' + lastId + '.Port" /></td><td><input type="text" name="MonitoredServices.' + lastId + '.Name" /></td><td><a href="#" class="serv-delete">Remove</a></td></tr>');
+				tmpl = $("#tmpl-services-row").html(),
+				newRow = $(tmpl.replace(/\[\[idx\]\]/g, lastId));
 			$('#table-services tbody').append(newRow);
 			$("#table-services").data("numserv", lastId + 1);
 			updateServTableRows(newRow);
@@ -218,7 +251,8 @@
 		$("#hosts-add-row").on("click", function(event) {
 			event.preventDefault();
 			var lastId = $("#table-hosts").data("numhosts"),
-				newRow = $('<tr> <td><input type="text" name="MonitoredHosts.' + lastId + '.Name" /></td> <td><select name="MonitoredHosts.' + lastId + '.Method"> <option value="ping">ping</option> <option value="tcp">tcp</option> </select> </td> <td><input type="text" name="MonitoredHosts.' + lastId + '.Address" /></td> <td><input type="number" name="MonitoredHosts.' + lastId + '.Interval" maxlenght="4" size="4" /></td> <td><select name="MonitoredHosts.' + lastId + '.Alarm"> <option value="0">none</option> <option value="1">info</option> <option value="2">warn</option> <option value="3">error</option> </select> </td> <td><a href="#" class="serv-delete">Remove</a></td> </tr>');
+				tmpl = $("#tmpl-hosts-row").html(),
+				newRow = $(tmpl.replace(/\[\[idx\]\]/g, lastId));
 			$('#table-hosts tbody').append(newRow);
 			$("#table-hosts").data("numhosts", lastId + 1);
 			updateHostsTableRows(newRow);
