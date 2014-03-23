@@ -12,3 +12,5 @@ profile
 *.pem
 dist
 *.json
+*.test
+notepad
