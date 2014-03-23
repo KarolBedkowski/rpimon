@@ -1,0 +1,43 @@
+{{define "body"}}
+
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">Users <small></small></h1>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-lg-12">
+		<table class="table table-hover table-bordered table-condensed" id="data-table">
+			<thead>
+				<tr>
+					<th>Login</th>
+					<th>Privileges</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{range .Users}}
+				<tr>
+					<td>{{.Login}}</td>
+					<td>{{.Privs}}</td>
+					<td><a href="{{namedurl "m-pref-users-user" "user" .Login}}">Edit</a></td>
+				</tr>
+			{{end}}
+				<tr>
+					<td></td>
+					<td></td>
+					<td><a href="{{namedurl "m-pref-users-user" "user" "<new>"}}">New User</a></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script type="text/javascript">
+	$(function() {
+	});
+</script>
+{{end}}

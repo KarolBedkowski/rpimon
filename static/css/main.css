@@ -157,8 +157,10 @@ footer {
 	border-top: 1px solid #e5e5e5;
 }
 
-.row div {
+
+.row > div {
 	margin-bottom: 10px;
+	margin-top: 10px;
 }
 
 div.pager input {
@@ -274,6 +276,7 @@ div#loading-box p {
 	padding-right: 20px;
 	margin-right: 0;
 	margin-left: 0;
+	padding-top: 20px;
 	width: 100%;
 	display: block;
 }

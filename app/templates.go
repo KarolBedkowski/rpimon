@@ -2,6 +2,7 @@ package app
 
 import (
 	"html/template"
+	"k.prv/rpimon/app/cfg"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"os"
@@ -34,10 +35,10 @@ func getTemplate(name string, filenames ...string) (tmpl *template.Template) {
 	defer cacheLock.Unlock()
 
 	ctemplate, ok := cacheItems[name]
-	if !ok || Configuration.Debug {
+	if !ok || cfg.Configuration.Debug {
 		templates := []string{}
 		for _, filename := range filenames {
-			fullPath := filepath.Join(Configuration.TemplatesDir, filename)
+			fullPath := filepath.Join(cfg.Configuration.TemplatesDir, filename)
 			if !fileExists(fullPath) {
 				l.Error("RenderTemplate missing template: %s", fullPath)
 				return

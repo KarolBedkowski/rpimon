@@ -12,7 +12,7 @@
 			<div class="panel-heading"> {{$key}} </div>
 			<div class="list-group">
 			{{range $idx, $ele := $elements}}
-				<a href="/utils/{{$key | urlquery}}/{{$idx | urlquery}}" onclick="return RPI.confirm()" class="list-group-item">{{$ele.Name}}</a>
+				<a href="{{namedurl "utils-exec" "group" $key "command-id" (print $idx)}}" onclick="return RPI.confirm()" class="list-group-item">{{$ele.Name}}</a>
 			{{end}}
 			</div>
 		</div>

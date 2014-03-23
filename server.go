@@ -3,19 +3,23 @@ package main
 import (
 	"flag"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/monitor"
-	"k.prv/rpimon/pages/auth"
-	pfiles "k.prv/rpimon/pages/files"
-	plogs "k.prv/rpimon/pages/logs"
-	pmain "k.prv/rpimon/pages/main"
-	pmpd "k.prv/rpimon/pages/mpd"
-	pnet "k.prv/rpimon/pages/net"
-	pnotepad "k.prv/rpimon/pages/notepad"
-	pother "k.prv/rpimon/pages/other"
-	pproc "k.prv/rpimon/pages/process"
-	pstorage "k.prv/rpimon/pages/storage"
-	pusers "k.prv/rpimon/pages/users"
-	putils "k.prv/rpimon/pages/utils"
+	"k.prv/rpimon/app/context"
+	mauth "k.prv/rpimon/modules/auth"
+	mfiles "k.prv/rpimon/modules/files"
+	mmain "k.prv/rpimon/modules/main"
+	mmonitor "k.prv/rpimon/modules/monitor"
+	mmpd "k.prv/rpimon/modules/mpd"
+	mnet "k.prv/rpimon/modules/network"
+	mnotepad "k.prv/rpimon/modules/notepad"
+	mpref "k.prv/rpimon/modules/preferences"
+	mstorage "k.prv/rpimon/modules/storage"
+	msmart "k.prv/rpimon/modules/storage/smart"
+	msystem "k.prv/rpimon/modules/system"
+	msyslogs "k.prv/rpimon/modules/system/logs"
+	msystother "k.prv/rpimon/modules/system/other"
+	msysproc "k.prv/rpimon/modules/system/process"
+	msysusers "k.prv/rpimon/modules/system/users"
+	mutls "k.prv/rpimon/modules/utils"
 	"log"
 	"net/http"
 	// _ "net/http/pprof" // /debug/pprof/
@@ -27,6 +31,7 @@ import (
 )
 
 func main() {
+	log.Printf("Starting... ver %s", context.AppVersion)
 	configFilename := flag.String("conf", "./config.json", "Configuration filename")
 	debug := flag.Int("debug", -1, "Run in debug mode (1) or normal (0)")
 	flag.Parse()
@@ -44,27 +49,30 @@ func main() {
 	go func() {
 		<-cleanChannel
 		app.Close()
-		pmpd.Close()
+		context.ShutdownModules()
 		os.Exit(1)
 	}()
 
 	app.Router.HandleFunc("/", handleHome)
-	auth.CreateRoutes(app.Router.PathPrefix("/auth"))
-	pmain.CreateRoutes(app.Router.PathPrefix("/main"))
-	pnet.CreateRoutes(app.Router.PathPrefix("/net"))
-	pstorage.CreateRoutes(app.Router.PathPrefix("/storage"))
-	putils.Init(conf.UtilsFilename)
-	putils.CreateRoutes(app.Router.PathPrefix("/utils"))
-	pmpd.Init(conf.MpdHost)
-	pmpd.CreateRoutes(app.Router.PathPrefix("/mpd"))
-	plogs.Init(conf.Logs)
-	plogs.CreateRoutes(app.Router.PathPrefix("/logs"))
-	pusers.CreateRoutes(app.Router.PathPrefix("/users"))
-	pproc.CreateRoutes(app.Router.PathPrefix("/process"))
-	pfiles.Init(conf.BrowserConf)
-	pfiles.CreateRoutes(app.Router.PathPrefix("/files"))
-	pnotepad.CreateRoutes(app.Router.PathPrefix("/notepad"))
-	pother.CreateRoutes(app.Router.PathPrefix("/other"))
+	context.RegisterModule(mauth.Module)
+	context.RegisterModule(mmain.Module)
+	context.RegisterModule(mpref.Module)
+	context.RegisterModule(mfiles.Module)
+	context.RegisterModule(mmpd.Module)
+	context.RegisterModule(mnet.Module)
+	context.RegisterModule(mnet.NFSModule)
+	context.RegisterModule(mnet.SambaModule)
+	context.RegisterModule(mnotepad.Module)
+	context.RegisterModule(mstorage.Module)
+	context.RegisterModule(msmart.Module)
+	context.RegisterModule(msyslogs.Module)
+	context.RegisterModule(msystother.Module)
+	context.RegisterModule(msysproc.Module)
+	context.RegisterModule(msysusers.Module)
+	context.RegisterModule(mutls.Module)
+	context.RegisterModule(msystem.Module)
+	context.RegisterModule(mmonitor.Module)
+	context.InitModules(conf, app.Router)
 
 	/* for filesystem store
 	go app.ClearSessionStore()
@@ -83,8 +91,6 @@ func main() {
 		}
 	}()
 	*/
-
-	monitor.Init(conf.MonitorUpdateInterval)
 
 	if conf.HTTPSAddress != "" {
 		log.Printf("Listen: %s", conf.HTTPSAddress)
@@ -112,5 +118,5 @@ func main() {
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/main/", http.StatusFound)
+	http.Redirect(w, r, app.GetNamedURL("main-index"), http.StatusFound)
 }
