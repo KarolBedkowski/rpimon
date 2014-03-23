@@ -179,6 +179,24 @@
 			{{end}}
 		</div>
 	</div>
+
+	<div class="col-xs-12 col-sm-6 col-md-4">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Hosts</h3>
+			</div>
+			<table class="table">
+				<tbody>
+				{{range $key, $val := .HostsStatus}}
+					<tr>
+						<td>{{$key}}</td>
+						<td>{{if $val}}ok{{else}}unavalable{{end}}</td>
+					</tr>
+				{{end}}
+				</tbody>
+			</table>
+		</div>
+	</div>
 </div>
 {{end}}
 
