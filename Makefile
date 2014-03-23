@@ -20,7 +20,7 @@ compress:
 	find ./static -iname '*.js' -exec gzip -f -k {} ';'
 
 copy_pi:
-	cp rpi/* dist/
+	#cp rpi/* dist/
 	cp rpimon dist/
 	ssh k@pi sudo service k_rpimon stop
 	rsync -arv --delete --exclude notepad --exclude temp --exclude dist/.stamp dist/* k@pi:rpimon/
