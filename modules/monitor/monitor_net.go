@@ -159,6 +159,21 @@ func GetHostsStatus() []*Host {
 	return result
 }
 
+// GetSimpleHostStatus return current hosts status as map name->status
+func GetSimpleHostStatus() map[string]bool {
+	monitoredHostsMutex.RLock()
+	defer monitoredHostsMutex.RUnlock()
+	result := make(map[string]bool, 0)
+	for _, host := range cfg.Configuration.Monitor.MonitoredHosts {
+		if status, ok := lastHostStatus[host.Name]; ok {
+			result[host.Name] = status.available
+		} else {
+			result[host.Name] = false
+		}
+	}
+	return result
+}
+
 func checkHosts() {
 	hosts := make(map[string]hostStatus, 0)
 	now := int(time.Now().Unix())

@@ -25,7 +25,9 @@ var SYSTEM = (function(self, $) {
 				fstablebody = $('tbody#fs-table'),
 				uptime = msg.uptime,
 				netuseInput = msg.netusage.Input || [],
-				netuseOutput = msg.netusage.Output || [];
+				netuseOutput = msg.netusage.Output || [],
+				hoststbody = $("tbody#hosts-table"),
+				hosts = msg.hoststatus;
 			$('#load-chart').text(msg.load).change();
 			$('#cpu-chart').text(msg.cpu).change();
 			$('#mem-chart').text(msg.mem).change();
@@ -79,6 +81,15 @@ var SYSTEM = (function(self, $) {
 			$('#uptime-uptime').text(uptime.Uptime);
 			$('#uptime-users').text(uptime.Users);
 			$("span.pie").peity("pie");
+			// hosts
+			hoststbody.text("");
+			for (var key in hosts) {
+				if (hosts[key]) {
+					hoststbody.append(["<tr><td>", key, "</td><td>ok</td></tr>"].join(""));
+				} else {
+					hoststbody.append(["<tr><td>", key, "</td><td>Unavailable</td></tr>"].join(""));
+				}
+			}
 			RPI.hideLoadingMsg();
 			window.setTimeout(getHistory, 5000);
 		}).fail(function(jqXHR, textStatus) {
