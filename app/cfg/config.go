@@ -26,9 +26,25 @@ type (
 		Modules         map[string]map[string]string `json:"modules"`
 	}
 
+	// MonitoredService configure one service to monitor in Monitor module
 	MonitoredService struct {
 		Port uint32 `json:"port"`
 		Name string `json:"name"`
+	}
+
+	// MonitoredHost defuine one host to monitor by Monitor module
+	MonitoredHost struct {
+		Name string `json:"name"`
+
+		Address string `json:"address"`
+		// checking method: ping, tcp
+		Method string `json:"method"`
+		// inteval in sec.
+		Interval int `json:"interval"`
+		// Alarm level: 0=none;
+		// when unavailable 1=info, 2=warn, 3=error
+		// when available: 11=info, 12=warn, 13=error
+		Alarm int `json:"alarm"`
 	}
 
 	// MonitorConfiguration hold configuration for Monitor module
@@ -45,6 +61,7 @@ type (
 		MonitoredServices     []MonitoredService `json:"monitored_services"`
 		CPUFreqFile           string             `json:"cpu_freq_file"`
 		CPUTempFile           string             `json:"cpu_temp_file"`
+		MonitoredHosts        []MonitoredHost    `json:"monitored_hosts"`
 	}
 )
 

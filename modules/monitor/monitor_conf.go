@@ -64,6 +64,32 @@ func (f *confForm) validate() (errors []string) {
 	return
 }
 
+// cleanup data in form - ie. empty rows in lists
+func (f *confForm) cleanup() {
+	// cleanup monitored services
+	var servs []cfg.MonitoredService
+	for _, serv := range f.MonitoredServices {
+		if serv.Port > 0 {
+			if serv.Name == "" {
+				serv.Name = "Connection to port " + strconv.Itoa(int(serv.Port))
+			}
+			servs = append(servs, serv)
+		}
+	}
+	f.MonitoredServices = servs
+	// cleanup monitored shosts
+	var hosts []cfg.MonitoredHost
+	for _, host := range f.MonitoredHosts {
+		if host.Address != "" {
+			if host.Name == "" {
+				host.Name = "Connection to " + host.Address
+			}
+			hosts = append(hosts, host)
+		}
+	}
+	f.MonitoredHosts = hosts
+}
+
 func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	form := confForm{}
 	form = confForm(*cfg.Configuration.Monitor)
@@ -76,22 +102,13 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 		r.ParseForm()
 		// remove monitored services - fill in only with new data
 		form.MonitoredServices = nil
+		form.MonitoredHosts = nil
 		if err := decoder.Decode(ctx.Form, r.Form); err != nil {
 			l.Warn("Decode form error", err, r.Form)
 		}
 		errors := ctx.Form.validate()
 		if errors == nil || len(errors) == 0 {
-			// cleanup monitored services
-			var servs []cfg.MonitoredService
-			for _, serv := range form.MonitoredServices {
-				if serv.Port > 0 {
-					if serv.Name == "" {
-						serv.Name = "Connection to port " + strconv.Itoa(int(serv.Port))
-					}
-					servs = append(servs, serv)
-				}
-			}
-			form.MonitoredServices = servs
+			form.cleanup()
 			*cfg.Configuration.Monitor = cfg.MonitorConfiguration(form)
 			err := cfg.SaveConfiguration()
 			if err != nil {
