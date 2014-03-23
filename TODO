@@ -1,4 +1,3 @@
-* własne strony błędów
 * konfiguracja smb
 * konfiguracja openvpn
 * konfiguracja nfs
@@ -15,9 +14,5 @@
 * sensors
 
 * terminal (?)
-
-
-* sprawdzanie stanu dostępu do internetu / dostępności bramy
-
 
 * baza danych
