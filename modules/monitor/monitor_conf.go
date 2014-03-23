@@ -76,6 +76,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 		r.ParseForm()
 		// remove monitored services - fill in only with new data
 		form.MonitoredServices = nil
+		form.MonitoredHosts = nil
 		if err := decoder.Decode(ctx.Form, r.Form); err != nil {
 			l.Warn("Decode form error", err, r.Form)
 		}
@@ -92,6 +93,17 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 				}
 			}
 			form.MonitoredServices = servs
+			// cleanup monitored shosts
+			var hosts []cfg.MonitoredHost
+			for _, host := range form.MonitoredHosts {
+				if host.Address != "" {
+					if host.Name == "" {
+						host.Name = "Connection to " + host.Address
+					}
+					hosts = append(hosts, host)
+				}
+			}
+			form.MonitoredHosts = hosts
 			*cfg.Configuration.Monitor = cfg.MonitorConfiguration(form)
 			err := cfg.SaveConfiguration()
 			if err != nil {

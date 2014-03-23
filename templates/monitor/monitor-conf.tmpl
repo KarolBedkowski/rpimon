@@ -116,6 +116,41 @@
 				</div>
 			</div>
 		</div>
+		<div class="col-lg-12 col-xs-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Hosts monitoring</h3>
+				</div>
+				<table class="table table-condensed table-bordered" data-numhosts="{{len .Form.MonitoredHosts}}" id="table-hosts">
+					<thead><tr><th>Name</th><th>Method</th><th>Address</th><th>Interval [s]</th><th>Show</th><th></th></tr></thead>
+					<tbody>
+					{{range $idx, $serv := .Form.MonitoredHosts}}
+						<tr>
+							<td><input type="text" name="MonitoredHosts.{{$idx}}.Name" value="{{$serv.Name}}" /></td>
+							<td><select name="MonitoredHosts.{{$idx}}.Method">
+									<option value="ping" {{if eq $serv.Method "ping"}}selected{{end}}>ping</option>
+									<option value="tcp" {{if eq $serv.Method "tcp"}}selected{{end}}>tcp</option>
+								</select>
+							</td>
+							<td><input type="text" name="MonitoredHosts.{{$idx}}.Address" value="{{$serv.Address}}" /></td>
+							<td><input type="number" name="MonitoredHosts.{{$idx}}.Interval" maxlenght="4" size="4" value="{{$serv.Interval}}" /></td>
+							<td><select name="MonitoredHosts.{{$idx}}.Alarm">
+									<option value="0" {{if eq $serv.Alarm 0}}selected{{end}}>none</option>
+									<option value="1" {{if eq $serv.Alarm 1}}selected{{end}}>info</option>
+									<option value="2" {{if eq $serv.Alarm 2}}selected{{end}}>warn</option>
+									<option value="3" {{if eq $serv.Alarm 3}}selected{{end}}>error</option>
+								</select>
+							</td>
+							<td><a href="#" class="serv-delete">Remove</a></td>
+						</tr>
+					{{end}}
+					</tbody>
+				</table>
+				<div class="panel-footer">
+					<a href="#" id="hosts-add-row">Add row</a>
+				</div>
+			</div>
+		</div>
 		<div class="col-xs-12">
 			<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
 			<button type="submit" class="btn btn-primary">Save</button>
@@ -129,7 +164,7 @@
 <script type="text/javascript">
 	$(function() {
 
-		function onRemoveServRow(event) {
+		function onRemoveRow(event) {
 			event.preventDefault();
 			if (confirm("Remove row?")) {
 				$(this).closest('tr').remove();
@@ -137,10 +172,10 @@
 		}
 
 		function updateServTableRows(parent) {
-			$('input[type="number"]', parent).rules("add", {
-				range: [1, 65535]
+			$('input[type="number"]', parent).each(function (i) {
+				$(this).rules("add", {range: [1, 65535]});
 			});
-			$('a.serv-delete', parent).on("click", onRemoveServRow);
+			$('a.serv-delete', parent).on("click", onRemoveRow);
 		};
 
 		$("form").validate({
@@ -157,7 +192,7 @@
 			}
 		});
 
-		updateServTableRows($("#table-services"));
+		updateServTableRows($("#table-services tbody tr"));
 
 		$("#services-add-row").on("click", function(event) {
 			event.preventDefault();
@@ -166,6 +201,27 @@
 			$('#table-services tbody').append(newRow);
 			$("#table-services").data("numserv", lastId + 1);
 			updateServTableRows(newRow);
+		});
+
+		function updateHostsTableRows(parent) {
+			$('input[type="text"]', parent).each(function (i) {
+				$(this).rules("add", {required: true});
+			});
+			$('input[type="number"]', parent).each(function (i) {
+				$(this).rules("add", {range: [0, 9999]});
+			});
+			$('a.serv-delete', parent).on("click", onRemoveRow);
+		};
+
+		updateHostsTableRows($("#table-hosts tbody tr"));
+
+		$("#hosts-add-row").on("click", function(event) {
+			event.preventDefault();
+			var lastId = $("#table-hosts").data("numhosts"),
+				newRow = $('<tr> <td><input type="text" name="MonitoredHosts.' + lastId + '.Name" /></td> <td><select name="MonitoredHosts.' + lastId + '.Method"> <option value="ping">ping</option> <option value="tcp">tcp</option> </select> </td> <td><input type="text" name="MonitoredHosts.' + lastId + '.Address" /></td> <td><input type="number" name="MonitoredHosts.' + lastId + '.Interval" maxlenght="4" size="4" /></td> <td><select name="MonitoredHosts.' + lastId + '.Alarm"> <option value="0">none</option> <option value="1">info</option> <option value="2">warn</option> <option value="3">error</option> </select> </td> <td><a href="#" class="serv-delete">Remove</a></td> </tr>');
+			$('#table-hosts tbody').append(newRow);
+			$("#table-hosts").data("numhosts", lastId + 1);
+			updateHostsTableRows(newRow);
 		});
 	});
 </script>
