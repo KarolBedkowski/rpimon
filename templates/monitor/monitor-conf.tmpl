@@ -20,15 +20,10 @@
 		<div class="col-lg-6 col-xs-12">
 			<div class="panel panel-default">
 				<div class="panel-heading">
-					<h3 class="panel-title">Main</h3>
+					<h3 class="panel-title">System Load Monitoring</h3>
 				</div>
 				<div class="panel-body">
-					<div class="form-group">
-						<label for="UpdateInterval">Update interval</label>
-						<input type="number" name="UpdateInterval" id="UpdateInterval" value="{{.Form.UpdateInterval}}" class="form-control" required />
-					</div>
 					<fieldset>
-						<legend>System load monitoring</legend>
 						<div class="form-group">
 							<label for="LoadWarning">Warning level:</label>
 							<input type="number" name="LoadWarning" id="LoadWarning" value="{{.Form.LoadWarning}}" class="form-control"/>
@@ -38,8 +33,16 @@
 							<input type="number" name="LoadError" id="LoadError" value="{{.Form.LoadError}}" class="form-control"/>
 						</div>
 					</fieldset>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-6 col-xs-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Memory Monitoring</h3>
+				</div>
+				<div class="panel-body">
 					<fieldset>
-						<legend>Memory monitoring</legend>
 						<div class="form-group">
 							<label for="RAMUsageWarning">RAM usage warning level:</label>
 							<input type="number" name="RAMUsageWarning" id="RAMUsageWarning" value="{{.Form.RAMUsageWarning}}" class="form-control"/>
@@ -49,8 +52,16 @@
 							<input type="number" name="SwapUsageWarning" id="SwapUsageWarning" value="{{.Form.SwapUsageWarning}}" class="form-control"/>
 						</div>
 					</fieldset>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-6 col-xs-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">File System Monitoring</h3>
+				</div>
+				<div class="panel-body">
 					<fieldset>
-						<legend>File system monitoring</legend>
 						<div class="form-group">
 							<label for="DefaultFSUsageWarning">FS usage warning level:</label>
 							<input type="number" name="DefaultFSUsageWarning" id="DefaultFSUsageWarning" value="{{.Form.DefaultFSUsageWarning}}" class="form-control"/>
@@ -60,8 +71,16 @@
 							<input type="number" name="DefaultFSUsageError" id="DefaultFSUsageError" value="{{.Form.DefaultFSUsageError}}" class="form-control"/>
 						</div>
 					</fieldset>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-6 col-xs-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">CPU Temperature Monitoring</h3>
+				</div>
+				<div class="panel-body">
 					<fieldset>
-						<legend>CPU temperature monitoring</legend>
 						<div class="form-group">
 							<label for="CPUTempWarning">CPU temperature warning level:</label>
 							<input type="number" name="CPUTempWarning" id="CPUTempWarning" value="{{.Form.CPUTempWarning}}" class="form-control"/>
@@ -77,9 +96,13 @@
 		<div class="col-lg-6 col-xs-12">
 			<div class="panel panel-default">
 				<div class="panel-heading">
-					<h3 class="panel-title">System</h3>
+					<h3 class="panel-title">Monitoring</h3>
 				</div>
 				<div class="panel-body">
+						<div class="form-group">
+							<label for="UpdateInterval">Update interval</label>
+							<input type="number" name="UpdateInterval" id="UpdateInterval" value="{{.Form.UpdateInterval}}" class="form-control" required />
+						</div>
 					<fieldset>
 						<legend>/proc/files</legend>
 						<div class="form-group">
