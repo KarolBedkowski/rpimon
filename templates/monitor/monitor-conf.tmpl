@@ -153,6 +153,7 @@
 							<td><select name="MonitoredHosts.{{$idx}}.Method" class="form-control input-sm">
 									<option value="ping" {{if eq $serv.Method "ping"}}selected{{end}}>ping</option>
 									<option value="tcp" {{if eq $serv.Method "tcp"}}selected{{end}}>tcp</option>
+									<option value="http" {{if eq $serv.Method "http"}}selected{{end}}>http</option>
 								</select>
 							</td>
 							<td><input type="text" name="MonitoredHosts.{{$idx}}.Address" value="{{$serv.Address}}"  class="form-control input-sm"/></td>
@@ -191,6 +192,7 @@
 		<td><select name="MonitoredHosts.[[idx]].Method" class="form-control input-sm">
 				<option value="ping">ping</option>
 				<option value="tcp">tcp</option>
+				<option value="http">http</option>
 			</select>
 		</td>
 		<td><input type="text" name="MonitoredHosts.[[idx]].Address"  class="form-control input-sm"/></td>

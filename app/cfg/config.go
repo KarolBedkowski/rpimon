@@ -37,7 +37,7 @@ type (
 		Name string `json:"name"`
 
 		Address string `json:"address"`
-		// checking method: ping, tcp
+		// checking method: ping, tcp, http
 		Method string `json:"method"`
 		// inteval in sec.
 		Interval int `json:"interval"`

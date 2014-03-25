@@ -6,6 +6,7 @@ import (
 	"k.prv/rpimon/app/cfg"
 	l "k.prv/rpimon/helpers/logging"
 	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
@@ -193,6 +194,9 @@ func checkHosts() {
 					_, err = conn.Write([]byte("\n"))
 				}
 				available = err == nil
+			case "http":
+				res, err := http.Get(chost.Address)
+				available = err == nil && res.StatusCode >= 200 && res.StatusCode < 400
 			default:
 				_, err := exec.Command("ping", "-c", "1", "-i", "1", chost.Address).CombinedOutput()
 				available = err == nil
