@@ -28,22 +28,22 @@ func TestParseIpResult1if(t *testing.T) {
 
 	iface := ifaces[0]
 	if iface.Name != "eth0" {
-		t.Error("Wrong interface name %#v", ifaces)
+		t.Errorf("Wrong interface name %#v", ifaces)
 	}
 	if iface.Address != "" {
-		t.Error("Wrong interface Address %#v", ifaces)
+		t.Errorf("Wrong interface Address %#v", ifaces)
 	}
 	if iface.Address6 != "fe80::1234:aff:fecd:490e/64" {
-		t.Error("Wrong interface Address6 %#v", ifaces)
+		t.Errorf("Wrong interface Address6 %#v", ifaces)
 	}
 	if iface.State != "UP" {
-		t.Error("Wrong interface State %#v", ifaces)
+		t.Errorf("Wrong interface State %#v", ifaces)
 	}
 	if iface.Mac != "11:22:33:44:55:66" {
-		t.Error("Wrong interface Mac %#v", ifaces)
+		t.Errorf("Wrong interface Mac %#v", ifaces)
 	}
 	if iface.Kind != "ether" {
-		t.Error("Wrong interface Kind %#v", ifaces)
+		t.Errorf("Wrong interface Kind %#v", ifaces)
 	}
 }
 
@@ -84,13 +84,13 @@ func TestParseIpResult2if(t *testing.T) {
 		t.Errorf("Wrong interface Address6 %#v", ifaces)
 	}
 	if iface.State != "UP" {
-		t.Error("Wrong interface State %#v", ifaces)
+		t.Errorf("Wrong interface State %#v", ifaces)
 	}
 	if iface.Mac != "11:22:33:44:55:66" {
-		t.Error("Wrong interface Mac %#v", ifaces)
+		t.Errorf("Wrong interface Mac %#v", ifaces)
 	}
 	if iface.Kind != "ether" {
-		t.Error("Wrong interface Kind %#v", ifaces)
+		t.Errorf("Wrong interface Kind %#v", ifaces)
 	}
 	iface = ifaces[1]
 	if iface.Name != "wlan0" {
@@ -103,12 +103,96 @@ func TestParseIpResult2if(t *testing.T) {
 		t.Errorf("Wrong interface Address6 %#v", ifaces)
 	}
 	if iface.State != "UP" {
-		t.Error("Wrong interface State %#v", ifaces)
+		t.Errorf("Wrong interface State %#v", ifaces)
 	}
 	if iface.Mac != "18:11:22:33:44:55" {
-		t.Error("Wrong interface Mac %#v", ifaces)
+		t.Errorf("Wrong interface Mac %#v", ifaces)
 	}
 	if iface.Kind != "ether" {
-		t.Error("Wrong interface Kind %#v", ifaces)
+		t.Errorf("Wrong interface Kind %#v", ifaces)
+	}
+}
+
+func TestValidateTcpAddress(t *testing.T) {
+	testsPositive := []string{
+		"123.123.123.123:23",
+		"dlkalkd.daldalk.com:43",
+		"adlkal-daslak:123",
+	}
+	for _, str := range testsPositive {
+		if !reValidateTcpAddress.MatchString(str) {
+			t.Errorf("Wrong validate  %#v", str)
+		}
+	}
+	testsNegative := []string{
+		"http://123.123.123.123",
+		"123.123.123.123",
+		"abcd:232153",
+		"dlkal kd.dald alk.com",
+		"ldkalkdla",
+		"1234567890123456789012345678901234567890123456789012345678901234567890:1",
+	}
+	for _, str := range testsNegative {
+		if reValidateTcpAddress.MatchString(str) {
+			t.Errorf("Wrong validate  %#v", str)
+		}
+	}
+}
+
+func TestValidateHttpAddress(t *testing.T) {
+	testsPositive := []string{
+		"123.123.123.123:23",
+		"dlkalkd.daldalk.com:80",
+		"adlkal-daslak",
+		"http://adlkal-daslak",
+		"https://adlkal-daslak",
+		"http://adlkal-daslak/",
+		"http://adlkal-daslak/asdada",
+		"http://adlkal-daslak/asdada/dlakdlak",
+		"https://adlkal-daslak",
+		"https://adlkal-daslak/dalkdalk",
+		"adlkal-daslak/dalkdalk",
+		"adlkal-daslak:123/dalkdalk",
+	}
+	for _, str := range testsPositive {
+		if !reValidateHttpAddress.MatchString(str) {
+			t.Errorf("Wrong validate  %#v", str)
+		}
+	}
+	testsNegative := []string{
+		"//123.123.123.123",
+		"123.123.123.123:1234567",
+		"abcd:232153",
+		"dadkla://ldkalkdla",
+		"1234567890123456789012345678901234567890123456789012345678901234567890",
+	}
+	for _, str := range testsNegative {
+		if reValidateHttpAddress.MatchString(str) {
+			t.Errorf("Wrong validate  %#v", str)
+		}
+	}
+}
+
+func TestValidatePingAddress(t *testing.T) {
+	testsPositive := []string{
+		"123.123.123.123",
+		"adlkal-daslak",
+	}
+	for _, str := range testsPositive {
+		if !reValidatePingAddress.MatchString(str) {
+			t.Errorf("Wrong validate  %#v", str)
+		}
+	}
+	testsNegative := []string{
+		"//123.123.123.123",
+		"123.123.123.123:1234567",
+		"abcd:232153",
+		"dadkla://ldkalkdla",
+		"1234567890123456789012345678901234567890123456789012345678901234567890",
+	}
+	for _, str := range testsNegative {
+		if reValidatePingAddress.MatchString(str) {
+			t.Errorf("Wrong validate  %#v", str)
+		}
 	}
 }
