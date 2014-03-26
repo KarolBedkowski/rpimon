@@ -8,6 +8,7 @@ import (
 	//	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
+	"regexp"
 	"strconv"
 )
 
@@ -22,6 +23,13 @@ type (
 		New    bool
 		Errors []string
 	}
+)
+
+// Rules for validate monitored host address
+var (
+	reValidateTcpAddress  = regexp.MustCompile(`^[\w.-]{1,63}:\d{1,5}$`)
+	reValidateHttpAddress = regexp.MustCompile(`^(https?://)?[\w.-]{1,63}(:\d{1,5})?(/.*)?$`)
+	reValidatePingAddress = regexp.MustCompile(`^[\w.-]{1,63}$`)
 )
 
 func (f *confForm) validate() (errors []string) {
@@ -61,6 +69,48 @@ func (f *confForm) validate() (errors []string) {
 	if f.CPUTempError < f.CPUTempWarning && f.CPUTempError > 0 {
 		errors = append(errors, "CPU temperature error level should be higher than warning level")
 	}
+
+	// validate monitored hosts
+	for idx, h := range f.MonitoredHosts {
+		hostName := h.Name
+		if h.Name == "" {
+			hostName = strconv.Itoa(idx + 1)
+		}
+		if h.Address == "" {
+			errors = append(errors, "Missing address for host "+hostName)
+		} else {
+			validAddress := true
+			switch h.Method {
+			case "tcp":
+				validAddress = reValidateTcpAddress.MatchString(h.Address)
+			case "http":
+				validAddress = reValidateHttpAddress.MatchString(h.Address)
+			case "ping":
+				validAddress = reValidatePingAddress.MatchString(h.Address)
+			default:
+				errors = append(errors, "Invalid method")
+				l.Warn("MonitorConfiguration: Validation: invalid method: %#v", h)
+			}
+			if !validAddress {
+				errors = append(errors, "Invalid address for host "+hostName)
+			}
+			if h.Interval < 0 || h.Interval > 9999 {
+				errors = append(errors, "Invalid Interval for host "+hostName)
+			}
+		}
+	}
+
+	// validate monitored services
+	for idx, s := range f.MonitoredServices {
+		if s.Port < 1 || s.Port > 65535 {
+			if s.Name != "" {
+				errors = append(errors, "Invalid port for service "+strconv.Itoa((idx+1)))
+			} else {
+				errors = append(errors, "Invalid port for service '"+s.Name+"'")
+			}
+		}
+	}
+
 	return
 }
 

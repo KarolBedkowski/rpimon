@@ -153,6 +153,7 @@
 							<td><select name="MonitoredHosts.{{$idx}}.Method" class="form-control input-sm">
 									<option value="ping" {{if eq $serv.Method "ping"}}selected{{end}}>ping</option>
 									<option value="tcp" {{if eq $serv.Method "tcp"}}selected{{end}}>tcp</option>
+									<option value="http" {{if eq $serv.Method "http"}}selected{{end}}>http</option>
 								</select>
 							</td>
 							<td><input type="text" name="MonitoredHosts.{{$idx}}.Address" value="{{$serv.Address}}"  class="form-control input-sm"/></td>
@@ -191,6 +192,7 @@
 		<td><select name="MonitoredHosts.[[idx]].Method" class="form-control input-sm">
 				<option value="ping">ping</option>
 				<option value="tcp">tcp</option>
+				<option value="http">http</option>
 			</select>
 		</td>
 		<td><input type="text" name="MonitoredHosts.[[idx]].Address"  class="form-control input-sm"/></td>
@@ -211,8 +213,8 @@
 
 <script type="template" id="tmpl-services-row">
 	<tr>
-		<td><input type="number" name="MonitoredServices.[[id]].Port"  class="form-control input-sm" /></td>
-		<td><input type="text" name="MonitoredServices.[[id]].Name" class="form-control input-sm" /></td>
+		<td><input type="number" name="MonitoredServices.[[idx]].Port"  class="form-control input-sm" /></td>
+		<td><input type="text" name="MonitoredServices.[[idx]].Name" class="form-control input-sm" /></td>
 		<td><a href="#" class="serv-delete">Remove</a></td>
 	</tr>
 </script>

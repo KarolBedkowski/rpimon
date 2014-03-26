@@ -6,6 +6,7 @@ import (
 	"k.prv/rpimon/app/cfg"
 	l "k.prv/rpimon/helpers/logging"
 	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
@@ -33,8 +34,8 @@ var (
 
 // GetNetHistory return map interface->usage history
 func GetNetHistory() map[string]ifaceHistory {
-	loadMutex.RLock()
-	defer loadMutex.RUnlock()
+	netHistoryMutex.RLock()
+	defer netHistoryMutex.RUnlock()
 	result := make(map[string]ifaceHistory)
 	for key, val := range netHistory {
 		result[key] = ifaceHistory{
@@ -47,8 +48,8 @@ func GetNetHistory() map[string]ifaceHistory {
 
 // GetTotalNetHistory return ussage all interfaces
 func GetTotalNetHistory() ifaceHistory {
-	loadMutex.RLock()
-	defer loadMutex.RUnlock()
+	netHistoryMutex.RLock()
+	defer netHistoryMutex.RUnlock()
 	result := ifaceHistory{
 		Input:  netTotalUsage.Input[:],
 		Output: netTotalUsage.Output[:],
@@ -57,6 +58,8 @@ func GetTotalNetHistory() ifaceHistory {
 }
 
 func gatherNetworkUsage() {
+	netHistoryMutex.Lock()
+	defer netHistoryMutex.Unlock()
 	file, err := os.Open("/proc/net/dev")
 	if err != nil {
 		l.Warn("gatherNetworkUsage open proc file error: %s", err.Error())
@@ -65,8 +68,6 @@ func gatherNetworkUsage() {
 	defer file.Close()
 	ts := time.Now().Unix()
 	reader := bufio.NewReader(file)
-	netHistoryMutex.Lock()
-	defer netHistoryMutex.Unlock()
 	var sumRecv, sumTrans uint64
 	for idx := 0; ; idx++ {
 		line, err := reader.ReadString('\n')
@@ -94,8 +95,10 @@ func gatherNetworkUsage() {
 					ihist.Input = ihist.Input[1:]
 					ihist.Output = ihist.Output[1:]
 				}
-				ihist.Input = append(ihist.Input, (recv-ihist.lastInput)/uint64(tsdelta))
-				ihist.Output = append(ihist.Output, (trans-ihist.lastOutput)/uint64(tsdelta))
+				if tsdelta > 0 {
+					ihist.Input = append(ihist.Input, (recv-ihist.lastInput)/uint64(tsdelta))
+					ihist.Output = append(ihist.Output, (trans-ihist.lastOutput)/uint64(tsdelta))
+				}
 			}
 			ihist.lastTS = ts
 			ihist.lastInput = recv
@@ -117,8 +120,10 @@ func gatherNetworkUsage() {
 			netTotalUsage.Input = netTotalUsage.Input[1:]
 			netTotalUsage.Output = netTotalUsage.Output[1:]
 		}
-		netTotalUsage.Input = append(netTotalUsage.Input, (sumRecv-netTotalUsage.lastInput)/uint64(tsdelta))
-		netTotalUsage.Output = append(netTotalUsage.Output, (sumTrans-netTotalUsage.lastOutput)/uint64(tsdelta))
+		if tsdelta > 0 {
+			netTotalUsage.Input = append(netTotalUsage.Input, (sumRecv-netTotalUsage.lastInput)/uint64(tsdelta))
+			netTotalUsage.Output = append(netTotalUsage.Output, (sumTrans-netTotalUsage.lastOutput)/uint64(tsdelta))
+		}
 	}
 	netTotalUsage.lastTS = ts
 	netTotalUsage.lastInput = sumRecv
@@ -159,6 +164,21 @@ func GetHostsStatus() []*Host {
 	return result
 }
 
+// GetSimpleHostStatus return current hosts status as map name->status
+func GetSimpleHostStatus() map[string]bool {
+	monitoredHostsMutex.RLock()
+	defer monitoredHostsMutex.RUnlock()
+	result := make(map[string]bool, 0)
+	for _, host := range cfg.Configuration.Monitor.MonitoredHosts {
+		if status, ok := lastHostStatus[host.Name]; ok {
+			result[host.Name] = status.available
+		} else {
+			result[host.Name] = false
+		}
+	}
+	return result
+}
+
 func checkHosts() {
 	hosts := make(map[string]hostStatus, 0)
 	now := int(time.Now().Unix())
@@ -178,6 +198,9 @@ func checkHosts() {
 					_, err = conn.Write([]byte("\n"))
 				}
 				available = err == nil
+			case "http":
+				res, err := http.Get(chost.Address)
+				available = err == nil && res.StatusCode >= 200 && res.StatusCode < 400
 			default:
 				_, err := exec.Command("ping", "-c", "1", "-i", "1", chost.Address).CombinedOutput()
 				available = err == nil

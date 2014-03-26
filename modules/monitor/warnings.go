@@ -22,22 +22,24 @@ func getWarnings() *context.WarningsStruct {
 		conf := cfg.Configuration.Monitor
 		warnings := &context.WarningsStruct{}
 		// high load
+		loadInfo := GetLoadInfo()
 		if lastLoadInfo != nil {
-			if conf.LoadError > 0 && lastLoadInfo.Load5 > conf.LoadError {
+			if conf.LoadError > 0 && loadInfo.Load5 > conf.LoadError {
 				warnings.Errors = append(warnings.Errors, "Critical system Load")
-			} else if conf.LoadWarning > 0 && lastLoadInfo.Load5 > conf.LoadWarning {
+			} else if conf.LoadWarning > 0 && loadInfo.Load5 > conf.LoadWarning {
 				warnings.Warnings = append(warnings.Warnings, "High system Load")
 			}
 		}
 		// low mem
-		if lastMemInfo != nil {
-			if conf.RAMUsageWarning > 0 && lastMemInfo.UsedPerc > conf.RAMUsageWarning {
-				if conf.SwapUsageWarning > 0 && lastMemInfo.SwapTotal > 0 && lastMemInfo.SwapFreePerc < 100-conf.SwapUsageWarning {
+		memInfo := GetMemoryInfo()
+		if memInfo != nil {
+			if conf.RAMUsageWarning > 0 && memInfo.UsedPerc > conf.RAMUsageWarning {
+				if conf.SwapUsageWarning > 0 && memInfo.SwapTotal > 0 && memInfo.SwapFreePerc < 100-conf.SwapUsageWarning {
 					warnings.Errors = append(warnings.Errors, "CRITICAL RAM/SWAP ussage")
 				} else {
 					warnings.Warnings = append(warnings.Warnings, "High memory ussage")
 				}
-			} else if conf.SwapUsageWarning > 0 && lastMemInfo.SwapTotal > 0 && lastMemInfo.SwapFreePerc < 100-conf.SwapUsageWarning {
+			} else if conf.SwapUsageWarning > 0 && memInfo.SwapTotal > 0 && lastMemInfo.SwapFreePerc < 100-conf.SwapUsageWarning {
 				warnings.Warnings = append(warnings.Warnings, "High SWAP ussage")
 			}
 		}

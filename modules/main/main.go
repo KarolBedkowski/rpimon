@@ -43,6 +43,7 @@ type pageCtx struct {
 	Warnings          *context.WarningsStruct
 	MaxAcceptableLoad int
 	LoadTrucated      float64
+	HostsStatus       map[string]bool
 }
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
@@ -65,6 +66,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 	if mpdStatus, err := mpd.GetShortStatus(); err == nil {
 		ctx.MpdStatus = mpdStatus
 	}
+	ctx.HostsStatus = monitor.GetSimpleHostStatus()
 	app.RenderTemplateStd(w, ctx, "main/index.tmpl")
 }
 

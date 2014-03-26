@@ -65,16 +65,17 @@ var statusServCache = h.NewSimpleCache(1)
 func statusServHandler(w http.ResponseWriter, r *http.Request) {
 	data := statusServCache.Get(func() h.Value {
 		res := map[string]interface{}{"cpu": strings.Join(monitor.GetCPUHistory(), ","),
-			"load":     strings.Join(monitor.GetLoadHistory(), ","),
-			"mem":      strings.Join(monitor.GetMemoryHistory(), ","),
-			"meminfo":  monitor.GetMemoryInfo(),
-			"cpuusage": monitor.GetCPUUsageInfo(),
-			"cpuinfo":  monitor.GetCPUInfo(),
-			"loadinfo": monitor.GetLoadInfo(),
-			"fs":       monitor.GetFilesystemsInfo(),
-			"iface":    monitor.GetInterfacesInfo(),
-			"uptime":   monitor.GetUptimeInfo(),
-			"netusage": monitor.GetTotalNetHistory(),
+			"load":       strings.Join(monitor.GetLoadHistory(), ","),
+			"mem":        strings.Join(monitor.GetMemoryHistory(), ","),
+			"meminfo":    monitor.GetMemoryInfo(),
+			"cpuusage":   monitor.GetCPUUsageInfo(),
+			"cpuinfo":    monitor.GetCPUInfo(),
+			"loadinfo":   monitor.GetLoadInfo(),
+			"fs":         monitor.GetFilesystemsInfo(),
+			"iface":      monitor.GetInterfacesInfo(),
+			"uptime":     monitor.GetUptimeInfo(),
+			"netusage":   monitor.GetTotalNetHistory(),
+			"hoststatus": monitor.GetSimpleHostStatus(),
 		}
 		encoded, _ := json.Marshal(res)
 		return encoded
