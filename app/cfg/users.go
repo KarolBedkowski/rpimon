@@ -85,12 +85,12 @@ func createDummyDatabase() {
 		"user": &User{
 			Login:    "user",
 			Password: CreatePassword("user"),
-			Privs:    []string{"mpd", "files"},
+			Privs:    []string{"mpd", "files", "notepad"},
 		},
 		"admin": &User{
 			Login:    "admin",
 			Password: CreatePassword("admin"),
-			Privs:    []string{"admin", "mpd", "files"},
+			Privs:    []string{"admin", "mpd", "files", "notepad"},
 		},
 	}
 }
