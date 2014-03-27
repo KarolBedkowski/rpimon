@@ -30,7 +30,7 @@ type (
 func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 	ctx := &usersPageCtx{BasePageContext: bctx}
 	ctx.Users = cfg.GetAllUsers()
-	ctx.SetMenuActive("p-users")
+	ctx.SetMenuActive("m-users")
 	app.RenderTemplateStd(w, ctx, "pref/users/index.tmpl")
 }
 
@@ -84,7 +84,7 @@ func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 			if err = cfg.AddUser(user); err == nil {
 				ctx.BasePageContext.AddFlashMessage("User added", "success")
 				ctx.Save()
-				http.Redirect(w, r, app.GetNamedURL("p-users-index"), http.StatusFound)
+				http.Redirect(w, r, app.GetNamedURL("m-pref-users-index"), http.StatusFound)
 				return
 			}
 			ctx.AddFlashMessage("Add user errror: "+err.Error(), "error")
@@ -97,7 +97,7 @@ func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 			if err = cfg.UpdateUser(user); err == nil {
 				ctx.AddFlashMessage("User updated", "success")
 				ctx.Save()
-				http.Redirect(w, r, app.GetNamedURL("p-users-index"), http.StatusFound)
+				http.Redirect(w, r, app.GetNamedURL("m-pref-users-index"), http.StatusFound)
 				return
 			}
 			ctx.AddFlashMessage("Update user errror: "+err.Error(), "error")
@@ -110,7 +110,7 @@ func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 		if err = cfg.DeleteUser(login); err == nil {
 			ctx.AddFlashMessage("User deleted", "success")
 			ctx.Save()
-			http.Redirect(w, r, app.GetNamedURL("p-users-index"), http.StatusFound)
+			http.Redirect(w, r, app.GetNamedURL("m-pref-users-index"), http.StatusFound)
 			return
 		}
 		ctx.AddFlashMessage("Update user errror: "+err.Error(), "error")
@@ -124,8 +124,8 @@ func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 			}
 		}
 	}
+	ctx.SetMenuActive("m-users")
 	ctx.Save()
-	ctx.SetMenuActive("p-users")
 	app.RenderTemplateStd(w, ctx, "pref/users/user.tmpl")
 
 }
@@ -172,6 +172,6 @@ func profilePageHandler(w http.ResponseWriter, r *http.Request, bctx *context.Ba
 		}
 	}
 	ctx.Save()
-	ctx.SetMenuActive("p-user-profile")
+	ctx.SetMenuActive("m-user-profile")
 	app.RenderTemplateStd(w, ctx, "pref/users/profile.tmpl")
 }

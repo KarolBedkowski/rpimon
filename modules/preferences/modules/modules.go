@@ -71,6 +71,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 			m.Internal,
 		})
 	}
+	ctx.SetMenuActive("m-modules")
 	app.RenderTemplateStd(w, ctx, "pref/modules/index.tmpl")
 }
 
@@ -137,6 +138,6 @@ func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *context
 		}
 	}
 	ctx.Form.Enabled = conf["enabled"] == "yes"
-	ctx.SetMenuActive("p-modules")
+	ctx.SetMenuActive("m-modules")
 	app.RenderTemplateStd(w, ctx, "pref/modules/conf.tmpl")
 }

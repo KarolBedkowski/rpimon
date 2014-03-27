@@ -36,15 +36,15 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 		return "", nil
 	}
 
-	menu = context.NewMenuItem("Preferences", "preferences").SetSortOrder(999).SetIcon("glyphicon glyphicon-wrench")
+	menu = context.NewMenuItem("Preferences", "preferences").SetSortOrder(999).SetIcon("glyphicon glyphicon-cog")
 	// Preferences
 	if context.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		//TODO: named routes
-		menu.AddChild(context.NewMenuItem("Modules", app.GetNamedURL("m-pref-modules-index")).SetID("p-modules"))
-		menu.AddChild(context.NewMenuItem("Users", app.GetNamedURL("m-pref-users-index")).SetID("p-users"))
+		menu.AddChild(context.NewMenuItem("Modules", app.GetNamedURL("m-pref-modules-index")).SetID("m-modules"))
+		menu.AddChild(context.NewMenuItem("Users", app.GetNamedURL("m-pref-users-index")).SetID("m-users"))
 	}
 	if ctx.CurrentUser != "" {
-		menu.AddChild(context.NewMenuItem("Profile", app.GetNamedURL("m-pref-user-profile")).SetID("p-user-profile"))
+		menu.AddChild(context.NewMenuItem("Profile", app.GetNamedURL("m-pref-user-profile")).SetID("m-user-profile"))
 	}
 
 	return "", menu
