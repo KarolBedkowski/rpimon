@@ -15,8 +15,8 @@ import (
 	mstorage "k.prv/rpimon/modules/storage"
 	msmart "k.prv/rpimon/modules/storage/smart"
 	msystem "k.prv/rpimon/modules/system"
+	msyshw "k.prv/rpimon/modules/system/hw"
 	msyslogs "k.prv/rpimon/modules/system/logs"
-	msystother "k.prv/rpimon/modules/system/other"
 	msysproc "k.prv/rpimon/modules/system/process"
 	msysusers "k.prv/rpimon/modules/system/users"
 	mutls "k.prv/rpimon/modules/utils"
@@ -66,7 +66,7 @@ func main() {
 	context.RegisterModule(mstorage.Module)
 	context.RegisterModule(msmart.Module)
 	context.RegisterModule(msyslogs.Module)
-	context.RegisterModule(msystother.Module)
+	context.RegisterModule(msyshw.Module)
 	context.RegisterModule(msysproc.Module)
 	context.RegisterModule(msysusers.Module)
 	context.RegisterModule(mutls.Module)
