@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"k.prv/rpimon/app/cfg"
 	l "k.prv/rpimon/helpers/logging"
+	res "k.prv/rpimon/resources/tmpl"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -35,18 +36,30 @@ func getTemplate(name string, filenames ...string) (tmpl *template.Template) {
 	defer cacheLock.Unlock()
 
 	ctemplate, ok := cacheItems[name]
-	if !ok || cfg.Configuration.Debug {
-		templates := []string{}
-		for _, filename := range filenames {
-			fullPath := filepath.Join(cfg.Configuration.TemplatesDir, filename)
-			if !fileExists(fullPath) {
-				l.Error("RenderTemplate missing template: %s", fullPath)
-				return
-			}
-			templates = append(templates, fullPath)
-		}
+	if !ok {
 		ctemplate = template.New(name).Funcs(funcMap)
-		ctemplate = template.Must(ctemplate.ParseFiles(templates...))
+		for _, name := range filenames {
+			if !cfg.Configuration.Debug {
+				if c, err := res.Asset(name); err == nil {
+					ctemplate = template.Must(ctemplate.Parse(string(c)))
+					continue
+				} else {
+					l.Error("RenderTemplate get template %s from box error: %s", name, err.Error())
+				}
+			}
+			fullPath := filepath.Join(cfg.Configuration.TemplatesDir, name)
+			if !fileExists(fullPath) {
+				if cfg.Configuration.Debug {
+					if c, err := res.Asset(name); err == nil {
+						ctemplate = template.Must(ctemplate.Parse(string(c)))
+						continue
+					}
+				}
+				l.Error("RenderTemplate missing template: %s", fullPath)
+			} else {
+				ctemplate = template.Must(ctemplate.ParseFiles(fullPath))
+			}
+		}
 		if ctemplate.Lookup("scripts") == nil {
 			ctemplate, _ = ctemplate.Parse("{{define \"scripts\"}}{{end}}")
 		}
