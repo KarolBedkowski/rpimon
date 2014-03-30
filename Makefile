@@ -1,6 +1,8 @@
 VERSION=`git describe --always`
 LDFLAGS="-X k.prv/rpimon/app/context.AppVersion $(VERSION)"
 
+.PHONY: resources build
+
 build: resources
 	GOGCCFLAGS="-s -fPIC -O4 -Ofast -march=native" go build -ldflags $(LDFLAGS)
 
@@ -10,30 +12,17 @@ build_pi: resources
 
 clean:
 	go clean
-	rm -f server rpimon
-	find ./static -iname '*.css.gz' -exec rm -f {} ';'
-	find ./static -iname '*.js.gz' -exec rm -f {} ';'
-	find . -iname '*.orig' -exec rm -f {} ';'
+	rm -f server rpimon dist build
+	find . -iname '*.orig' -delete
+	git checkout resources/resources.go
 
-compress:
-	find ./static -iname '*.css' -exec gzip -f -k {} ';'
-	find ./static -iname '*.js' -exec gzip -f -k {} ';'
-
-copy_pi:
-	#cp rpi/* dist/
-	cp rpimon dist/
+install_pi: build_pi
 	ssh k@pi sudo service k_rpimon stop
-	rsync -arv --delete --exclude notepad --exclude temp --exclude dist/.stamp dist/* k@pi:rpimon/
+	scp rpimon k@pi:rpimon/
 	ssh k@pi sudo service k_rpimon start
 
-install: build_static build
-	cp *.json dist/
-	cp rpimon dist/
-
-install_pi: build_static build_pi copy_pi
-
 run: clean
-	mkdir temp || true
+#	mkdir temp || true
 	go-reload server.go
 
 certs:
@@ -46,23 +35,23 @@ debug: clean
 
 
 build_static:
-	# create dist dir if not exists
-	if [ ! -d dist ]; then mkdir -p "dist"; fi
-	cp -r templates dist/
-	if [ ! -e dist/.stamp ]; then touch -t 200001010000 dist/.stamp; fi
+	# create build dir if not exists
+	if [ ! -d build ]; then mkdir -p "build"; fi
+	cp -r templates build/
+	if [ ! -e build/.stamp ]; then touch -t 200001010000 build/.stamp; fi
 	# copy dir structure
-	find static -type d -exec mkdir -p -- dist/{} ';'
+	find static -type d -exec mkdir -p -- build/{} ';'
 	# copy non-js and non-css files
-	find static -type f ! -name *.js ! -name *.css -exec cp {} dist/{} ';'
+	find static -type f ! -name *.js ! -name *.css -exec cp {} build/{} ';'
 	# minify updated css
-	find static -name *.css -newer dist/.stamp -print -exec yui-compressor -v -o "./dist/{}" "{}" ';' 
+	find static -name *.css -newer build/.stamp -print -exec yui-compressor -v -o "./build/{}" "{}" ';' 
 	# minify updated js
-	find static -name *.js -newer dist/.stamp -print -exec closure-compiler --language_in ECMASCRIPT5 --js_output_file "dist/{}" --js "{}" ';' 
+	find static -name *.js -newer build/.stamp -print -exec closure-compiler --language_in ECMASCRIPT5 --js_output_file "build/{}" --js "{}" ';' 
 	# compress updated css
-	find dist -iname '*.css' -newer dist/.stamp -print -exec gzip -f --best -k {} ';'
+	find build -iname '*.css' -newer build/.stamp -print -exec gzip -f --best -k {} ';'
 	# compress updated js
-	find dist -iname '*.js' -newer dist/.stamp -print -exec gzip -f --best -k {} ';'
-	touch dist/.stamp
+	find build -iname '*.js' -newer build/.stamp -print -exec gzip -f --best -k {} ';'
+	touch build/.stamp
 
-resources:
-	go-assets-builder -p=resources -o=resources/resources.go -s="/dist/" dist/
+resources: build_static
+	go-assets-builder -p=resources -o=resources/resources.go -s="/build/" build/
