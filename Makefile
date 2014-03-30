@@ -26,11 +26,11 @@ copy_pi:
 	rsync -arv --delete --exclude notepad --exclude temp --exclude dist/.stamp dist/* k@pi:rpimon/
 	ssh k@pi sudo service k_rpimon start
 
-install: build build_static
+install: build_static build
 	cp *.json dist/
 	cp rpimon dist/
 
-install_pi: build_pi build_static copy_pi
+install_pi: build_static build_pi copy_pi
 
 run: clean
 	mkdir temp || true
@@ -65,4 +65,4 @@ build_static:
 	touch dist/.stamp
 
 resources:
-	find templates -type d | xargs go-bindata -o="resources/tmpl/templates.go" -pkg="resources" -prefix="templates/"
+	go-assets-builder -p=resources -o=resources/resources.go -s="/dist/" dist/

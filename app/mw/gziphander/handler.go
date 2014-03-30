@@ -5,6 +5,8 @@ package gziphandler
 
 import (
 	"io"
+	res "k.prv/rpimon/resources"
+	"log"
 	"mime"
 	"net/http"
 	"os"
@@ -98,9 +100,13 @@ func setContentType(w http.ResponseWriter, name string, file http.File) {
 // open file and return File and FileInfo; ignore directories.
 func open(fs http.FileSystem, name string) (file http.File, stat os.FileInfo) {
 	var err error
-	file, err = fs.Open(name)
+	file, err = res.Assets.Open("static" + name)
 	if err != nil {
-		return
+		log.Println("Asset open %v error: %v", name, err.Error())
+		file, err = fs.Open(name)
+		if err != nil {
+			return
+		}
 	}
 	stat, err = file.Stat()
 	if err != nil || stat.IsDir() { // ignore dirs

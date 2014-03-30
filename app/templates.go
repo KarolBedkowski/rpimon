@@ -2,9 +2,10 @@ package app
 
 import (
 	"html/template"
+	"io/ioutil"
 	"k.prv/rpimon/app/cfg"
 	l "k.prv/rpimon/helpers/logging"
-	res "k.prv/rpimon/resources/tmpl"
+	res "k.prv/rpimon/resources"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -40,7 +41,8 @@ func getTemplate(name string, filenames ...string) (tmpl *template.Template) {
 		ctemplate = template.New(name).Funcs(funcMap)
 		for _, name := range filenames {
 			if !cfg.Configuration.Debug {
-				if c, err := res.Asset(name); err == nil {
+				if f, err := res.Assets.Open("templates/" + name); err == nil {
+					c, _ := ioutil.ReadAll(f)
 					ctemplate = template.Must(ctemplate.Parse(string(c)))
 					continue
 				} else {
@@ -50,7 +52,8 @@ func getTemplate(name string, filenames ...string) (tmpl *template.Template) {
 			fullPath := filepath.Join(cfg.Configuration.TemplatesDir, name)
 			if !fileExists(fullPath) {
 				if cfg.Configuration.Debug {
-					if c, err := res.Asset(name); err == nil {
+					if f, err := res.Assets.Open("templates/" + name); err == nil {
+						c, _ := ioutil.ReadAll(f)
 						ctemplate = template.Must(ctemplate.Parse(string(c)))
 						continue
 					}
