@@ -20,6 +20,7 @@ import (
 	msysproc "k.prv/rpimon/modules/system/process"
 	msysusers "k.prv/rpimon/modules/system/users"
 	mutls "k.prv/rpimon/modules/utils"
+	"k.prv/rpimon/resources"
 	"log"
 	"net/http"
 	// _ "net/http/pprof" // /debug/pprof/
@@ -34,6 +35,8 @@ func main() {
 	log.Printf("Starting... ver %s", context.AppVersion)
 	configFilename := flag.String("conf", "./config.json", "Configuration filename")
 	debug := flag.Int("debug", -1, "Run in debug mode (1) or normal (0)")
+	forceLocalFiles := flag.Bool("forceLocalFiles", false, "Force use local files instead of embended assets")
+	localFilesPath := flag.String("localFilesPath", ".", "Path to static and templates directory")
 	flag.Parse()
 
 	conf := app.Init(*configFilename, *debug)
@@ -41,6 +44,12 @@ func main() {
 	if !conf.Debug {
 		log.Printf("NumCPU: %d", runtime.NumCPU())
 		runtime.GOMAXPROCS(runtime.NumCPU())
+	}
+
+	if resources.Init(*forceLocalFiles, *localFilesPath) {
+		log.Printf("Using embended resources...")
+	} else {
+		log.Printf("Using local files...")
 	}
 
 	// cleanup

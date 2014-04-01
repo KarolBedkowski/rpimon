@@ -45,10 +45,8 @@ func serveFile(w http.ResponseWriter, r *http.Request, fs http.FileSystem,
 
 	// try to serve gziped file; ignore request for gz files
 	if !strings.HasSuffix(strings.ToLower(name), ".gz") && supportsGzip(r) {
-		if file, stat := open(fs, name+".gz"); file != nil {
+		if file, stat, err := open(fs, name+".gz"); file != nil && err == nil {
 			defer file.Close()
-			name = stat.Name()
-			name = name[:len(name)-3]
 			setContentType(w, name, file)
 			w.Header().Set("Content-Encoding", "gzip")
 			if cacheControl {
@@ -60,13 +58,15 @@ func serveFile(w http.ResponseWriter, r *http.Request, fs http.FileSystem,
 	}
 
 	// serve requested file
-	if file, stat := open(fs, name); file != nil {
+	if file, stat, err := open(fs, name); file != nil && err == nil {
 		defer file.Close()
 		if cacheControl {
 			w.Header().Set("Cache-Control", "must_revalidate, private, max-age=604800")
 		}
 		http.ServeContent(w, r, stat.Name(), stat.ModTime(), file)
 		return
+	} else {
+		log.Printf("Asset open %v error: %v\n", name, err.Error())
 	}
 
 	http.NotFound(w, r)
@@ -98,15 +98,10 @@ func setContentType(w http.ResponseWriter, name string, file http.File) {
 }
 
 // open file and return File and FileInfo; ignore directories.
-func open(fs http.FileSystem, name string) (file http.File, stat os.FileInfo) {
-	var err error
+func open(fs http.FileSystem, name string) (file http.File, stat os.FileInfo, err error) {
 	file, err = res.Assets.Open("static" + name)
 	if err != nil {
-		log.Println("Asset open %v error: %v", name, err.Error())
-		file, err = fs.Open(name)
-		if err != nil {
-			return
-		}
+		return
 	}
 	stat, err = file.Stat()
 	if err != nil || stat.IsDir() { // ignore dirs
