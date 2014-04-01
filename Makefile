@@ -1,5 +1,6 @@
 VERSION=`git describe --always`
-LDFLAGS="-X k.prv/rpimon/app/context.AppVersion $(VERSION)"
+DATE=`date`
+LDFLAGS="-X k.prv/rpimon/app/context.AppVersion '$(VERSION) - $(DATE)'"
 
 .PHONY: resources build
 
@@ -21,7 +22,7 @@ install_pi: build_pi
 	scp rpimon k@pi:rpimon/
 	ssh k@pi sudo service k_rpimon start
 
-run: clean
+run:
 #	mkdir temp || true
 	go-reload server.go
 
@@ -55,3 +56,7 @@ build_static:
 
 resources: build_static
 	go-assets-builder -p=resources -o=resources/resources.go -s="/build/" build/
+
+deps:
+	go get -d -v .
+	go get -v github.com/jessevdk/go-assets-builder
