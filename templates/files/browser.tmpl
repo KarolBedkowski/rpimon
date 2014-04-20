@@ -7,19 +7,14 @@
 	</div>
 </div>
 
-<div class="row">
-	<div class="col-xs-12 col-md-8">
-		<ol class="breadcrumb" id="breadcrumb"></ol>
-	</div>
-	<div class="col-xs-12 col-md-4 text-right">
-		<div class="btn-group btn-group-sm">
+<div class="row row-centered">
+	<div class="col-md-12">
+		<ol class="breadcrumb" id="breadcrumb" style="float: left;"></ol>
+		<div class="btn-group btn-group-sm" style="float: right;">
 			<button class="btn btn-default" data-toggle="modal" data-target="#create-folder-dlg">Create directory</button>
 			<button class="btn btn-default" data-toggle="modal" data-target="#upload-dlg">Upload</button>
 		</div>
 	</div>
-</div>
-
-<div class="row row-centered">
 	<div class="col-xs-12">
 		<table class="table table-hover table-bordered table-condensed" id="table-files-browser">
 			<thead>
@@ -63,7 +58,7 @@
 </div><!-- /.modal -->
 
 <div class="modal fade" id="upload-dlg" tabindex="-1" role="dialog" aria-labelledby="upload-dlg-label" aria-hidden="true">
-	<div class="modal-dialog">
+	<div class="modal-dialog modal-sm">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -85,7 +80,7 @@
 </div><!-- /.modal -->
 
 <div class="modal fade" id="dialog-dirtree" role="dialog" aria-labelledby="dialog-dirtree-label" aria-hidden="true">
-	<div class="modal-dialog">
+	<div class="modal-dialog modal-sm">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
