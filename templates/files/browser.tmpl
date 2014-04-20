@@ -39,11 +39,13 @@
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 				<h4 class="modal-title" id="create-folder-dlg-label">Create directory</h4>
 			</div>
-			<form action="{{namedurl "files-mkdir"}}" method="post" class="form-inline" role="form">
+			<form action="{{namedurl "files-mkdir"}}" method="post" class="form-horizontal" role="form">
 				<div class="modal-body">
 					<div class="form-group">
-						<label for="folder-name">Folder name</label>
-						<input type="text" name="name" id="folder-name" class="form-control" placeholder="Directory name" required />
+						<label for="folder-name" class="col-sm-3 control-label">Folder name: </label>
+						<div class="col-sm-9">
+							<input type="text" name="name" id="folder-name" class="form-control" placeholder="Folder name" required />
+						</div>
 					</div>
 					<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
 					<input type="hidden" name="p" id="" value="" />
@@ -80,7 +82,7 @@
 </div><!-- /.modal -->
 
 <div class="modal fade" id="dialog-dirtree" role="dialog" aria-labelledby="dialog-dirtree-label" aria-hidden="true">
-	<div class="modal-dialog modal-sm">
+	<div class="modal-dialog modal-lg">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -92,7 +94,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn" data-dismiss="modal" id="dialog-dirtree-cancel">Close</button>
-				<button type="button" class="btn btn-primary" id="dialog-dirtree-success">Yes</button>
+				<button type="button" class="btn btn-primary" id="dialog-dirtree-success">Move</button>
 			</div>
 		</div><!-- /.modal-content -->
 	</div><!-- /.modal-dialog -->
