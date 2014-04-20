@@ -18,7 +18,8 @@ FILES.browser = (function(self, $) {
 			"service-dirs": "serv/dirs",
 			"service-files": "serv/files",
 			"file-action": "action"
-		}
+		},
+		treeCreated = false
 		;
 
 
@@ -167,6 +168,9 @@ FILES.browser = (function(self, $) {
 	}
 
 	function createTree() {
+		if (treeCreated) {
+			return
+		}
 		$('#dialog-dirtree #dialog-dirtree-tree').jstree({
 			'core' : {
 				'data' : {
@@ -191,6 +195,7 @@ FILES.browser = (function(self, $) {
 		}).on("ready.jstree", function() {
 			RPI.hideLoadingMsg();
 		});
+		treeCreated = true;
 	}
 
 	$.fn.dataTableExt.oSort['data-asc']  = function(a,b) {
