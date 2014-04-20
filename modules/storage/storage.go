@@ -18,7 +18,7 @@ var Module = &context.Module{
 	AllPrivilages: nil,
 	Init:          initModule,
 	GetMenu:       getMenu,
-	Configurable:  true,
+	Configurable:  false,
 }
 
 // CreateRoutes for /storage
