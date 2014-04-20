@@ -37,17 +37,19 @@
 </div>
 
 <div class="modal fade" id="create-note-dlg" tabindex="-1" role="dialog" aria-labelledby="create-note-dlg-label" aria-hidden="true">
-	<div class="modal-dialog">
+	<div class="modal-dialog dialog-sm">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 				<h4 class="modal-title" id="create-note-dlg-label">Create new note</h4>
 			</div>
-			<form action="{{namedurl "notepad-note" "note" "new"}}" method="get" class="form-inline" role="form">
+			<form action="{{namedurl "notepad-note" "note" "new"}}" method="get" class="form-horizontal" role="form">
 				<div class="modal-body">
 					<div class="form-group">
-						<label for="note-name">File name</label>
-						<input type="text" name="name" id="note-name" class="form-control" placeholder="Note name" required />
+						<label for="note-name" class="col-sm-2 control-label">File name: </label>
+						<div class="col-sm-10">
+							<input type="text" name="name" id="note-name" class="form-control" placeholder="Note name" required />
+						</div>
 					</div>
 				</div>
 				<div class="modal-footer">
