@@ -3,6 +3,7 @@ package app
 import (
 	"html/template"
 	"io/ioutil"
+	"k.prv/rpimon/app/cfg"
 	l "k.prv/rpimon/helpers/logging"
 	res "k.prv/rpimon/resources"
 	"net/http"
@@ -55,7 +56,9 @@ func getTemplate(name string, filenames ...string) (tmpl *template.Template) {
 		if ctemplate.Lookup("tabs") == nil {
 			ctemplate, _ = ctemplate.Parse("{{define \"tabs\"}}{{end}}")
 		}
-		cacheItems[name] = ctemplate
+		if !cfg.Configuration.Debug {
+			cacheItems[name] = ctemplate
+		}
 	}
 	return ctemplate
 }
