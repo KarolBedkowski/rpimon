@@ -107,13 +107,9 @@ func commandPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.Bas
 	commandStr := group[commandID].Command
 	command := strings.Split(commandStr, " ")
 
-	data := &pageCtx{
-		SimpleDataPageCtx: &context.SimpleDataPageCtx{BasePageContext: ctx},
-		Configuration:     config,
-	}
-	data.CurrentPage = "Utils " + groupName + ": " + group[commandID].Name
-	data.Data = h.ReadCommand(command[0], command[1:]...)
-	app.RenderTemplateStd(w, data, "data.tmpl")
+	result := h.ReadCommand(command[0], command[1:]...)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write([]byte(result))
 }
 
 type (
