@@ -108,6 +108,9 @@ func commandPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.Bas
 	command := strings.Split(commandStr, " ")
 
 	result := h.ReadCommand(command[0], command[1:]...)
+	if result == "" {
+		result = "<b>Done</b> - No result"
+	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Write([]byte(result))
 }
