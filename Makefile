@@ -23,7 +23,8 @@ install_pi: build_pi
 	ssh k@pi sudo service k_rpimon start
 
 run:
-#	mkdir temp || true
+	# mkdir temp || true
+	git checkout resources/resources.go
 	go-reload server.go
 
 certs:
