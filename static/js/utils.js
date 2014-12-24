@@ -24,13 +24,19 @@ RPI.utils = (function(self, $) {
 		}).fail(function(jqXHR, result) {
 			RPI.alert(result).open();
 		});
-	}
+	};
 
 	self.init = function initF(params) {
 		token = params.token || "";
-		$("a.list-group-item").on("click", function(evt) {
+		$("a.action-btn").on("click", function(evt) {
+			var url=$(this).data('url'),
+				name=$(this).text();
 			evt.preventDefault();
-			action(this.href);
+			RPI.confirmDialog("Execute " + name + "?", {
+				title: 'Utils',
+				onSuccess : function() {
+					action(url);
+			}}).open();
 		});
 	};
 
