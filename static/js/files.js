@@ -215,7 +215,7 @@ FILES.browser = (function(self, $) {
 		table = $('table').dataTable({
 			"bAutoWidth": false,
 			//"bStateSave": true,
-			"sPaginationType": "bootstrap",
+			//"sPaginationType": "bootstrap",
 			"bFilter": false,
 			"iDisplayLength": 50,
 			"bLengthChange": false,

@@ -64,7 +64,7 @@ MPD.plists = (function(self, $) {
 			"bStateSave": true,
 			"bProcessing": true,
 			"bFilter": false,
-			"sPaginationType": "bootstrap",
+			//"sPaginationType": "bootstrap",
 			"iDisplayLength": 15,
 			"bLengthChange": false,
 			"aoColumnDefs": [
