@@ -14,3 +14,5 @@ dist
 *.json
 *.test
 notepad
+build
+resources

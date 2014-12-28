@@ -45,6 +45,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 		app.NewMenuItemFromRoute("Who", "users-index").AddQuery("?sec=who").SetActve(page == "who"),
 		app.NewMenuItemFromRoute("Users", "users-index").AddQuery("?sec=users").SetActve(page == "users"),
 		app.NewMenuItemFromRoute("Groups", "users-index").AddQuery("?sec=groups").SetActve(page == "groups"),
+		app.NewMenuItemFromRoute("Last", "users-index").AddQuery("?sec=last").SetActve(page == "groups"),
 	}
 	data.SetMenuActive("users")
 	switch page {
@@ -70,7 +71,10 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		data.Header2 = "Groups"
-
+	case "last":
+		data.Data = "LAST\n=========\n" + h.ReadCommand("last")
+		data.Data += "\n\nLASTB\n=========\n" + h.ReadCommand("sudo", "lastb")
+		data.Header2 = "Last"
 	}
 	app.RenderTemplateStd(w, data, "data.tmpl", "tabs.tmpl")
 }

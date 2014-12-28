@@ -79,7 +79,11 @@ func serviceActionPageHandler(w http.ResponseWriter, r *http.Request) {
 	l.Info("process serviceActionPageHandler %s %s", service, action)
 	result := h.ReadCommand("sudo", "service", service, action)
 	s := session.GetSessionStore(w, r)
-	s.AddFlash(result, "info")
+	if result == "" {
+		result = "empty result"
+	}
+	l.Debug("process serviceActionPageHandler %s", result)
+	s.AddFlash(service+" "+action+": "+result, "info")
 	s.Save(r, w)
 	http.Redirect(w, r, app.GetNamedURL("process-services"), http.StatusFound)
 }
