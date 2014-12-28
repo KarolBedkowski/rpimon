@@ -85,7 +85,7 @@ var RPI = (function(self, $) {
 			dheight = $(document).height(),
 			left = (dwidth - $("#loading-box .loading-wrapper").width()) / 2 +  $(window).scrollLeft();
 		$("#loading-box .loading-wrapper").css("left", left + "px");
-		$("#loading-box").css("z-index", 990).css("height", dheight + "px").fadeTo(200, 0.3);
+		$("#loading-box").css("z-index", 9900).css("height", dheight + "px").fadeTo(200, 0.3);
 	};
 
 	self.hideLoadingMsg = function hideLoadingMsgF() {
