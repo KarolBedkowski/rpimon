@@ -13,7 +13,7 @@ build_pi: resources
 
 clean:
 	go clean
-	rm -f server rpimon dist build
+	rm -fr server rpimon dist build
 	find . -iname '*.orig' -delete
 	git checkout resources/resources.go
 
