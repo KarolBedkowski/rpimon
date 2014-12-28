@@ -61,6 +61,7 @@ Included software:
  * jsTree http://jstree.com/
  * Bootstrap http://getbootstrap.com
  * FastClick https://github.com/ftlabs/fastclick
- * sb-admin theme https://github.com/IronSummitMedia/startbootstrap-sb-admin-2
+ * SB Admin 2 theme https://github.com/IronSummitMedia/startbootstrap-sb-admin-2
+ * Font Awesome http://fortawesome.github.io/Font-Awesome/
 
 .. vim: ft=rst tw=72
