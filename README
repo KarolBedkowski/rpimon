@@ -1,7 +1,66 @@
-rpimon 0.6.2
+++++++++++++++
+ rpimon 0.x.x
+++++++++++++++
 
+:Credits: Copyright (c) Karol Będkowski, 2013-2014
+:Licence: GPLv2+
+:Status: beta
+:Tags: webapp, monitoring, rpi
+
+Simple web application dedicated to monitor/control servers based on
+RaspberryPi or similar devices.
+
+Features:
+ * live monitoring system (cpu, memory, network)
+ * view logs, configurations, users, hardware information
+ * view running process; killing process; control system services
+ * control mpd
+ * simple filebrowser
+
+
+Building
+========
+Requirements:
+ * GoLang
+ * Libraries (go get):
+
+   * gorilla {context,mux,sessions,securecookie,schema} (http://gihub.com/gorilla)
+   * bcrypt (http://code.google.com/p/go.crypto/bcrypt)
+   * gompd (http://github.com/turbowookie/gompd/mpd)
+
+ * go-asset-builder (optional)
+ * yui-compressor (optional)
+ * closure-compiler(optional)
+ * go-reload (optional, for development)
+
+Building:
+ * go get .
+ * `make` or `make build_pi` for RaspberryPi
+
+Running
+=======
+Launch rpimon
+Go to http://localhost:8000
 
 Default users password:
 admin: admin
 guest: guest
 user: user
+
+Some action required sudo without password.
+
+Credits
+=======
+Included software:
+ * jQuery http://jquery.com/
+ * jQuery UI http://jqueryui.com
+ * DataTables http://www.datatables.net/
+ * metisMenu https://github.com/onokumus/metisMenu
+ * Peity jQuery http://benpickles.github.io/peity
+ * jQuery Validation Plugin http://bassistance.de/jquery-plugins/jquery-plugin-validation/
+ * jsTree http://jstree.com/
+ * Bootstrap http://getbootstrap.com
+ * FastClick https://github.com/ftlabs/fastclick
+ * sb-admin theme https://github.com/IronSummitMedia/startbootstrap-sb-admin-2
+
+.. vim: ft=rst tw=72
