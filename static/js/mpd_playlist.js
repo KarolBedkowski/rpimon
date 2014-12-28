@@ -52,7 +52,7 @@ MPD.plist = (function(self, $) {
 		table = $('table').dataTable({
 			"bAutoWidth": false,
 			"bSort": false,
-			"sPaginationType": "bootstrap",
+			//"sPaginationType": "bootstrap",
 			"bProcessing": true,
 			"bServerSide": true,
 			"sAjaxSource": urls['mpd-pl-serv-info'],
