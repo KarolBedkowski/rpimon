@@ -20,7 +20,7 @@ RPI.storage = (function(self, $) {
 			"bAutoWidth": false,
 			"bStateSave": true,
 			"bFilter": false,
-			"sPaginationType": "bootstrap",
+			//"sPaginationType": "bootstrap",
 			"iDisplayLength": 15,
 			"bLengthChange": false,
 			"aoColumnDefs": [{

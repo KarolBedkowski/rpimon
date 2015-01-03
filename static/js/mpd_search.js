@@ -55,7 +55,7 @@ MPD.search = (function(self, $) {
 		table = $('table').dataTable({
 			"bAutoWidth": false,
 			"bStateSave": true,
-			"sPaginationType": "bootstrap",
+			//"sPaginationType": "bootstrap",
 			"iDisplayLength": 25,
 			"sDom": "<'row'<'col-xs-12 col-sm-6'l><'col-xs-12 col-sm-6'f>r>" + "t"+
 				"<'row'<'col-xs-12 col-sm-6'i><'col-xs-12 col-sm-6'p>>"
