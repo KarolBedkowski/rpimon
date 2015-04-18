@@ -154,6 +154,7 @@ func (m *Module) enable(enabled bool) {
 			}
 		}
 	}
+	m.SaveConfiguration(mconfig)
 }
 
 // GetConfiguration get configuration for current module; load default if not exists
@@ -180,6 +181,16 @@ func (m *Module) GetConfiguration() (conf map[string]string) {
 	}
 	return conf
 }
+
+
+// SaveConfiguration update app configuration file for given module
+func (m *Module) SaveConfiguration(conf map[string]string) {
+	if cfg.Configuration.Modules == nil {
+		cfg.Configuration.Modules = map[string]map[string]string{}
+	}
+	cfg.Configuration.Modules[m.Name] = conf
+}
+
 
 // EnableModule enable or disable module by name.
 func EnableModule(name string, enabled bool) {
