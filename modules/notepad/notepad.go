@@ -35,24 +35,12 @@ func init() {
 			"dir": "./notepad/",
 		},
 		Configurable:  true,
-		AllPrivilages: []context.Privilege{context.Privilege{"notepad", "access to notepad"}},
+		AllPrivilages: []context.Privilege{{"notepad", "access to notepad"}},
 	}
 }
 
-var notepadDir string
-
 // CreateRoutes for /mpd
 func initModule(parentRoute *mux.Route) bool {
-
-	conf := Module.GetConfiguration()
-
-	if dir, ok := conf["dir"]; ok && dir != "" {
-		notepadDir, _ = filepath.Abs(dir)
-	} else {
-		l.Warn("Notapad: missing 'dir' configuration parameter")
-		return false
-	}
-
 	subRouter := parentRoute.Subrouter()
 	// Main page
 	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Notepad", "notepad")).Name("notepad-index")
@@ -179,16 +167,25 @@ func noteDownloadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func findFiles() (result []*NoteStuct) {
-	if notepadDir == "" {
-		return
+func getNotepadDir() (string, bool) {
+	conf := Module.GetConfiguration()
+	notepadDir, err := filepath.Abs(filepath.Clean(conf["dir"]))
+	if err != nil {
+		l.Error("notepad.findFiles %s, %s", conf["dir"], err.Error())
+		return "", false
 	}
-	if files, err := ioutil.ReadDir(notepadDir); err == nil {
-		for _, file := range files {
-			if !file.IsDir() {
-				result = append(result, &NoteStuct{
-					Filename: file.Name(),
-				})
+	return notepadDir, true
+}
+
+func findFiles() (result []*NoteStuct) {
+	if notepadDir, ok := getNotepadDir(); ok {
+		if files, err := ioutil.ReadDir(notepadDir); err == nil {
+			for _, file := range files {
+				if !file.IsDir() {
+					result = append(result, &NoteStuct{
+						Filename: file.Name(),
+					})
+				}
 			}
 		}
 	}
@@ -196,16 +193,19 @@ func findFiles() (result []*NoteStuct) {
 }
 
 func getFilepath(filename string) (path string, ok bool) {
-	abspath, err := filepath.Abs(filepath.Clean(filepath.Join(notepadDir, filename)))
-	if err != nil {
-		l.Error("notepad.getFilepath %s, %s", filename, err.Error())
-		return
+	if notepadDir, okdir := getNotepadDir(); okdir {
+		abspath, err := filepath.Abs(filepath.Clean(filepath.Join(notepadDir, filename)))
+		if err != nil {
+			l.Error("notepad.getFilepath %s, %s", filename, err.Error())
+			return
+		}
+		if !strings.HasPrefix(abspath, notepadDir) {
+			l.Error("notepad.getFilepath %s, bad prefix: %s; notepadDir=%s", filename, abspath, notepadDir)
+			return
+		}
+		return abspath, true
 	}
-	if !strings.HasPrefix(abspath, notepadDir) {
-		l.Error("notepad.getFilepath %s, bad prefix: %s", filename, abspath)
-		return
-	}
-	return abspath, true
+	return
 }
 
 func getNote(filename string) (note *NoteStuct, err error) {

@@ -1,6 +1,7 @@
 package context
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app/cfg"
 	l "k.prv/rpimon/helpers/logging"
@@ -73,7 +74,7 @@ var (
 // RegisterModule register given module for later usage
 func RegisterModule(module *Module) bool {
 	if module.Init == nil {
-		l.Error("Module %v missing Init func.", module)
+		l.Error(fmt.Sprintf("Module %v missing Init func.", module))
 		return false
 	}
 	l.Info("Registering module: [%s] %s", module.Name, module.Title)
@@ -153,31 +154,39 @@ func (m *Module) enable(enabled bool) {
 			}
 		}
 	}
+	m.SaveConfiguration(mconfig)
 }
 
 // GetConfiguration get configuration for current module; load default if not exists
 func (m *Module) GetConfiguration() (conf map[string]string) {
-	if mconfig, ok := cfg.Configuration.Modules[m.Name]; ok && mconfig != nil {
-		// configuration exists; add missing from defaults
-		for key, val := range m.Defaults {
-			if _, found := mconfig[key]; !found {
-				mconfig[val] = val
-			}
-		}
-		return mconfig
-	}
 	conf = map[string]string{
 		"enabled": "",
 	}
 	for key, val := range m.Defaults {
 		conf[key] = val
 	}
-	if m.NeedConfiguration {
-		l.Warn("Missing configuration for %v module; loading defaults - module is disabled", m.Name)
+
+	if mconfig, ok := cfg.Configuration.Modules[m.Name]; ok && mconfig != nil {
+		for k, v := range mconfig {
+			conf[k] = v
+		}
 	} else {
-		conf["enabled"] = "yes"
+		if m.NeedConfiguration {
+			l.Warn("Missing configuration for %v module; loading defaults - module is disabled", m.Name)
+		} else {
+			conf["enabled"] = "yes"
+		}
 	}
+	// l.Printf("GetConfiguration: %s %v", m.Name, mconfig)
 	return conf
+}
+
+// SaveConfiguration update app configuration file for given module
+func (m *Module) SaveConfiguration(conf map[string]string) {
+	if cfg.Configuration.Modules == nil {
+		cfg.Configuration.Modules = map[string]map[string]string{}
+	}
+	cfg.Configuration.Modules[m.Name] = conf
 }
 
 // EnableModule enable or disable module by name.

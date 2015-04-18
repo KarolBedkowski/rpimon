@@ -28,7 +28,7 @@ type (
 // Rules for validate monitored host address
 var (
 	reValidateTcpAddress  = regexp.MustCompile(`^[\w.-]{1,63}:\d{1,5}$`)
-	reValidateHttpAddress = regexp.MustCompile(`^(https?://)?[\w.-]{1,63}(:\d{1,5})?(/.*)?$`)
+	reValidateHTTPAddress = regexp.MustCompile(`^(https?://)?[\w.-]{1,63}(:\d{1,5})?(/.*)?$`)
 	reValidatePingAddress = regexp.MustCompile(`^[\w.-]{1,63}$`)
 )
 
@@ -84,7 +84,7 @@ func (f *confForm) validate() (errors []string) {
 			case "tcp":
 				validAddress = reValidateTcpAddress.MatchString(h.Address)
 			case "http":
-				validAddress = reValidateHttpAddress.MatchString(h.Address)
+				validAddress = reValidateHTTPAddress.MatchString(h.Address)
 			case "ping":
 				validAddress = reValidatePingAddress.MatchString(h.Address)
 			default:

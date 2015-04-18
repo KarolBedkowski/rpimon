@@ -221,6 +221,10 @@ table#table-mpd-playlists {
 	table#table-mpd-playlists {
 		width: 100%;
 	}
+
+	#nav-alerts-dropdown ul {
+		margin-left: 15px;
+	}
 }
 
 table#table-services tr.active {
@@ -317,3 +321,4 @@ div#loading-box p {
 .nav .active > a {
 	font-weight: bold;
 }
+

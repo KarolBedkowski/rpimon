@@ -122,6 +122,7 @@ func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *context
 		} else {
 			conf["enabled"] = "no"
 		}
+		ctx.Module.SaveConfiguration(conf)
 		if err := cfg.SaveConfiguration(); err != nil {
 			ctx.BasePageContext.AddFlashMessage("Saving configuration error: "+err.Error(),
 				"error")
@@ -129,7 +130,7 @@ func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *context
 			ctx.BasePageContext.AddFlashMessage("Configuration saved.", "success")
 		}
 		ctx.Save()
-		http.Redirect(w, r, app.GetNamedURL("module-index"), http.StatusFound)
+		http.Redirect(w, r, app.GetNamedURL("m-pref-modules-index"), http.StatusFound)
 		return
 	}
 	for key, val := range conf {
