@@ -49,12 +49,12 @@ func Close() {
 func GetNamedURL(name string, pairs ...string) (url string) {
 	route := Router.Get(name)
 	if route == nil {
-		l.Error("GetNamedURL %s error", name)
+		l.Error("GetNamedURL " + name + " error")
 		return ""
 	}
 	rurl, err := route.URL(pairs...)
 	if err != nil {
-		l.Error("GetNamedURL %s error %s", name, err)
+		l.Error("GetNamedURL " + name + " error " +  err.Error())
 		return ""
 	}
 	return rurl.String()

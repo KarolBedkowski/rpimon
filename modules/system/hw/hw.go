@@ -1,4 +1,4 @@
-package system_hw
+package systemhw
 
 import (
 	"github.com/gorilla/mux"

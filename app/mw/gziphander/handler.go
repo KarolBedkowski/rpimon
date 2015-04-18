@@ -64,12 +64,10 @@ func serveFile(w http.ResponseWriter, r *http.Request, fs http.FileSystem,
 			w.Header().Set("Cache-Control", "must_revalidate, private, max-age=604800")
 		}
 		http.ServeContent(w, r, stat.Name(), stat.ModTime(), file)
-		return
 	} else {
 		log.Printf("Asset open %v error: %v\n", name, err.Error())
+		http.NotFound(w, r)
 	}
-
-	http.NotFound(w, r)
 }
 
 func supportsGzip(r *http.Request) bool {

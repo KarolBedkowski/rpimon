@@ -99,7 +99,7 @@ type confPageContext struct {
 }
 
 var confCommands = map[string][]string{
-	"Base": []string{
+	"Base": {
 		"ifconfig",
 		"route -n",
 		"arp -n",
@@ -107,7 +107,7 @@ var confCommands = map[string][]string{
 		"cat /etc/resolv.conf",
 		"iwconfig",
 	},
-	"ip": []string{
+	"ip": {
 		"ip link",
 		"ip addr",
 		"ip addrlabel",
@@ -127,7 +127,7 @@ var confCommands = map[string][]string{
 		"ip tcp_metrics",
 		"ip token",
 	},
-	"iw": []string{
+	"iw": {
 		"iw phy",
 		"iw dev",
 		"iw wlan0 scan dump",

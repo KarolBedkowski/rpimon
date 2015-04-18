@@ -5,6 +5,7 @@ import (
 	"k.prv/rpimon/app/cfg"
 	l "k.prv/rpimon/helpers/logging"
 	"sort"
+	"fmt"
 )
 
 // Privilege used for modules
@@ -73,7 +74,7 @@ var (
 // RegisterModule register given module for later usage
 func RegisterModule(module *Module) bool {
 	if module.Init == nil {
-		l.Error("Module %v missing Init func.", module)
+		l.Error(fmt.Sprintf("Module %v missing Init func.", module))
 		return false
 	}
 	l.Info("Registering module: [%s] %s", module.Name, module.Title)

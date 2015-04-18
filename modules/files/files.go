@@ -29,7 +29,7 @@ func init() {
 			"config_file": "./browser.json",
 		},
 		Configurable:  true,
-		AllPrivilages: []context.Privilege{context.Privilege{"files", "access to file browser"}},
+		AllPrivilages: []context.Privilege{{"files", "access to file browser"}},
 	}
 }
 

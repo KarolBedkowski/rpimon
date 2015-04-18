@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"fmt"
 	l "k.prv/rpimon/helpers/logging"
 )
 
@@ -43,14 +44,14 @@ func InitUsers(filename string, debug bool) {
 	dbfilename = filename
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
-		l.Error("UserDB.Init Error:", err)
+		l.Error("UserDB.Init Error: " + err.Error())
 		createDummyDatabase()
 		saveUsers()
 		return
 	}
 	err = json.Unmarshal(file, &database)
 	if err != nil {
-		l.Error("UserDB.Init Error: %s", err.Error())
+		l.Error("UserDB.Init Error: " + err.Error())
 		createDummyDatabase()
 		saveUsers()
 	}
@@ -63,12 +64,12 @@ func saveUsers() error {
 	l.Printf("UserDB.saveUsers %s\n", dbfilename)
 	data, err := json.Marshal(database)
 	if err != nil {
-		l.Error("UserDB.saveUsers: error marshal configuration: %s\n", err)
+		l.Error("UserDB.saveUsers: error marshal configuration: " + err.Error())
 		return err
 	}
 	err = ioutil.WriteFile(dbfilename, data, 0600)
 	if err != nil {
-		l.Error("UserDB.saveUsers: error writing file %s: %s\nData: %v", dbfilename, err.Error(), data)
+		l.Error(fmt.Sprintf("UserDB.saveUsers: error writing file %s: %s\nData: %v", dbfilename, err.Error(), data))
 	}
 	return err
 }
@@ -77,17 +78,17 @@ func createDummyDatabase() {
 	l.Info("Creating default user 'user', 'guest', 'admin'")
 	//Create fake user
 	database.Users = map[string]*User{
-		"guest": &User{
+		"guest": {
 			Login:    "guest",
 			Password: CreatePassword("guest"),
 			Privs:    nil,
 		},
-		"user": &User{
+		"user": {
 			Login:    "user",
 			Password: CreatePassword("user"),
 			Privs:    []string{"mpd", "files", "notepad"},
 		},
-		"admin": &User{
+		"admin": {
 			Login:    "admin",
 			Password: CreatePassword("admin"),
 			Privs:    []string{"admin", "mpd", "files", "notepad"},
@@ -121,7 +122,7 @@ func CreatePassword(password string) (encoded string) {
 
 	data, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		l.Error("CreatePassword error: %s", err.Error())
+		l.Error("CreatePassword error: " + err.Error())
 		return ""
 	}
 	return string(data)

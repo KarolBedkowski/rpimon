@@ -35,7 +35,7 @@ func init() {
 			"dir": "./notepad/",
 		},
 		Configurable:  true,
-		AllPrivilages: []context.Privilege{context.Privilege{"notepad", "access to notepad"}},
+		AllPrivilages: []context.Privilege{{"notepad", "access to notepad"}},
 	}
 }
 

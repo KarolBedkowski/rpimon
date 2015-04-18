@@ -20,7 +20,7 @@ var Module = &context.Module{
 	Init:          initModule,
 	GetMenu:       getMenu,
 	Internal:      true,
-	AllPrivilages: []context.Privilege{context.Privilege{"admin", "system administrator"}},
+	AllPrivilages: []context.Privilege{{"admin", "system administrator"}},
 }
 
 // CreateRoutes for /main

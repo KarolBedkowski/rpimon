@@ -34,7 +34,7 @@ func init() {
 			"host": "localhost:6600",
 		},
 		Configurable:  true,
-		AllPrivilages: []context.Privilege{context.Privilege{"mpd", "manage mpd player"}},
+		AllPrivilages: []context.Privilege{{"mpd", "manage mpd player"}},
 	}
 }
 

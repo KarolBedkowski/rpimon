@@ -155,7 +155,7 @@ func TestValidateHttpAddress(t *testing.T) {
 		"adlkal-daslak:123/dalkdalk",
 	}
 	for _, str := range testsPositive {
-		if !reValidateHttpAddress.MatchString(str) {
+		if !reValidateHTTPAddress.MatchString(str) {
 			t.Errorf("Wrong validate  %#v", str)
 		}
 	}
@@ -167,7 +167,7 @@ func TestValidateHttpAddress(t *testing.T) {
 		"1234567890123456789012345678901234567890123456789012345678901234567890",
 	}
 	for _, str := range testsNegative {
-		if reValidateHttpAddress.MatchString(str) {
+		if reValidateHTTPAddress.MatchString(str) {
 			t.Errorf("Wrong validate  %#v", str)
 		}
 	}
