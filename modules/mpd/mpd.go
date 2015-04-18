@@ -32,6 +32,7 @@ func init() {
 		Shutdown:    shutdown,
 		Defaults: map[string]string{
 			"host": "localhost:6600",
+			"log to notes": "no",
 		},
 		Configurable:  true,
 		AllPrivilages: []context.Privilege{{"mpd", "manage mpd player"}},
@@ -42,7 +43,7 @@ func init() {
 func initModule(parentRoute *mux.Route) bool {
 	conf := Module.GetConfiguration()
 	if host, ok := conf["host"]; ok && host != "" {
-		initConnector(conf["host"])
+		initConnector(conf)
 	} else {
 		l.Warn("MPD missing 'host' configuration parameter")
 		return false

@@ -6,8 +6,10 @@ import (
 	"github.com/turbowookie/gompd/mpd"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
+	n "k.prv/rpimon/modules/notepad"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type mpdStatus struct {
@@ -18,16 +20,19 @@ type mpdStatus struct {
 
 var (
 	host              string
+	logSongToNotes	 string
 	watcher           *mpd.Watcher
 	playlistCache     = h.NewSimpleCache(600)
 	mpdListFilesCache = h.NewSimpleCache(600)
 	mpdLibraryCache   = h.NewKeyCache(600)
 	connection        *mpd.Client
+	lastSong          string
 )
 
 // Init MPD configuration
-func initConnector(mpdHost string) {
-	host = mpdHost
+func initConnector(conf map[string]string) {
+	host = conf["host"]
+	logSongToNotes = conf["log to notes"]
 	connectWatcher()
 }
 
@@ -62,7 +67,10 @@ func connectWatcher() {
 			select {
 			case subsystem := <-watcher.Event:
 				l.Debug("MPD: changed subsystem:", subsystem)
+				l.Debug("MPD: changed subsystem:", watcher)
 				switch subsystem {
+				case "player":
+					logSong()
 				case "playlist":
 					playlistCache.Clear()
 				case "database":
@@ -77,6 +85,7 @@ func connectWatcher() {
 			}
 		}
 	}()
+	logSong()
 }
 
 func connect() (client *mpd.Client, err error) {
@@ -385,4 +394,30 @@ func mpdFileAction(uri, action string) (err error) {
 		}
 	}
 	return
+}
+
+func logSong() {
+	if logSongToNotes != "yes" {
+		return
+	}
+	if connection == nil {
+		if _, err := connect(); err != nil {
+			return
+		}
+	}
+	song, err := connection.CurrentSong()
+	if err != nil {
+		return
+	}
+	var data []string
+	for key, val := range song {
+		data = append(data, key + ": " + val + "\n")
+	}
+	strData := strings.Join(data, "")
+	if lastSong == strData {
+		return
+	}
+	lastSong = strData
+	strData = time.Now().Format("2006-01-02 15:04:05") + strData + "\n"
+	n.AppendToNote("mpd_log.txt", strData)
 }
