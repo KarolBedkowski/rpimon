@@ -1,3 +1,7 @@
+2015-04-18 v0.8.1
+* bugfix: notepad, configuration saving
+* [mpd] +logging played songs
+
 2015-01-03 v0.8.0
 * update bootstrap and other libraries
 
