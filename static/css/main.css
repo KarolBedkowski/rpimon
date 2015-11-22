@@ -97,7 +97,7 @@ div.chart-box-half {
 
 div.mpd-buttons-sect,
 div.mpd-info-section {
-	margin: 2em auto;
+	margin: 0em auto;
 	text-align: center;
 }
 
@@ -315,10 +315,9 @@ div#loading-box p {
 }
 
 .empty-icon:before {
-	content: "\2022"; 
+	content: "\2022";
 }
 
 .nav .active > a {
 	font-weight: bold;
 }
-
