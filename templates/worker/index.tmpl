@@ -20,8 +20,7 @@
 				<tr>
 					<th>Label</th>
 					<th>Command</th>
-					<th>Started</th>
-					<th>Finished</th>
+					<th>Started / Finished</th>
 					<th>Error</th>
 					<th>&nbsp;</th>
 				</tr>
@@ -30,9 +29,9 @@
 			{{ range .Tasks }}
 				<tr>
 					<td>{{ .Label }}</td>
-					<td>{{ .Command }}</td>
-					<td>{{ if .Started }}{{ formatDate .Started "" }}{{ end }}</td>
-					<td>{{ if .Finished }}{{ formatDate .Finished "" }}{{ end }}</td>
+					<td>{{ .Command }} {{ .Params }}</td>
+					<td>{{ if .Started }}{{ formatDate .Started "" }}{{ end }} /
+						{{ if .Finished }}{{ formatDate .Finished "" }}{{ end }}</td>
 					<th>{{ .Error }}</th>
 					<td><a href="{{ namedurl "worker-task-log" "name" .LogFile }}" target="_blank">Log</a></td>
 				</tr>
