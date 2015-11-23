@@ -19,21 +19,22 @@
 			<thead>
 				<tr>
 					<th>Label</th>
-					<th>Command</th>
 					<th>Started / Finished</th>
 					<th>Error</th>
 					<th>&nbsp;</th>
 				</tr>
 			</thead>
 			<tbody>
-			{{ range .Tasks }}
+			{{ range $i, $t := .Tasks }}
 				<tr>
-					<td>{{ .Label }}</td>
-					<td>{{ .Command }} {{ .Params }}</td>
-					<td>{{ if .Started }}{{ formatDate .Started "" }}{{ end }} /
-						{{ if .Finished }}{{ formatDate .Finished "" }}{{ end }}</td>
-					<th>{{ .Error }}</th>
-					<td><a href="{{ namedurl "worker-task-log" "name" .LogFile }}" target="_blank">Log</a></td>
+					<td>{{ $t.Label }}</td>
+					<td>{{ if $t.Started }}{{ formatDate $t.Started "" }}{{ end }} /
+						{{ if $t.Finished }}{{ formatDate $t.Finished "" }}{{ end }}</td>
+					<th>{{ $t.Error }}</th>
+					<td>
+						<a href="{{ namedurl "worker-task" "idx" $i }}">Show</a> |
+						<a href="{{ namedurl "worker-task-log" "name" $t.LogFile }}" target="_blank">Log</a>
+					</td>
 				</tr>
 			{{ end }}
 			</tbody>

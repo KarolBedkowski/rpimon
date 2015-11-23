@@ -48,6 +48,15 @@ type workerDb struct {
 	tasks []*Task
 }
 
+func (w *workerDb) getTask(index int) *Task {
+	w.mu.RLock()
+	defer w.mu.RUnlock()
+	if index < 0 || len(w.tasks) <= index {
+		return nil
+	}
+	return w.tasks[index]
+}
+
 func (w *workerDb) getTasks() []*Task {
 	w.mu.RLock()
 	defer w.mu.RUnlock()

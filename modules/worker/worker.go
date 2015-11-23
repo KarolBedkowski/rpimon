@@ -47,7 +47,9 @@ func initModule(parentRoute *mux.Route) bool {
 	// active tasks
 	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Worker", "worker")).Name("worker-index")
 	// new task
-	subRouter.HandleFunc("/new", app.VerifyPermission(newTaskPageHandler, "worker")).Name("worker-new-task")
+	subRouter.HandleFunc("/new", app.VerifyPermission(taskPageHandler, "worker")).Name("worker-new-task")
+	// show
+	subRouter.HandleFunc("/{idx:[0-9+]}", app.VerifyPermission(taskPageHandler, "worker")).Name("worker-task")
 	// logfile
 	subRouter.HandleFunc("/log/{name}", app.VerifyPermission(taskLogPageHandler, "worker")).Name("worker-task-log")
 
@@ -88,7 +90,7 @@ type taskPageContext struct {
 	Task *Task
 }
 
-func newTaskPageHandler(w http.ResponseWriter, r *http.Request) {
+func taskPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := &taskPageContext{
 		BasePageContext: context.NewBasePageContext("Task", w, r),
@@ -96,6 +98,15 @@ func newTaskPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	conf := Module.GetConfiguration()
 	ctx.Task.Dir = conf["Default_Dir"]
+
+	vars := mux.Vars(r)
+	if idxs, ok := vars["idx"]; ok {
+		if idx, err := strconv.Atoi(idxs); err == nil {
+			if tsk := db.getTask(idx); tsk != nil {
+				ctx.Task = tsk
+			}
+		}
+	}
 
 	ctx.SetMenuActive("worker-index")
 	if r.Method == "POST" {
