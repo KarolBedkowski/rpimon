@@ -20,6 +20,7 @@ import (
 	msysproc "k.prv/rpimon/modules/system/process"
 	msysusers "k.prv/rpimon/modules/system/users"
 	mutls "k.prv/rpimon/modules/utils"
+	mworker "k.prv/rpimon/modules/worker"
 	"k.prv/rpimon/resources"
 	"log"
 	"net/http"
@@ -81,6 +82,7 @@ func main() {
 	context.RegisterModule(mutls.Module)
 	context.RegisterModule(msystem.Module)
 	context.RegisterModule(mmonitor.Module)
+	context.RegisterModule(mworker.Module)
 	context.InitModules(conf, app.Router)
 
 	/* for filesystem store

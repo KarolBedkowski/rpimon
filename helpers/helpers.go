@@ -5,6 +5,7 @@ import (
 	"net/http"
 	nurl "net/url"
 	"os"
+	"strconv"
 )
 
 // CheckErr - when err != nil log message
@@ -24,18 +25,29 @@ func CheckErrAndDie(err error, msg string) {
 }
 
 // BuildQuery format url query part from pairs key, val
-func BuildQuery(pairs ...string) (query string) {
+func BuildQuery(pairs ...interface{}) (query string) {
 	pairsLen := len(pairs)
 	if pairsLen == 0 {
 		return ""
 	}
 	if pairsLen%2 != 0 {
-		logging.Warn("helpers.BuildQuery error - wron number of argiments: %v", pairs)
+		logging.Error("helpers.BuildQuery error - wrong number of arguments: %v", pairs)
 		return ""
 	}
 	query = "?"
 	for idx := 0; idx < pairsLen; idx += 2 {
-		query += pairs[idx] + "=" + nurl.QueryEscape(pairs[idx+1])
+		name := pairs[idx].(string)
+		val := pairs[idx+1]
+		var valstr string
+		switch val.(type) {
+		case int:
+			valstr = strconv.Itoa(val.(int))
+		case uint64:
+			valstr = strconv.FormatUint(val.(uint64), 10)
+		default:
+			valstr = val.(string)
+		}
+		query += name + "=" + nurl.QueryEscape(valstr)
 	}
 	return
 }
