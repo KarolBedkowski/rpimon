@@ -418,6 +418,6 @@ func logSong() {
 		return
 	}
 	lastSong = strData
-	strData = time.Now().Format("2006-01-02 15:04:05") + strData + "\n"
+	strData = time.Now().Format("2006-01-02 15:04:05") + "\n" + strData + "\n"
 	n.AppendToNote("mpd_log.txt", strData)
 }
