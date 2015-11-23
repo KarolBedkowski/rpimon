@@ -30,6 +30,7 @@ func init() {
 		Init:        initModule,
 		GetMenu:     getMenu,
 		Defaults: map[string]string{
+			"Logs_Dir":         "./worker-logs",
 			"Default_Dir":      "./",
 			"Parallel_workers": "2",
 		},
@@ -57,6 +58,8 @@ func initModule(parentRoute *mux.Route) bool {
 	}
 	dispatcher = NewDispatcher(workers)
 	dispatcher.Run()
+
+	go deleteOldLogs()
 	return true
 }
 

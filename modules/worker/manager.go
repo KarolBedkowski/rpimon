@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"io/ioutil"
 	l "k.prv/rpimon/helpers/logging"
 	"os"
 	"os/exec"
@@ -111,12 +112,11 @@ func (j *Job) run() {
 }
 
 func getLogsDir() (name string) {
-	name, _ = filepath.Abs("./workers-logs")
+	conf := Module.GetConfiguration()
+	name, _ = filepath.Abs(conf["Logs_Dir"])
 	os.MkdirAll(name, 0770)
 	return
 }
-
-const Shell = "/bin/bash"
 
 func execute(task *Task, output *os.File) (err error) {
 	args := strings.Split(task.Params, "\n")
@@ -132,4 +132,28 @@ func execute(task *Task, output *os.File) (err error) {
 	err = cmd.Wait()
 
 	return
+}
+
+func deleteOldLogs() error {
+	time.Sleep(time.Duration(30) * time.Second)
+	l.Info("Start deleteOldLogs")
+	now := time.Now()
+	now = now.Add(time.Duration(-7*24) * time.Hour)
+	conf := Module.GetConfiguration()
+	logdir, _ := filepath.Abs(conf["Logs_Dir"])
+	if files, err := ioutil.ReadDir(logdir); err == nil {
+		for _, file := range files {
+			if file.IsDir() || !strings.HasSuffix(file.Name(), ".log") {
+				continue
+			}
+			if now.After(file.ModTime()) {
+				l.Info("Delete %s", file.Name())
+				os.Remove(file.Name())
+			}
+		}
+	} else {
+		l.Error("deleteOldLogs error: %s", err.Error())
+	}
+	l.Info("deleteOldLogs finished")
+	return nil
 }
