@@ -9,6 +9,7 @@ import (
 	"k.prv/rpimon/app/session"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
+	"strconv"
 )
 
 // App main router
@@ -46,15 +47,40 @@ func Close() {
 }
 
 // GetNamedURL - Return url for named route and parameters
-func GetNamedURL(name string, pairs ...string) (url string) {
+func GetNamedURL(name string, pairs ...interface{}) (url string) {
 	route := Router.Get(name)
 	if route == nil {
 		l.Error("GetNamedURL " + name + " error")
 		return ""
 	}
-	rurl, err := route.URL(pairs...)
+	strpairs := make([]string, len(pairs))
+	for idx := 0; idx < len(pairs); idx += 2 {
+		strpairs[idx] = pairs[idx].(string)
+		val := pairs[idx+1]
+		switch val.(type) {
+		case uint64:
+			strpairs[idx+1] = strconv.FormatUint(val.(uint64), 10)
+
+		case uint:
+			i := val.(uint)
+			strpairs[idx+1] = strconv.FormatUint(uint64(i), 10)
+
+		case int:
+			i := val.(int)
+			strpairs[idx+1] = strconv.FormatInt(int64(i), 10)
+
+		default:
+			var ok bool
+			strpairs[idx+1], ok = val.(string)
+			if !ok {
+				l.Error("web.GetNamedURL param error param=%#v, val=%#v", strpairs[idx], val)
+			}
+		}
+	}
+
+	rurl, err := route.URL(strpairs...)
 	if err != nil {
-		l.Error("GetNamedURL " + name + " error " +  err.Error())
+		l.Error("GetNamedURL " + name + " error " + err.Error())
 		return ""
 	}
 	return rurl.String()
