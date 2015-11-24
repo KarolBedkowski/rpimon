@@ -47,9 +47,9 @@ func initModule(parentRoute *mux.Route) bool {
 	// active tasks
 	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Worker", "worker")).Name("worker-index")
 	// new task
-	subRouter.HandleFunc("/new", app.VerifyPermission(taskPageHandler, "worker")).Name("worker-new-task")
+	subRouter.HandleFunc("/new", context.HandleWithContextSec(taskPageHandler, "Worker", "worker")).Name("worker-new-task")
 	// show
-	subRouter.HandleFunc("/{idx:[0-9+]}", app.VerifyPermission(taskPageHandler, "worker")).Name("worker-task")
+	subRouter.HandleFunc("/{idx:[0-9+]}", context.HandleWithContextSec(taskPageHandler, "Worker", "worker")).Name("worker-task")
 	// logfile
 	subRouter.HandleFunc("/log/{name}", app.VerifyPermission(taskLogPageHandler, "worker")).Name("worker-task-log")
 
@@ -90,10 +90,10 @@ type taskPageContext struct {
 	Task *Task
 }
 
-func taskPageHandler(w http.ResponseWriter, r *http.Request) {
+func taskPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
 
 	ctx := &taskPageContext{
-		BasePageContext: context.NewBasePageContext("Task", w, r),
+		BasePageContext: bctx,
 		Task:            &Task{},
 	}
 	conf := Module.GetConfiguration()
