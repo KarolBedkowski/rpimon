@@ -16,3 +16,5 @@ dist
 notepad
 build
 resources
+*.kvdb
+Godeps/_workspace/
