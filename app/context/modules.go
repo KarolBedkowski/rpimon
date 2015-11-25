@@ -3,7 +3,7 @@ package context
 import (
 	"fmt"
 	"github.com/gorilla/mux"
-	"k.prv/rpimon/app/cfg"
+	"k.prv/rpimon/cfg"
 	l "k.prv/rpimon/helpers/logging"
 	"sort"
 )

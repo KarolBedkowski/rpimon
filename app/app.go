@@ -3,10 +3,10 @@ package app
 import (
 	//	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"k.prv/rpimon/app/cfg"
 	"k.prv/rpimon/app/mw"
 	gzip "k.prv/rpimon/app/mw/gziphander"
 	"k.prv/rpimon/app/session"
+	"k.prv/rpimon/cfg"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"strconv"

@@ -3,7 +3,7 @@ package app
 import (
 	"html/template"
 	"io/ioutil"
-	"k.prv/rpimon/app/cfg"
+	"k.prv/rpimon/cfg"
 	l "k.prv/rpimon/helpers/logging"
 	res "k.prv/rpimon/resources"
 	"net/http"

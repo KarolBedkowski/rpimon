@@ -3,8 +3,8 @@ package monitor
 import (
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/cfg"
 	"k.prv/rpimon/app/context"
+	"k.prv/rpimon/cfg"
 	//	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"

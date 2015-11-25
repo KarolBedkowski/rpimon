@@ -4,7 +4,7 @@ import (
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	//	"k.prv/rpimon/helpers"
-	"k.prv/rpimon/app/cfg"
+	"k.prv/rpimon/cfg"
 	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	//	"os"

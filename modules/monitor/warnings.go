@@ -2,8 +2,8 @@
 package monitor
 
 import (
-	"k.prv/rpimon/app/cfg"
 	"k.prv/rpimon/app/context"
+	"k.prv/rpimon/cfg"
 	h "k.prv/rpimon/helpers"
 	//	l "k.prv/rpimon/helpers/logging"
 	"strconv"
