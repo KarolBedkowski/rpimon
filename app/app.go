@@ -7,7 +7,7 @@ import (
 	gzip "k.prv/rpimon/app/mw/gziphander"
 	"k.prv/rpimon/app/session"
 	"k.prv/rpimon/cfg"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"net/http"
 	"strconv"
 )

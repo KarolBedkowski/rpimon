@@ -4,7 +4,7 @@ import (
 	"encoding/gob"
 	"github.com/cznic/kv"
 	"k.prv/rpimon/helpers"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"sync"
 )
 

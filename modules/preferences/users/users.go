@@ -5,7 +5,7 @@ import (
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"k.prv/rpimon/model"
 	"net/http"
 )

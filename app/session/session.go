@@ -5,7 +5,7 @@ import (
 	"github.com/gorilla/sessions"
 	//	"k.prv/rpimon/helpers"
 	"k.prv/rpimon/cfg"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"net/http"
 	//	"os"
 	//	"github.com/gorilla/context"

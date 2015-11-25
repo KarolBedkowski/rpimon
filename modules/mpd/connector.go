@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/turbowookie/gompd/mpd"
 	h "k.prv/rpimon/helpers"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	n "k.prv/rpimon/modules/notepad"
 	"strconv"
 	"strings"

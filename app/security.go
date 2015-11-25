@@ -3,7 +3,7 @@ package app
 import (
 	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	model "k.prv/rpimon/model"
 	"log"
 	"net/http"

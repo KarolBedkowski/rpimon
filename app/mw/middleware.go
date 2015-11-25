@@ -1,7 +1,7 @@
 package mw
 
 import (
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"net/http"
 	"runtime/debug"
 	"time"

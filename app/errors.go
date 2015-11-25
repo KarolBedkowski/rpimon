@@ -2,7 +2,7 @@ package app
 
 import (
 	"k.prv/rpimon/app/context"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"net/http"
 	"strconv"
 )

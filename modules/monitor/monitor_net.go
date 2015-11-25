@@ -4,7 +4,7 @@ package monitor
 import (
 	"bufio"
 	"k.prv/rpimon/cfg"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"net"
 	"net/http"
 	"os"

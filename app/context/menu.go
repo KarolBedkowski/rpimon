@@ -2,7 +2,7 @@ package context
 
 import (
 	"container/list"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"sort"
 )
 

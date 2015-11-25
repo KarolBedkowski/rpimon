@@ -6,7 +6,7 @@ import (
 	"encoding/gob"
 	"errors"
 	"io"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 )
 
 var (

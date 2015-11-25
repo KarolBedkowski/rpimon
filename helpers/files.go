@@ -3,7 +3,7 @@ package helpers
 import (
 	"bufio"
 	"io/ioutil"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"os"
 	"os/exec"
 	"strconv"

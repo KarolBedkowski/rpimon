@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"k.prv/rpimon/helpers/logging"
+	"k.prv/rpimon/logging"
 	"net/http"
 	nurl "net/url"
 	"os"

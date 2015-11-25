@@ -4,7 +4,7 @@ import (
 	"html/template"
 	"io/ioutil"
 	"k.prv/rpimon/cfg"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	res "k.prv/rpimon/resources"
 	"net/http"
 	"os"

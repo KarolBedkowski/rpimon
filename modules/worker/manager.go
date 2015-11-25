@@ -2,7 +2,7 @@ package worker
 
 import (
 	"io/ioutil"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"k.prv/rpimon/model"
 	"os"
 	"os/exec"

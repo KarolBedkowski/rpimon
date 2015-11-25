@@ -9,7 +9,7 @@ import (
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"net/http"
 	"os"
 	"path/filepath"
