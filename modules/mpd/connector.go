@@ -6,6 +6,7 @@ import (
 	"github.com/turbowookie/gompd/mpd"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/logging"
+	"k.prv/rpimon/model"
 	n "k.prv/rpimon/modules/notepad"
 	"strconv"
 	"strings"
@@ -426,4 +427,20 @@ func logSong() {
 	lastSong = strData
 	strData = time.Now().Format("2006-01-02 15:04:05") + "\n" + strData + "\n"
 	n.AppendToNote("mpd_log.txt", strData)
+
+	sl := &model.Song{
+		Date:   time.Now(),
+		Track:  getVal(song, "Track"),
+		Name:   getVal(song, "Name"),
+		Album:  getVal(song, "Album"),
+		Artist: getVal(song, "Artist"),
+		Title:  getVal(song, "Title"),
+		File:   getVal(song, "file"),
+	}
+	sl.Save()
+}
+
+func getVal(dict map[string]string, key string) (val string) {
+	val, _ = dict[key]
+	return val
 }

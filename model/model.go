@@ -18,10 +18,12 @@ type (
 )
 
 var (
-	userPrefix = []byte("U_")
-	taskPrefix = []byte("T_")
-	tasksIDkey = []byte("_KEY_TASK")
-	db         = &DB{}
+	userPrefix    = []byte("U_")
+	taskPrefix    = []byte("T_")
+	tasksIDkey    = []byte("_KEY_TASK")
+	mpdSongPrefix = []byte("M_")
+	mpdSongIDkey  = []byte("_KEY_MPDSONG")
+	db            = &DB{}
 )
 
 func init() {
