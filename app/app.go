@@ -28,7 +28,7 @@ func Init(appConfFile string, debug int) *cfg.AppConfiguration {
 	} // other: use value from config
 
 	l.Init(conf.LogFilename, conf.Debug)
-	l.Print("Debug=", conf.Debug)
+	l.Info("Debug=%s", conf.Debug)
 
 	session.InitSessionStore(conf)
 

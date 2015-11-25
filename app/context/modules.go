@@ -177,7 +177,6 @@ func (m *Module) GetConfiguration() (conf map[string]string) {
 			conf["enabled"] = "yes"
 		}
 	}
-	// l.Printf("GetConfiguration: %s %v", m.Name, mconfig)
 	return conf
 }
 

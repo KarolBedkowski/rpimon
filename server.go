@@ -4,8 +4,8 @@ import (
 	"flag"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
+	l "k.prv/rpimon/logging"
 	"k.prv/rpimon/model"
-
 	mauth "k.prv/rpimon/modules/auth"
 	mfiles "k.prv/rpimon/modules/files"
 	mmain "k.prv/rpimon/modules/main"
@@ -46,14 +46,14 @@ func main() {
 	model.Open(conf.Database)
 
 	if !conf.Debug {
-		log.Printf("NumCPU: %d", runtime.NumCPU())
+		l.Info("NumCPU: %d", runtime.NumCPU())
 		runtime.GOMAXPROCS(runtime.NumCPU())
 	}
 
 	if resources.Init(*forceLocalFiles, *localFilesPath) {
-		log.Printf("Using embended resources...")
+		l.Info("Using embended resources...")
 	} else {
-		log.Printf("Using local files...")
+		l.Info("Using local files...")
 	}
 
 	defer func() {
@@ -114,7 +114,7 @@ func main() {
 	*/
 
 	if conf.HTTPSAddress != "" {
-		log.Printf("Listen: %s", conf.HTTPSAddress)
+		l.Info("Listen: %s", conf.HTTPSAddress)
 		go func() {
 			if err := http.ListenAndServeTLS(conf.HTTPSAddress,
 				conf.SslCert, conf.SslKey, nil); err != nil {
@@ -124,7 +124,7 @@ func main() {
 	}
 
 	if conf.HTTPAddress != "" {
-		log.Printf("Listen: %s", conf.HTTPAddress)
+		l.Info("Listen: %s", conf.HTTPAddress)
 		go func() {
 			if err := http.ListenAndServe(conf.HTTPAddress, nil); err != nil {
 				log.Fatalf("Error listening http, %v", err)

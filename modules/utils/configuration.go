@@ -27,7 +27,7 @@ func (s utilitiesByName) Less(i, j int) bool { return s[i].Name < s[j].Name }
 
 // Init utils pages
 func loadConfiguration(filename string) error {
-	l.Print("modules.utils Loading configuration file: %s ", filename)
+	l.Info("modules.utils Loading configuration file: %s ", filename)
 	if filename == "" {
 		return errors.New("missing configuration")
 	}
@@ -40,18 +40,18 @@ func loadConfiguration(filename string) error {
 	if err != nil {
 		l.Error("pages.utils: error: %s", err.Error())
 	}
-	l.Print("pages.utils Loaded groups: %d ", len(config.Utils))
+	l.Info("pages.utils Loaded groups: %d ", len(config.Utils))
 	return err
 }
 
 func saveConfiguration(filename string) error {
-	l.Printf("modules.utils.saveConfiguration: Writing configuration to %s\n", filename)
+	l.Info("modules.utils.saveConfiguration: Writing configuration to %s\n", filename)
 	for _, utils := range config.Utils {
 		sort.Sort(utilitiesByName(utils))
 	}
 	data, err := json.Marshal(config)
 	if err != nil {
-		l.Printf("modiles.utils.saveConfiguration: error marshal configuration: %s\n", err)
+		l.Info("modiles.utils.saveConfiguration: error marshal configuration: %s\n", err)
 		return err
 	}
 	return ioutil.WriteFile(filename, data, 0600)

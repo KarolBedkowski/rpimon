@@ -3,6 +3,7 @@ package cfg
 import (
 	"encoding/json"
 	"io/ioutil"
+	l "k.prv/rpimon/logging"
 	"log"
 	"runtime"
 )
@@ -97,10 +98,10 @@ func loadConfiguration(filename string) bool {
 
 // SaveConfiguration write current configuration to json file
 func SaveConfiguration() error {
-	log.Printf("SaveConfiguration: Writing configuration to %s\n", configFilename)
+	l.Info("SaveConfiguration: Writing configuration to %s\n", configFilename)
 	data, err := json.Marshal(Configuration)
 	if err != nil {
-		log.Printf("SaveConfiguration: error marshal configuration: %s\n", err)
+		l.Info("SaveConfiguration: error marshal configuration: %s\n", err)
 		return err
 	}
 	return ioutil.WriteFile(configFilename, data, 0600)

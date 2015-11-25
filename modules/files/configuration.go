@@ -16,7 +16,7 @@ var config configuration
 
 // Init utils pages
 func loadConfiguration(filename string) error {
-	l.Print("pages.files Loading configuration file %s", filename)
+	l.Info("pages.files Loading configuration file %s", filename)
 	if filename == "" {
 		return errors.New("missing configuration")
 	}
