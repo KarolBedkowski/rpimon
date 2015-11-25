@@ -4,6 +4,8 @@ import (
 	"flag"
 	"k.prv/rpimon/app"
 	"k.prv/rpimon/app/context"
+	"k.prv/rpimon/model"
+
 	mauth "k.prv/rpimon/modules/auth"
 	mfiles "k.prv/rpimon/modules/files"
 	mmain "k.prv/rpimon/modules/main"
@@ -41,6 +43,7 @@ func main() {
 	flag.Parse()
 
 	conf := app.Init(*configFilename, *debug)
+	model.Open(conf.Database)
 
 	if !conf.Debug {
 		log.Printf("NumCPU: %d", runtime.NumCPU())
@@ -53,14 +56,21 @@ func main() {
 		log.Printf("Using local files...")
 	}
 
+	defer func() {
+		if e := recover(); e != nil {
+			model.Close()
+		}
+	}()
+
 	// cleanup
 	cleanChannel := make(chan os.Signal, 1)
 	signal.Notify(cleanChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGKILL)
 	go func() {
 		<-cleanChannel
 		app.Close()
+		model.Close()
 		context.ShutdownModules()
-		os.Exit(1)
+		os.Exit(0)
 	}()
 
 	app.Router.HandleFunc("/", handleHome)
@@ -105,27 +115,24 @@ func main() {
 
 	if conf.HTTPSAddress != "" {
 		log.Printf("Listen: %s", conf.HTTPSAddress)
-		if conf.HTTPAddress != "" {
-			go func() {
-				if err := http.ListenAndServeTLS(conf.HTTPSAddress,
-					conf.SslCert, conf.SslKey, nil); err != nil {
-					log.Fatalf("Error listening https, %v", err)
-				}
-			}()
-		} else {
+		go func() {
 			if err := http.ListenAndServeTLS(conf.HTTPSAddress,
 				conf.SslCert, conf.SslKey, nil); err != nil {
 				log.Fatalf("Error listening https, %v", err)
 			}
-		}
+		}()
 	}
 
 	if conf.HTTPAddress != "" {
 		log.Printf("Listen: %s", conf.HTTPAddress)
-		if err := http.ListenAndServe(conf.HTTPAddress, nil); err != nil {
-			log.Fatalf("Error listening http, %v", err)
-		}
+		go func() {
+			if err := http.ListenAndServe(conf.HTTPAddress, nil); err != nil {
+				log.Fatalf("Error listening http, %v", err)
+			}
+		}()
 	}
+	done := make(chan bool)
+	<-done
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {

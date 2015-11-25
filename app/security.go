@@ -1,10 +1,10 @@
 package app
 
 import (
-	"k.prv/rpimon/app/cfg"
 	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/helpers/logging"
+	model "k.prv/rpimon/model"
 	"log"
 	"net/http"
 )
@@ -47,7 +47,7 @@ func VerifyLogged(h http.HandlerFunc) http.HandlerFunc {
 }
 
 // LoginUser - update session
-func LoginUser(w http.ResponseWriter, r *http.Request, user *cfg.User) error {
+func LoginUser(w http.ResponseWriter, r *http.Request, user *model.User) error {
 	l.Info("User %s log in", user.Login)
 	s := session.GetSessionStore(w, r)
 	session.SetLoggedUser(s, user.Login, user.Privs)

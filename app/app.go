@@ -31,7 +31,6 @@ func Init(appConfFile string, debug int) *cfg.AppConfiguration {
 	l.Print("Debug=", conf.Debug)
 
 	session.InitSessionStore(conf)
-	cfg.InitUsers(conf.Users, conf.Debug)
 
 	http.Handle("/static/", http.StripPrefix("/static",
 		gzip.FileServer(http.Dir(conf.StaticDir), !conf.Debug)))
