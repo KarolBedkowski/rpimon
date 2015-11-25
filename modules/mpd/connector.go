@@ -20,13 +20,14 @@ type mpdStatus struct {
 
 var (
 	host              string
-	logSongToNotes	 string
+	logSongToNotes    string
 	watcher           *mpd.Watcher
 	playlistCache     = h.NewSimpleCache(600)
 	mpdListFilesCache = h.NewSimpleCache(600)
 	mpdLibraryCache   = h.NewKeyCache(600)
 	connection        *mpd.Client
 	lastSong          string
+	stopSig           = make(chan bool)
 )
 
 // Init MPD configuration
@@ -42,8 +43,8 @@ func closeConnector() {
 	mpdLibraryCache.Clear()
 	mpdListFilesCache.Clear()
 	if watcher != nil {
-		watcher.Close()
-		watcher = nil
+		stopSig <- true
+		time.Sleep(1)
 	}
 	if connection != nil {
 		connection.Close()
@@ -78,7 +79,12 @@ func connectWatcher() {
 					mpdLibraryCache.Clear()
 				}
 			case err := <-watcher.Error:
-				l.Info("MPD; watcher error: %s", err.Error())
+				l.Info("MPD watcher error: %s", err.Error())
+				watcher.Close()
+				watcher = nil
+				return
+			case _ = <-stopSig:
+				l.Info("MPD watcher stopping")
 				watcher.Close()
 				watcher = nil
 				return
@@ -411,7 +417,7 @@ func logSong() {
 	}
 	var data []string
 	for key, val := range song {
-		data = append(data, key + ": " + val + "\n")
+		data = append(data, key+": "+val+"\n")
 	}
 	strData := strings.Join(data, "")
 	if lastSong == strData {
