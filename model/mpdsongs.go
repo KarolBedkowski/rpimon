@@ -60,13 +60,13 @@ func (s *Song) Save() (err error) {
 }
 
 func GetSongs() (songs []*Song) {
-	en, _, err := db.db.Seek(taskPrefix)
+	en, _, err := db.db.Seek(mpdSongPrefix)
 	if err != nil {
 		return
 	}
 	for {
 		key, value, err := en.Next()
-		if err == io.EOF || !bytes.HasPrefix(key, taskPrefix) {
+		if err == io.EOF || !bytes.HasPrefix(key, mpdSongPrefix) {
 			break
 		}
 		if err == nil {

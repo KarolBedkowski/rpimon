@@ -12,6 +12,7 @@ import (
 	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/logging"
+	"k.prv/rpimon/model"
 	n "k.prv/rpimon/modules/notepad"
 	"net/http"
 	"net/url"
@@ -31,7 +32,7 @@ func init() {
 		GetMenu:     getMenu,
 		Shutdown:    shutdown,
 		Defaults: map[string]string{
-			"host": "localhost:6600",
+			"host":         "localhost:6600",
 			"log to notes": "no",
 		},
 		Configurable:  true,
@@ -117,6 +118,9 @@ func initModule(parentRoute *mux.Route) bool {
 	subRouter.HandleFunc("/file",
 		app.VerifyPermission(filePageHandler, "mpd")).Name(
 		"mpd-file")
+	// history
+	subRouter.HandleFunc("/history",
+		context.HandleWithContextSec(historyHandler, "MPD - History", "mpd")).Name("mpd-history")
 	return true
 }
 
@@ -134,6 +138,7 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 		context.NewMenuItem("Playlists", app.GetNamedURL("mpd-playlists")).SetIcon("glyphicon glyphicon-floppy-open").SetID("mpd-playlists"),
 		context.NewMenuItem("Tools", "").SetIcon("glyphicon glyphicon-wrench").SetID("mpd-tools").AddChild(
 			context.NewMenuItem("Log", app.GetNamedURL("mpd-log")).SetID("mpd-log"),
+			context.NewMenuItem("History", app.GetNamedURL("mpd-history")).SetID("mpd-history"),
 		))
 	return "", menu
 }
@@ -265,4 +270,16 @@ func filePageHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		app.Render400(w, r, "Internal Server Errror: "+err.Error())
 	}
+}
+
+func historyHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
+	ctx := &struct {
+		*context.BasePageContext
+		History []*model.Song
+	}{
+		BasePageContext: bctx,
+		History:         model.GetSongs(),
+	}
+	ctx.SetMenuActive("mpd-history")
+	app.RenderTemplateStd(w, ctx, "mpd/history.tmpl")
 }
