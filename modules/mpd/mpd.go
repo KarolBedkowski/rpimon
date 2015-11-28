@@ -18,6 +18,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Module information
@@ -32,8 +33,10 @@ func init() {
 		GetMenu:     getMenu,
 		Shutdown:    shutdown,
 		Defaults: map[string]string{
-			"host":         "localhost:6600",
-			"log to notes": "no",
+			"host":                     "localhost:6600",
+			"log to notes":             "no",
+			"delete older than [days]": "0",
+			"dump deleted to file":     "",
 		},
 		Configurable:  true,
 		AllPrivilages: []context.Privilege{{"mpd", "manage mpd player"}},
@@ -121,6 +124,18 @@ func initModule(parentRoute *mux.Route) bool {
 	// history
 	subRouter.HandleFunc("/history",
 		context.HandleWithContextSec(historyHandler, "MPD - History", "mpd")).Name("mpd-history")
+
+	if val, ok := conf["delete older than [days]"]; ok && val != "0" && val != "" {
+		if off, err := strconv.Atoi(val); err == nil {
+			maxage := time.Now().Add(time.Duration(off*-24) * time.Hour)
+			if filename, ok := conf["dump deleted to file"]; ok && filename != "" {
+				model.DumpOldSongsToFile(maxage, filename, true)
+			} else {
+				model.DeleteOldSongs(maxage)
+			}
+		}
+	}
+
 	return true
 }
 
