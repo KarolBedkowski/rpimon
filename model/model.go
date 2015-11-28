@@ -2,7 +2,9 @@ package model
 
 import (
 	"encoding/gob"
+	"github.com/camlistore/lock"
 	"github.com/cznic/kv"
+	"io"
 	"k.prv/rpimon/helpers"
 	l "k.prv/rpimon/logging"
 	"sync"
@@ -41,6 +43,9 @@ func Open(filename string) (err error) {
 		VerifyDbAfterOpen:   true,
 		VerifyDbBeforeClose: true,
 		VerifyDbAfterClose:  true,
+		Locker: func(name string) (io.Closer, error) {
+			return lock.Lock(name + ".lock")
+		},
 	}
 
 	if helpers.FileExists(db.dbFilename) {
