@@ -53,7 +53,9 @@ func initModule(parentRoute *mux.Route) bool {
 	Module.ConfigurePageURL = app.GetNamedURL("m-monitor-conf")
 	// Configuration for monitor is in main config
 	// TODO: przenieść
+	cfg.Configuration.RLock()
 	interval := cfg.Configuration.Monitor.UpdateInterval
+	cfg.Configuration.RUnlock()
 	if interval == 0 {
 		l.Info("Monitor: refresh in background is disabled")
 		return true
@@ -283,10 +285,14 @@ func GetCPUInfo() *CPUInfoStruct {
 
 func gatherCPUInfo() *CPUInfoStruct {
 	info := &CPUInfoStruct{}
-	if val, err := h.ReadIntFromFile(cfg.Configuration.Monitor.CPUFreqFile); err == nil {
+	cfg.Configuration.RLock()
+	freqFile := cfg.Configuration.Monitor.CPUFreqFile
+	tempFile := cfg.Configuration.Monitor.CPUTempFile
+	cfg.Configuration.RUnlock()
+	if val, err := h.ReadIntFromFile(freqFile); err == nil {
 		info.Freq = val / 1000
 	}
-	if val, err := h.ReadIntFromFile(cfg.Configuration.Monitor.CPUTempFile); err == nil {
+	if val, err := h.ReadIntFromFile(tempFile); err == nil {
 		info.Temp = val / 1000
 	}
 	return info

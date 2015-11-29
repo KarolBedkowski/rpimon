@@ -6,11 +6,14 @@ import (
 	l "k.prv/rpimon/logging"
 	"log"
 	"runtime"
+	"sync"
 )
 
 type (
 	// AppConfiguration Main app configuration.
 	AppConfiguration struct {
+		sync.RWMutex `json:"-"`
+
 		StaticDir       string
 		TemplatesDir    string
 		Database        string
@@ -87,10 +90,12 @@ func loadConfiguration(filename string) bool {
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Print("Errors: app.LoadConfiguration error: ", err.Error())
-	} else if err = json.Unmarshal(file, &Configuration); err != nil {
+		return false
+	}
+	Configuration.Lock()
+	defer Configuration.Unlock()
+	if err = json.Unmarshal(file, &Configuration); err != nil {
 		log.Print("Error: app.LoadConfiguration error: ", err.Error())
-		log.Print("Error: Loading default configuration")
-		Configuration.loadDefaults()
 	}
 	Configuration.validate()
 	return true
@@ -99,7 +104,9 @@ func loadConfiguration(filename string) bool {
 // SaveConfiguration write current configuration to json file
 func SaveConfiguration() error {
 	l.Info("SaveConfiguration: Writing configuration to %s\n", configFilename)
+	Configuration.RLock()
 	data, err := json.MarshalIndent(Configuration, "", "  ")
+	Configuration.RUnlock()
 	if err != nil {
 		l.Info("SaveConfiguration: error marshal configuration: %s\n", err)
 		return err

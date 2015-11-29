@@ -141,7 +141,9 @@ func (f *confForm) cleanup() {
 
 func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	form := confForm{}
+	cfg.Configuration.RLock()
 	form = confForm(*cfg.Configuration.Monitor)
+	cfg.Configuration.RUnlock()
 	ctx := &confPageContext{BaseCtx: bctx,
 		Form: &form,
 	}
@@ -158,7 +160,9 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) 
 		errors := ctx.Form.validate()
 		if errors == nil || len(errors) == 0 {
 			form.cleanup()
+			cfg.Configuration.Lock()
 			*cfg.Configuration.Monitor = cfg.MonitorConfiguration(form)
+			cfg.Configuration.Unlock()
 			err := cfg.SaveConfiguration()
 			if err != nil {
 				ctx.AddFlashMessage("Saving configuration error: "+err.Error(),

@@ -19,7 +19,9 @@ var warningsCache = h.NewSimpleCache(warningsCacheTTL)
 // GetWarnings return current warnings to show
 func getWarnings() *app.WarningsStruct {
 	result := warningsCache.Get(func() h.Value {
+		cfg.Configuration.RLock()
 		conf := cfg.Configuration.Monitor
+		cfg.Configuration.RUnlock()
 		warnings := &app.WarningsStruct{}
 		// high load
 		loadInfo := GetLoadInfo()

@@ -164,6 +164,8 @@ func (m *Module) GetConfiguration() (conf map[string]string) {
 		conf[key] = val
 	}
 
+	cfg.Configuration.RLock()
+	defer cfg.Configuration.RUnlock()
 	if mconfig, ok := cfg.Configuration.Modules[m.Name]; ok && mconfig != nil {
 		for k, v := range mconfig {
 			conf[k] = v
@@ -180,6 +182,8 @@ func (m *Module) GetConfiguration() (conf map[string]string) {
 
 // SaveConfiguration update app configuration file for given module
 func (m *Module) SaveConfiguration(conf map[string]string) {
+	cfg.Configuration.Lock()
+	defer cfg.Configuration.Unlock()
 	if cfg.Configuration.Modules == nil {
 		cfg.Configuration.Modules = map[string]map[string]string{}
 	}
