@@ -92,7 +92,7 @@ type taskPageContext struct {
 func taskPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := &taskPageContext{
-		BasePageContext: context.NewBasePageContext("Task", w, r),
+		BasePageContext: context.NewBaseCtx("Task", w, r),
 		Task:            &model.Task{},
 	}
 	conf := Module.GetConfiguration()

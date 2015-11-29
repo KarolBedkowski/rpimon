@@ -71,7 +71,7 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 }
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
-	ctx := context.NewBasePageContext("Files", w, r)
+	ctx := context.NewBaseCtx("Files", w, r)
 	ctx.SetMenuActive("files")
 	r.ParseForm()
 	var relpath, abspath = ".", config.BaseDir

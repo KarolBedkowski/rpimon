@@ -43,8 +43,8 @@ func init() {
 // Types of flashes
 var FlashKind = []string{"error", "info", "success"}
 
-// NewBasePageContext create base page context for request
-func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *BasePageContext {
+// NewBaseCtx create base page context for request
+func NewBaseCtx(title string, w http.ResponseWriter, r *http.Request) *BasePageContext {
 
 	s := asess.GetSessionStore(w, r)
 	csrfToken := s.Values[mw.CONTEXTCSRFTOKEN]
@@ -127,7 +127,7 @@ type DataPageCtx struct {
 
 // NewDataPageCtx create new simple context to show text data
 func NewDataPageCtx(w http.ResponseWriter, r *http.Request, title string) *DataPageCtx {
-	ctx := &DataPageCtx{BasePageContext: NewBasePageContext(title, w, r)}
+	ctx := &DataPageCtx{BasePageContext: NewBaseCtx(title, w, r)}
 	return ctx
 }
 
@@ -137,7 +137,7 @@ type ContextHandler func(w http.ResponseWriter, r *http.Request, ctx *BasePageCo
 // Context create BasePageContext for request
 func Context(h ContextHandler, title string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := NewBasePageContext(title, w, r)
+		ctx := NewBaseCtx(title, w, r)
 		h(w, r, ctx)
 	})
 }
@@ -145,7 +145,7 @@ func Context(h ContextHandler, title string) http.HandlerFunc {
 // SecContext create BasePageContext for request and check user permissions.
 func SecContext(h ContextHandler, title string, permission string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := NewBasePageContext(title, w, r)
+		ctx := NewBaseCtx(title, w, r)
 		if ctx.CurrentUser != "" && ctx.CurrentUserPerms != nil {
 			if permission == "" {
 				h(w, r, ctx)

@@ -100,7 +100,7 @@ func notePageHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		// display note
-		ctx := &notePageContext{BasePageContext: context.NewBasePageContext("Notepad", w, r)}
+		ctx := &notePageContext{BasePageContext: context.NewBaseCtx("Notepad", w, r)}
 		if note, err := getNote(filename); err == nil {
 			ctx.Note = note
 		} else {
