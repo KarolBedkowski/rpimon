@@ -99,7 +99,7 @@ func loadConfiguration(filename string) bool {
 // SaveConfiguration write current configuration to json file
 func SaveConfiguration() error {
 	l.Info("SaveConfiguration: Writing configuration to %s\n", configFilename)
-	data, err := json.Marshal(Configuration)
+	data, err := json.MarshalIndent(Configuration, "", "  ")
 	if err != nil {
 		l.Info("SaveConfiguration: error marshal configuration: %s\n", err)
 		return err
