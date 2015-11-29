@@ -151,27 +151,9 @@ func DumpOldSongsToFile(maxAge time.Time, filename string, delete bool) {
 		l.Info("model.DumpOldSongsToFile old songs not found")
 		return
 	}
-	var f *os.File
-	if h.FileExists(filename) {
-		f, err = os.OpenFile(filename, os.O_RDWR|os.O_APPEND, 0660)
-	} else {
-		f, err = os.Create(filename)
-	}
-	if err != nil {
+	if err = DumpToFile(filename, songs); err != nil {
 		l.Error("model.DumpOldSongsToFile open file %s error: %s", filename, err)
 		return
-	}
-
-	l.Info("model.DumpOldSongsToFile dumping %i songs to %s", len(songs), filename)
-	for _, song := range songs {
-		writeNonEmptyString(f, "Date: ", song.Date.String())
-		writeNonEmptyString(f, "Track: ", song.Track)
-		writeNonEmptyString(f, "Name: ", song.Name)
-		writeNonEmptyString(f, "Album: ", song.Album)
-		writeNonEmptyString(f, "Artist: ", song.Artist)
-		writeNonEmptyString(f, "Title: ", song.Title)
-		writeNonEmptyString(f, "File: ", song.File)
-		f.WriteString("---------------------\n\n")
 	}
 	if delete {
 		l.Info("model.DumpOldSongsToFile delete: %i", len(songs))
@@ -198,4 +180,28 @@ func writeNonEmptyString(f *os.File, prefix, value string) {
 	if value != "" {
 		f.WriteString(prefix + value + "\n")
 	}
+}
+
+func DumpToFile(filename string, songs []*Song) (err error) {
+	var f *os.File
+	if h.FileExists(filename) {
+		f, err = os.OpenFile(filename, os.O_RDWR|os.O_APPEND, 0660)
+	} else {
+		f, err = os.Create(filename)
+	}
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	for _, song := range songs {
+		writeNonEmptyString(f, "Date: ", song.Date.String())
+		writeNonEmptyString(f, "Track: ", song.Track)
+		writeNonEmptyString(f, "Name: ", song.Name)
+		writeNonEmptyString(f, "Album: ", song.Album)
+		writeNonEmptyString(f, "Artist: ", song.Artist)
+		writeNonEmptyString(f, "Title: ", song.Title)
+		writeNonEmptyString(f, "File: ", song.File)
+		f.WriteString("---------------------\n\n")
+	}
+	return
 }
