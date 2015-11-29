@@ -27,7 +27,7 @@ var Module = &context.Module{
 func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/",
-		context.HandleWithContextSec(systemPageHandler, "System", "admin")).Name(
+		context.SecContext(systemPageHandler, "System", "admin")).Name(
 		"main-system")
 	subRouter.HandleFunc("/serv/status",
 		app.VerifyPermission(statusServHandler, "admin")).Name(

@@ -40,9 +40,9 @@ func initModule(parentRoute *mux.Route) bool {
 		return false
 	}
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Logs", "admin")).Name("logs-index")
+	subRouter.HandleFunc("/", context.SecContext(mainPageHandler, "Logs", "admin")).Name("logs-index")
 	subRouter.HandleFunc("/serv", app.VerifyPermission(servLogHandler, "admin")).Name("logs-serv")
-	subRouter.HandleFunc("/{page}", context.HandleWithContextSec(mainPageHandler, "Logs", "admin")).Name("logs-page")
+	subRouter.HandleFunc("/{page}", context.SecContext(mainPageHandler, "Logs", "admin")).Name("logs-page")
 	return true
 }
 

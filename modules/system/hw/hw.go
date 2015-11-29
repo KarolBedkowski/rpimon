@@ -21,7 +21,7 @@ var Module = &context.Module{
 // CreateRoutes for /users
 func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Hardware", "admin")).Name("sys-hw-index")
+	subRouter.HandleFunc("/", context.SecContext(mainPageHandler, "Hardware", "admin")).Name("sys-hw-index")
 	return true
 }
 

@@ -44,7 +44,7 @@ func init() {
 func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	// active tasks
-	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Worker", "worker")).Name("worker-index")
+	subRouter.HandleFunc("/", context.SecContext(mainPageHandler, "Worker", "worker")).Name("worker-index")
 	// new task
 	subRouter.HandleFunc("/new", app.VerifyPermission(taskPageHandler, "worker")).Name("worker-new-task")
 	// show

@@ -40,11 +40,11 @@ func initModule(parentRoute *mux.Route) bool {
 		return false
 	}
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Utils", "admin")).Name("utils-index")
-	subRouter.HandleFunc("/{group}/{command-id:[0-9]+}", context.HandleWithContextSec(commandPageHandler, "Utils", "admin")).Name("utils-exec")
-	subRouter.HandleFunc("/configure", context.HandleWithContextSec(configurePageHandler, "Utils - Configuration", "admin")).Name("utils-conf")
-	subRouter.HandleFunc("/configure/{group}", context.HandleWithContextSec(confGroupPageHandler, "Utils - Configuration", "admin")).Name("utils-group")
-	subRouter.HandleFunc("/configure/{group}/{util}", context.HandleWithContextSec(confCommandPageHandler, "Utils - Configuration", "admin")).Name("utils-cmd")
+	subRouter.HandleFunc("/", context.SecContext(mainPageHandler, "Utils", "admin")).Name("utils-index")
+	subRouter.HandleFunc("/{group}/{command-id:[0-9]+}", context.SecContext(commandPageHandler, "Utils", "admin")).Name("utils-exec")
+	subRouter.HandleFunc("/configure", context.SecContext(configurePageHandler, "Utils - Configuration", "admin")).Name("utils-conf")
+	subRouter.HandleFunc("/configure/{group}", context.SecContext(confGroupPageHandler, "Utils - Configuration", "admin")).Name("utils-group")
+	subRouter.HandleFunc("/configure/{group}/{util}", context.SecContext(confCommandPageHandler, "Utils - Configuration", "admin")).Name("utils-cmd")
 
 	Module.ConfigurePageURL = app.GetNamedURL("utils-conf")
 

@@ -43,7 +43,7 @@ func init() {
 func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	// Main page
-	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Notepad", "notepad")).Name("notepad-index")
+	subRouter.HandleFunc("/", context.SecContext(mainPageHandler, "Notepad", "notepad")).Name("notepad-index")
 	subRouter.HandleFunc("/{note}", app.VerifyPermission(notePageHandler, "notepad")).Name("notepad-note")
 	subRouter.HandleFunc("/{note}/delete", app.VerifyPermission(noteDeleteHandler, "notepad")).Name("notepad-delete")
 	subRouter.HandleFunc("/{note}/download", app.VerifyPermission(noteDownloadHandler, "notepad")).Name("notepad-download")

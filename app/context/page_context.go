@@ -131,7 +131,7 @@ func NewSimpleDataPageCtx(w http.ResponseWriter, r *http.Request, title string) 
 	return ctx
 }
 
-// BaseContextHandlerFunc - handler function called by HandleWithContext and HandleWithContextSec
+// BaseContextHandlerFunc - handler function called by HandleWithContext and SecContext
 type BaseContextHandlerFunc func(w http.ResponseWriter, r *http.Request, ctx *BasePageContext)
 
 // HandleWithContext create BasePageContext for request
@@ -142,8 +142,8 @@ func HandleWithContext(h BaseContextHandlerFunc, title string) http.HandlerFunc 
 	})
 }
 
-// HandleWithContextSec create BasePageContext for request and check user permissions.
-func HandleWithContextSec(h BaseContextHandlerFunc, title string, permission string) http.HandlerFunc {
+// SecContext create BasePageContext for request and check user permissions.
+func SecContext(h BaseContextHandlerFunc, title string, permission string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := NewBasePageContext(title, w, r)
 		if ctx.CurrentUser != "" && ctx.CurrentUserPerms != nil {
