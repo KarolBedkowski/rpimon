@@ -4,7 +4,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/logging"
 	"net/http"
@@ -15,10 +14,10 @@ import (
 var decoder = schema.NewDecoder()
 
 // Module information
-var Module *context.Module
+var Module *app.Module
 
 func init() {
-	Module = &context.Module{
+	Module = &app.Module{
 		Name:          "utilities",
 		Title:         "Utilities",
 		Description:   "Various utilities",
@@ -40,17 +39,17 @@ func initModule(parentRoute *mux.Route) bool {
 		return false
 	}
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", context.SecContext(mainPageHandler, "Utils", "admin")).Name("utils-index")
-	subRouter.HandleFunc("/{group}/{command-id:[0-9]+}", context.SecContext(commandPageHandler, "Utils", "admin")).Name("utils-exec")
-	subRouter.HandleFunc("/configure", context.SecContext(configurePageHandler, "Utils - Configuration", "admin")).Name("utils-conf")
-	subRouter.HandleFunc("/configure/{group}", context.SecContext(confGroupPageHandler, "Utils - Configuration", "admin")).Name("utils-group")
-	subRouter.HandleFunc("/configure/{group}/{util}", context.SecContext(confCommandPageHandler, "Utils - Configuration", "admin")).Name("utils-cmd")
+	subRouter.HandleFunc("/", app.SecContext(mainPageHandler, "Utils", "admin")).Name("utils-index")
+	subRouter.HandleFunc("/{group}/{command-id:[0-9]+}", app.SecContext(commandPageHandler, "Utils", "admin")).Name("utils-exec")
+	subRouter.HandleFunc("/configure", app.SecContext(configurePageHandler, "Utils - Configuration", "admin")).Name("utils-conf")
+	subRouter.HandleFunc("/configure/{group}", app.SecContext(confGroupPageHandler, "Utils - Configuration", "admin")).Name("utils-group")
+	subRouter.HandleFunc("/configure/{group}/{util}", app.SecContext(confCommandPageHandler, "Utils - Configuration", "admin")).Name("utils-cmd")
 
 	Module.ConfigurePageURL = app.GetNamedURL("utils-conf")
 
 	return true
 }
-func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -59,22 +58,22 @@ func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
 }
 
 type pageCtx struct {
-	*context.DataPageCtx
+	*app.DataPageCtx
 	CurrentPage   string
 	Configuration configuration
 	Data          string
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
 	data := &pageCtx{
-		DataPageCtx: &context.DataPageCtx{BaseCtx: ctx},
-		Configuration:     config,
+		DataPageCtx:   &app.DataPageCtx{BaseCtx: ctx},
+		Configuration: config,
 	}
 	data.SetMenuActive("utils")
 	app.RenderTemplateStd(w, data, "utils/utils.tmpl")
 }
 
-func commandPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx) {
+func commandPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
 	vars := mux.Vars(r)
 	groupName, ok := vars["group"]
 	if !ok || groupName == "" {
@@ -117,12 +116,12 @@ func commandPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.Bas
 
 type (
 	configurePageContext struct {
-		*context.BaseCtx
+		*app.BaseCtx
 		Utils map[string][]*utility
 	}
 )
 
-func configurePageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+func configurePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	ctx := &configurePageContext{BaseCtx: bctx}
 	ctx.Utils = config.Utils
 	app.RenderTemplateStd(w, ctx, "utils/conf-index.tmpl")
@@ -134,13 +133,13 @@ type (
 	}
 
 	confGroupPageContext struct {
-		*context.BaseCtx
+		*app.BaseCtx
 		Form confGroupForm
 		New  bool
 	}
 
 	confCommandPageContext struct {
-		*context.BaseCtx
+		*app.BaseCtx
 		Form utility
 		New  bool
 	}
@@ -166,7 +165,7 @@ func (f *confGroupForm) validate() (errors []string) {
 	return
 }
 
-func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	vars := mux.Vars(r)
 	groupName, _ := vars["group"]
 	ctx := &confGroupPageContext{BaseCtx: bctx}
@@ -225,7 +224,7 @@ func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.
 	app.RenderTemplateStd(w, ctx, "utils/conf-group.tmpl")
 }
 
-func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	vars := mux.Vars(r)
 	groupName, _ := vars["group"]
 	cmd, _ := vars["util"]
@@ -298,7 +297,7 @@ func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *contex
 }
 
 // save configuration and add apriopriate flash message
-func saveConf(bctx *context.BaseCtx) (success bool) {
+func saveConf(bctx *app.BaseCtx) (success bool) {
 	conf := Module.GetConfiguration()
 	err := saveConfiguration(conf["config_file"])
 	if err != nil {

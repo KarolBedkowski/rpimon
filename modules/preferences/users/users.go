@@ -4,7 +4,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	l "k.prv/rpimon/logging"
 	"k.prv/rpimon/model"
 	"net/http"
@@ -15,19 +14,19 @@ var decoder = schema.NewDecoder()
 // CreateRoutes for /main
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/users", context.SecContext(mainPageHandler, "Preferences - Users", "admin")).Name("m-pref-users-index")
-	subRouter.HandleFunc("/users/{user}", context.SecContext(userPageHandler, "Preferences - User", "admin")).Name("m-pref-users-user")
-	subRouter.HandleFunc("/profile", context.SecContext(profilePageHandler, "Profile", "")).Name("m-pref-user-profile")
+	subRouter.HandleFunc("/users", app.SecContext(mainPageHandler, "Preferences - Users", "admin")).Name("m-pref-users-index")
+	subRouter.HandleFunc("/users/{user}", app.SecContext(userPageHandler, "Preferences - User", "admin")).Name("m-pref-users-user")
+	subRouter.HandleFunc("/profile", app.SecContext(profilePageHandler, "Profile", "")).Name("m-pref-user-profile")
 }
 
 type (
 	usersPageCtx struct {
-		*context.BaseCtx
+		*app.BaseCtx
 		Users []*model.User
 	}
 )
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	ctx := &usersPageCtx{BaseCtx: bctx}
 	ctx.Users = model.GetAllUsers()
 	ctx.SetMenuActive("m-users")
@@ -42,10 +41,10 @@ type (
 	}
 
 	userPageCtx struct {
-		*context.BaseCtx
+		*app.BaseCtx
 		Form     userForm
 		New      bool
-		AllPrivs map[string]context.Privilege
+		AllPrivs map[string]app.Privilege
 	}
 )
 
@@ -53,11 +52,11 @@ func (c *userPageCtx) HasPriv(perm string) bool {
 	return app.CheckPermission(c.Form.Privs, perm)
 }
 
-func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	vars := mux.Vars(r)
 	login, _ := vars["user"]
 	ctx := &userPageCtx{BaseCtx: bctx,
-		AllPrivs: context.AllPrivilages,
+		AllPrivs: app.AllPrivilages,
 	}
 
 	if login == "<new>" {
@@ -127,16 +126,16 @@ type (
 	}
 
 	profileContext struct {
-		*context.BaseCtx
+		*app.BaseCtx
 		CPForm chgPassForm
 		User   *model.User
 	}
 )
 
-func profilePageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+func profilePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	ctx := &profileContext{
 		BaseCtx: bctx,
-		User:            model.GetUserByLogin(bctx.CurrentUser),
+		User:    model.GetUserByLogin(bctx.CurrentUser),
 	}
 	switch r.Method {
 	case "POST":

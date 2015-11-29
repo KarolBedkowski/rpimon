@@ -3,15 +3,13 @@ package users
 import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
-	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	"net/http"
 	"strings"
 )
 
 // Module information
-var Module = &context.Module{
+var Module = &app.Module{
 	Name:          "storage",
 	Title:         "Storage",
 	Description:   "",
@@ -32,11 +30,11 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
-	menu = context.NewMenuItem("Storage", "").SetID("storage").SetIcon("glyphicon glyphicon-hdd")
+	menu = app.NewMenuItem("Storage", "").SetID("storage").SetIcon("glyphicon glyphicon-hdd")
 	menu.AddChild(app.NewMenuItemFromRoute("Disk Free", "storage-df").SetID("diskfree"),
 		app.NewMenuItemFromRoute("Mount", "storage-mount").SetID("mount"),
 		app.NewMenuItemFromRoute("Devices", "storage-page", "page", "devices").SetID("devices"),
@@ -44,8 +42,8 @@ func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
 	return "", menu
 }
 
-func newPageCtx(w http.ResponseWriter, r *http.Request, localMenuPos string, data string) *context.DataPageCtx {
-	ctx := context.NewDataPageCtx(w, r, "Storage")
+func newPageCtx(w http.ResponseWriter, r *http.Request, localMenuPos string, data string) *app.DataPageCtx {
+	ctx := app.NewDataPageCtx(w, r, "Storage")
 	ctx.SetMenuActive(localMenuPos)
 	ctx.Data = data
 	return ctx
@@ -70,7 +68,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 			ctx.Header2 = "Fdisk"
 			ctx.Data = h.ReadCommand("fdisk", "-l")
 		}
-		ctx.Tabs = []*context.MenuItem{
+		ctx.Tabs = []*app.MenuItem{
 			app.NewMenuItemFromRoute("Devices", "storage-page", "page", page).AddQuery("?sec=devices").SetActve(sec == "devices"),
 			app.NewMenuItemFromRoute("Fdisk", "storage-page", "page", page).AddQuery("?sec=fdisk").SetActve(sec == "fdisk"),
 		}
@@ -90,7 +88,7 @@ type (
 	}
 
 	mountPageContext struct {
-		*context.DataPageCtx
+		*app.DataPageCtx
 		Data    string
 		Mounted []*mountPoint
 	}
@@ -98,7 +96,7 @@ type (
 
 func mountPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &mountPageContext{
-		DataPageCtx: context.NewDataPageCtx(w, r, "Storage"),
+		DataPageCtx: app.NewDataPageCtx(w, r, "Storage"),
 	}
 	ctx.SetMenuActive("mount")
 	ctx.Header1 = "Storage"
@@ -127,7 +125,7 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := h.ReadCommand("sudo", "umount", fs)
-	sess := session.GetSessionStore(w, r)
+	sess := app.GetSessionStore(w, r)
 	if data != "" {
 		sess.AddFlash("Umount "+fs+" error: "+data, "error")
 	} else {
@@ -138,7 +136,7 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func dfPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := context.NewDataPageCtx(w, r, "Storage")
+	ctx := app.NewDataPageCtx(w, r, "Storage")
 	ctx.SetMenuActive("diskfree")
 	ctx.Header1 = "Storage"
 	ctx.Header2 = "diskfree"

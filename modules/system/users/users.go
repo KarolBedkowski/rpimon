@@ -3,14 +3,13 @@ package logs
 import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	"net/http"
 	"strings"
 )
 
 // Module information
-var Module = &context.Module{
+var Module = &app.Module{
 	Name:          "system-users",
 	Title:         "Users",
 	Description:   "System users",
@@ -26,7 +25,7 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -39,9 +38,9 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	if page == "" {
 		page = "who"
 	}
-	data := context.NewDataPageCtx(w, r, "Users")
+	data := app.NewDataPageCtx(w, r, "Users")
 	data.Header1 = "Users"
-	data.Tabs = []*context.MenuItem{
+	data.Tabs = []*app.MenuItem{
 		app.NewMenuItemFromRoute("Who", "users-index").AddQuery("?sec=who").SetActve(page == "who"),
 		app.NewMenuItemFromRoute("Users", "users-index").AddQuery("?sec=users").SetActve(page == "users"),
 		app.NewMenuItemFromRoute("Groups", "users-index").AddQuery("?sec=groups").SetActve(page == "groups"),

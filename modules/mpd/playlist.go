@@ -9,8 +9,6 @@ import (
 	"github.com/gorilla/schema"
 	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
-	"k.prv/rpimon/app/session"
 	"net/http"
 	"strconv"
 	"strings"
@@ -19,14 +17,14 @@ import (
 var decoder = schema.NewDecoder()
 
 type playlistPageCtx struct {
-	*context.BaseCtx
+	*app.BaseCtx
 	Playlist      []mpd.Attrs
 	CurrentSongID string
 	CurrentSong   string
 	Error         error
 }
 
-func playlistPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+func playlistPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	ctx := &playlistPageCtx{BaseCtx: bctx}
 	ctx.SetMenuActive("mpd-playlist")
 	app.RenderTemplateStd(w, ctx, "mpd/playlist.tmpl")
@@ -54,7 +52,7 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write(encoded)
 	} else {
 		if err != nil {
-			s := session.GetSessionStore(w, r)
+			s := app.GetSessionStore(w, r)
 			s.AddFlash(err.Error(), "error")
 			s.Save(r, w)
 		}

@@ -1,7 +1,6 @@
 package app
 
 import (
-	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/logging"
 	model "k.prv/rpimon/model"
@@ -11,9 +10,9 @@ import (
 
 // CheckUserLoggerOrRedirect for request; if user is not logged - redirect to login page
 func CheckUserLoggerOrRedirect(w http.ResponseWriter, r *http.Request) (login string, perm []string) {
-	s := session.GetSessionStore(w, r)
+	s := GetSessionStore(w, r)
 	var ok bool
-	if login, perm, ok = session.GetLoggerUser(s); ok && login != "" {
+	if login, perm, ok = GetLoggerUser(s); ok && login != "" {
 		return
 	}
 	log.Print("Access denied")
@@ -49,8 +48,8 @@ func VerifyLogged(h http.HandlerFunc) http.HandlerFunc {
 // LoginUser - update session
 func LoginUser(w http.ResponseWriter, r *http.Request, user *model.User) error {
 	l.Info("User %s log in", user.Login)
-	s := session.GetSessionStore(w, r)
-	session.SetLoggedUser(s, user.Login, user.Privs)
+	s := GetSessionStore(w, r)
+	SetLoggedUser(s, user.Login, user.Privs)
 	return s.Save(r, w)
 }
 

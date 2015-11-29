@@ -4,7 +4,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	"k.prv/rpimon/cfg"
 	l "k.prv/rpimon/logging"
 	"net/http"
@@ -15,8 +14,8 @@ var decoder = schema.NewDecoder()
 // CreateRoutes for /main
 func CreateRoutes(parentRoute *mux.Route) {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", context.SecContext(mainPageHandler, "Main", "admin")).Name("m-pref-modules-index")
-	subRouter.HandleFunc("/{module}", context.SecContext(confModulePageHandler, "Main", "admin")).Name("m-pref-modules-module")
+	subRouter.HandleFunc("/", app.SecContext(mainPageHandler, "Main", "admin")).Name("m-pref-modules-index")
+	subRouter.HandleFunc("/{module}", app.SecContext(confModulePageHandler, "Main", "admin")).Name("m-pref-modules-module")
 }
 
 type (
@@ -35,12 +34,12 @@ type (
 	}
 
 	pageCtx struct {
-		*context.BaseCtx
+		*app.BaseCtx
 		Form modulesListForm
 	}
 )
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	ctx := &pageCtx{BaseCtx: bctx}
 	if r.Method == "POST" {
 		r.ParseForm()
@@ -49,9 +48,9 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseC
 			return
 		}
 		for _, module := range ctx.Form.Modules {
-			context.EnableModule(module.Name, module.Enabled)
+			app.EnableModule(module.Name, module.Enabled)
 		}
-		context.SetMainMenu(ctx.BaseCtx)
+		app.SetMainMenu(ctx.BaseCtx)
 		if err := cfg.SaveConfiguration(); err != nil {
 			ctx.BaseCtx.AddFlashMessage("Saving configuration error: "+err.Error(),
 				"error")
@@ -63,7 +62,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseC
 		return
 	}
 	ctx.SetMenuActive("p-modules")
-	for _, m := range context.GetModulesList() {
+	for _, m := range app.GetModulesList() {
 		ctx.Form.Modules = append(ctx.Form.Modules, &moduleSt{
 			m.Name, m.Title, m.Description, m.Enabled(),
 			m.ConfigurePageURL,
@@ -87,17 +86,17 @@ type (
 	}
 
 	confModulePageContext struct {
-		*context.BaseCtx
+		*app.BaseCtx
 		Form   confModuleForm
-		Module *context.Module
+		Module *app.Module
 	}
 )
 
-func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	vars := mux.Vars(r)
 	moduleName, _ := vars["module"]
 	ctx := &confModulePageContext{BaseCtx: bctx}
-	ctx.Module = context.GetModule(moduleName)
+	ctx.Module = app.GetModule(moduleName)
 	if ctx.Module == nil {
 		app.Render400(w, r, "Invalid module "+moduleName)
 		return

@@ -3,13 +3,12 @@ package network
 import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	"net/http"
 )
 
 // SambaModule - module information
-var SambaModule = &context.Module{
+var SambaModule = &app.Module{
 	Name:          "network-smb",
 	Title:         "Network - SAMBA",
 	Description:   "Network - SAMBA",
@@ -22,12 +21,12 @@ func initSambaModule(parentRoute *mux.Route) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/",
-		context.SecContext(sambaPageHandler, "Network - Samba", "admin")).
+		app.SecContext(sambaPageHandler, "Network - Samba", "admin")).
 		Name("m-net-samba")
 	return true
 }
 
-func smbGetMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
+func smbGetMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -36,8 +35,8 @@ func smbGetMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) 
 	return "m-net", menu
 }
 
-func sambaPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx) {
-	data := &context.DataPageCtx{BaseCtx: ctx}
+func sambaPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
+	data := &app.DataPageCtx{BaseCtx: ctx}
 	data.SetMenuActive("m-net-samba")
 	data.Header1 = "Samba"
 	data.Data = h.ReadCommand("sudo", "smbstatus")

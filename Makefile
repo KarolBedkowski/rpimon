@@ -1,6 +1,6 @@
 VERSION=`git describe --always`
 DATE=`date`
-LDFLAGS="-X k.prv/rpimon/app/context.AppVersion '$(VERSION) - $(DATE)'"
+LDFLAGS="-X k.prv/rpimon/app.AppVersion '$(VERSION) - $(DATE)'"
 
 .PHONY: resources build
 

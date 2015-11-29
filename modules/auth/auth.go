@@ -4,8 +4,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
-	"k.prv/rpimon/app/session"
 	l "k.prv/rpimon/logging"
 	"k.prv/rpimon/model"
 	"net/http"
@@ -16,7 +14,7 @@ var decoder = schema.NewDecoder()
 var subRouter *mux.Router
 
 // Module information
-var Module = &context.Module{
+var Module = &app.Module{
 	Name:          "auth",
 	Title:         "Authentication",
 	Description:   "",
@@ -28,7 +26,7 @@ var Module = &context.Module{
 // CreateRoutes for /auth
 func initModule(parentRoute *mux.Route) bool {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/login", context.Context(loginPageHandler, "Login")).Name("auth-login")
+	subRouter.HandleFunc("/login", app.Context(loginPageHandler, "Login")).Name("auth-login")
 	subRouter.HandleFunc("/logoff", logoffHandler).Name("auth-logoff")
 	return true
 }
@@ -41,7 +39,7 @@ type (
 	}
 
 	loginPageCtx struct {
-		*context.BaseCtx
+		*app.BaseCtx
 		*loginForm
 		back string
 	}
@@ -54,7 +52,7 @@ func (ctx loginPageCtx) Validate() (err string) {
 	return
 }
 
-func loginPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+func loginPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	ctx := &loginPageCtx{bctx, new(loginForm), ""}
 	if r.Method == "POST" {
 		r.ParseForm()
@@ -91,6 +89,6 @@ func handleLoginError(message string, w http.ResponseWriter, ctx *loginPageCtx) 
 }
 
 func logoffHandler(w http.ResponseWriter, r *http.Request) {
-	session.ClearSession(w, r)
+	app.ClearSession(w, r)
 	http.Redirect(w, r, "/", http.StatusFound)
 }

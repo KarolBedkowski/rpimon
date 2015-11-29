@@ -1,7 +1,7 @@
 // Handle gziped static files
 // Based on: https://github.com/joaodasilva/go-gzip-file-server
 
-package mw
+package app
 
 import (
 	"io"

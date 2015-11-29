@@ -4,8 +4,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
-	"k.prv/rpimon/app/session"
 	"k.prv/rpimon/model"
 	//h "k.prv/rpimon/helpers"
 	//l "k.prv/rpimon/logging"
@@ -19,11 +17,11 @@ import (
 var decoder = schema.NewDecoder()
 
 // Module information
-var Module *context.Module
+var Module *app.Module
 var dispatcher *Dispatcher
 
 func init() {
-	Module = &context.Module{
+	Module = &app.Module{
 		Name:        "worker",
 		Title:       "Worker",
 		Description: "Run some commands in background",
@@ -35,7 +33,7 @@ func init() {
 			"Parallel_workers": "2",
 		},
 		Configurable:  true,
-		AllPrivilages: []context.Privilege{{"worker", "allow to run task"}},
+		AllPrivilages: []app.Privilege{{"worker", "allow to run task"}},
 	}
 
 }
@@ -44,7 +42,7 @@ func init() {
 func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	// active tasks
-	subRouter.HandleFunc("/", context.SecContext(mainPageHandler, "Worker", "worker")).Name("worker-index")
+	subRouter.HandleFunc("/", app.SecContext(mainPageHandler, "Worker", "worker")).Name("worker-index")
 	// new task
 	subRouter.HandleFunc("/new", app.VerifyPermission(taskPageHandler, "worker")).Name("worker-new-task")
 	// show
@@ -64,36 +62,36 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "worker") {
 		return "", nil
 	}
-	menu = context.NewMenuItem("Worker", app.GetNamedURL("worker-index")).SetID("worker-index").SetIcon("glyphicon glyphicon-flash")
+	menu = app.NewMenuItem("Worker", app.GetNamedURL("worker-index")).SetID("worker-index").SetIcon("glyphicon glyphicon-flash")
 	return "", menu
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	ctx := &struct {
-		*context.BaseCtx
+		*app.BaseCtx
 		Tasks []*model.Task
 	}{
 		BaseCtx: bctx,
-		Tasks:           model.GetTasks(),
+		Tasks:   model.GetTasks(),
 	}
 	ctx.SetMenuActive("worker-index")
 	app.RenderTemplateStd(w, ctx, "worker/index.tmpl")
 }
 
 type taskPageContext struct {
-	*context.BaseCtx
+	*app.BaseCtx
 	Task *model.Task
 }
 
 func taskPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := &taskPageContext{
-		BaseCtx: context.NewBaseCtx("Task", w, r),
-		Task:            &model.Task{},
+		BaseCtx: app.NewBaseCtx("Task", w, r),
+		Task:    &model.Task{},
 	}
 	conf := Module.GetConfiguration()
 	ctx.Task.Dir = conf["Default_Dir"]
@@ -111,7 +109,7 @@ func taskPageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		r.ParseForm()
 		decoder.Decode(ctx.Task, r.Form)
-		sess := session.GetSessionStore(w, r)
+		sess := app.GetSessionStore(w, r)
 		success := false
 		if err := ctx.Task.Validate(); err == nil {
 			if ctx.Task.Multi && ctx.Task.Params != "" {
@@ -134,7 +132,7 @@ func taskPageHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			sess.AddFlash(err.Error(), "error")
 		}
-		session.SaveSession(w, r)
+		app.SaveSession(w, r)
 		if success {
 			http.Redirect(w, r, app.GetNamedURL("worker-index"), http.StatusFound)
 			return

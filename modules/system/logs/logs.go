@@ -5,7 +5,6 @@ import (
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/logging"
 	"net/http"
@@ -15,10 +14,10 @@ import (
 )
 
 // Module information
-var Module *context.Module
+var Module *app.Module
 
 func init() {
-	Module = &context.Module{
+	Module = &app.Module{
 		Name:          "system-logs",
 		Title:         "Logs",
 		Description:   "System Logs",
@@ -40,13 +39,13 @@ func initModule(parentRoute *mux.Route) bool {
 		return false
 	}
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", context.SecContext(mainPageHandler, "Logs", "admin")).Name("logs-index")
+	subRouter.HandleFunc("/", app.SecContext(mainPageHandler, "Logs", "admin")).Name("logs-index")
 	subRouter.HandleFunc("/serv", app.VerifyPermission(servLogHandler, "admin")).Name("logs-serv")
-	subRouter.HandleFunc("/{page}", context.SecContext(mainPageHandler, "Logs", "admin")).Name("logs-page")
+	subRouter.HandleFunc("/{page}", app.SecContext(mainPageHandler, "Logs", "admin")).Name("logs-page")
 	return true
 }
 
-func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -58,7 +57,7 @@ func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
 }
 
 type pageCtx struct {
-	*context.BaseCtx
+	*app.BaseCtx
 	CurrentPage string
 	Data        string
 	Files       []string
@@ -67,7 +66,7 @@ type pageCtx struct {
 	LogsDef     logsDef
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	ctx := &pageCtx{BaseCtx: bctx}
 	vars := mux.Vars(r)
 	page, ok := vars["page"]

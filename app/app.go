@@ -3,8 +3,6 @@ package app
 import (
 	//	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"k.prv/rpimon/app/mw"
-	"k.prv/rpimon/app/session"
 	"k.prv/rpimon/cfg"
 	l "k.prv/rpimon/logging"
 	"net/http"
@@ -29,13 +27,13 @@ func Init(appConfFile string, debug int) *cfg.AppConfiguration {
 	l.Init(conf.LogFilename, conf.Debug)
 	l.Info("Debug=%s", conf.Debug)
 
-	session.InitSessionStore(conf)
+	InitSessionStore(conf)
 
 	http.Handle("/static/", http.StripPrefix("/static",
-		mw.FileServer(http.Dir(conf.StaticDir), !conf.Debug)))
-	http.Handle("/favicon.ico", mw.FileServer(http.Dir(conf.StaticDir), !conf.Debug))
+		FileServer(http.Dir(conf.StaticDir), !conf.Debug)))
+	http.Handle("/favicon.ico", FileServer(http.Dir(conf.StaticDir), !conf.Debug))
 	//context.ClearHandler()
-	http.Handle("/", mw.LogHandler(mw.CsrfHandler(session.SessionHandler(Router))))
+	http.Handle("/", LogHandler(CsrfHandler(SessionHandler(Router))))
 	return conf
 }
 

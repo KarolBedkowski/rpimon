@@ -6,8 +6,6 @@ import (
 	"github.com/gorilla/schema"
 	"io/ioutil"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
-	"k.prv/rpimon/app/session"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/logging"
 	"net/http"
@@ -22,10 +20,10 @@ var decoder = schema.NewDecoder()
 var ErrInvalidFilename = errors.New("invalid filename")
 
 // Module information
-var Module *context.Module
+var Module *app.Module
 
 func init() {
-	Module = &context.Module{
+	Module = &app.Module{
 		Name:        "notepad",
 		Title:       "Notepad",
 		Description: "",
@@ -35,7 +33,7 @@ func init() {
 			"dir": "./notepad/",
 		},
 		Configurable:  true,
-		AllPrivilages: []context.Privilege{{"notepad", "access to notepad"}},
+		AllPrivilages: []app.Privilege{{"notepad", "access to notepad"}},
 	}
 }
 
@@ -43,18 +41,18 @@ func init() {
 func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	// Main page
-	subRouter.HandleFunc("/", context.SecContext(mainPageHandler, "Notepad", "notepad")).Name("notepad-index")
+	subRouter.HandleFunc("/", app.SecContext(mainPageHandler, "Notepad", "notepad")).Name("notepad-index")
 	subRouter.HandleFunc("/{note}", app.VerifyPermission(notePageHandler, "notepad")).Name("notepad-note")
 	subRouter.HandleFunc("/{note}/delete", app.VerifyPermission(noteDeleteHandler, "notepad")).Name("notepad-delete")
 	subRouter.HandleFunc("/{note}/download", app.VerifyPermission(noteDownloadHandler, "notepad")).Name("notepad-download")
 	return true
 }
 
-func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "notepad") {
 		return "", nil
 	}
-	menu = context.NewMenuItem("Notepad", app.GetNamedURL("notepad-index")).SetID("notepad-index").SetIcon("glyphicon glyphicon-paperclip")
+	menu = app.NewMenuItem("Notepad", app.GetNamedURL("notepad-index")).SetID("notepad-index").SetIcon("glyphicon glyphicon-paperclip")
 	return "", menu
 }
 
@@ -73,11 +71,11 @@ func (n *NoteStuct) Validate() (errors []string) {
 }
 
 type mainPageContext struct {
-	*context.BaseCtx
+	*app.BaseCtx
 	NoteList []*NoteStuct
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	ctx := &mainPageContext{BaseCtx: bctx}
 	ctx.SetMenuActive("notepad-index")
 	ctx.NoteList = findFiles()
@@ -85,7 +83,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseC
 }
 
 type notePageContext struct {
-	*context.BaseCtx
+	*app.BaseCtx
 	Note *NoteStuct
 	New  bool
 }
@@ -100,7 +98,7 @@ func notePageHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		// display note
-		ctx := &notePageContext{BaseCtx: context.NewBaseCtx("Notepad", w, r)}
+		ctx := &notePageContext{BaseCtx: app.NewBaseCtx("Notepad", w, r)}
 		if note, err := getNote(filename); err == nil {
 			ctx.Note = note
 		} else {
@@ -115,13 +113,13 @@ func notePageHandler(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		note := new(NoteStuct)
 		decoder.Decode(note, r.Form)
-		sess := session.GetSessionStore(w, r)
+		sess := app.GetSessionStore(w, r)
 		if err := SaveNote(filename, note.Content); err == nil {
 			sess.AddFlash("Note saved", "success")
 		} else {
 			sess.AddFlash(err.Error(), "error")
 		}
-		session.SaveSession(w, r)
+		app.SaveSession(w, r)
 		http.Redirect(w, r, app.GetNamedURL("notepad-index"), http.StatusFound)
 		return
 	case "DELETE":
@@ -142,13 +140,13 @@ func noteDeleteHandler(w http.ResponseWriter, r *http.Request) {
 		app.Render400(w, r, "Invalid Request: missing filename")
 		return
 	}
-	sess := session.GetSessionStore(w, r)
+	sess := app.GetSessionStore(w, r)
 	if err := DeleteNote(filename); err == nil {
 		sess.AddFlash("Note deleted", "success")
 	} else {
 		sess.AddFlash(err.Error(), "error")
 	}
-	session.SaveSession(w, r)
+	app.SaveSession(w, r)
 	http.Redirect(w, r, app.GetNamedURL("notepad-index"), http.StatusFound)
 }
 

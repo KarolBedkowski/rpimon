@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	"k.prv/rpimon/modules/monitor"
 	"k.prv/rpimon/modules/mpd"
 	"net/http"
@@ -12,7 +11,7 @@ import (
 )
 
 // Module information
-var Module = &context.Module{
+var Module = &app.Module{
 	Name:          "main",
 	Title:         "Main",
 	Description:   "Main",
@@ -23,7 +22,7 @@ var Module = &context.Module{
 // CreateRoutes for /main
 func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", context.Context(mainPageHandler, "Main")).Name("main-index")
+	subRouter.HandleFunc("/", app.Context(mainPageHandler, "Main")).Name("main-index")
 	subRouter.HandleFunc("/serv/alerts",
 		app.VerifyPermission(alertsServHandler, "admin")).Name(
 		"main-serv-alerts")
@@ -31,7 +30,7 @@ func initModule(parentRoute *mux.Route) bool {
 }
 
 type pageCtx struct {
-	*context.BaseCtx
+	*app.BaseCtx
 	Uptime            *monitor.UptimeInfoStruct
 	Load              *monitor.LoadInfoStruct
 	CPUUsage          *monitor.CPUUsageInfoStruct
@@ -40,16 +39,16 @@ type pageCtx struct {
 	Filesystems       *monitor.FilesystemsStruct
 	Interfaces        *monitor.InterfacesStruct
 	MpdStatus         map[string]string
-	Warnings          *context.WarningsStruct
+	Warnings          *app.WarningsStruct
 	MaxAcceptableLoad int
 	LoadTrucated      float64
 	HostsStatus       map[string]bool
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	ctx := &pageCtx{BaseCtx: bctx}
 	ctx.SetMenuActive("main")
-	ctx.Warnings = context.GetWarnings()
+	ctx.Warnings = app.GetWarnings()
 	ctx.Uptime = monitor.GetUptimeInfo()
 	ctx.CPUUsage = monitor.GetCPUUsageInfo()
 	ctx.CPUInfo = monitor.GetCPUInfo()
@@ -72,7 +71,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseC
 
 func alertsServHandler(w http.ResponseWriter, r *http.Request) {
 	data := make(map[string]interface{})
-	data["warnings"] = context.GetWarnings()
+	data["warnings"] = app.GetWarnings()
 	encoded, _ := json.Marshal(data)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(encoded)

@@ -3,16 +3,15 @@ package preferences
 import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	"k.prv/rpimon/modules/preferences/modules"
 	"k.prv/rpimon/modules/preferences/users"
 )
 
 // Module information
-var Module *context.Module
+var Module *app.Module
 
 func init() {
-	Module = &context.Module{
+	Module = &app.Module{
 		Name:          "preferences",
 		Title:         "Preferences",
 		Description:   "System preferences",
@@ -31,20 +30,20 @@ func initModule(parentRoute *mux.Route) bool {
 	users.CreateRoutes(subRouter.PathPrefix("/pref/users"))
 	return true
 }
-func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
 
-	menu = context.NewMenuItem("Preferences", "preferences").SetSortOrder(999).SetIcon("glyphicon glyphicon-cog")
+	menu = app.NewMenuItem("Preferences", "preferences").SetSortOrder(999).SetIcon("glyphicon glyphicon-cog")
 	// Preferences
-	if context.CheckPermission(ctx.CurrentUserPerms, "admin") {
+	if app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		//TODO: named routes
-		menu.AddChild(context.NewMenuItem("Modules", app.GetNamedURL("m-pref-modules-index")).SetID("m-modules"))
-		menu.AddChild(context.NewMenuItem("Users", app.GetNamedURL("m-pref-users-index")).SetID("m-users"))
+		menu.AddChild(app.NewMenuItem("Modules", app.GetNamedURL("m-pref-modules-index")).SetID("m-modules"))
+		menu.AddChild(app.NewMenuItem("Users", app.GetNamedURL("m-pref-users-index")).SetID("m-users"))
 	}
 	if ctx.CurrentUser != "" {
-		menu.AddChild(context.NewMenuItem("Profile", app.GetNamedURL("m-pref-user-profile")).SetID("m-user-profile"))
+		menu.AddChild(app.NewMenuItem("Profile", app.GetNamedURL("m-pref-user-profile")).SetID("m-user-profile"))
 	}
 
 	return "", menu

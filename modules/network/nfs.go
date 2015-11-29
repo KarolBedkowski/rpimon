@@ -3,13 +3,12 @@ package network
 import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	"net/http"
 )
 
 // NFSModule information
-var NFSModule = &context.Module{
+var NFSModule = &app.Module{
 	Name:          "network-nfs",
 	Title:         "Network - NFS",
 	Description:   "Network - NFS",
@@ -22,11 +21,11 @@ var NFSModule = &context.Module{
 func initNFSModule(parentRoute *mux.Route) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", context.SecContext(nfsPageHandler, "Network - NFS", "admin")).Name("m-net-nfs")
+	subRouter.HandleFunc("/", app.SecContext(nfsPageHandler, "Network - NFS", "admin")).Name("m-net-nfs")
 	return true
 }
 
-func nfsGetMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
+func nfsGetMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -35,12 +34,12 @@ func nfsGetMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) 
 	return "m-net", menu
 }
 
-func nfsPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx) {
+func nfsPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
 	page := r.FormValue("sec")
 	if page == "" {
 		page = "stat"
 	}
-	data := &context.DataPageCtx{BaseCtx: ctx}
+	data := &app.DataPageCtx{BaseCtx: ctx}
 	data.SetMenuActive("m-net-nfs")
 	data.Header1 = "NFS"
 	switch page {
@@ -51,7 +50,7 @@ func nfsPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx
 		data.Header2 = "Connections"
 		data.Data = h.ReadCommand("nfsstat")
 	}
-	data.Tabs = []*context.MenuItem{
+	data.Tabs = []*app.MenuItem{
 		app.NewMenuItemFromRoute("NFSstat", "m-net-nfs").AddQuery("?sec=stat").SetActve(page == "stat"),
 		app.NewMenuItemFromRoute("exportfs", "m-net-nfs").AddQuery("?sec=exportfs").SetActve(page == "exportfs"),
 	}

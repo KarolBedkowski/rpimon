@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	"k.prv/rpimon/modules/monitor"
 	"net/http"
@@ -12,7 +11,7 @@ import (
 )
 
 // Module information
-var Module = &context.Module{
+var Module = &app.Module{
 	Name:          "network",
 	Title:         "Network",
 	Description:   "Network",
@@ -25,16 +24,16 @@ func initModule(parentRoute *mux.Route) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/",
-		context.SecContext(mainPageHandler, "Network", "admin")).
+		app.SecContext(mainPageHandler, "Network", "admin")).
 		Name("m-net-index")
 	subRouter.HandleFunc("/conf",
-		context.SecContext(confPageHandler, "Network - Configuration", "admin")).
+		app.SecContext(confPageHandler, "Network - Configuration", "admin")).
 		Name("m-net-conf")
 	subRouter.HandleFunc("/iptables",
-		context.SecContext(iptablesPageHandler, "Network - Iptables", "admin")).
+		app.SecContext(iptablesPageHandler, "Network - Iptables", "admin")).
 		Name("m-net-iptables")
 	subRouter.HandleFunc("/netstat",
-		context.SecContext(netstatPageHandler, "Network - Netstat", "admin")).
+		app.SecContext(netstatPageHandler, "Network - Netstat", "admin")).
 		Name("m-net-netstat")
 	subRouter.HandleFunc("/serv/info",
 		app.VerifyPermission(statusServHandler, "")).
@@ -45,12 +44,12 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
 
-	menu = context.NewMenuItem("Network", "").SetIcon("glyphicon glyphicon-dashboard").SetID("m-net")
+	menu = app.NewMenuItem("Network", "").SetIcon("glyphicon glyphicon-dashboard").SetID("m-net")
 	menu.AddChild(app.NewMenuItemFromRoute("Status", "m-net-index").SetID("m-net-index").SetSortOrder(-1),
 		app.NewMenuItemFromRoute("Configuration", "m-net-conf"),
 		app.NewMenuItemFromRoute("IPTables", "m-net-iptables"),
@@ -60,23 +59,23 @@ func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
 }
 
 type mainPageContext struct {
-	*context.BaseCtx
+	*app.BaseCtx
 	Interfaces *monitor.InterfacesStruct
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
 	c := &mainPageContext{BaseCtx: ctx}
 	c.SetMenuActive("m-net-index")
 	c.Interfaces = monitor.GetInterfacesInfo()
 	app.RenderTemplateStd(w, c, "network/status.tmpl")
 }
 
-func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx) {
+func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
 	page := r.FormValue("sec")
 	if page == "" {
 		page = "listen"
 	}
-	data := &context.DataPageCtx{BaseCtx: ctx}
+	data := &app.DataPageCtx{BaseCtx: ctx}
 	data.SetMenuActive("m-net-netstat")
 	data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
 	data.Header1 = "Netstat"
@@ -91,7 +90,7 @@ func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.Bas
 		data.Header2 = "all"
 		data.TData, _ = netstat("sudo", "netstat", "-apn", "-t", "-u")
 	}
-	data.Tabs = []*context.MenuItem{
+	data.Tabs = []*app.MenuItem{
 		app.NewMenuItemFromRoute("Listen", "m-net-netstat").AddQuery("?sec=listen").SetActve(page == "listen"),
 		app.NewMenuItemFromRoute("Connections", "m-net-netstat").AddQuery("?sec=connections").SetActve(page == "connections"),
 		app.NewMenuItemFromRoute("All", "m-net-netstat").AddQuery("?sec=all").SetActve(page == "all"),
@@ -100,7 +99,7 @@ func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.Bas
 }
 
 type confPageContext struct {
-	*context.BaseCtx
+	*app.BaseCtx
 	Current  string
 	Data     string
 	Commands *map[string][]string
@@ -145,7 +144,7 @@ var confCommands = map[string][]string{
 	},
 }
 
-func confPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx) {
+func confPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
 	cmd := r.FormValue("cmd")
 	if cmd == "" {
 		cmd = confCommands["Base"][0]
@@ -171,7 +170,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCt
 }
 
 type iptablesPageContext struct {
-	*context.BaseCtx
+	*app.BaseCtx
 	Current string
 	Data    string
 	Tables  *[]string
@@ -185,7 +184,7 @@ var iptablesTables = []string{
 	"security",
 }
 
-func iptablesPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx) {
+func iptablesPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
 	table := r.FormValue("table")
 	if table == "" {
 		table = iptablesTables[0]

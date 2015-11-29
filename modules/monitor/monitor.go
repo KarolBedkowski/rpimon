@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/mux"
 	"io"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	"k.prv/rpimon/cfg"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/logging"
@@ -28,10 +27,10 @@ const (
 )
 
 // Module information
-var Module *context.Module
+var Module *app.Module
 
 func init() {
-	Module = &context.Module{
+	Module = &app.Module{
 		Name:        "monitor",
 		Title:       "Monitor",
 		Description: "Background system monitors",
@@ -50,7 +49,7 @@ func initModule(parentRoute *mux.Route) bool {
 	//	conf := Module.GetConfiguration()
 	//	interval, _ := strconv.Atoi(conf["interval"])
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/configure", context.SecContext(confPageHandler, "Monitor - Configuration", "admin")).Name("m-monitor-conf")
+	subRouter.HandleFunc("/configure", app.SecContext(confPageHandler, "Monitor - Configuration", "admin")).Name("m-monitor-conf")
 	Module.ConfigurePageURL = app.GetNamedURL("m-monitor-conf")
 	// Configuration for monitor is in main config
 	// TODO: przenieść

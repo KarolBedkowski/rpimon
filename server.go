@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	l "k.prv/rpimon/logging"
 	"k.prv/rpimon/model"
 	mauth "k.prv/rpimon/modules/auth"
@@ -35,7 +34,7 @@ import (
 )
 
 func main() {
-	log.Printf("Starting... ver %s", context.AppVersion)
+	log.Printf("Starting... ver %s", app.AppVersion)
 	configFilename := flag.String("conf", "./config.json", "Configuration filename")
 	debug := flag.Int("debug", -1, "Run in debug mode (1) or normal (0)")
 	forceLocalFiles := flag.Bool("forceLocalFiles", false, "Force use local files instead of embended assets")
@@ -69,31 +68,31 @@ func main() {
 		<-cleanChannel
 		app.Close()
 		model.Close()
-		context.ShutdownModules()
+		app.ShutdownModules()
 		os.Exit(0)
 	}()
 
 	app.Router.HandleFunc("/", handleHome)
-	context.RegisterModule(mauth.Module)
-	context.RegisterModule(mmain.Module)
-	context.RegisterModule(mpref.Module)
-	context.RegisterModule(mfiles.Module)
-	context.RegisterModule(mmpd.Module)
-	context.RegisterModule(mnet.Module)
-	context.RegisterModule(mnet.NFSModule)
-	context.RegisterModule(mnet.SambaModule)
-	context.RegisterModule(mnotepad.Module)
-	context.RegisterModule(mstorage.Module)
-	context.RegisterModule(msmart.Module)
-	context.RegisterModule(msyslogs.Module)
-	context.RegisterModule(msyshw.Module)
-	context.RegisterModule(msysproc.Module)
-	context.RegisterModule(msysusers.Module)
-	context.RegisterModule(mutls.Module)
-	context.RegisterModule(msystem.Module)
-	context.RegisterModule(mmonitor.Module)
-	context.RegisterModule(mworker.Module)
-	context.InitModules(conf, app.Router)
+	app.RegisterModule(mauth.Module)
+	app.RegisterModule(mmain.Module)
+	app.RegisterModule(mpref.Module)
+	app.RegisterModule(mfiles.Module)
+	app.RegisterModule(mmpd.Module)
+	app.RegisterModule(mnet.Module)
+	app.RegisterModule(mnet.NFSModule)
+	app.RegisterModule(mnet.SambaModule)
+	app.RegisterModule(mnotepad.Module)
+	app.RegisterModule(mstorage.Module)
+	app.RegisterModule(msmart.Module)
+	app.RegisterModule(msyslogs.Module)
+	app.RegisterModule(msyshw.Module)
+	app.RegisterModule(msysproc.Module)
+	app.RegisterModule(msysusers.Module)
+	app.RegisterModule(mutls.Module)
+	app.RegisterModule(msystem.Module)
+	app.RegisterModule(mmonitor.Module)
+	app.RegisterModule(mworker.Module)
+	app.InitModules(conf, app.Router)
 
 	/* for filesystem store
 	go app.ClearSessionStore()

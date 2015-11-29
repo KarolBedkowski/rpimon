@@ -1,11 +1,11 @@
-package mw
+package app
 
 import (
+	"fmt"
 	l "k.prv/rpimon/logging"
 	"net/http"
 	"runtime/debug"
 	"time"
-	"fmt"
 )
 
 // loggingResponseWriter response writer with status
@@ -31,8 +31,8 @@ func LogHandler(h http.Handler) http.HandlerFunc {
 			if err := recover(); err == nil {
 				l.Debug("%d %s %s %s %s", writer.status, r.Method, r.URL.String(), r.RemoteAddr, end.Sub(start))
 			} else {
-				l.Error(fmt.Sprint("%d %s %s %s %s err:'%#v'\n%s", 
-					writer.status, r.Method, r.URL.String(), r.RemoteAddr, 
+				l.Error(fmt.Sprint("%d %s %s %s %s err:'%#v'\n%s",
+					writer.status, r.Method, r.URL.String(), r.RemoteAddr,
 					end.Sub(start), err, stack))
 			}
 		}()

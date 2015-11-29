@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	"k.prv/rpimon/modules/monitor"
 	"net/http"
@@ -13,21 +12,21 @@ import (
 )
 
 // Module information
-var Module = &context.Module{
+var Module = &app.Module{
 	Name:          "system",
 	Title:         "System",
 	Description:   "",
 	Init:          initModule,
 	GetMenu:       getMenu,
 	Internal:      true,
-	AllPrivilages: []context.Privilege{{"admin", "system administrator"}},
+	AllPrivilages: []app.Privilege{{"admin", "system administrator"}},
 }
 
 // CreateRoutes for /main
 func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/",
-		context.SecContext(systemPageHandler, "System", "admin")).Name(
+		app.SecContext(systemPageHandler, "System", "admin")).Name(
 		"main-system")
 	subRouter.HandleFunc("/serv/status",
 		app.VerifyPermission(statusServHandler, "admin")).Name(
@@ -35,11 +34,11 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
-	menu = context.NewMenuItem("System", "").SetIcon("glyphicon glyphicon-wrench").SetID("system")
+	menu = app.NewMenuItem("System", "").SetIcon("glyphicon glyphicon-wrench").SetID("system")
 	menu.AddChild(
 		app.NewMenuItemFromRoute("Live view", "main-system").SetID("system-live").SetIcon("glyphicon glyphicon-dashboard"))
 
@@ -47,14 +46,14 @@ func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
 }
 
 type pageSystemCtx struct {
-	*context.BaseCtx
-	Warnings          *context.WarningsStruct
+	*app.BaseCtx
+	Warnings          *app.WarningsStruct
 	MaxAcceptableLoad int
 }
 
-func systemPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+func systemPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	ctx := &pageSystemCtx{BaseCtx: bctx,
-		Warnings: context.GetWarnings()}
+		Warnings: app.GetWarnings()}
 	ctx.SetMenuActive("system-live")
 	ctx.MaxAcceptableLoad = runtime.NumCPU() * 2
 	app.RenderTemplateStd(w, ctx, "main/system.tmpl")

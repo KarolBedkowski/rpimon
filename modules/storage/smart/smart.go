@@ -3,14 +3,13 @@ package users
 import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	"net/http"
 	"strings"
 )
 
 // Module information
-var Module = &context.Module{
+var Module = &app.Module{
 	Name:          "storage-smart",
 	Title:         "Storage - SMART",
 	Description:   "",
@@ -27,7 +26,7 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -36,12 +35,12 @@ func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
 }
 
 type smartPageContext struct {
-	*context.DataPageCtx
+	*app.DataPageCtx
 	Devices []string
 }
 
 func smartPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &smartPageContext{DataPageCtx: context.NewDataPageCtx(w, r, "Storage - SMART")}
+	ctx := &smartPageContext{DataPageCtx: app.NewDataPageCtx(w, r, "Storage - SMART")}
 	ctx.SetMenuActive("smart")
 	for _, line := range strings.Split(h.ReadCommand("lsblk", "-r"), "\n") {
 		line = strings.TrimSpace(line)

@@ -3,7 +3,6 @@ package monitor
 import (
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	"k.prv/rpimon/cfg"
 	//	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/logging"
@@ -18,7 +17,7 @@ type confForm cfg.MonitorConfiguration
 
 type (
 	confPageContext struct {
-		*context.BaseCtx
+		*app.BaseCtx
 		Form   *confForm
 		New    bool
 		Errors []string
@@ -140,7 +139,7 @@ func (f *confForm) cleanup() {
 	f.MonitoredHosts = hosts
 }
 
-func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 	form := confForm{}
 	form = confForm(*cfg.Configuration.Monitor)
 	ctx := &confPageContext{BaseCtx: bctx,
