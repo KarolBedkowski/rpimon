@@ -37,6 +37,15 @@
 		</div>
 	</div>
 </div>
+
+{{ if .History }}
+<div class="row">
+	<div class="col-lg-12">
+		<a href="{{ namedurl "mpd-history-file" }}">Download file</a>
+	</div>
+</div>
+{{ end }}
+
 {{end}}
 
 {{define "scripts"}}

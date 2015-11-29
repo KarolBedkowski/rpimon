@@ -124,6 +124,8 @@ func initModule(parentRoute *mux.Route) bool {
 	// history
 	subRouter.HandleFunc("/history",
 		context.HandleWithContextSec(historyHandler, "MPD - History", "mpd")).Name("mpd-history")
+	subRouter.HandleFunc("/history/file",
+		app.VerifyPermission(historyFileHandler, "mpd")).Name("mpd-history-file")
 
 	if val, ok := conf["delete older than [days]"]; ok && val != "0" && val != "" {
 		if off, err := strconv.Atoi(val); err == nil {
@@ -297,4 +299,30 @@ func historyHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePa
 	}
 	ctx.SetMenuActive("mpd-history")
 	app.RenderTemplateStd(w, ctx, "mpd/history.tmpl")
+}
+
+func historyFileHandler(w http.ResponseWriter, r *http.Request) {
+	songs := model.GetSongs()
+	if len(songs) == 0 {
+		app.Render400(w, r, "No songs")
+		return
+	}
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Content-Disposition", "attachment; filename=\"mpd_history.txt\"")
+	for _, song := range songs {
+		writeNonEmptyString(w, "Date: ", song.Date.String())
+		writeNonEmptyString(w, "Track: ", song.Track)
+		writeNonEmptyString(w, "Name: ", song.Name)
+		writeNonEmptyString(w, "Album: ", song.Album)
+		writeNonEmptyString(w, "Artist: ", song.Artist)
+		writeNonEmptyString(w, "Title: ", song.Title)
+		writeNonEmptyString(w, "File: ", song.File)
+		w.Write([]byte("---------------------\n\n"))
+	}
+}
+
+func writeNonEmptyString(w http.ResponseWriter, prefix, value string) {
+	if value != "" {
+		w.Write([]byte(prefix + value + "\n"))
+	}
 }
