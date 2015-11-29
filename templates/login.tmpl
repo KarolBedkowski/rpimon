@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>{{.Title}} - {{.BasePageContext.Hostname}} - Monitor</title>
+		<title>{{.Title}} - {{.BaseCtx.Hostname}} - Monitor</title>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="stylesheet" href="/static/css/bootstrap.css">
@@ -42,7 +42,7 @@
 						<input name="loginForm.Login" id="login" type="text" placeholder="User name" value="{{.Login}}" required autofocus class="form-control"/>
 						<input name="loginForm.Password" id="pass" type="password" placeholder="Password" required class="form-control">
 						<button type="submit" class="btn btn-lg btn-primary btn-block">Log in</button>
-						<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
+						<input type="hidden" name="BaseCtx.CsrfToken" id="" value="{{.CsrfToken}}" />
 					</div>
 				</fieldset>
 			</form>

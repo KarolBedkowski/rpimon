@@ -16,7 +16,7 @@ RPI.utils = (function(self, $) {
 		$.ajax({
 			url: url,
 			method: "POST",
-			data: {"BasePageContext.CsrfToken": token}
+			data: {"BaseCtx.CsrfToken": token}
 		}).always(function(result) {
 			RPI.hideLoadingMsg();
 		}).done(function(data) {
