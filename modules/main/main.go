@@ -31,7 +31,7 @@ func initModule(parentRoute *mux.Route) bool {
 }
 
 type pageCtx struct {
-	*context.BasePageContext
+	*context.BaseCtx
 	Uptime            *monitor.UptimeInfoStruct
 	Load              *monitor.LoadInfoStruct
 	CPUUsage          *monitor.CPUUsageInfoStruct
@@ -46,8 +46,8 @@ type pageCtx struct {
 	HostsStatus       map[string]bool
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
-	ctx := &pageCtx{BasePageContext: bctx}
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+	ctx := &pageCtx{BaseCtx: bctx}
 	ctx.SetMenuActive("main")
 	ctx.Warnings = context.GetWarnings()
 	ctx.Uptime = monitor.GetUptimeInfo()

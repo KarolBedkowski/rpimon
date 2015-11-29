@@ -41,7 +41,7 @@ type (
 	}
 
 	loginPageCtx struct {
-		*context.BasePageContext
+		*context.BaseCtx
 		*loginForm
 		back string
 	}
@@ -54,7 +54,7 @@ func (ctx loginPageCtx) Validate() (err string) {
 	return
 }
 
-func loginPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
+func loginPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
 	ctx := &loginPageCtx{bctx, new(loginForm), ""}
 	if r.Method == "POST" {
 		r.ParseForm()

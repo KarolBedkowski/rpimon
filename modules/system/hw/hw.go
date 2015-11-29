@@ -25,7 +25,7 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -33,12 +33,12 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 	return "system", menu
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
 	page := r.FormValue("sec")
 	if page == "" {
 		page = "acpi"
 	}
-	data := &context.DataPageCtx{BasePageContext: bctx}
+	data := &context.DataPageCtx{BaseCtx: bctx}
 	data.Header1 = "Hardware"
 	data.Tabs = []*context.MenuItem{
 		app.NewMenuItemFromRoute("ACPI", "other-index").AddQuery("?sec=acpi").SetActve(page == "acpi"),

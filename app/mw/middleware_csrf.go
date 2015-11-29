@@ -14,7 +14,7 @@ const csrftokenlen = 64
 const CONTEXTCSRFTOKEN = "csrf_token"
 
 // csrf tokens name formms
-const FORMCSRFTOKEN = "BasePageContext.CsrfToken"
+const FORMCSRFTOKEN = "BaseCtx.CsrfToken"
 
 // alternative csrf token name
 const FORMCSRFTOKEN2 = "CsrfToken"

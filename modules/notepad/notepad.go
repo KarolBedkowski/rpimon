@@ -50,7 +50,7 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "notepad") {
 		return "", nil
 	}
@@ -73,19 +73,19 @@ func (n *NoteStuct) Validate() (errors []string) {
 }
 
 type mainPageContext struct {
-	*context.BasePageContext
+	*context.BaseCtx
 	NoteList []*NoteStuct
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
-	ctx := &mainPageContext{BasePageContext: bctx}
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+	ctx := &mainPageContext{BaseCtx: bctx}
 	ctx.SetMenuActive("notepad-index")
 	ctx.NoteList = findFiles()
 	app.RenderTemplateStd(w, ctx, "notepad/index.tmpl")
 }
 
 type notePageContext struct {
-	*context.BasePageContext
+	*context.BaseCtx
 	Note *NoteStuct
 	New  bool
 }
@@ -100,7 +100,7 @@ func notePageHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		// display note
-		ctx := &notePageContext{BasePageContext: context.NewBaseCtx("Notepad", w, r)}
+		ctx := &notePageContext{BaseCtx: context.NewBaseCtx("Notepad", w, r)}
 		if note, err := getNote(filename); err == nil {
 			ctx.Note = note
 		} else {

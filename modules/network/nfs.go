@@ -26,7 +26,7 @@ func initNFSModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func nfsGetMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
+func nfsGetMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -35,12 +35,12 @@ func nfsGetMenu(ctx *context.BasePageContext) (parentID string, menu *context.Me
 	return "m-net", menu
 }
 
-func nfsPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
+func nfsPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx) {
 	page := r.FormValue("sec")
 	if page == "" {
 		page = "stat"
 	}
-	data := &context.DataPageCtx{BasePageContext: ctx}
+	data := &context.DataPageCtx{BaseCtx: ctx}
 	data.SetMenuActive("m-net-nfs")
 	data.Header1 = "NFS"
 	switch page {

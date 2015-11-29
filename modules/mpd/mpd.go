@@ -141,7 +141,7 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "mpd") {
 		return "", nil
 	}
@@ -167,12 +167,12 @@ func shutdown() {
 var errBadRequest = errors.New("bad request")
 
 type pageCtx struct {
-	*context.BasePageContext
+	*context.BaseCtx
 	Status *mpdStatus
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
-	ctx := &pageCtx{BasePageContext: bctx}
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+	ctx := &pageCtx{BaseCtx: bctx}
 	ctx.SetMenuActive("mpd-index")
 	app.RenderTemplateStd(w, ctx, "mpd/index.tmpl")
 }
@@ -289,12 +289,12 @@ func filePageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func historyHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
+func historyHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
 	ctx := &struct {
-		*context.BasePageContext
+		*context.BaseCtx
 		History []*model.Song
 	}{
-		BasePageContext: bctx,
+		BaseCtx: bctx,
 		History:         model.GetSongs(),
 	}
 	ctx.SetMenuActive("mpd-history")

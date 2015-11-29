@@ -50,7 +50,7 @@ func initModule(parentRoute *mux.Route) bool {
 
 	return true
 }
-func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -65,16 +65,16 @@ type pageCtx struct {
 	Data          string
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx) {
 	data := &pageCtx{
-		DataPageCtx: &context.DataPageCtx{BasePageContext: ctx},
+		DataPageCtx: &context.DataPageCtx{BaseCtx: ctx},
 		Configuration:     config,
 	}
 	data.SetMenuActive("utils")
 	app.RenderTemplateStd(w, data, "utils/utils.tmpl")
 }
 
-func commandPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
+func commandPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx) {
 	vars := mux.Vars(r)
 	groupName, ok := vars["group"]
 	if !ok || groupName == "" {
@@ -117,13 +117,13 @@ func commandPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.Bas
 
 type (
 	configurePageContext struct {
-		*context.BasePageContext
+		*context.BaseCtx
 		Utils map[string][]*utility
 	}
 )
 
-func configurePageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
-	ctx := &configurePageContext{BasePageContext: bctx}
+func configurePageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+	ctx := &configurePageContext{BaseCtx: bctx}
 	ctx.Utils = config.Utils
 	app.RenderTemplateStd(w, ctx, "utils/conf-index.tmpl")
 }
@@ -134,13 +134,13 @@ type (
 	}
 
 	confGroupPageContext struct {
-		*context.BasePageContext
+		*context.BaseCtx
 		Form confGroupForm
 		New  bool
 	}
 
 	confCommandPageContext struct {
-		*context.BasePageContext
+		*context.BaseCtx
 		Form utility
 		New  bool
 	}
@@ -166,10 +166,10 @@ func (f *confGroupForm) validate() (errors []string) {
 	return
 }
 
-func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
+func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
 	vars := mux.Vars(r)
 	groupName, _ := vars["group"]
-	ctx := &confGroupPageContext{BasePageContext: bctx}
+	ctx := &confGroupPageContext{BaseCtx: bctx}
 
 	if r.Method == "POST" && r.FormValue("_method") != "" {
 		r.Method = r.FormValue("_method")
@@ -199,19 +199,19 @@ func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.
 				config.Utils[ctx.Form.Name] = config.Utils[groupName]
 				delete(config.Utils, groupName)
 			}
-			if saveConf(ctx.BasePageContext) {
+			if saveConf(ctx.BaseCtx) {
 				http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
 				return
 			}
 		} else {
 			for _, err := range errors {
-				ctx.BasePageContext.AddFlashMessage("Validation error: "+err, "error")
+				ctx.BaseCtx.AddFlashMessage("Validation error: "+err, "error")
 			}
 			ctx.Save()
 		}
 	case "DELETE":
 		delete(config.Utils, groupName)
-		if saveConf(ctx.BasePageContext) {
+		if saveConf(ctx.BaseCtx) {
 			http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
 			return
 		}
@@ -225,11 +225,11 @@ func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.
 	app.RenderTemplateStd(w, ctx, "utils/conf-group.tmpl")
 }
 
-func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
+func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
 	vars := mux.Vars(r)
 	groupName, _ := vars["group"]
 	cmd, _ := vars["util"]
-	ctx := &confCommandPageContext{BasePageContext: bctx}
+	ctx := &confCommandPageContext{BaseCtx: bctx}
 	group := config.Utils[groupName]
 	if r.Method == "POST" && r.FormValue("_method") != "" {
 		r.Method = r.FormValue("_method")
@@ -261,13 +261,13 @@ func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *contex
 				group = append(group, &ctx.Form)
 				config.Utils[groupName] = group
 			}
-			if saveConf(ctx.BasePageContext) {
+			if saveConf(ctx.BaseCtx) {
 				http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
 				return
 			}
 		} else {
 			for _, err := range errors {
-				ctx.BasePageContext.AddFlashMessage("Validation error: "+err, "error")
+				ctx.BaseCtx.AddFlashMessage("Validation error: "+err, "error")
 			}
 			ctx.Save()
 		}
@@ -278,7 +278,7 @@ func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *contex
 				break
 			}
 		}
-		if saveConf(ctx.BasePageContext) {
+		if saveConf(ctx.BaseCtx) {
 			http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
 			return
 		}
@@ -298,7 +298,7 @@ func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *contex
 }
 
 // save configuration and add apriopriate flash message
-func saveConf(bctx *context.BasePageContext) (success bool) {
+func saveConf(bctx *context.BaseCtx) (success bool) {
 	conf := Module.GetConfiguration()
 	err := saveConfiguration(conf["config_file"])
 	if err != nil {

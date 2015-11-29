@@ -21,7 +21,7 @@ type (
 	}
 
 	// MenuGenerator function generate menu items in given context
-	MenuGenerator func(ctx *BasePageContext) (parentId string, menu *MenuItem)
+	MenuGenerator func(ctx *BaseCtx) (parentId string, menu *MenuItem)
 )
 
 // NewMenuItem create new MenuItem structure
@@ -126,8 +126,8 @@ type notAttachedItems struct {
 	item   *MenuItem
 }
 
-// SetMainMenu - fill MainMenu in BasePageContext
-func SetMainMenu(ctx *BasePageContext) {
+// SetMainMenu - fill MainMenu in BaseCtx
+func SetMainMenu(ctx *BaseCtx) {
 	ctx.MainMenu = &MenuItem{}
 	itemsWithoutParent := list.New()
 	for _, module := range GetModules() {

@@ -46,7 +46,7 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -58,7 +58,7 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 }
 
 type pageCtx struct {
-	*context.BasePageContext
+	*context.BaseCtx
 	CurrentPage string
 	Data        string
 	Files       []string
@@ -67,8 +67,8 @@ type pageCtx struct {
 	LogsDef     logsDef
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
-	ctx := &pageCtx{BasePageContext: bctx}
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+	ctx := &pageCtx{BaseCtx: bctx}
 	vars := mux.Vars(r)
 	page, ok := vars["page"]
 	if !ok {

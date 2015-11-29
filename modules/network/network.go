@@ -45,7 +45,7 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -60,23 +60,23 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 }
 
 type mainPageContext struct {
-	*context.BasePageContext
+	*context.BaseCtx
 	Interfaces *monitor.InterfacesStruct
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
-	c := &mainPageContext{BasePageContext: ctx}
+func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx) {
+	c := &mainPageContext{BaseCtx: ctx}
 	c.SetMenuActive("m-net-index")
 	c.Interfaces = monitor.GetInterfacesInfo()
 	app.RenderTemplateStd(w, c, "network/status.tmpl")
 }
 
-func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
+func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx) {
 	page := r.FormValue("sec")
 	if page == "" {
 		page = "listen"
 	}
-	data := &context.DataPageCtx{BasePageContext: ctx}
+	data := &context.DataPageCtx{BaseCtx: ctx}
 	data.SetMenuActive("m-net-netstat")
 	data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
 	data.Header1 = "Netstat"
@@ -100,7 +100,7 @@ func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.Bas
 }
 
 type confPageContext struct {
-	*context.BasePageContext
+	*context.BaseCtx
 	Current  string
 	Data     string
 	Commands *map[string][]string
@@ -145,7 +145,7 @@ var confCommands = map[string][]string{
 	},
 }
 
-func confPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
+func confPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx) {
 	cmd := r.FormValue("cmd")
 	if cmd == "" {
 		cmd = confCommands["Base"][0]
@@ -161,7 +161,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePa
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte(h.ReadCommand(cmdfields[0], cmdfields[1:]...)))
 	} else {
-		ctx := &confPageContext{BasePageContext: ctx}
+		ctx := &confPageContext{BaseCtx: ctx}
 		ctx.SetMenuActive("m-net-conf")
 		ctx.Current = cmd
 		ctx.Commands = &confCommands
@@ -171,7 +171,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePa
 }
 
 type iptablesPageContext struct {
-	*context.BasePageContext
+	*context.BaseCtx
 	Current string
 	Data    string
 	Tables  *[]string
@@ -185,7 +185,7 @@ var iptablesTables = []string{
 	"security",
 }
 
-func iptablesPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
+func iptablesPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx) {
 	table := r.FormValue("table")
 	if table == "" {
 		table = iptablesTables[0]
@@ -201,7 +201,7 @@ func iptablesPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.Ba
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte(data))
 	} else {
-		ctx := &iptablesPageContext{BasePageContext: ctx}
+		ctx := &iptablesPageContext{BaseCtx: ctx}
 		ctx.SetMenuActive("m-net-iptables")
 		ctx.Current = table
 		ctx.Tables = &iptablesTables

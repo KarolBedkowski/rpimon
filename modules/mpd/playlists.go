@@ -14,14 +14,14 @@ import (
 )
 
 type playlistsPageCtx struct {
-	*context.BasePageContext
+	*context.BaseCtx
 	CurrentPage string
 	Playlists   []mpd.Attrs
 	Error       string
 }
 
-func playlistsPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
-	ctx := &playlistsPageCtx{BasePageContext: bctx}
+func playlistsPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+	ctx := &playlistsPageCtx{BaseCtx: bctx}
 	ctx.SetMenuActive("mpd-playlists")
 	app.RenderTemplateStd(w, ctx, "mpd/playlists.tmpl")
 }

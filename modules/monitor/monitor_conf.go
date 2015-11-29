@@ -18,7 +18,7 @@ type confForm cfg.MonitorConfiguration
 
 type (
 	confPageContext struct {
-		*context.BasePageContext
+		*context.BaseCtx
 		Form   *confForm
 		New    bool
 		Errors []string
@@ -140,10 +140,10 @@ func (f *confForm) cleanup() {
 	f.MonitoredHosts = hosts
 }
 
-func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
+func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
 	form := confForm{}
 	form = confForm(*cfg.Configuration.Monitor)
-	ctx := &confPageContext{BasePageContext: bctx,
+	ctx := &confPageContext{BaseCtx: bctx,
 		Form: &form,
 	}
 

@@ -22,13 +22,13 @@ func CreateRoutes(parentRoute *mux.Route) {
 
 type (
 	usersPageCtx struct {
-		*context.BasePageContext
+		*context.BaseCtx
 		Users []*model.User
 	}
 )
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
-	ctx := &usersPageCtx{BasePageContext: bctx}
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+	ctx := &usersPageCtx{BaseCtx: bctx}
 	ctx.Users = model.GetAllUsers()
 	ctx.SetMenuActive("m-users")
 	app.RenderTemplateStd(w, ctx, "pref/users/index.tmpl")
@@ -42,7 +42,7 @@ type (
 	}
 
 	userPageCtx struct {
-		*context.BasePageContext
+		*context.BaseCtx
 		Form     userForm
 		New      bool
 		AllPrivs map[string]context.Privilege
@@ -53,10 +53,10 @@ func (c *userPageCtx) HasPriv(perm string) bool {
 	return app.CheckPermission(c.Form.Privs, perm)
 }
 
-func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
+func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
 	vars := mux.Vars(r)
 	login, _ := vars["user"]
-	ctx := &userPageCtx{BasePageContext: bctx,
+	ctx := &userPageCtx{BaseCtx: bctx,
 		AllPrivs: context.AllPrivilages,
 	}
 
@@ -80,7 +80,7 @@ func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 		if login == "<new>" {
 			ctx.Form.User.UpdatePassword(ctx.Form.NewPassword)
 			if err = model.AddUser(ctx.Form.User); err == nil {
-				ctx.BasePageContext.AddFlashMessage("User added", "success")
+				ctx.BaseCtx.AddFlashMessage("User added", "success")
 				ctx.Save()
 				http.Redirect(w, r, app.GetNamedURL("m-pref-users-index"), http.StatusFound)
 				return
@@ -127,15 +127,15 @@ type (
 	}
 
 	profileContext struct {
-		*context.BasePageContext
+		*context.BaseCtx
 		CPForm chgPassForm
 		User   *model.User
 	}
 )
 
-func profilePageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
+func profilePageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
 	ctx := &profileContext{
-		BasePageContext: bctx,
+		BaseCtx: bctx,
 		User:            model.GetUserByLogin(bctx.CurrentUser),
 	}
 	switch r.Method {

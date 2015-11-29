@@ -64,7 +64,7 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "worker") {
 		return "", nil
 	}
@@ -72,12 +72,12 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 	return "", menu
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
 	ctx := &struct {
-		*context.BasePageContext
+		*context.BaseCtx
 		Tasks []*model.Task
 	}{
-		BasePageContext: bctx,
+		BaseCtx: bctx,
 		Tasks:           model.GetTasks(),
 	}
 	ctx.SetMenuActive("worker-index")
@@ -85,14 +85,14 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 }
 
 type taskPageContext struct {
-	*context.BasePageContext
+	*context.BaseCtx
 	Task *model.Task
 }
 
 func taskPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := &taskPageContext{
-		BasePageContext: context.NewBaseCtx("Task", w, r),
+		BaseCtx: context.NewBaseCtx("Task", w, r),
 		Task:            &model.Task{},
 	}
 	conf := Module.GetConfiguration()

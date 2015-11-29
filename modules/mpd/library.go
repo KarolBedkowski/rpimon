@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-func libraryPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
+func libraryPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
 	bctx.SetMenuActive("mpd-library")
 	app.RenderTemplateStd(w, bctx, "mpd/library.tmpl")
 }
@@ -84,7 +84,7 @@ type (
 	}
 
 	searchPageContext struct {
-		*context.BasePageContext
+		*context.BaseCtx
 		Form   searchForm
 		Result []mpd.Attrs
 	}
@@ -99,8 +99,8 @@ func (f *searchForm) getQueryString() (query string) {
 	return f.Field + " \"" + f.Value + "\""
 }
 
-func searchPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
-	ctx := &searchPageContext{BasePageContext: bctx}
+func searchPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+	ctx := &searchPageContext{BaseCtx: bctx}
 	ctx.SetMenuActive("mpd-search")
 
 	r.ParseForm()

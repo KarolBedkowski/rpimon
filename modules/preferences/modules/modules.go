@@ -35,13 +35,13 @@ type (
 	}
 
 	pageCtx struct {
-		*context.BasePageContext
+		*context.BaseCtx
 		Form modulesListForm
 	}
 )
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
-	ctx := &pageCtx{BasePageContext: bctx}
+func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+	ctx := &pageCtx{BaseCtx: bctx}
 	if r.Method == "POST" {
 		r.ParseForm()
 		if err := decoder.Decode(&ctx.Form, r.Form); err != nil {
@@ -51,12 +51,12 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 		for _, module := range ctx.Form.Modules {
 			context.EnableModule(module.Name, module.Enabled)
 		}
-		context.SetMainMenu(ctx.BasePageContext)
+		context.SetMainMenu(ctx.BaseCtx)
 		if err := cfg.SaveConfiguration(); err != nil {
-			ctx.BasePageContext.AddFlashMessage("Saving configuration error: "+err.Error(),
+			ctx.BaseCtx.AddFlashMessage("Saving configuration error: "+err.Error(),
 				"error")
 		} else {
-			ctx.BasePageContext.AddFlashMessage("Configuration saved.", "success")
+			ctx.BaseCtx.AddFlashMessage("Configuration saved.", "success")
 		}
 		ctx.Save()
 		http.Redirect(w, r, r.URL.String(), http.StatusFound)
@@ -87,16 +87,16 @@ type (
 	}
 
 	confModulePageContext struct {
-		*context.BasePageContext
+		*context.BaseCtx
 		Form   confModuleForm
 		Module *context.Module
 	}
 )
 
-func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
+func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
 	vars := mux.Vars(r)
 	moduleName, _ := vars["module"]
-	ctx := &confModulePageContext{BasePageContext: bctx}
+	ctx := &confModulePageContext{BaseCtx: bctx}
 	ctx.Module = context.GetModule(moduleName)
 	if ctx.Module == nil {
 		app.Render400(w, r, "Invalid module "+moduleName)
@@ -124,10 +124,10 @@ func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *context
 		}
 		ctx.Module.SaveConfiguration(conf)
 		if err := cfg.SaveConfiguration(); err != nil {
-			ctx.BasePageContext.AddFlashMessage("Saving configuration error: "+err.Error(),
+			ctx.BaseCtx.AddFlashMessage("Saving configuration error: "+err.Error(),
 				"error")
 		} else {
-			ctx.BasePageContext.AddFlashMessage("Configuration saved.", "success")
+			ctx.BaseCtx.AddFlashMessage("Configuration saved.", "success")
 		}
 		ctx.Save()
 		http.Redirect(w, r, app.GetNamedURL("m-pref-modules-index"), http.StatusFound)

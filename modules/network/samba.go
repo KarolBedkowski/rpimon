@@ -27,7 +27,7 @@ func initSambaModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func smbGetMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
+func smbGetMenu(ctx *context.BaseCtx) (parentID string, menu *context.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -36,8 +36,8 @@ func smbGetMenu(ctx *context.BasePageContext) (parentID string, menu *context.Me
 	return "m-net", menu
 }
 
-func sambaPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
-	data := &context.DataPageCtx{BasePageContext: ctx}
+func sambaPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BaseCtx) {
+	data := &context.DataPageCtx{BaseCtx: ctx}
 	data.SetMenuActive("m-net-samba")
 	data.Header1 = "Samba"
 	data.Data = h.ReadCommand("sudo", "smbstatus")

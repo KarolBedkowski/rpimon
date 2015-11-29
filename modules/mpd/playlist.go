@@ -19,15 +19,15 @@ import (
 var decoder = schema.NewDecoder()
 
 type playlistPageCtx struct {
-	*context.BasePageContext
+	*context.BaseCtx
 	Playlist      []mpd.Attrs
 	CurrentSongID string
 	CurrentSong   string
 	Error         error
 }
 
-func playlistPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
-	ctx := &playlistPageCtx{BasePageContext: bctx}
+func playlistPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseCtx) {
+	ctx := &playlistPageCtx{BaseCtx: bctx}
 	ctx.SetMenuActive("mpd-playlist")
 	app.RenderTemplateStd(w, ctx, "mpd/playlist.tmpl")
 }
