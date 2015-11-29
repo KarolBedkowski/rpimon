@@ -1,7 +1,6 @@
 package app
 
 import (
-	//	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/cfg"
 	l "k.prv/rpimon/logging"
@@ -10,12 +9,11 @@ import (
 )
 
 // App main router
-var Router = mux.NewRouter()
+var router = mux.NewRouter()
 
 // Init - Initialize application
 func Init(appConfFile string, debug int) *cfg.AppConfiguration {
-
-	Router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
+	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
 
 	conf := cfg.LoadConfiguration(appConfFile)
 	if debug == 0 {
@@ -27,13 +25,14 @@ func Init(appConfFile string, debug int) *cfg.AppConfiguration {
 	l.Init(conf.LogFilename, conf.Debug)
 	l.Info("Debug=%s", conf.Debug)
 
-	InitSessionStore(conf)
+	initSessionStore(conf)
 
+	router.HandleFunc("/", handleHome)
 	http.Handle("/static/", http.StripPrefix("/static",
 		FileServer(http.Dir(conf.StaticDir), !conf.Debug)))
 	http.Handle("/favicon.ico", FileServer(http.Dir(conf.StaticDir), !conf.Debug))
 	//context.ClearHandler()
-	http.Handle("/", LogHandler(CsrfHandler(SessionHandler(Router))))
+	http.Handle("/", logHandler(CsrfHandler(SessionHandler(router))))
 	return conf
 }
 
@@ -44,7 +43,7 @@ func Close() {
 
 // GetNamedURL - Return url for named route and parameters
 func GetNamedURL(name string, pairs ...interface{}) (url string) {
-	route := Router.Get(name)
+	route := router.Get(name)
 	if route == nil {
 		l.Error("GetNamedURL " + name + " error")
 		return ""
@@ -84,4 +83,8 @@ func GetNamedURL(name string, pairs ...interface{}) (url string) {
 
 func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	Render404(w, r)
+}
+
+func handleHome(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, GetNamedURL("main-index"), http.StatusFound)
 }

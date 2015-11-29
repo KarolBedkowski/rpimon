@@ -72,7 +72,6 @@ func main() {
 		os.Exit(0)
 	}()
 
-	app.Router.HandleFunc("/", handleHome)
 	app.RegisterModule(mauth.Module)
 	app.RegisterModule(mmain.Module)
 	app.RegisterModule(mpref.Module)
@@ -92,7 +91,7 @@ func main() {
 	app.RegisterModule(msystem.Module)
 	app.RegisterModule(mmonitor.Module)
 	app.RegisterModule(mworker.Module)
-	app.InitModules(conf, app.Router)
+	app.InitModules(conf)
 
 	/* for filesystem store
 	go app.ClearSessionStore()
@@ -132,8 +131,4 @@ func main() {
 	}
 	done := make(chan bool)
 	<-done
-}
-
-func handleHome(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, app.GetNamedURL("main-index"), http.StatusFound)
 }

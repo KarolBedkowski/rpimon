@@ -66,7 +66,6 @@ type Module struct {
 
 var (
 	registeredModules = make(map[string]*Module)
-	appRouter         *mux.Router
 	// AllPrivilages privilages defined in all modules
 	AllPrivilages = make(map[string]Privilege)
 )
@@ -88,8 +87,7 @@ func GetModules() map[string]*Module {
 }
 
 // InitModules initialize and enable all modules
-func InitModules(conf *cfg.AppConfiguration, router *mux.Router) {
-	appRouter = router
+func InitModules(conf *cfg.AppConfiguration) {
 	for _, module := range registeredModules {
 		module.enable(module.Internal || module.GetConfiguration()["enabled"] == "yes")
 		if module.AllPrivilages != nil {
@@ -147,7 +145,7 @@ func (m *Module) enable(enabled bool) {
 	if enabled {
 		mconfig["enabled"] = "yes"
 		if !m.initialized {
-			m.initialized = m.Init(appRouter.PathPrefix("/m/" + m.Name))
+			m.initialized = m.Init(router.PathPrefix("/m/" + m.Name))
 			if !m.initialized {
 				l.Warn("Module %s init error; %#v", m.Name)
 				return

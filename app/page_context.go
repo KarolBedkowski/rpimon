@@ -4,7 +4,6 @@ import (
 	"github.com/gorilla/sessions"
 	"io/ioutil"
 	"k.prv/rpimon/helpers"
-	//	l "k.prv/rpimon/logging"
 	"net/http"
 	"strings"
 	"time"

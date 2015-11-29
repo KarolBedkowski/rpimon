@@ -20,8 +20,8 @@ func (writer *loggingResponseWriter) WriteHeader(status int) {
 	writer.status = status
 }
 
-// LogHandler log all requests.
-func LogHandler(h http.Handler) http.HandlerFunc {
+// logHandler log all requests.
+func logHandler(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		writer := &loggingResponseWriter{ResponseWriter: w, status: 200}

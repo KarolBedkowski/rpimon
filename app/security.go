@@ -8,8 +8,8 @@ import (
 	"net/http"
 )
 
-// CheckUserLoggerOrRedirect for request; if user is not logged - redirect to login page
-func CheckUserLoggerOrRedirect(w http.ResponseWriter, r *http.Request) (login string, perm []string) {
+// checkUserLoggerOrRedirect for request; if user is not logged - redirect to login page
+func checkUserLoggerOrRedirect(w http.ResponseWriter, r *http.Request) (login string, perm []string) {
 	s := GetSessionStore(w, r)
 	var ok bool
 	if login, perm, ok = GetLoggerUser(s); ok && login != "" {
@@ -25,22 +25,13 @@ func CheckUserLoggerOrRedirect(w http.ResponseWriter, r *http.Request) (login st
 // VerifyPermission check is user is logged and have given permission
 func VerifyPermission(h http.HandlerFunc, permission string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if login, perms := CheckUserLoggerOrRedirect(w, r); login != "" {
+		if login, perms := checkUserLoggerOrRedirect(w, r); login != "" {
 			if CheckPermission(perms, permission) {
 				h(w, r)
 				return
 			}
 			l.Warn("access %s forbidden - missing %s for %s %s", r.URL, permission, login, perms)
 			http.Error(w, "Fobidden/Privilages", http.StatusForbidden)
-		}
-	})
-}
-
-// VerifyLogged check only is user is logged
-func VerifyLogged(h http.HandlerFunc) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if login, _ := CheckUserLoggerOrRedirect(w, r); login != "" {
-			h(w, r)
 		}
 	})
 }
