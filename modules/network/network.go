@@ -24,16 +24,24 @@ var Module = &context.Module{
 func initModule(parentRoute *mux.Route) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", context.HandleWithContext(mainPageHandler,
-		"Network")).Name("m-net-index")
-	subRouter.HandleFunc("/conf", context.HandleWithContext(confPageHandler,
-		"Network - Configuration")).Name("m-net-conf")
-	subRouter.HandleFunc("/iptables", context.HandleWithContext(iptablesPageHandler,
-		"Network - Iptables")).Name("m-net-iptables")
-	subRouter.HandleFunc("/netstat", context.HandleWithContext(netstatPageHandler,
-		"Network - Netstat")).Name("m-net-netstat")
-	subRouter.HandleFunc("/serv/info", app.VerifyPermission(statusServHandler, "")).Name("m-net-serv-info")
-	subRouter.HandleFunc("/action", context.HandleWithContext(actionHandler, "")).Name("m-net-action").Methods("PUT")
+	subRouter.HandleFunc("/",
+		context.SecContext(mainPageHandler, "Network", "admin")).
+		Name("m-net-index")
+	subRouter.HandleFunc("/conf",
+		context.SecContext(confPageHandler, "Network - Configuration", "admin")).
+		Name("m-net-conf")
+	subRouter.HandleFunc("/iptables",
+		context.SecContext(iptablesPageHandler, "Network - Iptables", "admin")).
+		Name("m-net-iptables")
+	subRouter.HandleFunc("/netstat",
+		context.SecContext(netstatPageHandler, "Network - Netstat", "admin")).
+		Name("m-net-netstat")
+	subRouter.HandleFunc("/serv/info",
+		app.VerifyPermission(statusServHandler, "")).
+		Name("m-net-serv-info")
+	subRouter.HandleFunc("/action",
+		app.VerifyPermission(actionHandler, "admin")).
+		Name("m-net-action").Methods("PUT")
 	return true
 }
 
@@ -257,7 +265,7 @@ func statusServHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func actionHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
+func actionHandler(w http.ResponseWriter, r *http.Request) {
 	action := r.FormValue("action")
 	iface := r.FormValue("iface")
 	if action == "" || iface == "" {

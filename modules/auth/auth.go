@@ -28,7 +28,7 @@ var Module = &context.Module{
 // CreateRoutes for /auth
 func initModule(parentRoute *mux.Route) bool {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/login", context.HandleWithContext(loginPageHandler, "Login")).Name("auth-login")
+	subRouter.HandleFunc("/login", context.Context(loginPageHandler, "Login")).Name("auth-login")
 	subRouter.HandleFunc("/logoff", logoffHandler).Name("auth-logoff")
 	return true
 }

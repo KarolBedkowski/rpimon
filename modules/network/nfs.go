@@ -22,7 +22,7 @@ var NFSModule = &context.Module{
 func initNFSModule(parentRoute *mux.Route) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", context.HandleWithContext(nfsPageHandler, "Network - NFS")).Name("m-net-nfs")
+	subRouter.HandleFunc("/", context.SecContext(nfsPageHandler, "Network - NFS", "admin")).Name("m-net-nfs")
 	return true
 }
 

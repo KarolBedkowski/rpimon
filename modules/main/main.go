@@ -23,7 +23,7 @@ var Module = &context.Module{
 // CreateRoutes for /main
 func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", context.HandleWithContext(mainPageHandler, "Main")).Name("main-index")
+	subRouter.HandleFunc("/", context.Context(mainPageHandler, "Main")).Name("main-index")
 	subRouter.HandleFunc("/serv/alerts",
 		app.VerifyPermission(alertsServHandler, "admin")).Name(
 		"main-serv-alerts")
