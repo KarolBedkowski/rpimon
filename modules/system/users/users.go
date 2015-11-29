@@ -39,7 +39,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	if page == "" {
 		page = "who"
 	}
-	data := context.NewSimpleDataPageCtx(w, r, "Users")
+	data := context.NewDataPageCtx(w, r, "Users")
 	data.Header1 = "Users"
 	data.Tabs = []*context.MenuItem{
 		app.NewMenuItemFromRoute("Who", "users-index").AddQuery("?sec=who").SetActve(page == "who"),

@@ -40,7 +40,7 @@ func nfsPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePag
 	if page == "" {
 		page = "stat"
 	}
-	data := &context.SimpleDataPageCtx{BasePageContext: ctx}
+	data := &context.DataPageCtx{BasePageContext: ctx}
 	data.SetMenuActive("m-net-nfs")
 	data.Header1 = "NFS"
 	switch page {

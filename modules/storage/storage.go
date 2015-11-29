@@ -44,8 +44,8 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 	return "", menu
 }
 
-func newPageCtx(w http.ResponseWriter, r *http.Request, localMenuPos string, data string) *context.SimpleDataPageCtx {
-	ctx := context.NewSimpleDataPageCtx(w, r, "Storage")
+func newPageCtx(w http.ResponseWriter, r *http.Request, localMenuPos string, data string) *context.DataPageCtx {
+	ctx := context.NewDataPageCtx(w, r, "Storage")
 	ctx.SetMenuActive(localMenuPos)
 	ctx.Data = data
 	return ctx
@@ -90,7 +90,7 @@ type (
 	}
 
 	mountPageContext struct {
-		*context.SimpleDataPageCtx
+		*context.DataPageCtx
 		Data    string
 		Mounted []*mountPoint
 	}
@@ -98,7 +98,7 @@ type (
 
 func mountPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &mountPageContext{
-		SimpleDataPageCtx: context.NewSimpleDataPageCtx(w, r, "Storage"),
+		DataPageCtx: context.NewDataPageCtx(w, r, "Storage"),
 	}
 	ctx.SetMenuActive("mount")
 	ctx.Header1 = "Storage"
@@ -138,7 +138,7 @@ func umountPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func dfPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := context.NewSimpleDataPageCtx(w, r, "Storage")
+	ctx := context.NewDataPageCtx(w, r, "Storage")
 	ctx.SetMenuActive("diskfree")
 	ctx.Header1 = "Storage"
 	ctx.Header2 = "diskfree"

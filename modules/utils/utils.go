@@ -59,7 +59,7 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 }
 
 type pageCtx struct {
-	*context.SimpleDataPageCtx
+	*context.DataPageCtx
 	CurrentPage   string
 	Configuration configuration
 	Data          string
@@ -67,7 +67,7 @@ type pageCtx struct {
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
 	data := &pageCtx{
-		SimpleDataPageCtx: &context.SimpleDataPageCtx{BasePageContext: ctx},
+		DataPageCtx: &context.DataPageCtx{BasePageContext: ctx},
 		Configuration:     config,
 	}
 	data.SetMenuActive("utils")

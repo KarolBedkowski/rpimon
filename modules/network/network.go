@@ -76,7 +76,7 @@ func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.Bas
 	if page == "" {
 		page = "listen"
 	}
-	data := &context.SimpleDataPageCtx{BasePageContext: ctx}
+	data := &context.DataPageCtx{BasePageContext: ctx}
 	data.SetMenuActive("m-net-netstat")
 	data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
 	data.Header1 = "Netstat"

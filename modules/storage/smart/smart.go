@@ -36,12 +36,12 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 }
 
 type smartPageContext struct {
-	*context.SimpleDataPageCtx
+	*context.DataPageCtx
 	Devices []string
 }
 
 func smartPageHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := &smartPageContext{SimpleDataPageCtx: context.NewSimpleDataPageCtx(w, r, "Storage - SMART")}
+	ctx := &smartPageContext{DataPageCtx: context.NewDataPageCtx(w, r, "Storage - SMART")}
 	ctx.SetMenuActive("smart")
 	for _, line := range strings.Split(h.ReadCommand("lsblk", "-r"), "\n") {
 		line = strings.TrimSpace(line)

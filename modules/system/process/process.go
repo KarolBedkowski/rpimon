@@ -47,12 +47,12 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 }
 
 type sevicesPageCtx struct {
-	*context.SimpleDataPageCtx
+	*context.DataPageCtx
 	Services map[string]string
 }
 
 func servicesPageHangler(w http.ResponseWriter, r *http.Request) {
-	ctx := &sevicesPageCtx{SimpleDataPageCtx: context.NewSimpleDataPageCtx(
+	ctx := &sevicesPageCtx{DataPageCtx: context.NewDataPageCtx(
 		w, r, "Process")}
 	ctx.Services = make(map[string]string)
 	lines := strings.Split(h.ReadCommand("service", "--status-all"), "\n")
@@ -90,7 +90,7 @@ func serviceActionPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func psaxlPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &sevicesPageCtx{
-		SimpleDataPageCtx: context.NewSimpleDataPageCtx(w, r, "Process"),
+		DataPageCtx: context.NewDataPageCtx(w, r, "Process"),
 	}
 	ctx.SetMenuActive("psaxl")
 	ctx.Header1 = "Process"
@@ -119,7 +119,7 @@ func psaxlPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func topPageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := &sevicesPageCtx{
-		SimpleDataPageCtx: context.NewSimpleDataPageCtx(w, r, "Process"),
+		DataPageCtx: context.NewDataPageCtx(w, r, "Process"),
 	}
 	ctx.SetMenuActive("top")
 	ctx.Header1 = "Process"

@@ -114,8 +114,8 @@ func (ctx *BasePageContext) SetMenuActive(id string) {
 	ctx.MainMenu.SetActiveMenuItem(id)
 }
 
-// SimpleDataPageCtx - context  with data (string) + title
-type SimpleDataPageCtx struct {
+// DataPageCtx - context  with data (string) + title
+type DataPageCtx struct {
 	*BasePageContext
 	Data    string
 	Header1 string
@@ -125,9 +125,9 @@ type SimpleDataPageCtx struct {
 	TData [][]string
 }
 
-// NewSimpleDataPageCtx create new simple context to show text data
-func NewSimpleDataPageCtx(w http.ResponseWriter, r *http.Request, title string) *SimpleDataPageCtx {
-	ctx := &SimpleDataPageCtx{BasePageContext: NewBasePageContext(title, w, r)}
+// NewDataPageCtx create new simple context to show text data
+func NewDataPageCtx(w http.ResponseWriter, r *http.Request, title string) *DataPageCtx {
+	ctx := &DataPageCtx{BasePageContext: NewBasePageContext(title, w, r)}
 	return ctx
 }
 
