@@ -78,19 +78,16 @@ func LoadConfiguration(filename string) *AppConfiguration {
 	log.Print("Loading configuration file ", filename)
 	configFilename = filename
 
-	if !loadConfiguration(filename) {
-		return nil
-	}
-
+	loadConfiguration(filename)
 	return &Configuration
 }
 
-func loadConfiguration(filename string) bool {
+func loadConfiguration(filename string) {
 	Configuration.loadDefaults()
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Print("Errors: app.LoadConfiguration error: ", err.Error())
-		return false
+		return
 	}
 	Configuration.Lock()
 	defer Configuration.Unlock()
@@ -98,7 +95,6 @@ func loadConfiguration(filename string) bool {
 		log.Print("Error: app.LoadConfiguration error: ", err.Error())
 	}
 	Configuration.validate()
-	return true
 }
 
 // SaveConfiguration write current configuration to json file
