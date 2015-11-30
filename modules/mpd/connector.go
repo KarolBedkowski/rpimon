@@ -10,6 +10,7 @@ import (
 	n "k.prv/rpimon/modules/notepad"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -19,23 +20,39 @@ type mpdStatus struct {
 	Error   string
 }
 
+type mpdConnection struct {
+	sync.RWMutex
+	conn *mpd.Client
+}
+
 var (
 	host              string
 	logSongToNotes    string
-	watcher           *mpd.Watcher
 	playlistCache     = h.NewSimpleCache(600)
 	mpdListFilesCache = h.NewSimpleCache(600)
 	mpdLibraryCache   = h.NewKeyCache(600)
-	connection        *mpd.Client
 	lastSong          string
-	stopSig           = make(chan bool)
+	connection        = mpdConnection{}
+	watcher           = Watcher{
+		end: make(chan bool),
+	}
 )
+
+// Watcher client
+type Watcher struct {
+	watcher *mpd.Watcher
+	end     chan bool
+	active  bool
+}
 
 // Init MPD configuration
 func initConnector(conf map[string]string) {
 	host = conf["host"]
 	logSongToNotes = conf["log to notes"]
-	connectWatcher()
+	if !watcher.active {
+		watcher.Connect()
+	}
+
 }
 
 // Close MPD connection
@@ -43,75 +60,105 @@ func closeConnector() {
 	playlistCache.Clear()
 	mpdLibraryCache.Clear()
 	mpdListFilesCache.Clear()
-	if watcher != nil {
-		stopSig <- true
-		time.Sleep(1)
-	}
-	if connection != nil {
-		connection.Close()
-		connection = nil
+	watcher.Close()
+	connection.Lock()
+	defer connection.Unlock()
+	if connection.conn != nil {
+		connection.conn.Close()
+		connection.conn = nil
 	}
 }
 
-func connectWatcher() {
-	if watcher != nil {
-		return
-	}
-	l.Info("MPD: Starting mpd watcher... %#v", watcher)
-	var err error
-	watcher, err = mpd.NewWatcher("tcp", host, "")
+func (m *Watcher) watch() (err error) {
+	l.Info("MPD: Starting mpd watcher...")
+	m.watcher, err = mpd.NewWatcher("tcp", host, "")
 	if err != nil {
 		l.Error("MPD: %s", err.Error())
 		return
 	}
-	go func() {
-		for {
-			select {
-			case subsystem := <-watcher.Event:
-				l.Debug("MPD: changed subsystem:", subsystem)
-				l.Debug("MPD: changed subsystem:", watcher)
-				switch subsystem {
-				case "player":
-					logSong()
-				case "playlist":
-					playlistCache.Clear()
-				case "database":
-					mpdListFilesCache.Clear()
-					mpdLibraryCache.Clear()
-				}
-			case err := <-watcher.Error:
-				l.Info("MPD watcher error: %s", err.Error())
-				watcher.Close()
-				watcher = nil
-				return
-			case _ = <-stopSig:
-				l.Info("MPD watcher stopping")
-				watcher.Close()
-				watcher = nil
-				return
+	logSong()
+	for {
+		select {
+		case subsystem := <-m.watcher.Event:
+			l.Debug("MPD: changed subsystem:", subsystem)
+			l.Debug("MPD: changed subsystem:", watcher)
+			switch subsystem {
+			case "player":
+				logSong()
+			case "playlist":
+				playlistCache.Clear()
+			case "database":
+				mpdListFilesCache.Clear()
+				mpdLibraryCache.Clear()
 			}
+		case err := <-m.watcher.Error:
+			l.Info("MPD watcher error: %s", err.Error())
+			m.watcher.Close()
+			m.watcher = nil
+			return err
+		case _ = <-m.end:
+			l.Info("MPD watcher stopping")
+			m.watcher.Close()
+			m.watcher = nil
+			return
+		}
+	}
+	return nil
+}
+
+// Connect to mpd daemon
+func (m *Watcher) Connect() (err error) {
+
+	go func() {
+		defer func() {
+			l.Info("mpd.watch: closing")
+			if m.watcher != nil {
+				m.watcher.Close()
+				m.watcher = nil
+			}
+		}()
+
+		m.active = true
+
+		for m.active {
+			if err = m.watch(); err != nil {
+				l.Info("mpd.watch: start watch error: %s", err.Error())
+			}
+			time.Sleep(5 * time.Second)
 		}
 	}()
-	logSong()
+	return
+}
+
+// Close MPD client
+func (m *Watcher) Close() {
+	l.Info("mpd.Close")
+	if m.active {
+		m.active = false
+		if m.watcher != nil {
+			m.end <- true
+		}
+	}
 }
 
 func connect() (client *mpd.Client, err error) {
-	if connection != nil {
-		if err = connection.Ping(); err != nil {
-			connection.Close()
-			connection = nil
+	connection.Lock()
+	defer connection.Unlock()
+	if connection.conn != nil {
+		if err = connection.conn.Ping(); err != nil {
+			connection.conn.Close()
+			connection.conn = nil
 		}
 	}
-	if connection == nil {
-		connection, err = mpd.Dial("tcp", host)
+	if connection.conn == nil {
+		connection.conn, err = mpd.Dial("tcp", host)
 		if err != nil {
 			l.Error("MPD: connect error: %s", err.Error())
 			closeConnector()
 			return nil, err
 		}
-		connectWatcher()
 	}
-	return connection, nil
+	return connection.conn, nil
 }
 
 func getStatus() (status *mpdStatus) {
@@ -120,12 +167,12 @@ func getStatus() (status *mpdStatus) {
 		status.Error = err.Error()
 		return
 	}
-	if stat, err := connection.Status(); err != nil {
+	if stat, err := connection.conn.Status(); err != nil {
 		status.Error = err.Error()
 	} else {
 		status.Status = stat
 	}
-	if song, err := connection.CurrentSong(); err != nil {
+	if song, err := connection.conn.CurrentSong(); err != nil {
 		status.Error = err.Error()
 	} else {
 		status.Current = song
@@ -141,27 +188,27 @@ func mpdAction(action string) (err error) {
 	var stat mpd.Attrs
 	switch action {
 	case "play":
-		err = connection.Play(-1)
+		err = connection.conn.Play(-1)
 	case "stop":
-		err = connection.Stop()
+		err = connection.conn.Stop()
 	case "pause":
-		if stat, err = connection.Status(); err == nil {
-			err = connection.Pause(stat["state"] != "pause")
+		if stat, err = connection.conn.Status(); err == nil {
+			err = connection.conn.Pause(stat["state"] != "pause")
 		}
 	case "next":
-		err = connection.Next()
+		err = connection.conn.Next()
 	case "prev":
-		err = connection.Previous()
+		err = connection.conn.Previous()
 	case "toggle_random":
-		if stat, err = connection.Status(); err == nil {
-			err = connection.Random(stat["random"] == "0")
+		if stat, err = connection.conn.Status(); err == nil {
+			err = connection.conn.Random(stat["random"] == "0")
 		}
 	case "toggle_repeat":
-		if stat, err = connection.Status(); err == nil {
-			err = connection.Repeat(stat["repeat"] == "0")
+		if stat, err = connection.conn.Status(); err == nil {
+			err = connection.conn.Repeat(stat["repeat"] == "0")
 		}
 	case "update":
-		_, err = connection.Update("")
+		_, err = connection.conn.Update("")
 	default:
 		l.Warn("page.mpd mpdAction: wrong action ", action)
 	}
@@ -171,7 +218,7 @@ func mpdAction(action string) (err error) {
 func mpdActionUpdate(uri string) (err error) {
 	if _, err = connect(); err == nil {
 		var jobid int
-		jobid, err = connection.Update(uri)
+		jobid, err = connection.conn.Update(uri)
 		l.Debug("mpdActionUpdate jobid: %d, err: %v", jobid, err)
 	}
 	return err
@@ -181,7 +228,7 @@ func mpdActionUpdate(uri string) (err error) {
 func mpdPlaylistInfo() (playlist []mpd.Attrs, err error, status mpd.Attrs) {
 	cachedPlaylist := playlistCache.Get(func() h.Value {
 		if _, err := connect(); err == nil {
-			plist, err := connection.PlaylistInfo(-1, -1)
+			plist, err := connection.conn.PlaylistInfo(-1, -1)
 			if err != nil {
 				l.Error(err.Error())
 			}
@@ -191,7 +238,7 @@ func mpdPlaylistInfo() (playlist []mpd.Attrs, err error, status mpd.Attrs) {
 	})
 	if _, err := connect(); err == nil {
 		playlist = cachedPlaylist.([]mpd.Attrs)
-		status, err = connection.Status()
+		status, err = connection.conn.Status()
 		if err != nil {
 			l.Error(err.Error())
 		}
@@ -203,9 +250,9 @@ func mpdSongAction(songID int, action string) (err error) {
 	if _, err := connect(); err == nil {
 		switch action {
 		case "play":
-			err = connection.PlayId(songID)
+			err = connection.conn.PlayId(songID)
 		case "remove":
-			err = connection.DeleteId(songID)
+			err = connection.conn.DeleteId(songID)
 		default:
 			l.Warn("page.mpd mpdAction: wrong action ", action)
 		}
@@ -215,7 +262,7 @@ func mpdSongAction(songID int, action string) (err error) {
 
 func mpdGetPlaylists() (playlists []mpd.Attrs, err error) {
 	if _, err = connect(); err == nil {
-		playlists, err = connection.ListPlaylists()
+		playlists, err = connection.conn.ListPlaylists()
 	}
 	return
 }
@@ -227,16 +274,16 @@ func mpdPlaylistsAction(playlist, action string) (result string, err error) {
 
 	switch action {
 	case "play":
-		connection.Clear()
-		connection.PlaylistLoad(playlist, -1, -1)
-		connection.Play(-1)
+		connection.conn.Clear()
+		connection.conn.PlaylistLoad(playlist, -1, -1)
+		connection.conn.Play(-1)
 		return "Plylist loaded", nil
 	case "add":
-		connection.PlaylistLoad(playlist, -1, -1)
-		connection.Play(-1)
+		connection.conn.PlaylistLoad(playlist, -1, -1)
+		connection.conn.Play(-1)
 		return "Plylist added", nil
 	case "remove":
-		err := connection.PlaylistRemove(playlist)
+		err := connection.conn.PlaylistRemove(playlist)
 		if err == nil {
 			return "Plylist removed", nil
 		}
@@ -249,7 +296,7 @@ func mpdPlaylistsAction(playlist, action string) (result string, err error) {
 
 func setVolume(volume int) (err error) {
 	if _, err = connect(); err == nil {
-		err = connection.SetVolume(volume)
+		err = connection.conn.SetVolume(volume)
 	}
 	return
 }
@@ -257,10 +304,10 @@ func setVolume(volume int) (err error) {
 func seekPos(pos, time int) (err error) {
 	if _, err = connect(); err == nil {
 		var song mpd.Attrs
-		if song, err = connection.CurrentSong(); err == nil {
+		if song, err = connection.conn.CurrentSong(); err == nil {
 			var sid int
 			if sid, err = strconv.Atoi(song["Id"]); err == nil {
-				err = connection.SeekId(sid, time)
+				err = connection.conn.SeekId(sid, time)
 			}
 		}
 	}
@@ -287,7 +334,7 @@ func getFiles(path string) (folders []string, files []string, err error) {
 			return nil, nil, err
 		}
 		// FIXME: mpd - zmianic na ls
-		if mpdFiles, err = connection.GetFiles(); err != nil {
+		if mpdFiles, err = connection.conn.GetFiles(); err != nil {
 			return nil, nil, err
 		}
 		mpdListFilesCache.SetValue(mpdFiles)
@@ -324,10 +371,10 @@ func getFiles(path string) (folders []string, files []string, err error) {
 func addFileToPlaylist(uri string, clearPlaylist bool) (err error) {
 	if _, err = connect(); err == nil {
 		if clearPlaylist {
-			connection.Clear()
+			connection.conn.Clear()
 		}
-		if err = connection.Add(uri); err == nil {
-			connection.Play(-1)
+		if err = connection.conn.Add(uri); err == nil {
+			connection.conn.Play(-1)
 		}
 	}
 	return err
@@ -337,7 +384,7 @@ func playlistAction(action string) (err error) {
 	if _, err = connect(); err == nil {
 		switch action {
 		case "clear":
-			return connection.Clear()
+			return connection.conn.Clear()
 		}
 	}
 	return
@@ -345,14 +392,14 @@ func playlistAction(action string) (err error) {
 
 func playlistSave(name string) (err error) {
 	if _, err = connect(); err == nil {
-		return connection.PlaylistSave(name)
+		return connection.conn.PlaylistSave(name)
 	}
 	return err
 }
 
 func addToPlaylist(uri string) (err error) {
 	if _, err = connect(); err == nil {
-		return connection.Add(uri)
+		return connection.conn.Add(uri)
 	}
 	return
 }
@@ -370,7 +417,7 @@ func GetShortStatus() (status map[string]string, err error) {
 		}
 	}
 	if _, err = connect(); err == nil {
-		if status, err = connection.Status(); err == nil {
+		if status, err = connection.conn.Status(); err == nil {
 			mpdShortStatusCache.SetValue(status)
 		}
 	}
@@ -379,14 +426,14 @@ func GetShortStatus() (status map[string]string, err error) {
 
 func getSongInfo(uri string) (info []mpd.Attrs, err error) {
 	if _, err = connect(); err == nil {
-		return connection.ListAllInfo(uri)
+		return connection.conn.ListAllInfo(uri)
 	}
 	return nil, err
 }
 
 func find(query string) (data []mpd.Attrs, err error) {
 	if _, err = connect(); err == nil {
-		return connection.Find(query)
+		return connection.conn.Find(query)
 	}
 	return nil, err
 }
@@ -395,7 +442,7 @@ func mpdFileAction(uri, action string) (err error) {
 	if _, err = connect(); err == nil {
 		switch action {
 		case "add":
-			return connection.Add(uri)
+			return connection.conn.Add(uri)
 		default:
 			err = errors.New("nnvalid action")
 		}
@@ -407,12 +454,12 @@ func logSong() {
 	if logSongToNotes != "yes" {
 		return
 	}
-	if connection == nil {
+	if connection.conn == nil {
 		if _, err := connect(); err != nil {
 			return
 		}
 	}
-	song, err := connection.CurrentSong()
+	song, err := connection.conn.CurrentSong()
 	if err != nil {
 		return
 	}
