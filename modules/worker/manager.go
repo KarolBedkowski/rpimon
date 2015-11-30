@@ -142,7 +142,7 @@ func deleteOldLogs() error {
 			}
 			if now.After(file.ModTime()) {
 				l.Info("Delete %s", file.Name())
-				os.Remove(file.Name())
+				os.Remove(filepath.Join(logdir, file.Name()))
 			}
 		}
 	} else {
