@@ -61,3 +61,10 @@ resources: build_static
 deps:
 	go get -d -v .
 	go get -v github.com/jessevdk/go-assets-builder
+
+
+dist: clean
+	tar cJ -C .. \
+		--exclude=.git --exclude=logs --exclude='*.log' --exclude='*.kvdb' \
+		--exclude=worker-log --exclude=temp --exclude=".stamp" \
+		-f ../rpimon.tar.xz rpimon
