@@ -21,7 +21,7 @@ func initSambaModule(parentRoute *mux.Route) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/",
-		app.SecContext(sambaPageHandler, "Network - Samba", "admin")).
+		app.TimeoutHandler(app.SecContext(sambaPageHandler, "Network - Samba", "admin"), 5)).
 		Name("m-net-samba")
 	return true
 }

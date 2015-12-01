@@ -21,7 +21,7 @@ var Module = &app.Module{
 // CreateRoutes for /users
 func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.VerifyPermission(mainPageHandler, "admin")).Name("users-index")
+	subRouter.HandleFunc("/", app.VerifyPermission(app.TimeoutHandler(mainPageHandler, 5), "admin")).Name("users-index")
 	return true
 }
 

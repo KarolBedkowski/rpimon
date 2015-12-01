@@ -22,7 +22,7 @@ var Module = &app.Module{
 func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(smartPageHandler, "admin")).Name("storage-smart")
-	subRouter.HandleFunc("/serv/smart", app.VerifyPermission(servSmartHandler, "admin")).Name("storage-serv-smart")
+	subRouter.HandleFunc("/serv/smart", app.VerifyPermission(app.TimeoutHandler(servSmartHandler, 5), "admin")).Name("storage-serv-smart")
 	return true
 }
 

@@ -24,11 +24,14 @@ func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(psaxlPageHandler, "admin")).Name("process-index")
 	subRouter.HandleFunc("/services", app.VerifyPermission(servicesPageHangler, "admin")).Name("process-services")
-	subRouter.HandleFunc("/services/action", app.VerifyPermission(serviceActionPageHandler, "admin")).Name("process-services-action")
+	subRouter.HandleFunc("/services/action",
+		app.VerifyPermission(app.TimeoutHandler(serviceActionPageHandler, 5), "admin")).
+		Name("process-services-action")
 	subRouter.HandleFunc("/psaxl", app.VerifyPermission(psaxlPageHandler, "admin")).Name("process-psaxl")
 	subRouter.HandleFunc("/top", app.VerifyPermission(topPageHandler, "admin")).Name("process-top")
-	subRouter.HandleFunc("/process/action", app.VerifyPermission(processActionHandler, "admin")).Name(
-		"process-action")
+	subRouter.HandleFunc("/process/action",
+		app.VerifyPermission(app.TimeoutHandler(processActionHandler, 5), "admin")).
+		Name("process-action")
 	return true
 }
 

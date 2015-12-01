@@ -24,7 +24,7 @@ func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
 	subRouter.HandleFunc("/", app.VerifyPermission(dfPageHandler, "admin")).Name("storage-index")
 	subRouter.HandleFunc("/mount", app.VerifyPermission(mountPageHandler, "admin")).Name("storage-mount")
-	subRouter.HandleFunc("/umount", app.VerifyPermission(umountPageHandler, "admin")).Name("storage-umount")
+	subRouter.HandleFunc("/umount", app.VerifyPermission(app.TimeoutHandler(umountPageHandler, 30), "admin")).Name("storage-umount")
 	subRouter.HandleFunc("/df", app.VerifyPermission(dfPageHandler, "admin")).Name("storage-df")
 	subRouter.HandleFunc("/{page}", app.VerifyPermission(mainPageHandler, "admin")).Name("storage-page")
 	return true

@@ -30,16 +30,16 @@ func initModule(parentRoute *mux.Route) bool {
 		app.SecContext(confPageHandler, "Network - Configuration", "admin")).
 		Name("m-net-conf")
 	subRouter.HandleFunc("/iptables",
-		app.SecContext(iptablesPageHandler, "Network - Iptables", "admin")).
+		app.TimeoutHandler(app.SecContext(iptablesPageHandler, "Network - Iptables", "admin"), 5)).
 		Name("m-net-iptables")
 	subRouter.HandleFunc("/netstat",
-		app.SecContext(netstatPageHandler, "Network - Netstat", "admin")).
+		app.TimeoutHandler(app.SecContext(netstatPageHandler, "Network - Netstat", "admin"), 5)).
 		Name("m-net-netstat")
 	subRouter.HandleFunc("/serv/info",
 		app.VerifyPermission(statusServHandler, "")).
 		Name("m-net-serv-info")
 	subRouter.HandleFunc("/action",
-		app.VerifyPermission(actionHandler, "admin")).
+		app.TimeoutHandler(app.VerifyPermission(actionHandler, "admin"), 5)).
 		Name("m-net-action").Methods("PUT")
 	return true
 }

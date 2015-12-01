@@ -39,3 +39,20 @@ func logHandler(h http.Handler) http.HandlerFunc {
 		h.ServeHTTP(writer, r)
 	})
 }
+
+func TimeoutHandler(h http.HandlerFunc, sec int) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		done := make(chan bool, 1)
+		go func() {
+			h(w, r)
+			done <- true
+		}()
+		select {
+		case <-done:
+			return
+		case <-time.After(time.Duration(sec) * time.Second):
+			http.Error(w, "Timeout", http.StatusInternalServerError)
+			return
+		}
+	})
+}

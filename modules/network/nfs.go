@@ -21,7 +21,7 @@ var NFSModule = &app.Module{
 func initNFSModule(parentRoute *mux.Route) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", app.SecContext(nfsPageHandler, "Network - NFS", "admin")).Name("m-net-nfs")
+	subRouter.HandleFunc("/", app.TimeoutHandler(app.SecContext(nfsPageHandler, "Network - NFS", "admin"), 5)).Name("m-net-nfs")
 	return true
 }
 
