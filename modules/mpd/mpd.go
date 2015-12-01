@@ -55,75 +55,83 @@ func initModule(parentRoute *mux.Route) bool {
 	// Main page
 	subRouter.HandleFunc("/", app.SecContext(mainPageHandler, "MPD", "mpd"))
 	subRouter.HandleFunc("/main",
-		app.SecContext(mainPageHandler, "MPD", "mpd")).Name(
-		"mpd-index")
+		app.SecContext(mainPageHandler, "MPD", "mpd")).
+		Name("mpd-index")
 	// Playing control
 	subRouter.HandleFunc("/control/{action}",
-		app.VerifyPermission(mpdControlHandler, "mpd")).Name(
-		"mpd-control")
+		app.VerifyPermission(mpdControlHandler, "mpd")).
+		Name("mpd-control")
 	// current Playlist
 	subRouter.HandleFunc("/playlist",
-		app.SecContext(playlistPageHandler, "MPD - Playlist", "mpd")).Name(
-		"mpd-playlist")
+		app.SecContext(playlistPageHandler, "MPD - Playlist", "mpd")).
+		Name("mpd-playlist")
 	subRouter.HandleFunc("/playlist/save",
-		app.VerifyPermission(playlistSavePageHandler, "mpd")).Name(
-		"mpd-pl-save").Methods("POST")
+		app.VerifyPermission(playlistSavePageHandler, "mpd")).
+		Name("mpd-pl-save").
+		Methods("POST")
 	subRouter.HandleFunc("/playlist/add",
-		app.VerifyPermission(addToPlaylistActionHandler, "mpd")).Name(
-		"mpd-pl-add").Methods("POST")
+		app.VerifyPermission(addToPlaylistActionHandler, "mpd")).
+		Name("mpd-pl-add").
+		Methods("POST")
 	subRouter.HandleFunc("/playlist/{action}",
-		app.VerifyPermission(playlistActionPageHandler, "mpd")).Name(
-		"mpd-pl-action")
+		app.VerifyPermission(playlistActionPageHandler, "mpd")).
+		Name("mpd-pl-action")
 	subRouter.HandleFunc("/playlist/serv/info",
-		app.VerifyPermission(plistContentServHandler, "mpd")).Name(
-		"mpd-pl-serv-info")
+		app.VerifyPermission(plistContentServHandler, "mpd")).
+		Name("mpd-pl-serv-info")
 	subRouter.HandleFunc("/song/{song-id:[0-9]+}/{action}",
-		app.VerifyPermission(songActionPageHandler, "mpd")).Name(
-		"mpd-song-action")
+		app.VerifyPermission(songActionPageHandler, "mpd")).
+		Name("mpd-song-action")
 	// Playlists
 	subRouter.HandleFunc("/playlists",
-		app.SecContext(playlistsPageHandler, "MPD - Playlists", "mpd")).Name(
-		"mpd-playlists")
+		app.SecContext(playlistsPageHandler, "MPD - Playlists", "mpd")).
+		Name("mpd-playlists")
 	subRouter.HandleFunc("/playlists/serv/list",
-		app.VerifyPermission(playlistsListService, "mpd")).Name(
-		"mpd-playlists-serv-list")
+		app.VerifyPermission(playlistsListService, "mpd")).
+		Name("mpd-playlists-serv-list")
+	subRouter.HandleFunc("/playlists/playlist/{name}",
+		app.SecContext(playlistsContentPage, "MPD - Playlists", "mpd")).
+		Name("mpd-playlist-content")
 	subRouter.HandleFunc("/playlists/action",
-		app.VerifyPermission(playlistsActionPageHandler, "mpd")).Name(
-		"mpd-playlists-action")
+		app.VerifyPermission(playlistsActionPageHandler, "mpd")).
+		Name("mpd-playlists-action")
 	// Services
 	subRouter.HandleFunc("/service/status",
-		app.VerifyPermission(statusServHandler, "mpd")).Name(
-		"mpd-service-status")
+		app.VerifyPermission(statusServHandler, "mpd")).
+		Name("mpd-service-status")
 	subRouter.HandleFunc("/service/song-info",
-		app.VerifyPermission(songInfoStubHandler, "mpd")).Name(
-		"mpd-service-song-info")
+		app.VerifyPermission(songInfoStubHandler, "mpd")).
+		Name("mpd-service-song-info")
 	// Library
 	subRouter.HandleFunc("/library",
-		app.SecContext(libraryPageHandler, "MPD - Library", "mpd")).Name(
-		"mpd-library")
+		app.SecContext(libraryPageHandler, "MPD - Library", "mpd")).
+		Name("mpd-library")
 	subRouter.HandleFunc("/library/serv/content",
-		app.VerifyPermission(libraryServHandler, "mpd")).Name(
-		"mpd-library-content")
+		app.VerifyPermission(libraryServHandler, "mpd")).
+		Name("mpd-library-content")
 	subRouter.HandleFunc("/library/action",
-		app.VerifyPermission(libraryActionHandler, "mpd")).Methods(
-		"PUT", "POST").Name("mpd-library-action")
+		app.VerifyPermission(libraryActionHandler, "mpd")).
+		Methods("PUT", "POST").
+		Name("mpd-library-action")
 	// other
 	subRouter.HandleFunc("/log",
-		app.VerifyPermission(mpdLogPageHandler, "mpd")).Name(
-		"mpd-log")
+		app.VerifyPermission(mpdLogPageHandler, "mpd")).
+		Name("mpd-log")
 	// search
 	subRouter.HandleFunc("/search",
-		app.SecContext(searchPageHandler, "MPD - Search", "mpd")).Name(
-		"mpd-search")
+		app.SecContext(searchPageHandler, "MPD - Search", "mpd")).
+		Name("mpd-search")
 	// files
 	subRouter.HandleFunc("/file",
-		app.VerifyPermission(filePageHandler, "mpd")).Name(
-		"mpd-file")
+		app.VerifyPermission(filePageHandler, "mpd")).
+		Name("mpd-file")
 	// history
 	subRouter.HandleFunc("/history",
-		app.SecContext(historyHandler, "MPD - History", "mpd")).Name("mpd-history")
+		app.SecContext(historyHandler, "MPD - History", "mpd")).
+		Name("mpd-history")
 	subRouter.HandleFunc("/history/file",
-		app.VerifyPermission(historyFileHandler, "mpd")).Name("mpd-history-file")
+		app.VerifyPermission(historyFileHandler, "mpd")).
+		Name("mpd-history-file")
 
 	if val, ok := conf["delete older than [days]"]; ok && val != "0" && val != "" {
 		if off, err := strconv.Atoi(val); err == nil {

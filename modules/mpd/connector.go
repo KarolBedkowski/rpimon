@@ -303,6 +303,15 @@ func mpdGetPlaylists() (playlists []mpd.Attrs, err error) {
 	return
 }
 
+func mpdGetPlaylistContent(playlist string) (files []mpd.Attrs, err error) {
+	c, err := connPool.Get()
+	defer c.Release()
+	if err == nil {
+		files, err = c.conn.PlaylistContents(playlist)
+	}
+	return
+}
+
 func mpdPlaylistsAction(playlist, action string) (result string, err error) {
 	c, err := connPool.Get()
 	defer c.Release()

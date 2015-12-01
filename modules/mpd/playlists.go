@@ -6,9 +6,10 @@ import (
 	//"code.google.com/p/gompd/mpd"
 	"encoding/json"
 	"github.com/fhs/gompd/mpd"
+	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
 	h "k.prv/rpimon/helpers"
-	//l "k.prv/rpimon/logging"
+	l "k.prv/rpimon/logging"
 	"net/http"
 )
 
@@ -54,4 +55,28 @@ func playlistsListService(w http.ResponseWriter, r *http.Request) {
 	encoded, _ := json.Marshal(result)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(encoded)
+}
+
+func playlistsContentPage(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+	vars := mux.Vars(r)
+	playlist, ok := vars["name"]
+	if !ok || playlist == "" {
+		l.Warn("page.mpd playlistsContentPage: missing name ", vars)
+		return
+	}
+	content, err := mpdGetPlaylistContent(playlist)
+	if err != nil {
+		l.Warn("page.mpd playlistsContentPage: get content error: %s ", err.Error())
+	}
+	ctx := struct {
+		*app.BaseCtx
+		Content []mpd.Attrs
+		Name    string
+	}{
+		BaseCtx: bctx,
+		Content: content,
+		Name:    playlist,
+	}
+	ctx.SetMenuActive("mpd-playlists")
+	app.RenderTemplateStd(w, ctx, "mpd/playlist_content.tmpl")
 }
