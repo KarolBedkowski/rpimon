@@ -26,7 +26,7 @@ Requirements:
 
    * gorilla {context,mux,sessions,securecookie,schema} (http://gihub.com/gorilla)
    * bcrypt (http://code.google.com/p/go.crypto/bcrypt)
-   * gompd (http://github.com/turbowookie/gompd/mpd)
+   * gompd (http://github.com/fhs/gompd/mpd)
    * kv (http://github.com/cznic/kv)
    * lock (http://github.com/camlistore/lock)
 

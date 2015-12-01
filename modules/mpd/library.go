@@ -5,7 +5,7 @@ import (
 	"k.prv/rpimon/app"
 	//	h "k.prv/rpimon/helpers"
 	//"code.google.com/p/gompd/mpd"
-	"github.com/turbowookie/gompd/mpd"
+	"github.com/fhs/gompd/mpd"
 	l "k.prv/rpimon/logging"
 	"net/http"
 	"net/url"

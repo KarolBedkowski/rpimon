@@ -5,9 +5,9 @@ package mpd
 import (
 	//"code.google.com/p/gompd/mpd"
 	"encoding/json"
+	"github.com/fhs/gompd/mpd"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
-	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
 	"net/http"
 	"strconv"

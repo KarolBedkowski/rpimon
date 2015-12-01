@@ -3,7 +3,7 @@ package mpd
 import (
 	//"code.google.com/p/gompd/mpd"
 	"errors"
-	"github.com/turbowookie/gompd/mpd"
+	"github.com/fhs/gompd/mpd"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/logging"
 	"k.prv/rpimon/model"
@@ -284,9 +284,9 @@ func mpdSongAction(songID int, action string) (err error) {
 	if err == nil {
 		switch action {
 		case "play":
-			err = c.conn.PlayId(songID)
+			err = c.conn.PlayID(songID)
 		case "remove":
-			err = c.conn.DeleteId(songID)
+			err = c.conn.DeleteID(songID)
 		default:
 			l.Warn("page.mpd mpdAction: wrong action ", action)
 		}
@@ -351,7 +351,7 @@ func seekPos(pos, time int) (err error) {
 	if song, err = c.conn.CurrentSong(); err == nil {
 		var sid int
 		if sid, err = strconv.Atoi(song["Id"]); err == nil {
-			return c.conn.SeekId(sid, time)
+			return c.conn.SeekID(sid, time)
 		}
 	}
 	return
