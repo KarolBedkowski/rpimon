@@ -62,37 +62,37 @@ func initModule(parentRoute *mux.Route) bool {
 		app.VerifyPermission(mpdControlHandler, "mpd")).
 		Name("mpd-control")
 	// current Playlist
-	subRouter.HandleFunc("/playlist",
+	subRouter.HandleFunc("/plist",
 		app.SecContext(playlistPageHandler, "MPD - Playlist", "mpd")).
 		Name("mpd-playlist")
-	subRouter.HandleFunc("/playlist/save",
+	subRouter.HandleFunc("/plist/save",
 		app.VerifyPermission(playlistSavePageHandler, "mpd")).
 		Name("mpd-pl-save").
 		Methods("POST")
-	subRouter.HandleFunc("/playlist/add",
+	subRouter.HandleFunc("/plist/add",
 		app.VerifyPermission(addToPlaylistActionHandler, "mpd")).
 		Name("mpd-pl-add").
 		Methods("POST")
-	subRouter.HandleFunc("/playlist/{action}",
+	subRouter.HandleFunc("/plist/{action}",
 		app.VerifyPermission(playlistActionPageHandler, "mpd")).
 		Name("mpd-pl-action")
-	subRouter.HandleFunc("/playlist/serv/info",
+	subRouter.HandleFunc("/plist/serv/info",
 		app.VerifyPermission(plistContentServHandler, "mpd")).
 		Name("mpd-pl-serv-info")
 	subRouter.HandleFunc("/song/{song-id:[0-9]+}/{action}",
 		app.VerifyPermission(songActionPageHandler, "mpd")).
 		Name("mpd-song-action")
 	// Playlists
-	subRouter.HandleFunc("/playlists",
+	subRouter.HandleFunc("/splist",
 		app.SecContext(playlistsPageHandler, "MPD - Playlists", "mpd")).
 		Name("mpd-playlists")
-	subRouter.HandleFunc("/playlists/serv/list",
+	subRouter.HandleFunc("/splist/serv/list",
 		app.VerifyPermission(playlistsListService, "mpd")).
 		Name("mpd-playlists-serv-list")
-	subRouter.HandleFunc("/playlists/playlist/{name}",
+	subRouter.HandleFunc("/splist/playlist/{name}",
 		app.SecContext(playlistsContentPage, "MPD - Playlists", "mpd")).
 		Name("mpd-playlist-content")
-	subRouter.HandleFunc("/playlists/action",
+	subRouter.HandleFunc("/splist/action",
 		app.VerifyPermission(playlistsActionPageHandler, "mpd")).
 		Name("mpd-playlists-action")
 	// Services
