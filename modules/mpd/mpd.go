@@ -92,6 +92,9 @@ func initModule(parentRoute *mux.Route) bool {
 	subRouter.HandleFunc("/splist/playlist/{name}",
 		app.SecContext(playlistsContentPage, "MPD - Playlists", "mpd")).
 		Name("mpd-playlist-content")
+	subRouter.HandleFunc("/splist/song/action",
+		app.VerifyPermission(playlistsSongActionHandler, "mpd")).
+		Name("mpd-playlist-song-action")
 	subRouter.HandleFunc("/splist/action",
 		app.VerifyPermission(playlistsActionPageHandler, "mpd")).
 		Name("mpd-playlists-action")

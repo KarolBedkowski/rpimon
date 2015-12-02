@@ -11,6 +11,8 @@ import (
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/logging"
 	"net/http"
+	"net/url"
+	"strings"
 )
 
 type playlistsPageCtx struct {
@@ -79,4 +81,25 @@ func playlistsContentPage(w http.ResponseWriter, r *http.Request, bctx *app.Base
 	}
 	ctx.SetMenuActive("mpd-playlists")
 	app.RenderTemplateStd(w, ctx, "mpd/playlist_content.tmpl")
+}
+
+func playlistsSongActionHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	action := r.FormValue("a")
+	switch action {
+	case "add", "replace":
+		if uriL, ok := r.Form["u"]; ok {
+			uri := strings.TrimLeft(uriL[0], "/")
+			uri, _ = url.QueryUnescape(uri)
+			err := addFileToPlaylist(uri, action == "replace")
+			if err == nil {
+				w.Write([]byte("Added to playlist"))
+			} else {
+				l.Error("mpd.playlistsSongActionHandler error: %s", err.Error())
+				app.Render400(w, r)
+			}
+			return
+		}
+	}
+	app.Render400(w, r)
 }
