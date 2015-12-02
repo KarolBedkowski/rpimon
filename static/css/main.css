@@ -285,6 +285,7 @@ div#loading-box p {
 	display: block;
 }
 
+/*
 @media(min-width:768px) {
 	#flash-container {
 		margin-left: 50%;
@@ -292,7 +293,7 @@ div#loading-box p {
 		width: 50%;
 	}
 }
-
+*/
 
 
 .panel-heading .panel-title a {
@@ -320,4 +321,8 @@ div#loading-box p {
 
 .nav .active > a {
 	font-weight: bold;
+}
+
+tr.active a {
+	color: white !important;
 }
