@@ -89,7 +89,7 @@ func playlistSavePageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type addToPlaylistForm struct {
-	Uri       string
+	URI       string
 	CsrfToken string
 }
 
@@ -97,11 +97,11 @@ func addToPlaylistActionHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	form := &addToPlaylistForm{}
 	decoder.Decode(form, r.Form)
-	if form.Uri == "" {
+	if form.URI == "" {
 		app.Render400(w, r, "Invalid Request: missing URI")
 		return
 	}
-	if err := addToPlaylist(form.Uri); err != nil {
+	if err := addToPlaylist(form.URI); err != nil {
 		app.Render500(w, r, "Adding to playlist error: "+err.Error())
 	} else {
 		w.Write([]byte("URI added"))
@@ -109,7 +109,7 @@ func addToPlaylistActionHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getPlaylistStat() (playlist [][]string, stat mpd.Attrs, err error) {
-	lplaylist, err, stat := mpdPlaylistInfo()
+	lplaylist, stat, err := mpdPlaylistInfo()
 	for _, item := range lplaylist {
 		if title, ok := item["Title"]; !ok || title == "" {
 			item["Title"] = item["file"]

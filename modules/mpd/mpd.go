@@ -215,7 +215,7 @@ func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	case "add_to_notes":
 		status := getStatus()
-		data := make([]string, 0)
+		var data []string
 		for key, val := range status.Current {
 			data = append(data, fmt.Sprintf("%s: %s", key, val))
 		}
@@ -265,8 +265,8 @@ func songInfoStubHandler(w http.ResponseWriter, r *http.Request) {
 		Info  []mpd.Attrs
 	}
 
-	if songUri, ok := r.Form["uri"]; ok && songUri[0] != "" {
-		uri, _ := url.QueryUnescape(songUri[0])
+	if songURI, ok := r.Form["uri"]; ok && songURI[0] != "" {
+		uri, _ := url.QueryUnescape(songURI[0])
 		result, err := getSongInfo(uri)
 		ctx.Info = result
 		if err != nil {

@@ -90,7 +90,7 @@ func DeleteOldSongs(maxAge time.Time) {
 	if err != nil {
 		return
 	}
-	toDel := make([][]byte, 0)
+	var toDel [][]byte
 	for {
 		key, value, err := en.Next()
 		if err == io.EOF || !bytes.HasPrefix(key, mpdSongPrefix) {

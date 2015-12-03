@@ -23,7 +23,7 @@ var Module = &app.Module{
 func initModule(parentRoute *mux.Route) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/",
+	subRouter.HandleFunc("/status",
 		app.SecContext(mainPageHandler, "Network", "admin")).
 		Name("m-net-index")
 	subRouter.HandleFunc("/conf",
@@ -210,7 +210,7 @@ func iptablesPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCt
 }
 
 func netstat(command string, args ...string) ([][]string, error) {
-	result := make([][]string, 0)
+	var result [][]string
 	res := h.ReadCommand(command, args...)
 	lines := strings.Split(res, "\n")
 	if len(lines) < 2 {

@@ -154,7 +154,7 @@ func GetHostsStatus() []*Host {
 	defer monitoredHostsMutex.RUnlock()
 	cfg.Configuration.RLock()
 	defer cfg.Configuration.RUnlock()
-	result := make([]*Host, 0)
+	var result []*Host
 	for _, host := range cfg.Configuration.Monitor.MonitoredHosts {
 		status, ok := lastHostStatus[host.Name]
 		if ok {

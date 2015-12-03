@@ -244,7 +244,7 @@ func filesServHandler(w http.ResponseWriter, r *http.Request) {
 		app.Render400(w, r, "invalid id")
 		return
 	}
-	children := make([][]interface{}, 0)
+	var children [][]interface{}
 	if path != "." {
 		children = append(children, []interface{}{
 			"folder",

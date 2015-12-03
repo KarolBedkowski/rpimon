@@ -71,11 +71,11 @@ func decodeTask(buff []byte) (t *Task) {
 	t = &Task{}
 	r := bytes.NewBuffer(buff)
 	dec := gob.NewDecoder(r)
-	if err := dec.Decode(t); err == nil {
+	err := dec.Decode(t)
+	if err == nil {
 		return t
-	} else {
-		l.Warn("model.decodeTask decode error: %s", err)
 	}
+	l.Warn("model.decodeTask decode error: %s", err)
 	return nil
 }
 
@@ -132,7 +132,7 @@ func DeleteOldTasks(maxAge time.Time) {
 	if err != nil {
 		return
 	}
-	toDel := make([][]byte, 0)
+	var toDel [][]byte
 	for {
 		key, value, err := en.Next()
 		if err == io.EOF || !bytes.HasPrefix(key, taskPrefix) {

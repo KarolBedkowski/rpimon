@@ -136,7 +136,7 @@ type mpdConnection struct {
 	conn *mpd.Client
 }
 
-func (m *mpdConnection) Release() {
+func (m *mpdConnection) release() {
 	connPool.PutBack(m)
 }
 
@@ -160,7 +160,7 @@ func (p *ConnectionPool) Close() {
 	close(p.conn)
 }
 
-func (p *ConnectionPool) Get() (c *mpdConnection, err error) {
+func (p *ConnectionPool) get() (c *mpdConnection, err error) {
 	if !p.initialized {
 		return nil, errors.New("Closed")
 	}
@@ -185,8 +185,8 @@ func (p *ConnectionPool) PutBack(c *mpdConnection) {
 
 func getStatus() (status *mpdStatus) {
 	status = new(mpdStatus)
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err != nil {
 		status.Error = err.Error()
 		return
@@ -205,8 +205,8 @@ func getStatus() (status *mpdStatus) {
 }
 
 func mpdAction(action string) (err error) {
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err != nil {
 		return err
 	}
@@ -242,8 +242,8 @@ func mpdAction(action string) (err error) {
 }
 
 func mpdActionUpdate(uri string) (err error) {
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err == nil {
 		var jobid int
 		jobid, err = c.conn.Update(uri)
@@ -253,10 +253,10 @@ func mpdActionUpdate(uri string) (err error) {
 }
 
 // current playlist & status
-func mpdPlaylistInfo() (playlist []mpd.Attrs, err error, status mpd.Attrs) {
+func mpdPlaylistInfo() (playlist []mpd.Attrs, status mpd.Attrs, err error) {
 	cachedPlaylist := playlistCache.Get(func() h.Value {
-		c, err := connPool.Get()
-		defer c.Release()
+		c, err := connPool.get()
+		defer c.release()
 		if err == nil {
 			plist, err := c.conn.PlaylistInfo(-1, -1)
 			if err != nil {
@@ -266,8 +266,8 @@ func mpdPlaylistInfo() (playlist []mpd.Attrs, err error, status mpd.Attrs) {
 		}
 		return nil
 	})
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err == nil {
 		playlist = cachedPlaylist.([]mpd.Attrs)
 		status, err = c.conn.Status()
@@ -275,12 +275,12 @@ func mpdPlaylistInfo() (playlist []mpd.Attrs, err error, status mpd.Attrs) {
 			l.Error(err.Error())
 		}
 	}
-	return playlist, err, status
+	return playlist, status, err
 }
 
 func mpdSongAction(songID int, action string) (err error) {
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err == nil {
 		switch action {
 		case "play":
@@ -295,8 +295,8 @@ func mpdSongAction(songID int, action string) (err error) {
 }
 
 func mpdGetPlaylists() (playlists []mpd.Attrs, err error) {
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err == nil {
 		playlists, err = c.conn.ListPlaylists()
 	}
@@ -304,8 +304,8 @@ func mpdGetPlaylists() (playlists []mpd.Attrs, err error) {
 }
 
 func mpdGetPlaylistContent(playlist string) (files []mpd.Attrs, err error) {
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err == nil {
 		files, err = c.conn.PlaylistContents(playlist)
 	}
@@ -313,8 +313,8 @@ func mpdGetPlaylistContent(playlist string) (files []mpd.Attrs, err error) {
 }
 
 func mpdPlaylistsAction(playlist, action string) (result string, err error) {
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err == nil {
 		return "", err
 	}
@@ -342,8 +342,8 @@ func mpdPlaylistsAction(playlist, action string) (result string, err error) {
 }
 
 func setVolume(volume int) (err error) {
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err == nil {
 		err = c.conn.SetVolume(volume)
 	}
@@ -351,8 +351,8 @@ func setVolume(volume int) (err error) {
 }
 
 func seekPos(pos, time int) (err error) {
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err != nil {
 		return err
 	}
@@ -382,8 +382,8 @@ func getFiles(path string) (folders []string, files []string, err error) {
 	if filesC, ok := mpdListFilesCache.GetValue(); ok {
 		mpdFiles = filesC.([]string)
 	} else {
-		c, err := connPool.Get()
-		defer c.Release()
+		c, err := connPool.get()
+		defer c.release()
 		if err != nil {
 			return nil, nil, err
 		}
@@ -423,8 +423,8 @@ func getFiles(path string) (folders []string, files []string, err error) {
 }
 
 func addFileToPlaylist(uri string, clearPlaylist bool) (err error) {
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err == nil {
 		if clearPlaylist {
 			c.conn.Clear()
@@ -437,8 +437,8 @@ func addFileToPlaylist(uri string, clearPlaylist bool) (err error) {
 }
 
 func playlistAction(action string) (err error) {
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err == nil {
 		switch action {
 		case "clear":
@@ -449,8 +449,8 @@ func playlistAction(action string) (err error) {
 }
 
 func playlistSave(name string) (err error) {
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err == nil {
 		return c.conn.PlaylistSave(name)
 	}
@@ -458,8 +458,8 @@ func playlistSave(name string) (err error) {
 }
 
 func addToPlaylist(uri string) (err error) {
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err == nil {
 		return c.conn.Add(uri)
 	}
@@ -478,8 +478,8 @@ func GetShortStatus() (status map[string]string, err error) {
 			return map[string]string(cachedValue), nil
 		}
 	}
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err == nil {
 		if status, err = c.conn.Status(); err == nil {
 			mpdShortStatusCache.SetValue(status)
@@ -489,8 +489,8 @@ func GetShortStatus() (status map[string]string, err error) {
 }
 
 func getSongInfo(uri string) (info []mpd.Attrs, err error) {
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err == nil {
 		return c.conn.ListAllInfo(uri)
 	}
@@ -498,8 +498,8 @@ func getSongInfo(uri string) (info []mpd.Attrs, err error) {
 }
 
 func find(query string) (data []mpd.Attrs, err error) {
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err == nil {
 		return c.conn.Find(query)
 	}
@@ -507,8 +507,8 @@ func find(query string) (data []mpd.Attrs, err error) {
 }
 
 func mpdFileAction(uri, action string) (err error) {
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err != nil {
 		return err
 	}
@@ -525,8 +525,8 @@ func logSong() {
 	if logSongToNotes != "yes" {
 		return
 	}
-	c, err := connPool.Get()
-	defer c.Release()
+	c, err := connPool.get()
+	defer c.release()
 	if err != nil {
 		return
 	}

@@ -44,11 +44,11 @@ func decodeUser(buff []byte) (u *User) {
 	u = &User{}
 	r := bytes.NewBuffer(buff)
 	dec := gob.NewDecoder(r)
-	if err := dec.Decode(u); err == nil {
+	err := dec.Decode(u)
+	if err == nil {
 		return u
-	} else {
-		l.Warn("globals.decodeUser decode error: %s", err)
 	}
+	l.Warn("globals.decodeUser decode error: %s", err)
 	return nil
 }
 
