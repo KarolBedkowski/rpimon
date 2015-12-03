@@ -1,0 +1,24 @@
+{
+  "utils": {
+    "Misc": [
+      {
+        "command": "sudo service mpd reload",
+        "name": "MPD reload"
+      },
+      {
+        "command": "sudo service minidlna force-reload",
+        "name": "MiniDLN reload"
+      }
+    ],
+    "Power": [
+      {
+        "command": "sudo shutdown -h now",
+        "name": "Halt"
+      },
+      {
+        "command": "sudo shutdown -r now",
+        "name": "Reboot"
+      }
+    ]
+  }
+}
