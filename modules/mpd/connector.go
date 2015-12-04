@@ -4,7 +4,6 @@ import (
 	//"code.google.com/p/gompd/mpd"
 	"errors"
 	"github.com/fhs/gompd/mpd"
-	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/logging"
 	"k.prv/rpimon/model"
 	n "k.prv/rpimon/modules/notepad"
@@ -22,13 +21,10 @@ type mpdStatus struct {
 const poolSize = 3
 
 var (
-	host              string
-	logSongToNotes    string
-	playlistCache     = h.NewSimpleCache(600)
-	mpdListFilesCache = h.NewSimpleCache(600)
-	mpdLibraryCache   = h.NewKeyCache(600)
-	lastSong          string
-	watcher           = Watcher{
+	host           string
+	logSongToNotes string
+	lastSong       string
+	watcher        = Watcher{
 		end: make(chan bool),
 	}
 	connPool = ConnectionPool{}
@@ -46,9 +42,6 @@ func initConnector(conf map[string]string) {
 
 // Close MPD connection
 func closeConnector() {
-	playlistCache.Clear()
-	mpdLibraryCache.Clear()
-	mpdListFilesCache.Clear()
 	watcher.Close()
 	connPool.Close()
 }
@@ -76,11 +69,6 @@ func (m *Watcher) watch() (err error) {
 			switch subsystem {
 			case "player":
 				logSong()
-			case "playlist":
-				playlistCache.Clear()
-			case "database":
-				mpdListFilesCache.Clear()
-				mpdLibraryCache.Clear()
 			}
 		case err := <-m.watcher.Error:
 			l.Info("MPD watcher error: %s", err.Error())
@@ -254,28 +242,17 @@ func mpdActionUpdate(uri string) (err error) {
 
 // current playlist & status
 func mpdPlaylistInfo() (playlist []mpd.Attrs, status mpd.Attrs, err error) {
-	cachedPlaylist := playlistCache.Get(func() h.Value {
-		c, err := connPool.get()
-		defer c.release()
-		if err == nil {
-			plist, err := c.conn.PlaylistInfo(-1, -1)
-			if err != nil {
-				l.Error(err.Error())
-			}
-			return plist
-		}
-		return nil
-	})
 	c, err := connPool.get()
 	defer c.release()
-	if err == nil {
-		playlist = cachedPlaylist.([]mpd.Attrs)
-		status, err = c.conn.Status()
-		if err != nil {
-			l.Error(err.Error())
-		}
+	if err != nil {
+		return
 	}
-	return playlist, status, err
+	playlist, err = c.conn.PlaylistInfo(-1, -1)
+	if err != nil {
+		return
+	}
+	status, err = c.conn.Status()
+	return
 }
 
 func mpdSongAction(songID int, action string) (err error) {
@@ -373,52 +350,27 @@ type LibraryDir struct {
 }
 
 func getFiles(path string) (folders []string, files []string, err error) {
-	if cached, ok := mpdLibraryCache.GetValue(path); ok {
-		cachedLD := cached.(LibraryDir)
-		return cachedLD.Folders, cachedLD.Files, nil
+	c, err := connPool.get()
+	defer c.release()
+	if err != nil {
+		return
 	}
-
-	var mpdFiles []string
-	if filesC, ok := mpdListFilesCache.GetValue(); ok {
-		mpdFiles = filesC.([]string)
-	} else {
-		c, err := connPool.get()
-		defer c.release()
-		if err != nil {
-			return nil, nil, err
-		}
-		// FIXME: mpd - zmianic na ls
-		if mpdFiles, err = c.conn.GetFiles(); err != nil {
-			return nil, nil, err
-		}
-		mpdListFilesCache.SetValue(mpdFiles)
+	var mpdFiles []mpd.Attrs
+	if mpdFiles, err = c.conn.ListInfo(path); err != nil {
+		return
 	}
-
-	var prefixLen = 0
-	if path != "" {
-		prefixLen = len(path) + 1
+	prefixLen := len(path)
+	if prefixLen > 1 {
+		prefixLen += 1
 	}
-
-	loadedFolders := make(map[string]bool)
-
-	for _, fname := range mpdFiles {
-		if !strings.HasPrefix(fname, path) {
-			continue
+	for _, attr := range mpdFiles {
+		if dir, ok := attr["directory"]; ok {
+			folders = append(folders, dir[prefixLen:])
+		} else if file, ok := attr["file"]; ok {
+			files = append(files, file[prefixLen:])
 		}
-		fname = fname[prefixLen:]
-		slashIndex := strings.Index(fname, "/")
-		if slashIndex > 0 {
-			fname = fname[:slashIndex]
-			if _, added := loadedFolders[fname]; !added {
-				loadedFolders[fname] = true
-				folders = append(folders, fname)
-			}
-		} else {
-			files = append(files, fname)
-		}
+		// ignore others (i.e. playlists)
 	}
-
-	mpdLibraryCache.SetValue(path, LibraryDir{folders, files})
 	return
 }
 
@@ -466,25 +418,17 @@ func addToPlaylist(uri string) (err error) {
 	return err
 }
 
-var mpdShortStatusCache = h.NewSimpleCache(5)
-
 // GetShortStatus return cached MPD status
 func GetShortStatus() (status map[string]string, err error) {
 	if !Module.Enabled() {
-		return nil, nil
-	}
-	if result, ok := mpdShortStatusCache.GetValue(); ok && result != nil {
-		if cachedValue, ok := result.(mpd.Attrs); ok {
-			return map[string]string(cachedValue), nil
-		}
+		return
 	}
 	c, err := connPool.get()
 	defer c.release()
-	if err == nil {
-		if status, err = c.conn.Status(); err == nil {
-			mpdShortStatusCache.SetValue(status)
-		}
+	if err != nil {
+		return
 	}
+	status, err = c.conn.Status()
 	return status, err
 }
 

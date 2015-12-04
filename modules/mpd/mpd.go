@@ -8,7 +8,6 @@ import (
 	"github.com/fhs/gompd/mpd"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/logging"
 	"k.prv/rpimon/model"
 	n "k.prv/rpimon/modules/notepad"
@@ -243,14 +242,9 @@ func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var statusServCache = h.NewSimpleCache(1)
-
 func statusServHandler(w http.ResponseWriter, r *http.Request) {
-	data := statusServCache.Get(func() h.Value {
-		status := getStatus()
-		encoded, _ := json.Marshal(status)
-		return encoded
-	}).([]byte)
+	status := getStatus()
+	data, _ := json.Marshal(status)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(data)
 }
