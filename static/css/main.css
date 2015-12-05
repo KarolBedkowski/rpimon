@@ -278,22 +278,18 @@ div#loading-box p {
 	position:  absolute;
 	padding-left: 20px;
 	padding-right: 20px;
-	margin-right: 0;
+	margin-right: auto;
 	margin-left: 0;
 	padding-top: 20px;
-	width: 100%;
+	width: 95%;
 	display: block;
 }
 
-/*
 @media(min-width:768px) {
 	#flash-container {
-		margin-left: 50%;
-		margin-right; 0;
 		width: 50%;
 	}
 }
-*/
 
 
 .panel-heading .panel-title a {
