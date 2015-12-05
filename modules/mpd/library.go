@@ -12,9 +12,9 @@ import (
 	"strings"
 )
 
-func libraryPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func libraryPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	bctx.SetMenuActive("mpd-library")
-	app.RenderTemplateStd(w, bctx, "mpd/library.tmpl")
+	bctx.RenderStd(bctx, "mpd/library.tmpl")
 }
 
 func libraryActionHandler(w http.ResponseWriter, r *http.Request) {
@@ -98,7 +98,7 @@ func (f *searchForm) getQueryString() (query string) {
 	return f.Field + " \"" + f.Value + "\""
 }
 
-func searchPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func searchPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	ctx := &searchPageContext{BaseCtx: bctx}
 	ctx.SetMenuActive("mpd-search")
 
@@ -125,5 +125,5 @@ func searchPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx
 			}
 		}
 	}
-	app.RenderTemplateStd(w, ctx, "mpd/search.tmpl")
+	ctx.RenderStd(ctx, "mpd/search.tmpl")
 }

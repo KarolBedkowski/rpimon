@@ -64,42 +64,42 @@ type pageCtx struct {
 	Data          string
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
+func mainPageHandler(r *http.Request, ctx *app.BaseCtx) {
 	data := &pageCtx{
 		DataPageCtx:   &app.DataPageCtx{BaseCtx: ctx},
 		Configuration: config,
 	}
 	data.SetMenuActive("utils")
-	app.RenderTemplateStd(w, data, "utils/utils.tmpl")
+	ctx.RenderStd(data, "utils/utils.tmpl")
 }
 
-func commandPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
+func commandPageHandler(r *http.Request, ctx *app.BaseCtx) {
 	vars := mux.Vars(r)
 	groupName, ok := vars["group"]
 	if !ok || groupName == "" {
 		l.Warn("page.utils commandPageHandler: missing group ", vars)
-		mainPageHandler(w, r, ctx)
+		mainPageHandler(r, ctx)
 		return
 	}
 
 	group, ok := config.Utils[groupName]
 	if !ok {
 		l.Warn("page.utils commandPageHandler: wrong group ", vars)
-		mainPageHandler(w, r, ctx)
+		mainPageHandler(r, ctx)
 		return
 	}
 
 	commandIDStr, ok := vars["command-id"]
 	if !ok || commandIDStr == "" {
 		l.Warn("page.utils commandPageHandler: wrong commandIDStr ", vars)
-		mainPageHandler(w, r, ctx)
+		mainPageHandler(r, ctx)
 		return
 	}
 
 	commandID, err := strconv.Atoi(commandIDStr)
 	if err != nil || commandID < 0 || commandID >= len(group) {
 		l.Warn("page.utils commandPageHandler: wrong commandID ", vars)
-		mainPageHandler(w, r, ctx)
+		mainPageHandler(r, ctx)
 		return
 	}
 
@@ -110,6 +110,7 @@ func commandPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx
 	if result == "" {
 		result = "<b>Done</b> - No result"
 	}
+	w := ctx.ResponseWriter
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Write([]byte(result))
 }
@@ -121,10 +122,10 @@ type (
 	}
 )
 
-func configurePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func configurePageHandler(r *http.Request, bctx *app.BaseCtx) {
 	ctx := &configurePageContext{BaseCtx: bctx}
 	ctx.Utils = config.Utils
-	app.RenderTemplateStd(w, ctx, "utils/conf-index.tmpl")
+	ctx.RenderStd(ctx, "utils/conf-index.tmpl")
 }
 
 type (
@@ -165,7 +166,7 @@ func (f *confGroupForm) validate() (errors []string) {
 	return
 }
 
-func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func confGroupPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	vars := mux.Vars(r)
 	groupName, _ := vars["group"]
 	ctx := &confGroupPageContext{BaseCtx: bctx}
@@ -183,7 +184,7 @@ func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Base
 		if errors == nil || len(errors) == 0 {
 			if ctx.Form.Name == groupName {
 				// no changes
-				http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
+				ctx.Redirect(app.GetNamedURL("utils-conf"))
 				return
 			}
 			if groupName == "<new>" {
@@ -199,7 +200,7 @@ func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Base
 				delete(config.Utils, groupName)
 			}
 			if saveConf(ctx.BaseCtx) {
-				http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
+				ctx.Redirect(app.GetNamedURL("utils-conf"))
 				return
 			}
 		} else {
@@ -211,7 +212,7 @@ func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Base
 	case "DELETE":
 		delete(config.Utils, groupName)
 		if saveConf(ctx.BaseCtx) {
-			http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
+			ctx.Redirect(app.GetNamedURL("utils-conf"))
 			return
 		}
 	case "GET":
@@ -221,10 +222,10 @@ func confGroupPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Base
 		}
 	}
 	ctx.Save()
-	app.RenderTemplateStd(w, ctx, "utils/conf-group.tmpl")
+	ctx.RenderStd(ctx, "utils/conf-group.tmpl")
 }
 
-func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func confCommandPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	vars := mux.Vars(r)
 	groupName, _ := vars["group"]
 	cmd, _ := vars["util"]
@@ -261,7 +262,7 @@ func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Ba
 				config.Utils[groupName] = group
 			}
 			if saveConf(ctx.BaseCtx) {
-				http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
+				ctx.Redirect(app.GetNamedURL("utils-conf"))
 				return
 			}
 		} else {
@@ -278,7 +279,7 @@ func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Ba
 			}
 		}
 		if saveConf(ctx.BaseCtx) {
-			http.Redirect(w, r, app.GetNamedURL("utils-conf"), http.StatusFound)
+			ctx.Redirect(app.GetNamedURL("utils-conf"))
 			return
 		}
 
@@ -293,7 +294,7 @@ func confCommandPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Ba
 			}
 		}
 	}
-	app.RenderTemplateStd(w, ctx, "utils/conf-cmd.tmpl")
+	ctx.RenderStd(ctx, "utils/conf-cmd.tmpl")
 }
 
 // save configuration and add apriopriate flash message

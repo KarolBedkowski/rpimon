@@ -22,10 +22,10 @@ type playlistsPageCtx struct {
 	Error       string
 }
 
-func playlistsPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func playlistsPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	ctx := &playlistsPageCtx{BaseCtx: bctx}
 	ctx.SetMenuActive("mpd-playlists")
-	app.RenderTemplateStd(w, ctx, "mpd/playlists.tmpl")
+	ctx.RenderStd(ctx, "mpd/playlists.tmpl")
 }
 
 func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +59,7 @@ func playlistsListService(w http.ResponseWriter, r *http.Request) {
 	w.Write(encoded)
 }
 
-func playlistsContentPage(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func playlistsContentPage(r *http.Request, bctx *app.BaseCtx) {
 	vars := mux.Vars(r)
 	playlist, ok := vars["name"]
 	if !ok || playlist == "" {
@@ -80,7 +80,7 @@ func playlistsContentPage(w http.ResponseWriter, r *http.Request, bctx *app.Base
 		Name:    playlist,
 	}
 	ctx.SetMenuActive("mpd-playlists")
-	app.RenderTemplateStd(w, ctx, "mpd/playlist_content.tmpl")
+	ctx.RenderStd(ctx, "mpd/playlist_content.tmpl")
 }
 
 func playlistsSongActionHandler(w http.ResponseWriter, r *http.Request) {

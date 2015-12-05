@@ -139,7 +139,7 @@ func (f *confForm) cleanup() {
 	f.MonitoredHosts = hosts
 }
 
-func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func confPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	form := confForm{}
 	cfg.Configuration.RLock()
 	form = confForm(*cfg.Configuration.Monitor)
@@ -171,7 +171,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) 
 				ctx.AddFlashMessage("Configuration saved.", "success")
 			}
 			ctx.Save()
-			http.Redirect(w, r, r.URL.String(), http.StatusFound)
+			ctx.Redirect(r.URL.String())
 			return
 		}
 		ctx.Errors = errors
@@ -179,5 +179,5 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) 
 	case "GET":
 	}
 	ctx.Save()
-	app.RenderTemplateStd(w, ctx, "monitor/monitor-conf.tmpl")
+	ctx.RenderStd(ctx, "monitor/monitor-conf.tmpl")
 }

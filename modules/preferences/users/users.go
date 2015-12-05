@@ -26,11 +26,11 @@ type (
 	}
 )
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func mainPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	ctx := &usersPageCtx{BaseCtx: bctx}
 	ctx.Users = model.GetAllUsers()
 	ctx.SetMenuActive("m-users")
-	app.RenderTemplateStd(w, ctx, "pref/users/index.tmpl")
+	ctx.RenderStd(ctx, "pref/users/index.tmpl")
 }
 
 type (
@@ -52,7 +52,7 @@ func (c *userPageCtx) HasPriv(perm string) bool {
 	return app.CheckPermission(c.Form.Privs, perm)
 }
 
-func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func userPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	vars := mux.Vars(r)
 	login, _ := vars["user"]
 	ctx := &userPageCtx{BaseCtx: bctx,
@@ -81,10 +81,10 @@ func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) 
 			if err = model.AddUser(ctx.Form.User); err == nil {
 				ctx.BaseCtx.AddFlashMessage("User added", "success")
 				ctx.Save()
-				http.Redirect(w, r, app.GetNamedURL("m-pref-users-index"), http.StatusFound)
+				ctx.Redirect(app.GetNamedURL("m-pref-users-index"))
 				return
 			}
-			ctx.AddFlashMessage("Add user errror: "+err.Error(), "error")
+			ctx.AddFlashMessage("Add user error: "+err.Error(), "error")
 		} else {
 			// update user
 			if ctx.Form.NewPassword != "" {
@@ -93,10 +93,10 @@ func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) 
 			if err = model.UpdateUser(ctx.Form.User); err == nil {
 				ctx.AddFlashMessage("User updated", "success")
 				ctx.Save()
-				http.Redirect(w, r, app.GetNamedURL("m-pref-users-index"), http.StatusFound)
+				ctx.Redirect(app.GetNamedURL("m-pref-users-index"))
 				return
 			}
-			ctx.AddFlashMessage("Update user errror: "+err.Error(), "error")
+			ctx.AddFlashMessage("Update user error: "+err.Error(), "error")
 		}
 		if err != nil {
 			ctx.AddFlashMessage("Error: "+err.Error(), "error")
@@ -106,14 +106,14 @@ func userPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) 
 		if err = model.DeleteUser(login); err == nil {
 			ctx.AddFlashMessage("User deleted", "success")
 			ctx.Save()
-			http.Redirect(w, r, app.GetNamedURL("m-pref-users-index"), http.StatusFound)
+			ctx.Redirect(app.GetNamedURL("m-pref-users-index"))
 			return
 		}
 		ctx.AddFlashMessage("Update user errror: "+err.Error(), "error")
 	}
 	ctx.SetMenuActive("m-users")
 	ctx.Save()
-	app.RenderTemplateStd(w, ctx, "pref/users/user.tmpl")
+	ctx.RenderStd(ctx, "pref/users/user.tmpl")
 
 }
 
@@ -132,7 +132,7 @@ type (
 	}
 )
 
-func profilePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func profilePageHandler(r *http.Request, bctx *app.BaseCtx) {
 	ctx := &profileContext{
 		BaseCtx: bctx,
 		User:    model.GetUserByLogin(bctx.CurrentUser),
@@ -160,5 +160,5 @@ func profilePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCt
 	}
 	ctx.Save()
 	ctx.SetMenuActive("m-user-profile")
-	app.RenderTemplateStd(w, ctx, "pref/users/profile.tmpl")
+	ctx.RenderStd(ctx, "pref/users/profile.tmpl")
 }

@@ -32,7 +32,7 @@ func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	return "system", menu
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func mainPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	page := r.FormValue("sec")
 	if page == "" {
 		page = "acpi"
@@ -64,5 +64,5 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) 
 		data.Header2 = "lspci"
 	}
 	data.SetMenuActive("sys-hw-index")
-	app.RenderTemplateStd(w, data, "data.tmpl", "tabs.tmpl")
+	bctx.RenderStd(data, "data.tmpl", "tabs.tmpl")
 }

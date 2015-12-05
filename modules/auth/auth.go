@@ -52,40 +52,40 @@ func (ctx loginPageCtx) Validate() (err string) {
 	return
 }
 
-func loginPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func loginPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	ctx := &loginPageCtx{bctx, new(loginForm), ""}
 	if r.Method == "POST" {
 		r.ParseForm()
 		if err := decoder.Decode(ctx, r.Form); err != nil {
 			l.Warn("Decode form error", err, r.Form)
-			handleLoginError("Form error", w, ctx)
+			handleLoginError("Form error", ctx)
 			return
 		}
 		if err := ctx.Validate(); err != "" {
-			handleLoginError(err, w, ctx)
+			handleLoginError(err, ctx)
 			return
 		}
 		user := model.GetUserByLogin(ctx.Login)
 		if user == nil || !user.CheckPassword(ctx.Password) {
-			handleLoginError("Wrong user or password", w, ctx)
+			handleLoginError("Wrong user or password", ctx)
 			return
 		}
 		ctx.AddFlashMessage("User log in", "info")
-		app.LoginUser(w, r, user)
+		app.LoginUser(ctx.ResponseWriter, r, user)
 		if back := r.FormValue("back"); back != "" {
 			l.Debug("Redirect to ", back)
-			http.Redirect(w, r, back, http.StatusFound)
+			ctx.Redirect(back)
 		} else {
-			http.Redirect(w, r, "/", http.StatusFound)
+			ctx.Redirect("/")
 		}
 	} else {
-		app.RenderTemplate(w, ctx, "login", "login.tmpl", "flash.tmpl")
+		app.RenderTemplate(ctx.ResponseWriter, ctx, "login", "login.tmpl", "flash.tmpl")
 	}
 }
 
-func handleLoginError(message string, w http.ResponseWriter, ctx *loginPageCtx) {
+func handleLoginError(message string, ctx *loginPageCtx) {
 	ctx.Message = message
-	app.RenderTemplate(w, ctx, "login", "login.tmpl", "flash.tmpl")
+	app.RenderTemplate(ctx.ResponseWriter, ctx, "login", "login.tmpl", "flash.tmpl")
 }
 
 func logoffHandler(w http.ResponseWriter, r *http.Request) {

@@ -70,7 +70,7 @@ func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	return "", menu
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func mainPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	ctx := &struct {
 		*app.BaseCtx
 		Tasks []*model.Task
@@ -79,7 +79,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) 
 		Tasks:   model.GetTasks(),
 	}
 	ctx.SetMenuActive("worker-index")
-	app.RenderTemplateStd(w, ctx, "worker/index.tmpl")
+	ctx.RenderStd(ctx, "worker/index.tmpl")
 }
 
 type taskPageContext struct {
@@ -138,7 +138,7 @@ func taskPageHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	app.RenderTemplateStd(w, ctx, "worker/task.tmpl")
+	ctx.RenderStd(ctx, "worker/task.tmpl")
 }
 
 func taskLogPageHandler(w http.ResponseWriter, r *http.Request) {

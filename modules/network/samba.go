@@ -35,10 +35,10 @@ func smbGetMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	return "m-net", menu
 }
 
-func sambaPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
+func sambaPageHandler(r *http.Request, ctx *app.BaseCtx) {
 	data := &app.DataPageCtx{BaseCtx: ctx}
 	data.SetMenuActive("m-net-samba")
 	data.Header1 = "Samba"
 	data.Data = h.ReadCommand("sudo", "smbstatus")
-	app.RenderTemplateStd(w, data, "data.tmpl")
+	ctx.RenderStd(data, "data.tmpl")
 }

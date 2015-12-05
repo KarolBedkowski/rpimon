@@ -39,7 +39,7 @@ type (
 	}
 )
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func mainPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	ctx := &pageCtx{BaseCtx: bctx}
 	if r.Method == "POST" {
 		r.ParseForm()
@@ -58,7 +58,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) 
 			ctx.BaseCtx.AddFlashMessage("Configuration saved.", "success")
 		}
 		ctx.Save()
-		http.Redirect(w, r, r.URL.String(), http.StatusFound)
+		ctx.Redirect(r.URL.String())
 		return
 	}
 	ctx.SetMenuActive("p-modules")
@@ -71,7 +71,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) 
 		})
 	}
 	ctx.SetMenuActive("m-modules")
-	app.RenderTemplateStd(w, ctx, "pref/modules/index.tmpl")
+	ctx.RenderStd(ctx, "pref/modules/index.tmpl")
 }
 
 type (
@@ -92,17 +92,17 @@ type (
 	}
 )
 
-func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func confModulePageHandler(r *http.Request, bctx *app.BaseCtx) {
 	vars := mux.Vars(r)
 	moduleName, _ := vars["module"]
 	ctx := &confModulePageContext{BaseCtx: bctx}
 	ctx.Module = app.GetModule(moduleName)
 	if ctx.Module == nil {
-		app.Render400(w, r, "Invalid module "+moduleName)
+		ctx.Render400("Invalid module " + moduleName)
 		return
 	}
 	if !ctx.Module.Configurable {
-		app.Render400(w, r, "Module not configurable")
+		ctx.Render400("Module not configurable")
 		return
 	}
 	conf := ctx.Module.GetConfiguration()
@@ -129,7 +129,7 @@ func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Bas
 			ctx.BaseCtx.AddFlashMessage("Configuration saved.", "success")
 		}
 		ctx.Save()
-		http.Redirect(w, r, app.GetNamedURL("m-pref-modules-index"), http.StatusFound)
+		ctx.Redirect(app.GetNamedURL("m-pref-modules-index"))
 		return
 	}
 	for key, val := range conf {
@@ -139,5 +139,5 @@ func confModulePageHandler(w http.ResponseWriter, r *http.Request, bctx *app.Bas
 	}
 	ctx.Form.Enabled = conf["enabled"] == "yes"
 	ctx.SetMenuActive("m-modules")
-	app.RenderTemplateStd(w, ctx, "pref/modules/conf.tmpl")
+	ctx.RenderStd(ctx, "pref/modules/conf.tmpl")
 }

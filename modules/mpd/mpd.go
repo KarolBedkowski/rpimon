@@ -179,10 +179,10 @@ type pageCtx struct {
 	Status *mpdStatus
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func mainPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	ctx := &pageCtx{BaseCtx: bctx}
 	ctx.SetMenuActive("mpd-index")
-	app.RenderTemplateStd(w, ctx, "mpd/index.tmpl")
+	ctx.RenderStd(ctx, "mpd/index.tmpl")
 }
 
 func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
@@ -292,7 +292,7 @@ func filePageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func historyHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func historyHandler(r *http.Request, bctx *app.BaseCtx) {
 	ctx := &struct {
 		*app.BaseCtx
 		History []*model.Song
@@ -301,7 +301,7 @@ func historyHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
 		History: model.GetSongs(),
 	}
 	ctx.SetMenuActive("mpd-history")
-	app.RenderTemplateStd(w, ctx, "mpd/history.tmpl")
+	ctx.RenderStd(ctx, "mpd/history.tmpl")
 }
 
 func historyFileHandler(w http.ResponseWriter, r *http.Request) {

@@ -75,11 +75,11 @@ type mainPageContext struct {
 	NoteList []*NoteStuct
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func mainPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	ctx := &mainPageContext{BaseCtx: bctx}
 	ctx.SetMenuActive("notepad-index")
 	ctx.NoteList = findFiles()
-	app.RenderTemplateStd(w, ctx, "notepad/index.tmpl")
+	ctx.RenderStd(ctx, "notepad/index.tmpl")
 }
 
 type notePageContext struct {

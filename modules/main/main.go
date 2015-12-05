@@ -45,7 +45,7 @@ type pageCtx struct {
 	HostsStatus       map[string]bool
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func mainPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	ctx := &pageCtx{BaseCtx: bctx}
 	ctx.SetMenuActive("main")
 	ctx.Warnings = app.GetWarnings()
@@ -66,7 +66,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) 
 		ctx.MpdStatus = mpdStatus
 	}
 	ctx.HostsStatus = monitor.GetSimpleHostStatus()
-	app.RenderTemplateStd(w, ctx, "main/index.tmpl")
+	ctx.RenderStd(ctx, "main/index.tmpl")
 }
 
 func alertsServHandler(w http.ResponseWriter, r *http.Request) {

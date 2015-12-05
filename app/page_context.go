@@ -111,6 +111,18 @@ func (ctx *BaseCtx) SetMenuActive(id string) {
 	ctx.MainMenu.SetActiveMenuItem(id)
 }
 
+func (ctx *BaseCtx) Redirect(url string) {
+	http.Redirect(ctx.ResponseWriter, ctx.Request, url, http.StatusFound)
+}
+
+func (ctx *BaseCtx) RenderStd(context interface{}, args ...string) {
+	RenderTemplateStd(ctx.ResponseWriter, context, args...)
+}
+
+func (ctx *BaseCtx) Render400(msgs ...string) {
+	Render400(ctx.ResponseWriter, ctx.Request, msgs...)
+}
+
 // DataPageCtx - context  with data (string) + title
 type DataPageCtx struct {
 	*BaseCtx
@@ -129,13 +141,13 @@ func NewDataPageCtx(w http.ResponseWriter, r *http.Request, title string) *DataP
 }
 
 // ContextHandler - handler function called by Context and SecContext
-type ContextHandler func(w http.ResponseWriter, r *http.Request, ctx *BaseCtx)
+type ContextHandler func(r *http.Request, ctx *BaseCtx)
 
 // Context create BaseCtx for request
 func Context(h ContextHandler, title string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := NewBaseCtx(title, w, r)
-		h(w, r, ctx)
+		h(r, ctx)
 	})
 }
 
@@ -145,12 +157,12 @@ func SecContext(h ContextHandler, title string, permission string) http.HandlerF
 		ctx := NewBaseCtx(title, w, r)
 		if ctx.CurrentUser != "" && ctx.CurrentUserPerms != nil {
 			if permission == "" {
-				h(w, r, ctx)
+				h(r, ctx)
 				return
 			}
 			for _, p := range ctx.CurrentUserPerms {
 				if p == permission {
-					h(w, r, ctx)
+					h(r, ctx)
 					return
 				}
 			}

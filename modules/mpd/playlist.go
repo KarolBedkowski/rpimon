@@ -24,10 +24,10 @@ type playlistPageCtx struct {
 	Error         error
 }
 
-func playlistPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func playlistPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	ctx := &playlistPageCtx{BaseCtx: bctx}
 	ctx.SetMenuActive("mpd-playlist")
-	app.RenderTemplateStd(w, ctx, "mpd/playlist.tmpl")
+	ctx.RenderStd(ctx, "mpd/playlist.tmpl")
 }
 
 func songActionPageHandler(w http.ResponseWriter, r *http.Request) {

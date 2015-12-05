@@ -66,7 +66,7 @@ type pageCtx struct {
 	LogsDef     logsDef
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func mainPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	ctx := &pageCtx{BaseCtx: bctx}
 	vars := mux.Vars(r)
 	page, ok := vars["page"]
@@ -77,7 +77,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) 
 	logname := r.FormValue("log")
 	logs, group, err := findGroup(page, logname)
 	if err != nil {
-		app.Render400(w, r)
+		ctx.Render400()
 		return
 	}
 
@@ -111,7 +111,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) 
 	}
 	ctx.SetMenuActive(page)
 	ctx.CurrentPage = page
-	app.RenderTemplateStd(w, ctx, "system/logs.tmpl")
+	ctx.RenderStd(ctx, "system/logs.tmpl")
 }
 
 func servLogHandler(w http.ResponseWriter, r *http.Request) {

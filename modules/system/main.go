@@ -51,12 +51,12 @@ type pageSystemCtx struct {
 	MaxAcceptableLoad int
 }
 
-func systemPageHandler(w http.ResponseWriter, r *http.Request, bctx *app.BaseCtx) {
+func systemPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	ctx := &pageSystemCtx{BaseCtx: bctx,
 		Warnings: app.GetWarnings()}
 	ctx.SetMenuActive("system-live")
 	ctx.MaxAcceptableLoad = runtime.NumCPU() * 2
-	app.RenderTemplateStd(w, ctx, "main/system.tmpl")
+	ctx.RenderStd(ctx, "main/system.tmpl")
 }
 
 var statusServCache = h.NewSimpleCache(1)

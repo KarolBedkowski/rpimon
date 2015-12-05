@@ -63,14 +63,14 @@ type mainPageContext struct {
 	Interfaces *monitor.InterfacesStruct
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
+func mainPageHandler(r *http.Request, ctx *app.BaseCtx) {
 	c := &mainPageContext{BaseCtx: ctx}
 	c.SetMenuActive("m-net-index")
 	c.Interfaces = monitor.GetInterfacesInfo()
-	app.RenderTemplateStd(w, c, "network/status.tmpl")
+	ctx.RenderStd(c, "network/status.tmpl")
 }
 
-func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
+func netstatPageHandler(r *http.Request, ctx *app.BaseCtx) {
 	page := r.FormValue("sec")
 	if page == "" {
 		page = "listen"
@@ -95,7 +95,7 @@ func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx
 		app.NewMenuItemFromRoute("Connections", "m-net-netstat").AddQuery("?sec=connections").SetActve(page == "connections"),
 		app.NewMenuItemFromRoute("All", "m-net-netstat").AddQuery("?sec=all").SetActve(page == "all"),
 	}
-	app.RenderTemplateStd(w, data, "data.tmpl", "tabs.tmpl")
+	ctx.RenderStd(data, "data.tmpl", "tabs.tmpl")
 }
 
 type confPageContext struct {
@@ -144,19 +144,20 @@ var confCommands = map[string][]string{
 	},
 }
 
-func confPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
+func confPageHandler(r *http.Request, ctx *app.BaseCtx) {
 	cmd := r.FormValue("cmd")
 	if cmd == "" {
 		cmd = confCommands["Base"][0]
 	} else {
 		if !h.CheckValueInDictOfList(confCommands, cmd) {
-			app.Render400(w, r)
+			ctx.Render400()
 			return
 		}
 	}
 	cmdfields := strings.Fields(cmd)
 
 	if r.FormValue("data") == "1" {
+		w := ctx.ResponseWriter
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte(h.ReadCommand(cmdfields[0], cmdfields[1:]...)))
 	} else {
@@ -165,7 +166,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
 		ctx.Current = cmd
 		ctx.Commands = &confCommands
 		ctx.Data = h.ReadCommand(cmdfields[0], cmdfields[1:]...)
-		app.RenderTemplateStd(w, ctx, "network/conf.tmpl")
+		ctx.RenderStd(ctx, "network/conf.tmpl")
 	}
 }
 
@@ -184,19 +185,20 @@ var iptablesTables = []string{
 	"security",
 }
 
-func iptablesPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
+func iptablesPageHandler(r *http.Request, ctx *app.BaseCtx) {
 	table := r.FormValue("table")
 	if table == "" {
 		table = iptablesTables[0]
 	} else {
 		if !h.CheckValueInStrList(iptablesTables, table) {
-			app.Render400(w, r)
+			ctx.Render400()
 			return
 		}
 	}
 	data := h.ReadCommand("sudo", "iptables", "-L", "-vn", "-t", table)
 
 	if r.FormValue("data") == "1" {
+		w := ctx.ResponseWriter
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte(data))
 	} else {
@@ -205,7 +207,7 @@ func iptablesPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCt
 		ctx.Current = table
 		ctx.Tables = &iptablesTables
 		ctx.Data = data
-		app.RenderTemplateStd(w, ctx, "network/iptables.tmpl")
+		ctx.RenderStd(ctx, "network/iptables.tmpl")
 	}
 }
 

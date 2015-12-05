@@ -34,7 +34,7 @@ func nfsGetMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	return "m-net", menu
 }
 
-func nfsPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
+func nfsPageHandler(r *http.Request, ctx *app.BaseCtx) {
 	page := r.FormValue("sec")
 	if page == "" {
 		page = "stat"
@@ -54,5 +54,5 @@ func nfsPageHandler(w http.ResponseWriter, r *http.Request, ctx *app.BaseCtx) {
 		app.NewMenuItemFromRoute("NFSstat", "m-net-nfs").AddQuery("?sec=stat").SetActve(page == "stat"),
 		app.NewMenuItemFromRoute("exportfs", "m-net-nfs").AddQuery("?sec=exportfs").SetActve(page == "exportfs"),
 	}
-	app.RenderTemplateStd(w, data, "data.tmpl", "tabs.tmpl")
+	ctx.RenderStd(data, "data.tmpl", "tabs.tmpl")
 }
