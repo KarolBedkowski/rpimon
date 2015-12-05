@@ -1,9 +1,8 @@
-package mw
+package app
 
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"k.prv/rpimon/app/session"
 	"net/http"
 )
 
@@ -14,7 +13,7 @@ const csrftokenlen = 64
 const CONTEXTCSRFTOKEN = "csrf_token"
 
 // csrf tokens name formms
-const FORMCSRFTOKEN = "BasePageContext.CsrfToken"
+const FORMCSRFTOKEN = "BaseCtx.CsrfToken"
 
 // alternative csrf token name
 const FORMCSRFTOKEN2 = "CsrfToken"
@@ -22,7 +21,7 @@ const FORMCSRFTOKEN2 = "CsrfToken"
 // CsrfHandler - middleware verify CSRF token in request.
 func CsrfHandler(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		sess := session.GetSessionStore(w, r)
+		sess := GetSessionStore(w, r)
 		csrfToken := sess.Values[CONTEXTCSRFTOKEN]
 		if r.Method == "POST" && r.FormValue(FORMCSRFTOKEN) != csrfToken && r.FormValue(FORMCSRFTOKEN2) != csrfToken {
 			http.Error(w, "Fobidden/CSRF", http.StatusForbidden)

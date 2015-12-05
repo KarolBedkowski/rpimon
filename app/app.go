@@ -1,24 +1,19 @@
 package app
 
 import (
-	//	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"k.prv/rpimon/app/cfg"
-	"k.prv/rpimon/app/mw"
-	gzip "k.prv/rpimon/app/mw/gziphander"
-	"k.prv/rpimon/app/session"
-	l "k.prv/rpimon/helpers/logging"
+	"k.prv/rpimon/cfg"
+	l "k.prv/rpimon/logging"
 	"net/http"
 	"strconv"
 )
 
 // App main router
-var Router = mux.NewRouter()
+var router = mux.NewRouter()
 
 // Init - Initialize application
 func Init(appConfFile string, debug int) *cfg.AppConfiguration {
-
-	Router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
+	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
 
 	conf := cfg.LoadConfiguration(appConfFile)
 	if debug == 0 {
@@ -28,16 +23,16 @@ func Init(appConfFile string, debug int) *cfg.AppConfiguration {
 	} // other: use value from config
 
 	l.Init(conf.LogFilename, conf.Debug)
-	l.Print("Debug=", conf.Debug)
+	l.Info("Debug=%s", conf.Debug)
 
-	session.InitSessionStore(conf)
-	cfg.InitUsers(conf.Users, conf.Debug)
+	initSessionStore(conf)
 
+	router.HandleFunc("/", handleHome)
 	http.Handle("/static/", http.StripPrefix("/static",
-		gzip.FileServer(http.Dir(conf.StaticDir), !conf.Debug)))
-	http.Handle("/favicon.ico", gzip.FileServer(http.Dir(conf.StaticDir), !conf.Debug))
+		FileServer(http.Dir(conf.StaticDir), !conf.Debug)))
+	http.Handle("/favicon.ico", FileServer(http.Dir(conf.StaticDir), !conf.Debug))
 	//context.ClearHandler()
-	http.Handle("/", mw.LogHandler(mw.CsrfHandler(session.SessionHandler(Router))))
+	http.Handle("/", logHandler(CsrfHandler(SessionHandler(router))))
 	return conf
 }
 
@@ -48,7 +43,7 @@ func Close() {
 
 // GetNamedURL - Return url for named route and parameters
 func GetNamedURL(name string, pairs ...interface{}) (url string) {
-	route := Router.Get(name)
+	route := router.Get(name)
 	if route == nil {
 		l.Error("GetNamedURL " + name + " error")
 		return ""
@@ -88,4 +83,8 @@ func GetNamedURL(name string, pairs ...interface{}) (url string) {
 
 func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	Render404(w, r)
+}
+
+func handleHome(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, GetNamedURL("main-index"), http.StatusFound)
 }

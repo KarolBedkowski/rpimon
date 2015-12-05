@@ -13,7 +13,8 @@ MPD.plists = (function(self, $) {
 	var table = null,
 		urls = {
 			"mpd-playlists-serv-list": "/mpd/playlists/serv/list",
-			"mpd-playlists-action": "/mpd-playlists/action"
+			"mpd-playlists-action": "/mpd-playlists/action",
+			"mpd-playlist-content": ""
 		};
 
 	function refresh() {
@@ -58,7 +59,6 @@ MPD.plists = (function(self, $) {
 
 	self.init = function initF(params) {
 		urls = $.extend(urls, params.urls || {});
-
 		table = $('table').dataTable({
 			"bAutoWidth": false,
 			"bStateSave": true,
@@ -82,7 +82,8 @@ MPD.plists = (function(self, $) {
 					"bSortable": false,
 					"mRender": function() {
 						return ('<td><a href="#" title="Play" class="ajax-action-play"><span class="glyphicon glyphicon-play">' +
-							'<a href="#" title="Remove" class="ajax-action-remove"><span class="glyphicon glyphicon-remove"></a>');
+							'<a href="#" title="Remove" class="ajax-action-remove"><span class="glyphicon glyphicon-remove"></a>'+
+							'<a href="#" title="Show content" class="action-show">Show</a>');
 					}
 				}
 			],
@@ -105,6 +106,13 @@ MPD.plists = (function(self, $) {
 				$('a.ajax-action-play').on("click", function (event) {
 					event.preventDefault();
 					action("play", $(this).closest('tr').data("name"));
+				});
+
+				$('a.action-show').on("click", function(event) {
+					var name = $(this).closest('tr').data("name"),
+						url = urls['mpd-playlist-content'].replace("--playlist-name--", name);
+					event.preventDefault();
+					window.location.href = url;
 				});
 			}
 		});

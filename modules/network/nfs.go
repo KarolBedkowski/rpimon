@@ -3,13 +3,12 @@ package network
 import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	"net/http"
 )
 
 // NFSModule information
-var NFSModule = &context.Module{
+var NFSModule = &app.Module{
 	Name:          "network-nfs",
 	Title:         "Network - NFS",
 	Description:   "Network - NFS",
@@ -22,11 +21,11 @@ var NFSModule = &context.Module{
 func initNFSModule(parentRoute *mux.Route) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", context.HandleWithContext(nfsPageHandler, "Network - NFS")).Name("m-net-nfs")
+	subRouter.HandleFunc("/", app.TimeoutHandler(app.SecContext(nfsPageHandler, "Network - NFS", "admin"), 5)).Name("m-net-nfs")
 	return true
 }
 
-func nfsGetMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
+func nfsGetMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -35,12 +34,12 @@ func nfsGetMenu(ctx *context.BasePageContext) (parentID string, menu *context.Me
 	return "m-net", menu
 }
 
-func nfsPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
+func nfsPageHandler(r *http.Request, ctx *app.BaseCtx) {
 	page := r.FormValue("sec")
 	if page == "" {
 		page = "stat"
 	}
-	data := &context.SimpleDataPageCtx{BasePageContext: ctx}
+	data := &app.DataPageCtx{BaseCtx: ctx}
 	data.SetMenuActive("m-net-nfs")
 	data.Header1 = "NFS"
 	switch page {
@@ -51,9 +50,9 @@ func nfsPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePag
 		data.Header2 = "Connections"
 		data.Data = h.ReadCommand("nfsstat")
 	}
-	data.Tabs = []*context.MenuItem{
+	data.Tabs = []*app.MenuItem{
 		app.NewMenuItemFromRoute("NFSstat", "m-net-nfs").AddQuery("?sec=stat").SetActve(page == "stat"),
 		app.NewMenuItemFromRoute("exportfs", "m-net-nfs").AddQuery("?sec=exportfs").SetActve(page == "exportfs"),
 	}
-	app.RenderTemplateStd(w, data, "data.tmpl", "tabs.tmpl")
+	ctx.RenderStd(data, "data.tmpl", "tabs.tmpl")
 }

@@ -6,10 +6,9 @@ import (
 	"github.com/gorilla/mux"
 	"io"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/cfg"
-	"k.prv/rpimon/app/context"
+	"k.prv/rpimon/cfg"
 	h "k.prv/rpimon/helpers"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"os"
 	"strconv"
 	"strings"
@@ -28,10 +27,10 @@ const (
 )
 
 // Module information
-var Module *context.Module
+var Module *app.Module
 
 func init() {
-	Module = &context.Module{
+	Module = &app.Module{
 		Name:        "monitor",
 		Title:       "Monitor",
 		Description: "Background system monitors",
@@ -50,11 +49,13 @@ func initModule(parentRoute *mux.Route) bool {
 	//	conf := Module.GetConfiguration()
 	//	interval, _ := strconv.Atoi(conf["interval"])
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/configure", context.HandleWithContextSec(confPageHandler, "Monitor - Configuration", "admin")).Name("m-monitor-conf")
+	subRouter.HandleFunc("/configure", app.SecContext(confPageHandler, "Monitor - Configuration", "admin")).Name("m-monitor-conf")
 	Module.ConfigurePageURL = app.GetNamedURL("m-monitor-conf")
 	// Configuration for monitor is in main config
 	// TODO: przenieść
+	cfg.Configuration.RLock()
 	interval := cfg.Configuration.Monitor.UpdateInterval
+	cfg.Configuration.RUnlock()
 	if interval == 0 {
 		l.Info("Monitor: refresh in background is disabled")
 		return true
@@ -284,10 +285,14 @@ func GetCPUInfo() *CPUInfoStruct {
 
 func gatherCPUInfo() *CPUInfoStruct {
 	info := &CPUInfoStruct{}
-	if val, err := h.ReadIntFromFile(cfg.Configuration.Monitor.CPUFreqFile); err == nil {
+	cfg.Configuration.RLock()
+	freqFile := cfg.Configuration.Monitor.CPUFreqFile
+	tempFile := cfg.Configuration.Monitor.CPUTempFile
+	cfg.Configuration.RUnlock()
+	if val, err := h.ReadIntFromFile(freqFile); err == nil {
 		info.Freq = val / 1000
 	}
-	if val, err := h.ReadIntFromFile(cfg.Configuration.Monitor.CPUTempFile); err == nil {
+	if val, err := h.ReadIntFromFile(tempFile); err == nil {
 		info.Temp = val / 1000
 	}
 	return info

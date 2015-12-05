@@ -3,7 +3,8 @@ package main
 import (
 	"flag"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
+	l "k.prv/rpimon/logging"
+	"k.prv/rpimon/model"
 	mauth "k.prv/rpimon/modules/auth"
 	mfiles "k.prv/rpimon/modules/files"
 	mmain "k.prv/rpimon/modules/main"
@@ -33,7 +34,7 @@ import (
 )
 
 func main() {
-	log.Printf("Starting... ver %s", context.AppVersion)
+	log.Printf("Starting... ver %s", app.AppVersion)
 	configFilename := flag.String("conf", "./config.json", "Configuration filename")
 	debug := flag.Int("debug", -1, "Run in debug mode (1) or normal (0)")
 	forceLocalFiles := flag.Bool("forceLocalFiles", false, "Force use local files instead of embended assets")
@@ -41,17 +42,24 @@ func main() {
 	flag.Parse()
 
 	conf := app.Init(*configFilename, *debug)
+	model.Open(conf.Database)
 
 	if !conf.Debug {
-		log.Printf("NumCPU: %d", runtime.NumCPU())
+		l.Info("NumCPU: %d", runtime.NumCPU())
 		runtime.GOMAXPROCS(runtime.NumCPU())
 	}
 
 	if resources.Init(*forceLocalFiles, *localFilesPath) {
-		log.Printf("Using embended resources...")
+		l.Info("Using embended resources...")
 	} else {
-		log.Printf("Using local files...")
+		l.Info("Using local files...")
 	}
+
+	defer func() {
+		if e := recover(); e != nil {
+			model.Close()
+		}
+	}()
 
 	// cleanup
 	cleanChannel := make(chan os.Signal, 1)
@@ -59,31 +67,31 @@ func main() {
 	go func() {
 		<-cleanChannel
 		app.Close()
-		context.ShutdownModules()
-		os.Exit(1)
+		model.Close()
+		app.ShutdownModules()
+		os.Exit(0)
 	}()
 
-	app.Router.HandleFunc("/", handleHome)
-	context.RegisterModule(mauth.Module)
-	context.RegisterModule(mmain.Module)
-	context.RegisterModule(mpref.Module)
-	context.RegisterModule(mfiles.Module)
-	context.RegisterModule(mmpd.Module)
-	context.RegisterModule(mnet.Module)
-	context.RegisterModule(mnet.NFSModule)
-	context.RegisterModule(mnet.SambaModule)
-	context.RegisterModule(mnotepad.Module)
-	context.RegisterModule(mstorage.Module)
-	context.RegisterModule(msmart.Module)
-	context.RegisterModule(msyslogs.Module)
-	context.RegisterModule(msyshw.Module)
-	context.RegisterModule(msysproc.Module)
-	context.RegisterModule(msysusers.Module)
-	context.RegisterModule(mutls.Module)
-	context.RegisterModule(msystem.Module)
-	context.RegisterModule(mmonitor.Module)
-	context.RegisterModule(mworker.Module)
-	context.InitModules(conf, app.Router)
+	app.RegisterModule(mauth.Module)
+	app.RegisterModule(mmain.Module)
+	app.RegisterModule(mpref.Module)
+	app.RegisterModule(mfiles.Module)
+	app.RegisterModule(mmpd.Module)
+	app.RegisterModule(mnet.Module)
+	app.RegisterModule(mnet.NFSModule)
+	app.RegisterModule(mnet.SambaModule)
+	app.RegisterModule(mnotepad.Module)
+	app.RegisterModule(mstorage.Module)
+	app.RegisterModule(msmart.Module)
+	app.RegisterModule(msyslogs.Module)
+	app.RegisterModule(msyshw.Module)
+	app.RegisterModule(msysproc.Module)
+	app.RegisterModule(msysusers.Module)
+	app.RegisterModule(mutls.Module)
+	app.RegisterModule(msystem.Module)
+	app.RegisterModule(mmonitor.Module)
+	app.RegisterModule(mworker.Module)
+	app.InitModules(conf)
 
 	/* for filesystem store
 	go app.ClearSessionStore()
@@ -104,30 +112,23 @@ func main() {
 	*/
 
 	if conf.HTTPSAddress != "" {
-		log.Printf("Listen: %s", conf.HTTPSAddress)
-		if conf.HTTPAddress != "" {
-			go func() {
-				if err := http.ListenAndServeTLS(conf.HTTPSAddress,
-					conf.SslCert, conf.SslKey, nil); err != nil {
-					log.Fatalf("Error listening https, %v", err)
-				}
-			}()
-		} else {
+		l.Info("Listen: %s", conf.HTTPSAddress)
+		go func() {
 			if err := http.ListenAndServeTLS(conf.HTTPSAddress,
 				conf.SslCert, conf.SslKey, nil); err != nil {
 				log.Fatalf("Error listening https, %v", err)
 			}
-		}
+		}()
 	}
 
 	if conf.HTTPAddress != "" {
-		log.Printf("Listen: %s", conf.HTTPAddress)
-		if err := http.ListenAndServe(conf.HTTPAddress, nil); err != nil {
-			log.Fatalf("Error listening http, %v", err)
-		}
+		l.Info("Listen: %s", conf.HTTPAddress)
+		go func() {
+			if err := http.ListenAndServe(conf.HTTPAddress, nil); err != nil {
+				log.Fatalf("Error listening http, %v", err)
+			}
+		}()
 	}
-}
-
-func handleHome(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, app.GetNamedURL("main-index"), http.StatusFound)
+	done := make(chan bool)
+	<-done
 }

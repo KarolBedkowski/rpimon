@@ -7,19 +7,18 @@ import (
 	"io"
 	"io/ioutil"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"net/http"
 	"os"
 	"path/filepath"
 )
 
 // Module information
-var Module *context.Module
+var Module *app.Module
 
 func init() {
-	Module = &context.Module{
+	Module = &app.Module{
 		Name:        "files",
 		Title:       "Files",
 		Description: "File browser",
@@ -29,7 +28,7 @@ func init() {
 			"config_file": "./browser.json",
 		},
 		Configurable:  true,
-		AllPrivilages: []context.Privilege{{"files", "access to file browser"}},
+		AllPrivilages: []app.Privilege{{"files", "access to file browser"}},
 	}
 }
 
@@ -42,7 +41,7 @@ func initModule(parentRoute *mux.Route) bool {
 		return false
 	}
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/",
+	subRouter.HandleFunc("/index",
 		app.VerifyPermission(verifyAccess(mainPageHandler), "files")).Name(
 		"files-index")
 	subRouter.HandleFunc("/mkdir",
@@ -63,15 +62,15 @@ func initModule(parentRoute *mux.Route) bool {
 	return true
 }
 
-func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "files") {
 		return "", nil
 	}
-	return "", context.NewMenuItem("Files", app.GetNamedURL("files-index")).SetID("files").SetIcon("glyphicon glyphicon-hdd")
+	return "", app.NewMenuItem("Files", app.GetNamedURL("files-index")).SetID("files").SetIcon("glyphicon glyphicon-hdd")
 }
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request, pctx *pathContext) {
-	ctx := context.NewBasePageContext("Files", w, r)
+	ctx := app.NewBaseCtx("Files", w, r)
 	ctx.SetMenuActive("files")
 	r.ParseForm()
 	var relpath, abspath = ".", config.BaseDir
@@ -245,7 +244,7 @@ func filesServHandler(w http.ResponseWriter, r *http.Request) {
 		app.Render400(w, r, "invalid id")
 		return
 	}
-	children := make([][]interface{}, 0)
+	var children [][]interface{}
 	if path != "." {
 		children = append(children, []interface{}{
 			"folder",

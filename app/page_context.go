@@ -1,19 +1,16 @@
-package context
+package app
 
 import (
 	"github.com/gorilla/sessions"
 	"io/ioutil"
-	"k.prv/rpimon/app/mw"
-	asess "k.prv/rpimon/app/session"
 	"k.prv/rpimon/helpers"
-	//	l "k.prv/rpimon/helpers/logging"
 	"net/http"
 	"strings"
 	"time"
 )
 
-// BasePageContext context for pages
-type BasePageContext struct {
+// BaseCtx context for pages
+type BaseCtx struct {
 	Session          *sessions.Session
 	Title            string
 	ResponseWriter   http.ResponseWriter
@@ -43,17 +40,17 @@ func init() {
 // Types of flashes
 var FlashKind = []string{"error", "info", "success"}
 
-// NewBasePageContext create base page context for request
-func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *BasePageContext {
+// NewBaseCtx create base page context for request
+func NewBaseCtx(title string, w http.ResponseWriter, r *http.Request) *BaseCtx {
 
-	s := asess.GetSessionStore(w, r)
-	csrfToken := s.Values[mw.CONTEXTCSRFTOKEN]
+	s := GetSessionStore(w, r)
+	csrfToken := s.Values[CONTEXTCSRFTOKEN]
 	if csrfToken == nil {
-		csrfToken = mw.CreateNewCsrfToken()
-		s.Values[mw.CONTEXTCSRFTOKEN] = csrfToken
+		csrfToken = CreateNewCsrfToken()
+		s.Values[CONTEXTCSRFTOKEN] = csrfToken
 	}
 
-	ctx := &BasePageContext{Title: title,
+	ctx := &BaseCtx{Title: title,
 		ResponseWriter: w,
 		Request:        r,
 		Session:        s,
@@ -63,7 +60,7 @@ func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *B
 		FlashMessages:  make(map[string][]interface{}),
 		Version:        AppVersion,
 	}
-	ctx.CurrentUser, ctx.CurrentUserPerms, _ = asess.GetLoggerUser(s)
+	ctx.CurrentUser, ctx.CurrentUserPerms, _ = GetLoggerUser(s)
 
 	for _, kind := range FlashKind {
 		if flashes := ctx.Session.Flashes(kind); flashes != nil && len(flashes) > 0 {
@@ -78,12 +75,12 @@ func NewBasePageContext(title string, w http.ResponseWriter, r *http.Request) *B
 }
 
 // GetFlashMessage for current context
-func (ctx *BasePageContext) GetFlashMessage() map[string][]interface{} {
+func (ctx *BaseCtx) GetFlashMessage() map[string][]interface{} {
 	return ctx.FlashMessages
 }
 
 // AddFlashMessage to context
-func (ctx *BasePageContext) AddFlashMessage(msg interface{}, kind ...string) {
+func (ctx *BaseCtx) AddFlashMessage(msg interface{}, kind ...string) {
 	if len(kind) > 0 {
 		ctx.Session.AddFlash(msg, kind...)
 	} else {
@@ -92,31 +89,43 @@ func (ctx *BasePageContext) AddFlashMessage(msg interface{}, kind ...string) {
 }
 
 // Set value in session
-func (ctx *BasePageContext) Set(key string, value interface{}) {
+func (ctx *BaseCtx) Set(key string, value interface{}) {
 	ctx.Session.Values[key] = value
 }
 
 // Get value from session
-func (ctx *BasePageContext) Get(key string) interface{} {
+func (ctx *BaseCtx) Get(key string) interface{} {
 	return ctx.Session.Values[key]
 }
 
 // Save session by page context
-func (ctx *BasePageContext) Save() error {
-	return asess.SaveSession(ctx.ResponseWriter, ctx.Request)
+func (ctx *BaseCtx) Save() error {
+	return SaveSession(ctx.ResponseWriter, ctx.Request)
 }
 
 // SetMenuActive add id  to menu active items
-func (ctx *BasePageContext) SetMenuActive(id string) {
+func (ctx *BaseCtx) SetMenuActive(id string) {
 	if ctx.MainMenu == nil {
 		return
 	}
 	ctx.MainMenu.SetActiveMenuItem(id)
 }
 
-// SimpleDataPageCtx - context  with data (string) + title
-type SimpleDataPageCtx struct {
-	*BasePageContext
+func (ctx *BaseCtx) Redirect(url string) {
+	http.Redirect(ctx.ResponseWriter, ctx.Request, url, http.StatusFound)
+}
+
+func (ctx *BaseCtx) RenderStd(context interface{}, args ...string) {
+	RenderTemplateStd(ctx.ResponseWriter, context, args...)
+}
+
+func (ctx *BaseCtx) Render400(msgs ...string) {
+	Render400(ctx.ResponseWriter, ctx.Request, msgs...)
+}
+
+// DataPageCtx - context  with data (string) + title
+type DataPageCtx struct {
+	*BaseCtx
 	Data    string
 	Header1 string
 	Header2 string
@@ -125,35 +134,35 @@ type SimpleDataPageCtx struct {
 	TData [][]string
 }
 
-// NewSimpleDataPageCtx create new simple context to show text data
-func NewSimpleDataPageCtx(w http.ResponseWriter, r *http.Request, title string) *SimpleDataPageCtx {
-	ctx := &SimpleDataPageCtx{BasePageContext: NewBasePageContext(title, w, r)}
+// NewDataPageCtx create new simple context to show text data
+func NewDataPageCtx(w http.ResponseWriter, r *http.Request, title string) *DataPageCtx {
+	ctx := &DataPageCtx{BaseCtx: NewBaseCtx(title, w, r)}
 	return ctx
 }
 
-// BaseContextHandlerFunc - handler function called by HandleWithContext and HandleWithContextSec
-type BaseContextHandlerFunc func(w http.ResponseWriter, r *http.Request, ctx *BasePageContext)
+// ContextHandler - handler function called by Context and SecContext
+type ContextHandler func(r *http.Request, ctx *BaseCtx)
 
-// HandleWithContext create BasePageContext for request
-func HandleWithContext(h BaseContextHandlerFunc, title string) http.HandlerFunc {
+// Context create BaseCtx for request
+func Context(h ContextHandler, title string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := NewBasePageContext(title, w, r)
-		h(w, r, ctx)
+		ctx := NewBaseCtx(title, w, r)
+		h(r, ctx)
 	})
 }
 
-// HandleWithContextSec create BasePageContext for request and check user permissions.
-func HandleWithContextSec(h BaseContextHandlerFunc, title string, permission string) http.HandlerFunc {
+// SecContext create BaseCtx for request and check user permissions.
+func SecContext(h ContextHandler, title string, permission string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := NewBasePageContext(title, w, r)
+		ctx := NewBaseCtx(title, w, r)
 		if ctx.CurrentUser != "" && ctx.CurrentUserPerms != nil {
 			if permission == "" {
-				h(w, r, ctx)
+				h(r, ctx)
 				return
 			}
 			for _, p := range ctx.CurrentUserPerms {
 				if p == permission {
-					h(w, r, ctx)
+					h(r, ctx)
 					return
 				}
 			}

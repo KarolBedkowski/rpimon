@@ -25,15 +25,15 @@
 				</tr>
 			</thead>
 			<tbody>
-			{{ range $i, $t := .Tasks }}
+			{{ range .Tasks }}
 				<tr>
-					<td>{{ $t.Label }}</td>
-					<td>{{ if $t.Started }}{{ formatDate $t.Started "" }}{{ end }} /
-						{{ if $t.Finished }}{{ formatDate $t.Finished "" }}{{ end }}</td>
-					<th>{{ $t.Error }}</th>
+					<td>{{ .Label }}</td>
+					<td>{{ if .Started }}{{ formatDate .Started "" }}{{ end }} /
+						{{ if .Finished }}{{ formatDate .Finished "" }}{{ end }}</td>
+					<th>{{ .Error }}</th>
 					<td>
-						<a href="{{ namedurl "worker-task" "idx" $i }}">Show</a> |
-						<a href="{{ namedurl "worker-task-log" "name" $t.LogFile }}" target="_blank">Log</a>
+						<a href="{{ namedurl "worker-task" "idx" .ID }}">Show</a> |
+						<a href="{{ namedurl "worker-task-log" "name" .LogFile }}" target="_blank">Log</a>
 					</td>
 				</tr>
 			{{ end }}

@@ -2,18 +2,16 @@ package worker
 
 import (
 	"io/ioutil"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
+	"k.prv/rpimon/model"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync/atomic"
 	"time"
 )
-
-var tskCntr int32 = 0
 
 type worker struct {
 	workerPool chan chan Job
@@ -76,38 +74,34 @@ func (d *Dispatcher) dispatch() {
 }
 
 type Job struct {
-	task *Task
+	task *model.Task
 }
 
 func (j *Job) run() {
 	l.Info("job.run start %s (%s)", j.task.Label, j.task.Command)
 
-	j.task.mu.Lock()
 	now := time.Now()
 	j.task.Started = &now
-	cntr := atomic.AddInt32(&tskCntr, 1)
 	j.task.LogFile = now.Format("2006-01-02_15-04-05.00000") +
-		"-" + j.task.Label + "-" + strconv.Itoa(int(cntr)) + ".log"
-	j.task.mu.Unlock()
+		"-" + j.task.Label + "-" + strconv.Itoa(j.task.ID) + ".log"
+	model.SaveTask(j.task)
 
 	output, err := os.Create(path.Join(getLogsDir(), j.task.LogFile))
 	if err != nil {
 		l.Error("job.run creating output file error %s: %s", j.task.LogFile, err)
-		j.task.mu.Lock()
-		defer j.task.mu.Unlock()
 		j.task.Error = err.Error()
+		model.SaveTask(j.task)
 		return
 	}
 	defer output.Close()
 
 	err = execute(j.task, output)
-	j.task.mu.Lock()
-	defer j.task.mu.Unlock()
 	if err != nil {
 		j.task.Error = err.Error()
 	}
 	now = time.Now()
 	j.task.Finished = &now
+	model.SaveTask(j.task)
 	l.Info("job.run finished %s %s", j.task.Label, j.task.Command)
 }
 
@@ -118,7 +112,7 @@ func getLogsDir() (name string) {
 	return
 }
 
-func execute(task *Task, output *os.File) (err error) {
+func execute(task *model.Task, output *os.File) (err error) {
 	args := strings.Split(task.Params, "\n")
 	cmd := exec.Command(task.Command, args...)
 	cmd.Stderr = output
@@ -148,12 +142,14 @@ func deleteOldLogs() error {
 			}
 			if now.After(file.ModTime()) {
 				l.Info("Delete %s", file.Name())
-				os.Remove(file.Name())
+				os.Remove(filepath.Join(logdir, file.Name()))
 			}
 		}
 	} else {
 		l.Error("deleteOldLogs error: %s", err.Error())
 	}
+	l.Info("deleteOldLogs delete old records")
+	model.DeleteOldTasks(now)
 	l.Info("deleteOldLogs finished")
 	return nil
 }

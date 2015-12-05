@@ -3,19 +3,18 @@ package mpd
 import (
 	"encoding/json"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	//	h "k.prv/rpimon/helpers"
 	//"code.google.com/p/gompd/mpd"
-	"github.com/turbowookie/gompd/mpd"
-	l "k.prv/rpimon/helpers/logging"
+	"github.com/fhs/gompd/mpd"
+	l "k.prv/rpimon/logging"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-func libraryPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
+func libraryPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	bctx.SetMenuActive("mpd-library")
-	app.RenderTemplateStd(w, bctx, "mpd/library.tmpl")
+	bctx.RenderStd(bctx, "mpd/library.tmpl")
 }
 
 func libraryActionHandler(w http.ResponseWriter, r *http.Request) {
@@ -84,7 +83,7 @@ type (
 	}
 
 	searchPageContext struct {
-		*context.BasePageContext
+		*app.BaseCtx
 		Form   searchForm
 		Result []mpd.Attrs
 	}
@@ -99,8 +98,8 @@ func (f *searchForm) getQueryString() (query string) {
 	return f.Field + " \"" + f.Value + "\""
 }
 
-func searchPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
-	ctx := &searchPageContext{BasePageContext: bctx}
+func searchPageHandler(r *http.Request, bctx *app.BaseCtx) {
+	ctx := &searchPageContext{BaseCtx: bctx}
 	ctx.SetMenuActive("mpd-search")
 
 	r.ParseForm()
@@ -126,5 +125,5 @@ func searchPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.Bas
 			}
 		}
 	}
-	app.RenderTemplateStd(w, ctx, "mpd/search.tmpl")
+	ctx.RenderStd(ctx, "mpd/search.tmpl")
 }

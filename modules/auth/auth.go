@@ -4,10 +4,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/cfg"
-	"k.prv/rpimon/app/context"
-	"k.prv/rpimon/app/session"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
+	"k.prv/rpimon/model"
 	"net/http"
 )
 
@@ -16,7 +14,7 @@ var decoder = schema.NewDecoder()
 var subRouter *mux.Router
 
 // Module information
-var Module = &context.Module{
+var Module = &app.Module{
 	Name:          "auth",
 	Title:         "Authentication",
 	Description:   "",
@@ -28,7 +26,7 @@ var Module = &context.Module{
 // CreateRoutes for /auth
 func initModule(parentRoute *mux.Route) bool {
 	subRouter = parentRoute.Subrouter()
-	subRouter.HandleFunc("/login", context.HandleWithContext(loginPageHandler, "Login")).Name("auth-login")
+	subRouter.HandleFunc("/login", app.Context(loginPageHandler, "Login")).Name("auth-login")
 	subRouter.HandleFunc("/logoff", logoffHandler).Name("auth-logoff")
 	return true
 }
@@ -41,7 +39,7 @@ type (
 	}
 
 	loginPageCtx struct {
-		*context.BasePageContext
+		*app.BaseCtx
 		*loginForm
 		back string
 	}
@@ -54,43 +52,43 @@ func (ctx loginPageCtx) Validate() (err string) {
 	return
 }
 
-func loginPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
+func loginPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	ctx := &loginPageCtx{bctx, new(loginForm), ""}
 	if r.Method == "POST" {
 		r.ParseForm()
 		if err := decoder.Decode(ctx, r.Form); err != nil {
 			l.Warn("Decode form error", err, r.Form)
-			handleLoginError("Form error", w, ctx)
+			handleLoginError("Form error", ctx)
 			return
 		}
 		if err := ctx.Validate(); err != "" {
-			handleLoginError(err, w, ctx)
+			handleLoginError(err, ctx)
 			return
 		}
-		user := cfg.GetUserByLogin(ctx.Login)
+		user := model.GetUserByLogin(ctx.Login)
 		if user == nil || !user.CheckPassword(ctx.Password) {
-			handleLoginError("Wrong user or password", w, ctx)
+			handleLoginError("Wrong user or password", ctx)
 			return
 		}
 		ctx.AddFlashMessage("User log in", "info")
-		app.LoginUser(w, r, user)
+		app.LoginUser(ctx.ResponseWriter, r, user)
 		if back := r.FormValue("back"); back != "" {
 			l.Debug("Redirect to ", back)
-			http.Redirect(w, r, back, http.StatusFound)
+			ctx.Redirect(back)
 		} else {
-			http.Redirect(w, r, "/", http.StatusFound)
+			ctx.Redirect("/")
 		}
 	} else {
-		app.RenderTemplate(w, ctx, "login", "login.tmpl", "flash.tmpl")
+		app.RenderTemplate(ctx.ResponseWriter, ctx, "login", "login.tmpl", "flash.tmpl")
 	}
 }
 
-func handleLoginError(message string, w http.ResponseWriter, ctx *loginPageCtx) {
+func handleLoginError(message string, ctx *loginPageCtx) {
 	ctx.Message = message
-	app.RenderTemplate(w, ctx, "login", "login.tmpl", "flash.tmpl")
+	app.RenderTemplate(ctx.ResponseWriter, ctx, "login", "login.tmpl", "flash.tmpl")
 }
 
 func logoffHandler(w http.ResponseWriter, r *http.Request) {
-	session.ClearSession(w, r)
+	app.ClearSession(w, r)
 	http.Redirect(w, r, "/", http.StatusFound)
 }

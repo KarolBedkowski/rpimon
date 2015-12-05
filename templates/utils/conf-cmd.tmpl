@@ -19,7 +19,7 @@
 						<label for="Command">Command</label>
 						<input type="text" name="Command" id="Command" value="{{.Form.Command}}" class="form-control" required />
 					</div>
-					<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
+					<input type="hidden" name="BaseCtx.CsrfToken" id="" value="{{.CsrfToken}}" />
 					<input type="hidden" name="_method" value="" id="form-method" />
 					<div class="pull-right">
 						{{if not .New}}
