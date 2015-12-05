@@ -5,10 +5,10 @@ LDFLAGS="-X k.prv/rpimon/app.AppVersion '$(VERSION) - $(DATE)'"
 .PHONY: resources build
 
 build: resources
-	GOGCCFLAGS="-s -fPIC -O4 -Ofast -march=native" go build -ldflags $(LDFLAGS)
+	GOGCCFLAGS="-s -fPIC -O4 -Ofast -march=native" go build -v -ldflags $(LDFLAGS)
 
 build_pi: resources
-	CGO_ENABLED="0" GOGCCFLAGS="-fPIC -O4 -Ofast -march=native -s" GOARCH=arm GOARM=5 go build -o rpimon -ldflags $(LDFLAGS)
+	CGO_ENABLED="0" GOGCCFLAGS="-fPIC -O4 -Ofast -march=native -s" GOARCH=arm GOARM=5 go build -v -o rpimon -ldflags $(LDFLAGS)
 	#CGO_ENABLED="0" GOGCCFLAGS="-g -O2 -fPIC" GOARCH=arm GOARM=5 go build server.go 
 
 clean:
