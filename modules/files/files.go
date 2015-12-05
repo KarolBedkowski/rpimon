@@ -41,7 +41,7 @@ func initModule(parentRoute *mux.Route) bool {
 		return false
 	}
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/",
+	subRouter.HandleFunc("/index",
 		app.VerifyPermission(verifyAccess(mainPageHandler), "files")).Name(
 		"files-index")
 	subRouter.HandleFunc("/mkdir",
