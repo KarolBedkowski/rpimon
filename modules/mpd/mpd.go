@@ -134,6 +134,9 @@ func initModule(parentRoute *mux.Route) bool {
 	subRouter.HandleFunc("/history/file",
 		app.VerifyPermission(historyFileHandler, "mpd")).
 		Name("mpd-history-file")
+	subRouter.HandleFunc("/history/serv",
+		app.VerifyPermission(historyServHandler, "mpd")).
+		Name("mpd-hist-serv")
 
 	if val, ok := conf["delete older than [days]"]; ok && val != "0" && val != "" {
 		if off, err := strconv.Atoi(val); err == nil {
@@ -293,15 +296,8 @@ func filePageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func historyHandler(r *http.Request, bctx *app.BaseCtx) {
-	ctx := &struct {
-		*app.BaseCtx
-		History []*model.Song
-	}{
-		BaseCtx: bctx,
-		History: model.GetSongs(),
-	}
-	ctx.SetMenuActive("mpd-history")
-	ctx.RenderStd(ctx, "mpd/history.tmpl")
+	bctx.SetMenuActive("mpd-history")
+	bctx.RenderStd(bctx, "mpd/history.tmpl")
 }
 
 func historyFileHandler(w http.ResponseWriter, r *http.Request) {
@@ -328,4 +324,31 @@ func writeNonEmptyString(w http.ResponseWriter, prefix, value string) {
 	if value != "" {
 		w.Write([]byte(prefix + value + "\n"))
 	}
+}
+
+func historyServHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	params := &plistContentParams{}
+	decoder.Decode(params, r.Form)
+	start := params.Start
+	if params.End > 0 {
+		params.End += start
+	}
+	end := params.End
+	result := map[string]interface{}{"error": nil,
+		"aaData":               nil,
+		"stat":                 nil,
+		"iTotalDisplayRecords": 0,
+		"iTotalRecords":        0,
+		"sEcho":                params.Echo,
+	}
+
+	songs, total := model.GetSongsRange(start, end)
+	result["iTotalDisplayRecords"] = total
+	result["aaData"] = songs
+	result["iTotalRecords"] = total
+
+	encoded, _ := json.Marshal(result)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(encoded)
 }

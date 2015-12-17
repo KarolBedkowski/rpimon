@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/gob"
+	"encoding/json"
 	"io"
 	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/logging"
@@ -20,6 +21,17 @@ type Song struct {
 	Artist string
 	Title  string
 	File   string
+}
+
+func (s *Song) MarshalJSON() ([]byte, error) {
+	type Alias Song
+	return json.Marshal(&struct {
+		DateStr string `json:"DateStr"`
+		*Alias
+	}{
+		DateStr: s.Date.Format("2006-01-02 15:04:05"),
+		Alias:   (*Alias)(s),
+	})
 }
 
 func getKey(id int64) []byte {
@@ -78,6 +90,29 @@ func GetSongs() (songs []*Song) {
 		}
 	}
 	return
+}
+
+func GetSongsRange(offset, end int) (songs []*Song, total int) {
+	en, _, err := db.db.Seek(mpdSongPrefix)
+	if err != nil {
+		return
+	}
+	for {
+		key, value, err := en.Next()
+		if err == io.EOF || !bytes.HasPrefix(key, mpdSongPrefix) {
+			break
+		}
+		if err == nil {
+			if total >= offset && total < end {
+				songs = append(songs, decodeSong(value))
+			}
+			total += 1
+		} else {
+			l.Error("model.GetSongs next error: %s", err)
+		}
+	}
+	return
+
 }
 
 // DeleteUser from database by login
