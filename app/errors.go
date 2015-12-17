@@ -1,8 +1,7 @@
 package app
 
 import (
-	"k.prv/rpimon/app/context"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"net/http"
 	"strconv"
 )
@@ -64,7 +63,7 @@ func RenderError(w http.ResponseWriter, r *http.Request, status int, message str
 }
 
 type errorContext struct {
-	*context.BasePageContext
+	*BaseCtx
 	Message string
 	Status  int
 	Error   string
@@ -73,10 +72,10 @@ type errorContext struct {
 func renderError(w http.ResponseWriter, r *http.Request, status int, message string) *errorContext {
 	err := "Error " + strconv.Itoa(status)
 	ctx := &errorContext{
-		BasePageContext: context.NewBasePageContext(err, w, r),
-		Message:         message,
-		Status:          status,
-		Error:           err,
+		BaseCtx: NewBaseCtx(err, w, r),
+		Message: message,
+		Status:  status,
+		Error:   err,
 	}
 	w.WriteHeader(status)
 	RenderTemplateStd(w, ctx, "errors/error.tmpl")

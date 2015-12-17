@@ -33,7 +33,7 @@
 							<input type="text" name="Params.{{$idx}}.Value" id="name-{{$idx}}" value="{{$v.Value}}" class="form-control" />
 						</div>
 					{{end}}
-				<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
+				<input type="hidden" name="BaseCtx.CsrfToken" id="" value="{{.CsrfToken}}" />
 				<div class="pull-right">
 				<a href="{{namedurl "m-pref-modules-index"}}" type="button" class="btn btn-default">Cancel</a>
 				<button type="submit" class="btn btn-primary">Save</button>

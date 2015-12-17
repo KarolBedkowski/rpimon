@@ -2,10 +2,10 @@
 package monitor
 
 import (
-	"k.prv/rpimon/app/cfg"
-	"k.prv/rpimon/app/context"
+	"k.prv/rpimon/app"
+	"k.prv/rpimon/cfg"
 	h "k.prv/rpimon/helpers"
-	//	l "k.prv/rpimon/helpers/logging"
+	//	l "k.prv/rpimon/logging"
 	"strconv"
 	"strings"
 )
@@ -17,10 +17,12 @@ const warningsCacheTTL = 5
 var warningsCache = h.NewSimpleCache(warningsCacheTTL)
 
 // GetWarnings return current warnings to show
-func getWarnings() *context.WarningsStruct {
+func getWarnings() *app.WarningsStruct {
 	result := warningsCache.Get(func() h.Value {
+		cfg.Configuration.RLock()
 		conf := cfg.Configuration.Monitor
-		warnings := &context.WarningsStruct{}
+		cfg.Configuration.RUnlock()
+		warnings := &app.WarningsStruct{}
 		// high load
 		loadInfo := GetLoadInfo()
 		if lastLoadInfo != nil {
@@ -111,7 +113,7 @@ func getWarnings() *context.WarningsStruct {
 
 		return warnings
 
-	}).(*context.WarningsStruct)
+	}).(*app.WarningsStruct)
 	return result
 }
 

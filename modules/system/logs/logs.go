@@ -5,9 +5,8 @@ import (
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -15,10 +14,10 @@ import (
 )
 
 // Module information
-var Module *context.Module
+var Module *app.Module
 
 func init() {
-	Module = &context.Module{
+	Module = &app.Module{
 		Name:          "system-logs",
 		Title:         "Logs",
 		Description:   "System Logs",
@@ -40,13 +39,13 @@ func initModule(parentRoute *mux.Route) bool {
 		return false
 	}
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Logs", "admin")).Name("logs-index")
+	subRouter.HandleFunc("/", app.SecContext(mainPageHandler, "Logs", "admin")).Name("logs-index")
 	subRouter.HandleFunc("/serv", app.VerifyPermission(servLogHandler, "admin")).Name("logs-serv")
-	subRouter.HandleFunc("/{page}", context.HandleWithContextSec(mainPageHandler, "Logs", "admin")).Name("logs-page")
+	subRouter.HandleFunc("/{page}", app.SecContext(mainPageHandler, "Logs", "admin")).Name("logs-page")
 	return true
 }
 
-func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -58,7 +57,7 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 }
 
 type pageCtx struct {
-	*context.BasePageContext
+	*app.BaseCtx
 	CurrentPage string
 	Data        string
 	Files       []string
@@ -67,8 +66,8 @@ type pageCtx struct {
 	LogsDef     logsDef
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
-	ctx := &pageCtx{BasePageContext: bctx}
+func mainPageHandler(r *http.Request, bctx *app.BaseCtx) {
+	ctx := &pageCtx{BaseCtx: bctx}
 	vars := mux.Vars(r)
 	page, ok := vars["page"]
 	if !ok {
@@ -78,7 +77,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 	logname := r.FormValue("log")
 	logs, group, err := findGroup(page, logname)
 	if err != nil {
-		app.Render400(w, r)
+		ctx.Render400()
 		return
 	}
 
@@ -112,7 +111,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 	}
 	ctx.SetMenuActive(page)
 	ctx.CurrentPage = page
-	app.RenderTemplateStd(w, ctx, "system/logs.tmpl")
+	ctx.RenderStd(ctx, "system/logs.tmpl")
 }
 
 func servLogHandler(w http.ResponseWriter, r *http.Request) {

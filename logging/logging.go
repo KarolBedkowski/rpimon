@@ -13,15 +13,15 @@ var (
 
 const (
 	// DEBUG message prefix
-	DEBUG = "DEBUG"
+	DEBUG = "DEBUG "
 	// INFO message prefix
-	INFO = "INFO"
+	INFO = "INFO  "
 	// WARN message  prefix
-	WARN = "WARN"
+	WARN = "WARN  "
 	// ERROR message prefix
-	ERROR = "ERROR"
+	ERROR = "ERROR "
 	// FATAL level prefix
-	FATAL = "FATAL" // die
+	FATAL = "FATAL " // die
 )
 
 // Init logging
@@ -39,34 +39,24 @@ func Init(filename string, debug bool) {
 	}
 }
 
-// Print - wrapper on logger.Print
-func Print(v ...interface{}) {
-	logger.Print(v...)
-}
-
-// Printf - wrapper on logger.Print
-func Printf(format string, v ...interface{}) {
-	logger.Printf(format, v...)
-}
-
 // Debug display message with "DEBUG" prefix when debug=true
 func Debug(format string, v ...interface{}) {
 	if debugLevel {
-		logger.Printf(DEBUG+" "+format, v...)
+		logger.Printf(DEBUG+format, v...)
 	}
 }
 
 // Info display message with "INFO" prefix
 func Info(format string, v ...interface{}) {
-	logger.Printf(INFO+" "+format, v...)
+	logger.Printf(INFO+format, v...)
 }
 
 // Warn display message with "WARN" prefix
 func Warn(format string, v ...interface{}) {
-	logger.Printf(WARN+" "+format, v...)
+	logger.Printf(WARN+format, v...)
 }
 
 // Error display message with "ERROR" prefix
 func Error(format string, v ...interface{}) {
-	logger.Printf(ERROR+" "+format, v...)
+	logger.Printf(ERROR+format, v...)
 }

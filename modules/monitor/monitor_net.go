@@ -3,8 +3,8 @@ package monitor
 
 import (
 	"bufio"
-	"k.prv/rpimon/app/cfg"
-	l "k.prv/rpimon/helpers/logging"
+	"k.prv/rpimon/cfg"
+	l "k.prv/rpimon/logging"
 	"net"
 	"net/http"
 	"os"
@@ -152,7 +152,9 @@ var (
 func GetHostsStatus() []*Host {
 	monitoredHostsMutex.RLock()
 	defer monitoredHostsMutex.RUnlock()
-	result := make([]*Host, 0)
+	cfg.Configuration.RLock()
+	defer cfg.Configuration.RUnlock()
+	var result []*Host
 	for _, host := range cfg.Configuration.Monitor.MonitoredHosts {
 		status, ok := lastHostStatus[host.Name]
 		if ok {
@@ -168,6 +170,8 @@ func GetHostsStatus() []*Host {
 func GetSimpleHostStatus() map[string]bool {
 	monitoredHostsMutex.RLock()
 	defer monitoredHostsMutex.RUnlock()
+	cfg.Configuration.RLock()
+	defer cfg.Configuration.RUnlock()
 	result := make(map[string]bool, 0)
 	for _, host := range cfg.Configuration.Monitor.MonitoredHosts {
 		if status, ok := lastHostStatus[host.Name]; ok {
@@ -182,7 +186,10 @@ func GetSimpleHostStatus() map[string]bool {
 func checkHosts() {
 	hosts := make(map[string]hostStatus, 0)
 	now := int(time.Now().Unix())
-	for _, chost := range cfg.Configuration.Monitor.MonitoredHosts {
+	cfg.Configuration.RLock()
+	hostsList := cfg.Configuration.Monitor.MonitoredHosts[:]
+	cfg.Configuration.RUnlock()
+	for _, chost := range hostsList {
 		status, ok := lastHostStatus[chost.Name]
 		if ok && status.lastCheck+chost.Interval >= now {
 			hosts[chost.Name] = status

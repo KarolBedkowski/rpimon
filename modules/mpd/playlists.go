@@ -5,25 +5,27 @@ package mpd
 import (
 	//"code.google.com/p/gompd/mpd"
 	"encoding/json"
-	"github.com/turbowookie/gompd/mpd"
+	"github.com/fhs/gompd/mpd"
+	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
-	//l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"net/http"
+	"net/url"
+	"strings"
 )
 
 type playlistsPageCtx struct {
-	*context.BasePageContext
+	*app.BaseCtx
 	CurrentPage string
 	Playlists   []mpd.Attrs
 	Error       string
 }
 
-func playlistsPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
-	ctx := &playlistsPageCtx{BasePageContext: bctx}
+func playlistsPageHandler(r *http.Request, bctx *app.BaseCtx) {
+	ctx := &playlistsPageCtx{BaseCtx: bctx}
 	ctx.SetMenuActive("mpd-playlists")
-	app.RenderTemplateStd(w, ctx, "mpd/playlists.tmpl")
+	ctx.RenderStd(ctx, "mpd/playlists.tmpl")
 }
 
 func playlistsActionPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -55,4 +57,49 @@ func playlistsListService(w http.ResponseWriter, r *http.Request) {
 	encoded, _ := json.Marshal(result)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(encoded)
+}
+
+func playlistsContentPage(r *http.Request, bctx *app.BaseCtx) {
+	vars := mux.Vars(r)
+	playlist, ok := vars["name"]
+	if !ok || playlist == "" {
+		l.Warn("page.mpd playlistsContentPage: missing name ", vars)
+		return
+	}
+	content, err := mpdGetPlaylistContent(playlist)
+	if err != nil {
+		l.Warn("page.mpd playlistsContentPage: get content error: %s ", err.Error())
+	}
+	ctx := struct {
+		*app.BaseCtx
+		Content []mpd.Attrs
+		Name    string
+	}{
+		BaseCtx: bctx,
+		Content: content,
+		Name:    playlist,
+	}
+	ctx.SetMenuActive("mpd-playlists")
+	ctx.RenderStd(ctx, "mpd/playlist_content.tmpl")
+}
+
+func playlistsSongActionHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	action := r.FormValue("a")
+	switch action {
+	case "add", "replace":
+		if uriL, ok := r.Form["u"]; ok {
+			uri := strings.TrimLeft(uriL[0], "/")
+			uri, _ = url.QueryUnescape(uri)
+			err := addFileToPlaylist(uri, action == "replace")
+			if err == nil {
+				w.Write([]byte("Added to playlist"))
+			} else {
+				l.Error("mpd.playlistsSongActionHandler error: %s", err.Error())
+				app.Render400(w, r)
+			}
+			return
+		}
+	}
+	app.Render400(w, r)
 }

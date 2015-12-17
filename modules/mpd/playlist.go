@@ -5,12 +5,10 @@ package mpd
 import (
 	//"code.google.com/p/gompd/mpd"
 	"encoding/json"
+	"github.com/fhs/gompd/mpd"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
-	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
-	"k.prv/rpimon/app/session"
 	"net/http"
 	"strconv"
 	"strings"
@@ -19,17 +17,17 @@ import (
 var decoder = schema.NewDecoder()
 
 type playlistPageCtx struct {
-	*context.BasePageContext
+	*app.BaseCtx
 	Playlist      []mpd.Attrs
 	CurrentSongID string
 	CurrentSong   string
 	Error         error
 }
 
-func playlistPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
-	ctx := &playlistPageCtx{BasePageContext: bctx}
+func playlistPageHandler(r *http.Request, bctx *app.BaseCtx) {
+	ctx := &playlistPageCtx{BaseCtx: bctx}
 	ctx.SetMenuActive("mpd-playlist")
-	app.RenderTemplateStd(w, ctx, "mpd/playlist.tmpl")
+	ctx.RenderStd(ctx, "mpd/playlist.tmpl")
 }
 
 func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +52,7 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write(encoded)
 	} else {
 		if err != nil {
-			s := session.GetSessionStore(w, r)
+			s := app.GetSessionStore(w, r)
 			s.AddFlash(err.Error(), "error")
 			s.Save(r, w)
 		}
@@ -91,7 +89,7 @@ func playlistSavePageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type addToPlaylistForm struct {
-	Uri       string
+	URI       string
 	CsrfToken string
 }
 
@@ -99,11 +97,11 @@ func addToPlaylistActionHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	form := &addToPlaylistForm{}
 	decoder.Decode(form, r.Form)
-	if form.Uri == "" {
+	if form.URI == "" {
 		app.Render400(w, r, "Invalid Request: missing URI")
 		return
 	}
-	if err := addToPlaylist(form.Uri); err != nil {
+	if err := addToPlaylist(form.URI); err != nil {
 		app.Render500(w, r, "Adding to playlist error: "+err.Error())
 	} else {
 		w.Write([]byte("URI added"))
@@ -111,7 +109,7 @@ func addToPlaylistActionHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getPlaylistStat() (playlist [][]string, stat mpd.Attrs, err error) {
-	lplaylist, err, stat := mpdPlaylistInfo()
+	lplaylist, stat, err := mpdPlaylistInfo()
 	for _, item := range lplaylist {
 		if title, ok := item["Title"]; !ok || title == "" {
 			item["Title"] = item["file"]

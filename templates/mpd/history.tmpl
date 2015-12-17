@@ -1,0 +1,54 @@
+{{define "body"}}
+
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">MPD <small>History</small></h1>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-lg-12">
+		<div class="">
+			<table class="table table-hover table-bordered table-condensed">
+				<thead>
+					<tr>
+						<th>No</th>
+						<th>Date</th>
+						<th>Title</th>
+						<th>Artist</th>
+						<th>Track</th>
+						<th>Album</th>
+						<th>Name</th>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-lg-12">
+		<a href="{{ namedurl "mpd-history-file" }}">Download file</a>
+	</div>
+</div>
+
+{{end}}
+
+{{define "scripts"}}
+<script src="/static/lib/jquery/jquery.dataTables.js" type="text/javascript"></script>
+<script src="/static/lib/dataTables.bootstrap.js" type="text/javascript"></script>
+<script src="/static/js/mpd_history.js" type="text/javascript" ></script>
+<script type="text/javascript">
+	$(function() {
+		MPD.history.init({
+			urls: {
+				'mpd-hist-serv': '{{namedurl "mpd-hist-serv"}}'
+			}
+		});
+	});
+</script>
+
+
+{{end}}

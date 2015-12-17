@@ -3,16 +3,20 @@ package cfg
 import (
 	"encoding/json"
 	"io/ioutil"
+	l "k.prv/rpimon/logging"
 	"log"
 	"runtime"
+	"sync"
 )
 
 type (
 	// AppConfiguration Main app configuration.
 	AppConfiguration struct {
+		sync.RWMutex `json:"-"`
+
 		StaticDir       string
 		TemplatesDir    string
-		Users           string
+		Database        string
 		Debug           bool
 		CookieAuthKey   string
 		CookieEncKey    string
@@ -74,35 +78,33 @@ func LoadConfiguration(filename string) *AppConfiguration {
 	log.Print("Loading configuration file ", filename)
 	configFilename = filename
 
-	if !loadConfiguration(filename) {
-		return nil
-	}
-
+	loadConfiguration(filename)
 	return &Configuration
 }
 
-func loadConfiguration(filename string) bool {
+func loadConfiguration(filename string) {
+	Configuration.loadDefaults()
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Print("Errors: app.LoadConfiguration error: ", err.Error())
-		Configuration.loadDefaults()
-	} else {
-		if err = json.Unmarshal(file, &Configuration); err != nil {
-			log.Print("Error: app.LoadConfiguration error: ", err.Error())
-			log.Print("Error: Loading default configuration")
-			Configuration.loadDefaults()
-		}
+		return
+	}
+	Configuration.Lock()
+	defer Configuration.Unlock()
+	if err = json.Unmarshal(file, &Configuration); err != nil {
+		log.Print("Error: app.LoadConfiguration error: ", err.Error())
 	}
 	Configuration.validate()
-	return true
 }
 
 // SaveConfiguration write current configuration to json file
 func SaveConfiguration() error {
-	log.Printf("SaveConfiguration: Writing configuration to %s\n", configFilename)
-	data, err := json.Marshal(Configuration)
+	l.Info("SaveConfiguration: Writing configuration to %s\n", configFilename)
+	Configuration.RLock()
+	data, err := json.MarshalIndent(Configuration, "", "  ")
+	Configuration.RUnlock()
 	if err != nil {
-		log.Printf("SaveConfiguration: error marshal configuration: %s\n", err)
+		l.Info("SaveConfiguration: error marshal configuration: %s\n", err)
 		return err
 	}
 	return ioutil.WriteFile(configFilename, data, 0600)
@@ -111,7 +113,7 @@ func SaveConfiguration() error {
 func (ac *AppConfiguration) loadDefaults() {
 	ac.StaticDir = "./static"
 	ac.TemplatesDir = "./templates"
-	ac.Users = "./users.json"
+	ac.Database = "./rpimon.kvdb"
 	ac.Debug = true
 	ac.CookieAuthKey = "12345678901234567890123456789012"
 	ac.CookieEncKey = "12345678901234567890123456789012"

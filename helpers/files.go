@@ -3,7 +3,7 @@ package helpers
 import (
 	"bufio"
 	"io/ioutil"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"os"
 	"os/exec"
 	"strconv"
@@ -99,4 +99,20 @@ func AppendToFile(filename, data string) error {
 	defer f.Close()
 	_, err = f.WriteString(data)
 	return err
+}
+
+func FileExists(path string) (exists bool) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	return !os.IsNotExist(err)
+}
+
+func DirExists(path string) (exists bool) {
+	stat, err := os.Stat(path)
+	if err == nil {
+		return stat.IsDir()
+	}
+	return false
 }

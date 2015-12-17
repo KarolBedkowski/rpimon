@@ -23,22 +23,22 @@ type Value interface{}
 
 // SimpleCache structure holding all settings of cache
 type SimpleCache struct {
-	mutex       sync.RWMutex
-	timestamp   time.Time
-	value       Value
-	MaxCacheAge time.Duration
+	mutex     sync.RWMutex
+	timestamp time.Time
+	value     Value
+	maxAge    time.Duration
 }
 
 // NewSimpleCache create new cache structure
 func NewSimpleCache(maxCacheAge int) *SimpleCache {
-	return &SimpleCache{MaxCacheAge: time.Duration(maxCacheAge) * time.Second}
+	return &SimpleCache{maxAge: time.Duration(maxCacheAge) * time.Second}
 }
 
 // Get value from cache; if cache is expired - call function and put result in cache
 func (cache *SimpleCache) Get(f func() Value) Value {
 	cache.mutex.RLock()
 	now := time.Now()
-	if cache.value != nil && now.Sub(cache.timestamp) < cache.MaxCacheAge {
+	if cache.value != nil && now.Sub(cache.timestamp) < cache.maxAge {
 		defer cache.mutex.RUnlock()
 		return cache.value
 	}
@@ -57,7 +57,7 @@ func (cache *SimpleCache) Get(f func() Value) Value {
 func (cache *SimpleCache) GetValue() (value Value, ok bool) {
 	cache.mutex.RLock()
 	defer cache.mutex.RUnlock()
-	if cache.value != nil && time.Now().Sub(cache.timestamp) < cache.MaxCacheAge {
+	if cache.value != nil && time.Now().Sub(cache.timestamp) < cache.maxAge {
 		return cache.value, true
 	}
 	return
@@ -76,32 +76,66 @@ func (cache *SimpleCache) Clear() {
 	cache.value = nil
 }
 
-type keycacheitem struct {
+type SimpleCacheCB struct {
+	*SimpleCache
+	provider CacheValueProvider
+}
+
+type CacheValueProvider func() Value
+
+// NewSimpleCacheCB create new cache structure
+func NewSimpleCacheCB(maxCacheAge int, f CacheValueProvider) *SimpleCacheCB {
+	return &SimpleCacheCB{
+		SimpleCache: NewSimpleCache(maxCacheAge),
+		provider:    f,
+	}
+}
+
+// Get value from cache; if cache is expired - call function and put result in cache
+func (cache *SimpleCacheCB) Get() Value {
+	cache.mutex.RLock()
+	now := time.Now()
+	if cache.value != nil && now.Sub(cache.timestamp) < cache.maxAge {
+		defer cache.mutex.RUnlock()
+		return cache.value
+	}
+	cache.mutex.RUnlock()
+
+	cache.mutex.Lock()
+	defer cache.mutex.Unlock()
+
+	value := cache.provider()
+	cache.value = value
+	cache.timestamp = now
+	return value
+}
+
+type cacheItem struct {
 	timestamp time.Time
 	value     Value
 }
 
-// KeyCache structure
-type KeyCache struct {
-	mutex       sync.RWMutex
-	values      map[string]keycacheitem
-	MaxCacheAge time.Duration
+// Cache structure
+type Cache struct {
+	mutex  sync.RWMutex
+	values map[string]cacheItem
+	maxAge time.Duration
 }
 
-// NewKeyCache create new cache structure
-func NewKeyCache(maxCacheAge int) *KeyCache {
-	return &KeyCache{MaxCacheAge: time.Duration(maxCacheAge) * time.Second,
-		values: make(map[string]keycacheitem)}
+// NewCache create new cache structure
+func NewCache(maxCacheAge int) *Cache {
+	return &Cache{maxAge: time.Duration(maxCacheAge) * time.Second,
+		values: make(map[string]cacheItem)}
 }
 
 // Get value from cache; if cache is expired - call function and put result in cache
-func (cache *KeyCache) Get(key string, f func(fkey string) Value) (value Value) {
+func (cache *Cache) Get(key string, f func(fkey string) Value) (value Value) {
 	cache.mutex.RLock()
 	now := time.Now()
-	cacheItem, ok := cache.values[key]
-	if ok && now.Sub(cacheItem.timestamp) < cache.MaxCacheAge {
+	item, ok := cache.values[key]
+	if ok && now.Sub(item.timestamp) < cache.maxAge {
 		defer cache.mutex.RUnlock()
-		return cacheItem.value
+		return item.value
 	}
 	cache.mutex.RUnlock()
 
@@ -109,30 +143,32 @@ func (cache *KeyCache) Get(key string, f func(fkey string) Value) (value Value) 
 	defer cache.mutex.Unlock()
 
 	value = f(key)
-	cache.values[key] = keycacheitem{now, value}
+	cache.values[key] = cacheItem{now, value}
 	return value
 }
 
 // GetValue from cache
-func (cache *KeyCache) GetValue(key string) (value Value, ok bool) {
+func (cache *Cache) GetValue(key string) (value Value, ok bool) {
 	cache.mutex.RLock()
 	defer cache.mutex.RUnlock()
+
 	now := time.Now()
-	cacheItem, ok := cache.values[key]
-	if ok && now.Sub(cacheItem.timestamp) < cache.MaxCacheAge {
-		return cacheItem.value, true
+	item, ok := cache.values[key]
+	if ok && now.Sub(item.timestamp) < cache.maxAge {
+		return item.value, true
 	}
 	return nil, false
 }
 
 // SetValue put value to cache
-func (cache *KeyCache) SetValue(key string, value Value) {
+func (cache *Cache) SetValue(key string, value Value) {
 	cache.mutex.Lock()
 	defer cache.mutex.Unlock()
-	cache.values[key] = keycacheitem{time.Now(), value}
+
+	cache.values[key] = cacheItem{time.Now(), value}
 }
 
 // Clear cache
-func (cache *KeyCache) Clear() {
-	cache.values = make(map[string]keycacheitem)
+func (cache *Cache) Clear() {
+	cache.values = make(map[string]cacheItem)
 }

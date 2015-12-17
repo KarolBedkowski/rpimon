@@ -3,10 +3,9 @@ package monitor
 import (
 	"github.com/gorilla/schema"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/cfg"
-	"k.prv/rpimon/app/context"
+	"k.prv/rpimon/cfg"
 	//	h "k.prv/rpimon/helpers"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -18,7 +17,7 @@ type confForm cfg.MonitorConfiguration
 
 type (
 	confPageContext struct {
-		*context.BasePageContext
+		*app.BaseCtx
 		Form   *confForm
 		New    bool
 		Errors []string
@@ -27,7 +26,7 @@ type (
 
 // Rules for validate monitored host address
 var (
-	reValidateTcpAddress  = regexp.MustCompile(`^[\w.-]{1,63}:\d{1,5}$`)
+	reValidateTCPAddress  = regexp.MustCompile(`^[\w.-]{1,63}:\d{1,5}$`)
 	reValidateHTTPAddress = regexp.MustCompile(`^(https?://)?[\w.-]{1,63}(:\d{1,5})?(/.*)?$`)
 	reValidatePingAddress = regexp.MustCompile(`^[\w.-]{1,63}$`)
 )
@@ -82,7 +81,7 @@ func (f *confForm) validate() (errors []string) {
 			validAddress := true
 			switch h.Method {
 			case "tcp":
-				validAddress = reValidateTcpAddress.MatchString(h.Address)
+				validAddress = reValidateTCPAddress.MatchString(h.Address)
 			case "http":
 				validAddress = reValidateHTTPAddress.MatchString(h.Address)
 			case "ping":
@@ -140,10 +139,12 @@ func (f *confForm) cleanup() {
 	f.MonitoredHosts = hosts
 }
 
-func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
+func confPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	form := confForm{}
+	cfg.Configuration.RLock()
 	form = confForm(*cfg.Configuration.Monitor)
-	ctx := &confPageContext{BasePageContext: bctx,
+	cfg.Configuration.RUnlock()
+	ctx := &confPageContext{BaseCtx: bctx,
 		Form: &form,
 	}
 
@@ -159,7 +160,9 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 		errors := ctx.Form.validate()
 		if errors == nil || len(errors) == 0 {
 			form.cleanup()
+			cfg.Configuration.Lock()
 			*cfg.Configuration.Monitor = cfg.MonitorConfiguration(form)
+			cfg.Configuration.Unlock()
 			err := cfg.SaveConfiguration()
 			if err != nil {
 				ctx.AddFlashMessage("Saving configuration error: "+err.Error(),
@@ -168,7 +171,7 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 				ctx.AddFlashMessage("Configuration saved.", "success")
 			}
 			ctx.Save()
-			http.Redirect(w, r, r.URL.String(), http.StatusFound)
+			ctx.Redirect(r.URL.String())
 			return
 		}
 		ctx.Errors = errors
@@ -176,5 +179,5 @@ func confPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 	case "GET":
 	}
 	ctx.Save()
-	app.RenderTemplateStd(w, ctx, "monitor/monitor-conf.tmpl")
+	ctx.RenderStd(ctx, "monitor/monitor-conf.tmpl")
 }

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	"k.prv/rpimon/modules/monitor"
 	"net/http"
@@ -12,7 +11,7 @@ import (
 )
 
 // Module information
-var Module = &context.Module{
+var Module = &app.Module{
 	Name:          "network",
 	Title:         "Network",
 	Description:   "Network",
@@ -24,25 +23,33 @@ var Module = &context.Module{
 func initModule(parentRoute *mux.Route) bool {
 	// todo register modules
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", context.HandleWithContext(mainPageHandler,
-		"Network")).Name("m-net-index")
-	subRouter.HandleFunc("/conf", context.HandleWithContext(confPageHandler,
-		"Network - Configuration")).Name("m-net-conf")
-	subRouter.HandleFunc("/iptables", context.HandleWithContext(iptablesPageHandler,
-		"Network - Iptables")).Name("m-net-iptables")
-	subRouter.HandleFunc("/netstat", context.HandleWithContext(netstatPageHandler,
-		"Network - Netstat")).Name("m-net-netstat")
-	subRouter.HandleFunc("/serv/info", app.VerifyPermission(statusServHandler, "")).Name("m-net-serv-info")
-	subRouter.HandleFunc("/action", context.HandleWithContext(actionHandler, "")).Name("m-net-action").Methods("PUT")
+	subRouter.HandleFunc("/status",
+		app.SecContext(mainPageHandler, "Network", "admin")).
+		Name("m-net-index")
+	subRouter.HandleFunc("/conf",
+		app.SecContext(confPageHandler, "Network - Configuration", "admin")).
+		Name("m-net-conf")
+	subRouter.HandleFunc("/iptables",
+		app.TimeoutHandler(app.SecContext(iptablesPageHandler, "Network - Iptables", "admin"), 5)).
+		Name("m-net-iptables")
+	subRouter.HandleFunc("/netstat",
+		app.TimeoutHandler(app.SecContext(netstatPageHandler, "Network - Netstat", "admin"), 5)).
+		Name("m-net-netstat")
+	subRouter.HandleFunc("/serv/info",
+		app.VerifyPermission(statusServHandler, "")).
+		Name("m-net-serv-info")
+	subRouter.HandleFunc("/action",
+		app.TimeoutHandler(app.VerifyPermission(actionHandler, "admin"), 5)).
+		Name("m-net-action").Methods("PUT")
 	return true
 }
 
-func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
 
-	menu = context.NewMenuItem("Network", "").SetIcon("glyphicon glyphicon-dashboard").SetID("m-net")
+	menu = app.NewMenuItem("Network", "").SetIcon("glyphicon glyphicon-dashboard").SetID("m-net")
 	menu.AddChild(app.NewMenuItemFromRoute("Status", "m-net-index").SetID("m-net-index").SetSortOrder(-1),
 		app.NewMenuItemFromRoute("Configuration", "m-net-conf"),
 		app.NewMenuItemFromRoute("IPTables", "m-net-iptables"),
@@ -52,23 +59,23 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 }
 
 type mainPageContext struct {
-	*context.BasePageContext
+	*app.BaseCtx
 	Interfaces *monitor.InterfacesStruct
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
-	c := &mainPageContext{BasePageContext: ctx}
+func mainPageHandler(r *http.Request, ctx *app.BaseCtx) {
+	c := &mainPageContext{BaseCtx: ctx}
 	c.SetMenuActive("m-net-index")
 	c.Interfaces = monitor.GetInterfacesInfo()
-	app.RenderTemplateStd(w, c, "network/status.tmpl")
+	ctx.RenderStd(c, "network/status.tmpl")
 }
 
-func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
+func netstatPageHandler(r *http.Request, ctx *app.BaseCtx) {
 	page := r.FormValue("sec")
 	if page == "" {
 		page = "listen"
 	}
-	data := &context.SimpleDataPageCtx{BasePageContext: ctx}
+	data := &app.DataPageCtx{BaseCtx: ctx}
 	data.SetMenuActive("m-net-netstat")
 	data.THead = []string{"Proto", "Recv-Q", "Send-Q", "Local Address", "Port", "Foreign Address", "Port", "State", "PID", "Program name"}
 	data.Header1 = "Netstat"
@@ -83,16 +90,16 @@ func netstatPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.Bas
 		data.Header2 = "all"
 		data.TData, _ = netstat("sudo", "netstat", "-apn", "-t", "-u")
 	}
-	data.Tabs = []*context.MenuItem{
+	data.Tabs = []*app.MenuItem{
 		app.NewMenuItemFromRoute("Listen", "m-net-netstat").AddQuery("?sec=listen").SetActve(page == "listen"),
 		app.NewMenuItemFromRoute("Connections", "m-net-netstat").AddQuery("?sec=connections").SetActve(page == "connections"),
 		app.NewMenuItemFromRoute("All", "m-net-netstat").AddQuery("?sec=all").SetActve(page == "all"),
 	}
-	app.RenderTemplateStd(w, data, "data.tmpl", "tabs.tmpl")
+	ctx.RenderStd(data, "data.tmpl", "tabs.tmpl")
 }
 
 type confPageContext struct {
-	*context.BasePageContext
+	*app.BaseCtx
 	Current  string
 	Data     string
 	Commands *map[string][]string
@@ -137,33 +144,34 @@ var confCommands = map[string][]string{
 	},
 }
 
-func confPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
+func confPageHandler(r *http.Request, ctx *app.BaseCtx) {
 	cmd := r.FormValue("cmd")
 	if cmd == "" {
 		cmd = confCommands["Base"][0]
 	} else {
 		if !h.CheckValueInDictOfList(confCommands, cmd) {
-			app.Render400(w, r)
+			ctx.Render400()
 			return
 		}
 	}
 	cmdfields := strings.Fields(cmd)
 
 	if r.FormValue("data") == "1" {
+		w := ctx.ResponseWriter
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte(h.ReadCommand(cmdfields[0], cmdfields[1:]...)))
 	} else {
-		ctx := &confPageContext{BasePageContext: ctx}
+		ctx := &confPageContext{BaseCtx: ctx}
 		ctx.SetMenuActive("m-net-conf")
 		ctx.Current = cmd
 		ctx.Commands = &confCommands
 		ctx.Data = h.ReadCommand(cmdfields[0], cmdfields[1:]...)
-		app.RenderTemplateStd(w, ctx, "network/conf.tmpl")
+		ctx.RenderStd(ctx, "network/conf.tmpl")
 	}
 }
 
 type iptablesPageContext struct {
-	*context.BasePageContext
+	*app.BaseCtx
 	Current string
 	Data    string
 	Tables  *[]string
@@ -177,33 +185,34 @@ var iptablesTables = []string{
 	"security",
 }
 
-func iptablesPageHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
+func iptablesPageHandler(r *http.Request, ctx *app.BaseCtx) {
 	table := r.FormValue("table")
 	if table == "" {
 		table = iptablesTables[0]
 	} else {
 		if !h.CheckValueInStrList(iptablesTables, table) {
-			app.Render400(w, r)
+			ctx.Render400()
 			return
 		}
 	}
 	data := h.ReadCommand("sudo", "iptables", "-L", "-vn", "-t", table)
 
 	if r.FormValue("data") == "1" {
+		w := ctx.ResponseWriter
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte(data))
 	} else {
-		ctx := &iptablesPageContext{BasePageContext: ctx}
+		ctx := &iptablesPageContext{BaseCtx: ctx}
 		ctx.SetMenuActive("m-net-iptables")
 		ctx.Current = table
 		ctx.Tables = &iptablesTables
 		ctx.Data = data
-		app.RenderTemplateStd(w, ctx, "network/iptables.tmpl")
+		ctx.RenderStd(ctx, "network/iptables.tmpl")
 	}
 }
 
 func netstat(command string, args ...string) ([][]string, error) {
-	result := make([][]string, 0)
+	var result [][]string
 	res := h.ReadCommand(command, args...)
 	lines := strings.Split(res, "\n")
 	if len(lines) < 2 {
@@ -257,7 +266,7 @@ func statusServHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func actionHandler(w http.ResponseWriter, r *http.Request, ctx *context.BasePageContext) {
+func actionHandler(w http.ResponseWriter, r *http.Request) {
 	action := r.FormValue("action")
 	iface := r.FormValue("iface")
 	if action == "" || iface == "" {

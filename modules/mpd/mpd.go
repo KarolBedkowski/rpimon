@@ -5,25 +5,24 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/fhs/gompd/mpd"
 	"github.com/gorilla/mux"
-	"github.com/turbowookie/gompd/mpd"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
-	"k.prv/rpimon/app/session"
-	h "k.prv/rpimon/helpers"
-	l "k.prv/rpimon/helpers/logging"
+	l "k.prv/rpimon/logging"
+	"k.prv/rpimon/model"
 	n "k.prv/rpimon/modules/notepad"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Module information
-var Module *context.Module
+var Module *app.Module
 
 func init() {
-	Module = &context.Module{
+	Module = &app.Module{
 		Name:        "mpd",
 		Title:       "MPD",
 		Description: "",
@@ -31,11 +30,13 @@ func init() {
 		GetMenu:     getMenu,
 		Shutdown:    shutdown,
 		Defaults: map[string]string{
-			"host": "localhost:6600",
-			"log to notes": "no",
+			"host":                     "localhost:6600",
+			"log to notes":             "no",
+			"delete older than [days]": "0",
+			"dump deleted to file":     "",
 		},
 		Configurable:  true,
-		AllPrivilages: []context.Privilege{{"mpd", "manage mpd player"}},
+		AllPrivilages: []app.Privilege{{"mpd", "manage mpd player"}},
 	}
 }
 
@@ -51,89 +52,121 @@ func initModule(parentRoute *mux.Route) bool {
 
 	subRouter := parentRoute.Subrouter()
 	// Main page
-	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "MPD", "mpd"))
+	subRouter.HandleFunc("/", app.SecContext(mainPageHandler, "MPD", "mpd"))
 	subRouter.HandleFunc("/main",
-		context.HandleWithContextSec(mainPageHandler, "MPD", "mpd")).Name(
-		"mpd-index")
+		app.SecContext(mainPageHandler, "MPD", "mpd")).
+		Name("mpd-index")
 	// Playing control
 	subRouter.HandleFunc("/control/{action}",
-		app.VerifyPermission(mpdControlHandler, "mpd")).Name(
-		"mpd-control")
+		app.VerifyPermission(mpdControlHandler, "mpd")).
+		Name("mpd-control")
 	// current Playlist
-	subRouter.HandleFunc("/playlist",
-		context.HandleWithContextSec(playlistPageHandler, "MPD - Playlist", "mpd")).Name(
-		"mpd-playlist")
-	subRouter.HandleFunc("/playlist/save",
-		app.VerifyPermission(playlistSavePageHandler, "mpd")).Name(
-		"mpd-pl-save").Methods("POST")
-	subRouter.HandleFunc("/playlist/add",
-		app.VerifyPermission(addToPlaylistActionHandler, "mpd")).Name(
-		"mpd-pl-add").Methods("POST")
-	subRouter.HandleFunc("/playlist/{action}",
-		app.VerifyPermission(playlistActionPageHandler, "mpd")).Name(
-		"mpd-pl-action")
-	subRouter.HandleFunc("/playlist/serv/info",
-		app.VerifyPermission(plistContentServHandler, "mpd")).Name(
-		"mpd-pl-serv-info")
+	subRouter.HandleFunc("/plist",
+		app.SecContext(playlistPageHandler, "MPD - Playlist", "mpd")).
+		Name("mpd-playlist")
+	subRouter.HandleFunc("/plist/save",
+		app.VerifyPermission(playlistSavePageHandler, "mpd")).
+		Name("mpd-pl-save").
+		Methods("POST")
+	subRouter.HandleFunc("/plist/add",
+		app.VerifyPermission(addToPlaylistActionHandler, "mpd")).
+		Name("mpd-pl-add").
+		Methods("POST")
+	subRouter.HandleFunc("/plist/{action}",
+		app.VerifyPermission(playlistActionPageHandler, "mpd")).
+		Name("mpd-pl-action")
+	subRouter.HandleFunc("/plist/serv/info",
+		app.VerifyPermission(plistContentServHandler, "mpd")).
+		Name("mpd-pl-serv-info")
 	subRouter.HandleFunc("/song/{song-id:[0-9]+}/{action}",
-		app.VerifyPermission(songActionPageHandler, "mpd")).Name(
-		"mpd-song-action")
+		app.VerifyPermission(songActionPageHandler, "mpd")).
+		Name("mpd-song-action")
 	// Playlists
-	subRouter.HandleFunc("/playlists",
-		context.HandleWithContextSec(playlistsPageHandler, "MPD - Playlists", "mpd")).Name(
-		"mpd-playlists")
-	subRouter.HandleFunc("/playlists/serv/list",
-		app.VerifyPermission(playlistsListService, "mpd")).Name(
-		"mpd-playlists-serv-list")
-	subRouter.HandleFunc("/playlists/action",
-		app.VerifyPermission(playlistsActionPageHandler, "mpd")).Name(
-		"mpd-playlists-action")
+	subRouter.HandleFunc("/splist",
+		app.SecContext(playlistsPageHandler, "MPD - Playlists", "mpd")).
+		Name("mpd-playlists")
+	subRouter.HandleFunc("/splist/serv/list",
+		app.VerifyPermission(playlistsListService, "mpd")).
+		Name("mpd-playlists-serv-list")
+	subRouter.HandleFunc("/splist/playlist/{name}",
+		app.SecContext(playlistsContentPage, "MPD - Playlists", "mpd")).
+		Name("mpd-playlist-content")
+	subRouter.HandleFunc("/splist/song/action",
+		app.VerifyPermission(playlistsSongActionHandler, "mpd")).
+		Name("mpd-playlist-song-action")
+	subRouter.HandleFunc("/splist/action",
+		app.VerifyPermission(playlistsActionPageHandler, "mpd")).
+		Name("mpd-playlists-action")
 	// Services
 	subRouter.HandleFunc("/service/status",
-		app.VerifyPermission(statusServHandler, "mpd")).Name(
-		"mpd-service-status")
+		app.VerifyPermission(statusServHandler, "mpd")).
+		Name("mpd-service-status")
 	subRouter.HandleFunc("/service/song-info",
-		app.VerifyPermission(songInfoStubHandler, "mpd")).Name(
-		"mpd-service-song-info")
+		app.VerifyPermission(songInfoStubHandler, "mpd")).
+		Name("mpd-service-song-info")
 	// Library
 	subRouter.HandleFunc("/library",
-		context.HandleWithContextSec(libraryPageHandler, "MPD - Library", "mpd")).Name(
-		"mpd-library")
+		app.SecContext(libraryPageHandler, "MPD - Library", "mpd")).
+		Name("mpd-library")
 	subRouter.HandleFunc("/library/serv/content",
-		app.VerifyPermission(libraryServHandler, "mpd")).Name(
-		"mpd-library-content")
+		app.VerifyPermission(libraryServHandler, "mpd")).
+		Name("mpd-library-content")
 	subRouter.HandleFunc("/library/action",
-		app.VerifyPermission(libraryActionHandler, "mpd")).Methods(
-		"PUT", "POST").Name("mpd-library-action")
+		app.VerifyPermission(libraryActionHandler, "mpd")).
+		Methods("PUT", "POST").
+		Name("mpd-library-action")
 	// other
 	subRouter.HandleFunc("/log",
-		app.VerifyPermission(mpdLogPageHandler, "mpd")).Name(
-		"mpd-log")
+		app.VerifyPermission(mpdLogPageHandler, "mpd")).
+		Name("mpd-log")
 	// search
 	subRouter.HandleFunc("/search",
-		context.HandleWithContextSec(searchPageHandler, "MPD - Search", "mpd")).Name(
-		"mpd-search")
+		app.SecContext(searchPageHandler, "MPD - Search", "mpd")).
+		Name("mpd-search")
 	// files
 	subRouter.HandleFunc("/file",
-		app.VerifyPermission(filePageHandler, "mpd")).Name(
-		"mpd-file")
+		app.VerifyPermission(filePageHandler, "mpd")).
+		Name("mpd-file")
+	// history
+	subRouter.HandleFunc("/history",
+		app.SecContext(historyHandler, "MPD - History", "mpd")).
+		Name("mpd-history")
+	subRouter.HandleFunc("/history/file",
+		app.VerifyPermission(historyFileHandler, "mpd")).
+		Name("mpd-history-file")
+	subRouter.HandleFunc("/history/serv",
+		app.VerifyPermission(historyServHandler, "mpd")).
+		Name("mpd-hist-serv")
+
+	if val, ok := conf["delete older than [days]"]; ok && val != "0" && val != "" {
+		if off, err := strconv.Atoi(val); err == nil {
+			maxage := time.Now().Add(time.Duration(off*-24) * time.Hour)
+			if filename, ok := conf["dump deleted to file"]; ok && filename != "" {
+				model.DumpOldSongsToFile(maxage, filename, true)
+			} else {
+				model.DeleteOldSongs(maxage)
+			}
+		}
+	}
+
 	return true
 }
 
-func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "mpd") {
 		return "", nil
 	}
 
-	menu = context.NewMenuItem("MPD", "").SetID("mpd").SetIcon("glyphicon glyphicon-music")
+	menu = app.NewMenuItem("MPD", "").SetID("mpd").SetIcon("glyphicon glyphicon-music")
 	menu.AddChild(
-		context.NewMenuItem("Status", app.GetNamedURL("mpd-index")).SetIcon("glyphicon glyphicon-music").SetSortOrder(-2).SetID("mpd-index"),
-		context.NewMenuItem("Playlist", app.GetNamedURL("mpd-playlist")).SetIcon("glyphicon glyphicon-list").SetSortOrder(-1).SetID("mpd-playlist"),
-		context.NewMenuItem("Library", app.GetNamedURL("mpd-library")).SetIcon("glyphicon glyphicon-folder-open").SetID("mpd-library"),
-		context.NewMenuItem("Search", app.GetNamedURL("mpd-search")).SetIcon("glyphicon glyphicon-search").SetID("mpd-search"),
-		context.NewMenuItem("Playlists", app.GetNamedURL("mpd-playlists")).SetIcon("glyphicon glyphicon-floppy-open").SetID("mpd-playlists"),
-		context.NewMenuItem("Tools", "").SetIcon("glyphicon glyphicon-wrench").SetID("mpd-tools").AddChild(
-			context.NewMenuItem("Log", app.GetNamedURL("mpd-log")).SetID("mpd-log"),
+		app.NewMenuItem("Status", app.GetNamedURL("mpd-index")).SetIcon("glyphicon glyphicon-music").SetSortOrder(-2).SetID("mpd-index"),
+		app.NewMenuItem("Playlist", app.GetNamedURL("mpd-playlist")).SetIcon("glyphicon glyphicon-list").SetSortOrder(-1).SetID("mpd-playlist"),
+		app.NewMenuItem("Library", app.GetNamedURL("mpd-library")).SetIcon("glyphicon glyphicon-folder-open").SetID("mpd-library"),
+		app.NewMenuItem("Search", app.GetNamedURL("mpd-search")).SetIcon("glyphicon glyphicon-search").SetID("mpd-search"),
+		app.NewMenuItem("Playlists", app.GetNamedURL("mpd-playlists")).SetIcon("glyphicon glyphicon-floppy-open").SetID("mpd-playlists"),
+		app.NewMenuItem("Tools", "").SetIcon("glyphicon glyphicon-wrench").SetID("mpd-tools").AddChild(
+			app.NewMenuItem("Log", app.GetNamedURL("mpd-log")).SetID("mpd-log"),
+			app.NewMenuItem("History", app.GetNamedURL("mpd-history")).SetID("mpd-history"),
 		))
 	return "", menu
 }
@@ -145,14 +178,14 @@ func shutdown() {
 var errBadRequest = errors.New("bad request")
 
 type pageCtx struct {
-	*context.BasePageContext
+	*app.BaseCtx
 	Status *mpdStatus
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
-	ctx := &pageCtx{BasePageContext: bctx}
+func mainPageHandler(r *http.Request, bctx *app.BaseCtx) {
+	ctx := &pageCtx{BaseCtx: bctx}
 	ctx.SetMenuActive("mpd-index")
-	app.RenderTemplateStd(w, ctx, "mpd/index.tmpl")
+	ctx.RenderStd(ctx, "mpd/index.tmpl")
 }
 
 func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
@@ -184,7 +217,7 @@ func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	case "add_to_notes":
 		status := getStatus()
-		data := make([]string, 0)
+		var data []string
 		for key, val := range status.Current {
 			data = append(data, fmt.Sprintf("%s: %s", key, val))
 		}
@@ -195,9 +228,9 @@ func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	case "playlist-clear":
 		if err = mpdAction(action); err != nil {
-			s := session.GetSessionStore(w, r)
+			s := app.GetSessionStore(w, r)
 			s.AddFlash(err.Error(), "error")
-			session.SaveSession(w, r)
+			app.SaveSession(w, r)
 		}
 		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
 	default:
@@ -212,14 +245,9 @@ func mpdControlHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var statusServCache = h.NewSimpleCache(1)
-
 func statusServHandler(w http.ResponseWriter, r *http.Request) {
-	data := statusServCache.Get(func() h.Value {
-		status := getStatus()
-		encoded, _ := json.Marshal(status)
-		return encoded
-	}).([]byte)
+	status := getStatus()
+	data, _ := json.Marshal(status)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(data)
 }
@@ -234,8 +262,8 @@ func songInfoStubHandler(w http.ResponseWriter, r *http.Request) {
 		Info  []mpd.Attrs
 	}
 
-	if songUri, ok := r.Form["uri"]; ok && songUri[0] != "" {
-		uri, _ := url.QueryUnescape(songUri[0])
+	if songURI, ok := r.Form["uri"]; ok && songURI[0] != "" {
+		uri, _ := url.QueryUnescape(songURI[0])
 		result, err := getSongInfo(uri)
 		ctx.Info = result
 		if err != nil {
@@ -265,4 +293,62 @@ func filePageHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		app.Render400(w, r, "Internal Server Errror: "+err.Error())
 	}
+}
+
+func historyHandler(r *http.Request, bctx *app.BaseCtx) {
+	bctx.SetMenuActive("mpd-history")
+	bctx.RenderStd(bctx, "mpd/history.tmpl")
+}
+
+func historyFileHandler(w http.ResponseWriter, r *http.Request) {
+	songs := model.GetSongs()
+	if len(songs) == 0 {
+		app.Render400(w, r, "No songs")
+		return
+	}
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Content-Disposition", "attachment; filename=\"mpd_history.txt\"")
+	for _, song := range songs {
+		writeNonEmptyString(w, "Date: ", song.Date.String())
+		writeNonEmptyString(w, "Track: ", song.Track)
+		writeNonEmptyString(w, "Name: ", song.Name)
+		writeNonEmptyString(w, "Album: ", song.Album)
+		writeNonEmptyString(w, "Artist: ", song.Artist)
+		writeNonEmptyString(w, "Title: ", song.Title)
+		writeNonEmptyString(w, "File: ", song.File)
+		w.Write([]byte("---------------------\n\n"))
+	}
+}
+
+func writeNonEmptyString(w http.ResponseWriter, prefix, value string) {
+	if value != "" {
+		w.Write([]byte(prefix + value + "\n"))
+	}
+}
+
+func historyServHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	params := &plistContentParams{}
+	decoder.Decode(params, r.Form)
+	start := params.Start
+	if params.End > 0 {
+		params.End += start
+	}
+	end := params.End
+	result := map[string]interface{}{"error": nil,
+		"aaData":               nil,
+		"stat":                 nil,
+		"iTotalDisplayRecords": 0,
+		"iTotalRecords":        0,
+		"sEcho":                params.Echo,
+	}
+
+	songs, total := model.GetSongsRange(start, end)
+	result["iTotalDisplayRecords"] = total
+	result["aaData"] = songs
+	result["iTotalRecords"] = total
+
+	encoded, _ := json.Marshal(result)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(encoded)
 }

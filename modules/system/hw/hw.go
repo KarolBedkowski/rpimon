@@ -3,13 +3,12 @@ package systemhw
 import (
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/app"
-	"k.prv/rpimon/app/context"
 	h "k.prv/rpimon/helpers"
 	"net/http"
 )
 
 // Module information
-var Module = &context.Module{
+var Module = &app.Module{
 	Name:          "system-hw",
 	Title:         "System - Hardware",
 	Description:   "",
@@ -21,11 +20,11 @@ var Module = &context.Module{
 // CreateRoutes for /users
 func initModule(parentRoute *mux.Route) bool {
 	subRouter := parentRoute.Subrouter()
-	subRouter.HandleFunc("/", context.HandleWithContextSec(mainPageHandler, "Hardware", "admin")).Name("sys-hw-index")
+	subRouter.HandleFunc("/", app.SecContext(mainPageHandler, "Hardware", "admin")).Name("sys-hw-index")
 	return true
 }
 
-func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuItem) {
+func getMenu(ctx *app.BaseCtx) (parentID string, menu *app.MenuItem) {
 	if ctx.CurrentUser == "" || !app.CheckPermission(ctx.CurrentUserPerms, "admin") {
 		return "", nil
 	}
@@ -33,14 +32,14 @@ func getMenu(ctx *context.BasePageContext) (parentID string, menu *context.MenuI
 	return "system", menu
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BasePageContext) {
+func mainPageHandler(r *http.Request, bctx *app.BaseCtx) {
 	page := r.FormValue("sec")
 	if page == "" {
 		page = "acpi"
 	}
-	data := &context.SimpleDataPageCtx{BasePageContext: bctx}
+	data := &app.DataPageCtx{BaseCtx: bctx}
 	data.Header1 = "Hardware"
-	data.Tabs = []*context.MenuItem{
+	data.Tabs = []*app.MenuItem{
 		app.NewMenuItemFromRoute("ACPI", "other-index").AddQuery("?sec=acpi").SetActve(page == "acpi"),
 		app.NewMenuItemFromRoute("Sensors", "other-index").AddQuery("?sec=sensors").SetActve(page == "sensors"),
 		app.NewMenuItemFromRoute("lscpu", "other-index").AddQuery("?sec=lscpu").SetActve(page == "lscpu"),
@@ -65,5 +64,5 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, bctx *context.BaseP
 		data.Header2 = "lspci"
 	}
 	data.SetMenuActive("sys-hw-index")
-	app.RenderTemplateStd(w, data, "data.tmpl", "tabs.tmpl")
+	bctx.RenderStd(data, "data.tmpl", "tabs.tmpl")
 }

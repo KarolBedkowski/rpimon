@@ -1,15 +1,11 @@
-package session
+package app
 
 import (
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
-	//	"k.prv/rpimon/helpers"
-	"k.prv/rpimon/app/cfg"
-	l "k.prv/rpimon/helpers/logging"
+	"k.prv/rpimon/cfg"
+	l "k.prv/rpimon/logging"
 	"net/http"
-	//	"os"
-	//	"github.com/gorilla/context"
-	//	"path/filepath"
 	"time"
 )
 
@@ -26,8 +22,8 @@ const (
 
 var store *sessions.CookieStore
 
-// InitSessionStore initialize sessions support
-func InitSessionStore(conf *cfg.AppConfiguration) error {
+// initSessionStore initialize sessions support
+func initSessionStore(conf *cfg.AppConfiguration) error {
 	if len(conf.CookieAuthKey) < 32 {
 		l.Info("Random CookieAuthKey")
 		conf.CookieAuthKey = string(securecookie.GenerateRandomKey(32))
