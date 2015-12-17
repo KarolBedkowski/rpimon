@@ -1,6 +1,15 @@
+2015-12-17 v0.9.0
+* mpd: + browse songs history in mpd section, remove old history entries
+* minor bugfixes
+
+* dev: use kv database
+* dev: update bootstrap, jquery, etc
+* dev: clean code
+* dev: use connection pool in mpd
+
 2015-04-18 v0.8.1
 * bugfix: notepad, configuration saving
-* [mpd] +logging played songs
+* mpd: +logging played songs
 
 2015-01-03 v0.8.0
 * update bootstrap and other libraries
