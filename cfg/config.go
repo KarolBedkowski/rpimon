@@ -20,6 +20,7 @@ type (
 		Debug           bool
 		CookieAuthKey   string
 		CookieEncKey    string
+		CSRFKey         string
 		SessionStoreDir string
 		LogFilename     string
 		HTTPAddress     string `json:"http_address"`
@@ -117,6 +118,7 @@ func (ac *AppConfiguration) loadDefaults() {
 	ac.Debug = true
 	ac.CookieAuthKey = "12345678901234567890123456789012"
 	ac.CookieEncKey = "12345678901234567890123456789012"
+	ac.CSRFKey = "12345678901234567890123456789012"
 	ac.SessionStoreDir = "./temp"
 	ac.LogFilename = "app.log"
 	ac.HTTPAddress = ":8000"

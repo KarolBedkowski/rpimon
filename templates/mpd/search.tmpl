@@ -26,7 +26,7 @@
 				<input type="text" name="Form.Value" id="form-any" class="form-control input-sm" placeholder="Value" value="{{.Form.Value}}" required />
 			</div>
 			<div class="form-group">
-				<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
+				{{ .CSRFField }}
 				<button type="submit" class="btn btn-primary btn-sm" data-loading-text="Searching..">Search</button>
 			</div>
 		</form>

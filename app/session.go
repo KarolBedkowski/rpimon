@@ -110,6 +110,7 @@ func SetLoggedUser(s *sessions.Session, login string, privs []string) {
 // SessionHandler check validity of session
 func SessionHandler(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		delete(r.Form, "gorilla.csrf.Token")
 		s := GetSessionStore(w, r)
 		//		context.Set(r, "session", s)
 		if ts, ok := s.Values[sessionTimestampKey]; ok {

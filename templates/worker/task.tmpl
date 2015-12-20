@@ -34,7 +34,7 @@
 						<label for="Dir">Directory</label>
 						<input type="text" name="Dir" id="Dir" value="{{ .Task.Dir }}" class="form-control"  />
 					</div>
-					<input type="hidden" name="BaseCtx.CsrfToken" id="" value="{{ .CsrfToken }}" />
+					{{ .CSRFField }}
 					<div class="pull-right">
 						<a href="{{ namedurl "worker-index" }}" type="button" class="btn btn-default">Cancel</a>
 						<button type="submit" class="btn btn-primary">Start task</button>

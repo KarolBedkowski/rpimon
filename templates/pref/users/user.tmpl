@@ -37,8 +37,7 @@
 						<label for="NewPasswordC">Confirm password</label>
 						<input type="password" class="form-control" id="NewPasswordC" name="NewPasswordC">
 					</div>
-					<input type="hidden" name="BaseCtx.CsrfToken" id="" value="{{.CsrfToken}}" />
-					<input type="hidden" name="_method" value="" id="form-method" />
+					{{ .CSRFField }}
 					<div class="pull-right">
 						{{if not .New}}
 						<button type="button" class="btn btn-danger" id="btn-delete" formnovalidate>Delete</button>

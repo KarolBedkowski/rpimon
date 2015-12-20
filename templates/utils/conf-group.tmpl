@@ -15,7 +15,7 @@
 						<label for="Name">Name</label>
 						<input type="text" name="Name" id="Name" value="{{.Form.Name}}" class="form-control" required />
 					</div>
-					<input type="hidden" name="BaseCtx.CsrfToken" id="" value="{{.CsrfToken}}" />
+					{{ .CSRFField }}
 					<input type="hidden" name="_method" value="" id="form-method" />
 					<div class="pull-right">
 						{{if not .New}}

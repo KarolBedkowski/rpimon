@@ -1,12 +1,16 @@
 package app
 
 import (
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"k.prv/rpimon/cfg"
 	l "k.prv/rpimon/logging"
 	"net/http"
 	"strconv"
 )
+
+// FORMCSRFTOKEN is csrf tokens name in forms
+const FORMCSRFTOKEN = "_CsrfToken"
 
 // App main router
 var router = mux.NewRouter()
@@ -32,7 +36,8 @@ func Init(appConfFile string, debug int) *cfg.AppConfiguration {
 		FileServer(http.Dir(conf.StaticDir), !conf.Debug)))
 	http.Handle("/favicon.ico", FileServer(http.Dir(conf.StaticDir), !conf.Debug))
 	//context.ClearHandler()
-	http.Handle("/", logHandler(CsrfHandler(SessionHandler(router))))
+	CSRF := csrf.Protect([]byte(conf.CSRFKey), csrf.Secure(false))
+	http.Handle("/", logHandler(CSRF(SessionHandler(router))))
 	return conf
 }
 

@@ -42,14 +42,14 @@
 						<input name="loginForm.Login" id="login" type="text" placeholder="User name" value="{{.Login}}" required autofocus class="form-control"/>
 						<input name="loginForm.Password" id="pass" type="password" placeholder="Password" required class="form-control">
 						<button type="submit" class="btn btn-lg btn-primary btn-block">Log in</button>
-						<input type="hidden" name="BaseCtx.CsrfToken" id="" value="{{.CsrfToken}}" />
+						{{ .CSRFField }}
 					</div>
 				</fieldset>
 			</form>
 		</div>
 	</body>
 
-	<script src="/static/lib/jquery/jquery-1.11.0.js"></script>
+	<script src="/static/lib/jquery/jquery.js" type="text/javascript" ></script>
 	<script src="/static/lib/jquery/jquery.validate.js"></script>
 	<script src="/static/lib/bootstrap.js" type="text/javascript"></script>
 	<script type="text/javascript" charset="utf-8">

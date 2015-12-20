@@ -1,7 +1,9 @@
 package app
 
 import (
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/sessions"
+	"html/template"
 	"io/ioutil"
 	"k.prv/rpimon/helpers"
 	"net/http"
@@ -15,7 +17,7 @@ type BaseCtx struct {
 	Title            string
 	ResponseWriter   http.ResponseWriter
 	Request          *http.Request
-	CsrfToken        string
+	CSRFField        template.HTML
 	Hostname         string
 	CurrentUser      string
 	CurrentUserPerms []string
@@ -44,17 +46,13 @@ var FlashKind = []string{"error", "info", "success"}
 func NewBaseCtx(title string, w http.ResponseWriter, r *http.Request) *BaseCtx {
 
 	s := GetSessionStore(w, r)
-	csrfToken := s.Values[CONTEXTCSRFTOKEN]
-	if csrfToken == nil {
-		csrfToken = CreateNewCsrfToken()
-		s.Values[CONTEXTCSRFTOKEN] = csrfToken
-	}
 
-	ctx := &BaseCtx{Title: title,
+	ctx := &BaseCtx{
+		Title:          title,
 		ResponseWriter: w,
 		Request:        r,
 		Session:        s,
-		CsrfToken:      csrfToken.(string),
+		CSRFField:      csrf.TemplateField(r),
 		Hostname:       hostname,
 		Now:            time.Now().Format("2006-01-02 15:04:05"),
 		FlashMessages:  make(map[string][]interface{}),

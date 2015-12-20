@@ -47,7 +47,7 @@
 							<input type="text" name="name" id="folder-name" class="form-control" placeholder="Folder name" required />
 						</div>
 					</div>
-					<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
+					{{ .CSRFField }}
 					<input type="hidden" name="p" id="" value="" />
 				</div>
 				<div class="modal-footer">
@@ -69,7 +69,7 @@
 			<form action="{{namedurl "files-upload"}}" method="post" enctype="multipart/form-data" class="form-inline">
 				<div class="modal-body">
 					<input type="file" name="upload" />
-					<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
+					{{ .CSRFField }}
 					<input type="hidden" name="p" id="" value="" />
 				</div>
 				<div class="modal-footer">

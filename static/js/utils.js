@@ -9,14 +9,12 @@ var RPI = RPI || {};
 
 RPI.utils = (function(self, $) {
 	"use strict";
-	var token = "";
 
 	function action(url) {
 		RPI.showLoadingMsg();
 		$.ajax({
 			url: url,
-			method: "POST",
-			data: {"BaseCtx.CsrfToken": token}
+			method: "GET"
 		}).always(function(result) {
 			RPI.hideLoadingMsg();
 		}).done(function(data) {
@@ -26,8 +24,7 @@ RPI.utils = (function(self, $) {
 		});
 	};
 
-	self.init = function initF(params) {
-		token = params.token || "";
+	self.init = function initF() {
 		$("a.action-btn").on("click", function(evt) {
 			var url=$(this).data('url'),
 				name=$(this).text();

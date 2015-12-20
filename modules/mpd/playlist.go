@@ -69,8 +69,7 @@ func playlistActionPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type savePlaylistForm struct {
-	Name      string
-	CsrfToken string
+	Name string
 }
 
 func playlistSavePageHandler(w http.ResponseWriter, r *http.Request) {
@@ -89,8 +88,7 @@ func playlistSavePageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type addToPlaylistForm struct {
-	URI       string
-	CsrfToken string
+	URI string
 }
 
 func addToPlaylistActionHandler(w http.ResponseWriter, r *http.Request) {

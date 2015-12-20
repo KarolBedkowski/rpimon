@@ -65,7 +65,7 @@
 						<label for="save-playlist-name">Playlist name</label>
 						<input type="text" name="Name" id="save-playlist-name" class="form-control" required/>
 					</div>
-					<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
+					{{ .CSRFField }}
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -89,7 +89,7 @@
 						<label for="add-custom-uri">URI:</label>
 						<input type="text" name="Uri" id="add-custom-uri" class="form-control" required/>
 					</div>
-					<input type="hidden" name="CsrfToken" id="" value="{{.CsrfToken}}" />
+					{{ .CSRFField }}
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
