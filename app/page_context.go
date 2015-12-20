@@ -61,7 +61,7 @@ func NewBaseCtx(title string, w http.ResponseWriter, r *http.Request) *BaseCtx {
 	ctx.CurrentUser, ctx.CurrentUserPerms, _ = GetLoggerUser(s)
 
 	for _, kind := range FlashKind {
-		if flashes := ctx.Session.Flashes(kind); flashes != nil && len(flashes) > 0 {
+		if flashes := s.Flashes(kind); flashes != nil && len(flashes) > 0 {
 			ctx.FlashMessages[kind] = flashes
 		}
 	}

@@ -7,7 +7,6 @@ import (
 	l "k.prv/rpimon/logging"
 	res "k.prv/rpimon/resources"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 )
@@ -47,15 +46,6 @@ func getTemplate(name string, filenames ...string) (tmpl *template.Template) {
 				l.Error("RenderTemplate get template %s from box error: %s", name, err.Error())
 			}
 		}
-		if ctemplate.Lookup("scripts") == nil {
-			ctemplate, _ = ctemplate.Parse("{{define \"scripts\"}}{{end}}")
-		}
-		if ctemplate.Lookup("header") == nil {
-			ctemplate, _ = ctemplate.Parse("{{define \"header\"}}{{end}}")
-		}
-		if ctemplate.Lookup("tabs") == nil {
-			ctemplate, _ = ctemplate.Parse("{{define \"tabs\"}}{{end}}")
-		}
 		if !cfg.Configuration.Debug {
 			cacheItems[name] = ctemplate
 		}
@@ -86,14 +76,4 @@ func RenderTemplateStd(w http.ResponseWriter, ctx interface{}, filenames ...stri
 	filenames = append(filenames, StdTemplates...)
 	l.Debug("RenderTemplateStd; %v", filenames)
 	RenderTemplate(w, ctx, filenames[0], filenames...)
-}
-
-func fileExists(name string) bool {
-	if _, err := os.Stat(name); err != nil {
-		if os.IsNotExist(err) {
-			l.Error(name, " does not exist.")
-		}
-		return false
-	}
-	return true
 }

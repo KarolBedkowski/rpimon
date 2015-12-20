@@ -16,7 +16,7 @@ const (
 	sessionLoginKey      = "USERID"
 	sessionPermissionKey = "USER_PERM"
 	sessionTimestampKey  = "timestamp"
-	maxSessionAgeDays    = 5
+	maxSessionAgeDays    = 14
 	maxSessionAge        = time.Duration(24*maxSessionAgeDays) * time.Hour
 )
 
@@ -32,15 +32,9 @@ func initSessionStore(conf *cfg.AppConfiguration) error {
 		l.Info("Random CookieEncKey")
 		conf.CookieEncKey = string(securecookie.GenerateRandomKey(32))
 	}
-	/* for filesystem store
-	err := os.MkdirAll(conf.SessionStoreDir, os.ModeDir)
-	if err != nil && !os.IsExist(err) {
-		l.Error("Createing dir for session store failed ", err)
-		return err
-	}
-	*/
-	store = sessions.NewCookieStore([]byte(conf.CookieAuthKey),
-		[]byte(conf.CookieEncKey))
+
+	store = sessions.NewCookieStore(
+		[]byte(conf.CookieAuthKey), []byte(conf.CookieEncKey))
 
 	return nil
 }
@@ -71,23 +65,6 @@ func SaveSession(w http.ResponseWriter, r *http.Request) error {
 	return err
 }
 
-// ClearSessionStore - remove old session files
-/*
-func ClearSessionStore() error {
-	l.Info("Start ClearSessionStore")
-	now := time.Now()
-	now = now.Add(time.Duration(-24) * time.Hour)
-	filepath.Walk(Configuration.SessionStoreDir, func(path string, info os.FileInfo, err error) error {
-		if now.After(info.ModTime()) {
-			l.Info("Delete ", path)
-			os.Remove(path)
-		}
-		return nil
-	})
-	return nil
-}
-*/
-
 // GetLoggerUser return login and permission of logged user
 func GetLoggerUser(session *sessions.Session) (login string, permissions []string, ok bool) {
 	if slogin := session.Values[sessionLoginKey]; slogin != nil {
@@ -112,7 +89,6 @@ func SessionHandler(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		delete(r.Form, "gorilla.csrf.Token")
 		s := GetSessionStore(w, r)
-		//		context.Set(r, "session", s)
 		if ts, ok := s.Values[sessionTimestampKey]; ok {
 			timestamp := time.Unix(ts.(int64), 0)
 			now := time.Now()
@@ -124,7 +100,6 @@ func SessionHandler(h http.Handler) http.HandlerFunc {
 			}
 			s.Save(r, w)
 		}
-		//l.Debug("Context: %v", context.GetAll(r))
 		h.ServeHTTP(w, r)
 	})
 }
