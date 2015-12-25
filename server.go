@@ -13,6 +13,7 @@ import (
 	mnet "k.prv/rpimon/modules/network"
 	mnotepad "k.prv/rpimon/modules/notepad"
 	mpref "k.prv/rpimon/modules/preferences"
+	msensors "k.prv/rpimon/modules/sensors"
 	mstorage "k.prv/rpimon/modules/storage"
 	msmart "k.prv/rpimon/modules/storage/smart"
 	msystem "k.prv/rpimon/modules/system"
@@ -91,6 +92,7 @@ func main() {
 	app.RegisterModule(msystem.Module)
 	app.RegisterModule(mmonitor.Module)
 	app.RegisterModule(mworker.Module)
+	app.RegisterModule(msensors.Module)
 	app.InitModules(conf)
 
 	/* for filesystem store
