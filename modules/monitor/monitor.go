@@ -104,7 +104,7 @@ var (
 	cpuLastAll    int
 	lastCPUUsage  *CPUUsageInfoStruct
 	cpuUsageMutex sync.RWMutex
-	cpuHistory    = make([]string, 0)
+	cpuHistory    = h.NewRingBuffer(historyLimit)
 )
 
 // GetCPUUsageInfo - get last cpu usage information
@@ -124,7 +124,7 @@ func GetCPUUsageInfo() *CPUUsageInfoStruct {
 func GetCPUHistory() []string {
 	cpuUsageMutex.RLock()
 	defer cpuUsageMutex.RUnlock()
-	return []string(cpuHistory)
+	return cpuHistory.ToStringSlice()
 }
 
 func gatherCPUUsageInfo() *CPUUsageInfoStruct {
@@ -158,10 +158,7 @@ func gatherCPUUsageInfo() *CPUUsageInfoStruct {
 	cpuusage.Usage = 100 - cpuusage.Idle
 
 	lastCPUUsage = cpuusage
-	if len(cpuHistory) > historyLimit {
-		cpuHistory = cpuHistory[1:]
-	}
-	cpuHistory = append(cpuHistory, strconv.Itoa(cpuusage.Usage))
+	cpuHistory.Put(strconv.Itoa(cpuusage.Usage))
 	return cpuusage
 }
 
@@ -186,7 +183,7 @@ type MemInfo struct {
 var (
 	lastMemInfo     *MemInfo
 	memoryInfoMutex sync.RWMutex
-	memHistory      = make([]string, 0)
+	memHistory      = h.NewRingBuffer(historyLimit)
 )
 
 // GetMemoryInfo - get last memory usage
@@ -203,7 +200,7 @@ func GetMemoryInfo() *MemInfo {
 func GetMemoryHistory() []string {
 	memoryInfoMutex.RLock()
 	defer memoryInfoMutex.RUnlock()
-	return []string(memHistory)
+	return memHistory.ToStringSlice()
 }
 
 func gatherMemoryInfo() *MemInfo {
@@ -251,10 +248,7 @@ func gatherMemoryInfo() *MemInfo {
 	defer memoryInfoMutex.Unlock()
 
 	lastMemInfo = meminfo
-	if len(memHistory) > historyLimit {
-		memHistory = memHistory[1:]
-	}
-	memHistory = append(memHistory, strconv.Itoa(lastMemInfo.UsedPerc))
+	memHistory.Put(strconv.Itoa(lastMemInfo.UsedPerc))
 	return meminfo
 }
 
@@ -308,14 +302,14 @@ type LoadInfoStruct struct {
 var (
 	lastLoadInfo *LoadInfoStruct
 	loadMutex    sync.RWMutex
-	loadHistory  = make([]string, 0)
+	loadHistory  = h.NewRingBuffer(historyLimit)
 )
 
 // GetLoadHistory get history of system load
 func GetLoadHistory() []string {
 	loadMutex.RLock()
 	defer loadMutex.RUnlock()
-	return []string(loadHistory)
+	return loadHistory.ToStringSlice()
 }
 
 // GetLoadInfo get current load
@@ -332,15 +326,12 @@ func gatherLoadInfo() (err error) {
 	if load, err := h.ReadLineFromFile("/proc/loadavg"); err == nil {
 		loadMutex.Lock()
 		defer loadMutex.Unlock()
-		if len(loadHistory) > historyLimit {
-			loadHistory = loadHistory[1:]
-		}
 		loadVal := strings.Fields(load)
 		load1, _ := strconv.ParseFloat(loadVal[0], 10)
 		load5, _ := strconv.ParseFloat(loadVal[1], 10)
 		load15, _ := strconv.ParseFloat(loadVal[2], 10)
 		lastLoadInfo = &LoadInfoStruct{load1, load5, load15}
-		loadHistory = append(loadHistory, loadVal[0])
+		loadHistory.Put(loadVal[0])
 	}
 	return
 }

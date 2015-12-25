@@ -49,7 +49,7 @@ func ReadIntFromFile(filename string) (int, error) {
 // ReadFile read last n lines from file
 func ReadFile(filename string, limit int) (string, error) {
 	l.Debug("helpers.ReadLineFromFile %s, %d", filename, limit)
-	if limit < 0 {
+	if limit <= 0 {
 		lines, err := ioutil.ReadFile(filename)
 		return string(lines), err
 	}
@@ -60,18 +60,15 @@ func ReadFile(filename string, limit int) (string, error) {
 	}
 	defer file.Close()
 	reader := bufio.NewReader(file)
-	buff := make([]string, limit)
+	buff := NewRingBuffer(limit)
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil {
 			break
 		}
-		if len(buff) == limit {
-			buff = buff[1:]
-		}
-		buff = append(buff, line)
+		buff.Put(line)
 	}
-	return strings.Join(buff, ""), err
+	return strings.Join(buff.ToStringSlice(), ""), err
 }
 
 // ReadCommand read result command
