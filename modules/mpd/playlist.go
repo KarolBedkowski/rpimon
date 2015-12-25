@@ -46,17 +46,12 @@ func songActionPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err := mpdSongAction(songID, action)
-	if r.Method == "PUT" {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	if err == nil {
 		encoded, _ := json.Marshal(getStatus())
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.Write(encoded)
 	} else {
-		if err != nil {
-			s := app.GetSessionStore(w, r)
-			s.AddFlash(err.Error(), "error")
-			s.Save(r, w)
-		}
-		http.Redirect(w, r, app.GetNamedURL("mpd-playlist"), http.StatusFound)
+		w.Write([]byte(err.Error()))
 	}
 }
 

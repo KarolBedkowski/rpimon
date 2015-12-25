@@ -57,8 +57,8 @@ func initModule(parentRoute *mux.Route) bool {
 		app.VerifyPermission(filesServHandler, "files")).Name(
 		"files-serv-files")
 	subRouter.HandleFunc("/action",
-		app.VerifyPermission(verifyAccess(actionHandler), "files")).Methods(
-		"PUT").Name("files-file-action")
+		app.VerifyPermission(verifyAccess(actionHandler), "files")).
+		Name("files-file-action")
 	return true
 }
 

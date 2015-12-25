@@ -62,7 +62,6 @@ RPI.net = (function(self, $) {
 			onSuccess: function() {
 				RPI.showLoadingMsg();
 				$.ajax({
-					method: "PUT",
 					url: urls["net-action"],
 					data: {
 						"action": action,

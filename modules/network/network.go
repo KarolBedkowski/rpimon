@@ -40,7 +40,7 @@ func initModule(parentRoute *mux.Route) bool {
 		Name("m-net-serv-info")
 	subRouter.HandleFunc("/action",
 		app.TimeoutHandler(app.VerifyPermission(actionHandler, "admin"), 5)).
-		Name("m-net-action").Methods("PUT")
+		Name("m-net-action")
 	return true
 }
 

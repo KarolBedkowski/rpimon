@@ -62,7 +62,6 @@
 			RPI.showLoadingMsg();
 			$.ajax({
 				url: "{{ namedurl "mpd-playlist-song-action" }}",
-				type: "PUT",
 				data: {
 					a: "add",
 					u: uri

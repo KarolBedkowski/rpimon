@@ -91,7 +91,6 @@ FILES.browser = (function(self, $) {
 			onSuccess: function() {
 				RPI.showLoadingMsg();
 				$.ajax({
-					method: "PUT",
 					url: urls["file-action"],
 					data: {
 						"action": "delete",
@@ -126,7 +125,6 @@ FILES.browser = (function(self, $) {
 			if (p != dlgDirTreeSelection) {
 				RPI.showLoadingMsg();
 				$.ajax({
-					method: "PUT",
 					url: urls["file-action"],
 					data: {
 						"action": "move",

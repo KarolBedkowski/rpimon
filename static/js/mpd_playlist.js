@@ -111,7 +111,6 @@ MPD.plist = (function(self, $) {
 		RPI.showLoadingMsg();
 		$.ajax({
 			url: urls["mpd-song-action-play"].replace("000", id),
-			method: "PUT"
 		}).done(function(result) {
 			if (result.Error === "") {
 				$("tr.active").removeClass("active").removeClass("playlist-current-song");
@@ -142,7 +141,6 @@ MPD.plist = (function(self, $) {
 		RPI.showLoadingMsg();
 		$.ajax({
 			url: urls["mpd-song-action-remove"].replace("000", id),
-			method: "PUT"
 		}).done(function(result) {
 			RPI.hideLoadingMsg();
 			if (result.Error === "") {

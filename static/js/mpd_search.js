@@ -11,25 +11,24 @@ MPD.search = (function(self, $) {
 	"use strict";
 
 	var urls = {
-			"mpd-service-song-info": "/mpd/service/song-info",
-			"mpd-file": "/mnd/file"
-		},
-		table = null;
+		"mpd-service-song-info": "/mpd/service/song-info",
+		"mpd-file": "/mnd/file"
+	},
+	table = null;
 
 	function action(action, uri) {
-	   RPI.showLoadingMsg();
-	   $.ajax({
-	   	url: urls["mpd-file"],
-	   	method: "PUT",
-	   	data: {
-	   		"action": action,
-	   		"uri": uri
-	   	}
-	   }).always(function(result) {
-	   	RPI.hideLoadingMsg();
-	   }).fail(function(jqXHR, result) {
-	   	alert(result);
-	   });
+		RPI.showLoadingMsg();
+		$.ajax({
+			url: urls["mpd-file"],
+			data: {
+				"action": action,
+				"uri": uri
+			}
+		}).always(function(result) {
+			RPI.hideLoadingMsg();
+		}).fail(function(jqXHR, result) {
+			alert(result);
+		});
 	}
 
 	function fileInfo(event) {

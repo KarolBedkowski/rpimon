@@ -113,7 +113,6 @@ func initModule(parentRoute *mux.Route) bool {
 		Name("mpd-library-content")
 	subRouter.HandleFunc("/library/action",
 		app.VerifyPermission(libraryActionHandler, "mpd")).
-		Methods("PUT", "POST").
 		Name("mpd-library-action")
 	// other
 	subRouter.HandleFunc("/log",

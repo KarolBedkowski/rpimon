@@ -38,7 +38,6 @@ MPD.plists = (function(self, $) {
 		RPI.showLoadingMsg();
 		$.ajax({
 			url: urls["mpd-playlists-action"],
-			type: "PUT",
 			data: {
 				"a": action,
 				"p": playlist

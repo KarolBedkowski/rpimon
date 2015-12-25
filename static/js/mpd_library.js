@@ -53,7 +53,6 @@ MPD.library = (function(self, $) {
 		RPI.showLoadingMsg();
 		$.ajax({
 			url: urls["mpd-library-action"],
-			type: "PUT",
 			data: data
 		}).always(function() {
 			RPI.hideLoadingMsg();
@@ -187,7 +186,6 @@ MPD.library = (function(self, $) {
 					RPI.showLoadingMsg();
 					$.ajax({
 						url: urls["mpd-library-action"],
-						type: "PUT",
 						data: {uri: uri,  a: "update"}
 					}).always(function() {
 						RPI.hideLoadingMsg();
