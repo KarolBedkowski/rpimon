@@ -4,6 +4,7 @@ package monitor
 import (
 	"bufio"
 	"k.prv/rpimon/cfg"
+	h "k.prv/rpimon/helpers"
 	l "k.prv/rpimon/logging"
 	"net"
 	"net/http"
@@ -17,42 +18,54 @@ import (
 
 type (
 	// Total history as list of inputs and outputs
-	ifaceHistory struct {
+	ifaceInfo struct {
 		lastTS     int64
-		Input      []uint64
-		Output     []uint64
+		Input      *h.RingBuffer
+		Output     *h.RingBuffer
 		lastInput  uint64
 		lastOutput uint64
 	}
+
+	// IfaceHistory holds last Input/Output values
+	IfaceHistory struct {
+		Input  []uint64
+		Output []uint64
+	}
+
+	// IfacesHistory keep information for all interfaces
+	IfacesHistory map[string]IfaceHistory
 )
 
 var (
 	netHistoryMutex sync.RWMutex
-	netHistory      = make(map[string]*ifaceHistory)
-	netTotalUsage   ifaceHistory
+	netHistory      = make(map[string]*ifaceInfo)
+	netTotalUsage   = ifaceInfo{
+		Input:  h.NewRingBuffer(netHistoryLimit),
+		Output: h.NewRingBuffer(netHistoryLimit),
+	}
 )
 
 // GetNetHistory return map interface->usage history
-func GetNetHistory() map[string]ifaceHistory {
+func GetNetHistory() IfacesHistory {
 	netHistoryMutex.RLock()
 	defer netHistoryMutex.RUnlock()
-	result := make(map[string]ifaceHistory)
+	result := make(map[string]IfaceHistory)
 	for key, val := range netHistory {
-		result[key] = ifaceHistory{
-			Input:  val.Input[:],
-			Output: val.Output[:],
+		result[key] = IfaceHistory{
+			Input:  val.Input.ToUInt64Slice(),
+			Output: val.Output.ToUInt64Slice(),
 		}
 	}
 	return result
 }
 
 // GetTotalNetHistory return ussage all interfaces
-func GetTotalNetHistory() ifaceHistory {
+func GetTotalNetHistory() IfaceHistory {
 	netHistoryMutex.RLock()
 	defer netHistoryMutex.RUnlock()
-	result := ifaceHistory{
-		Input:  netTotalUsage.Input[:],
-		Output: netTotalUsage.Output[:],
+	result := IfaceHistory{
+		Input:  netTotalUsage.Input.ToUInt64Slice(),
+		Output: netTotalUsage.Output.ToUInt64Slice(),
 	}
 	return result
 }
@@ -91,38 +104,30 @@ func gatherNetworkUsage() {
 		if ihist, ok := netHistory[iface]; ok {
 			if ihist.lastTS > 0 {
 				tsdelta := ts - ihist.lastTS
-				if len(ihist.Input) >= netHistoryLimit {
-					ihist.Input = ihist.Input[1:]
-					ihist.Output = ihist.Output[1:]
-				}
 				if tsdelta > 0 {
-					ihist.Input = append(ihist.Input, (recv-ihist.lastInput)/uint64(tsdelta))
-					ihist.Output = append(ihist.Output, (trans-ihist.lastOutput)/uint64(tsdelta))
+					ihist.Input.Put((recv - ihist.lastInput) / uint64(tsdelta))
+					ihist.Output.Put((trans - ihist.lastOutput) / uint64(tsdelta))
 				}
 			}
 			ihist.lastTS = ts
 			ihist.lastInput = recv
 			ihist.lastOutput = trans
 		} else {
-			ihist := ifaceHistory{
+			ihist := ifaceInfo{
 				lastTS:     ts,
 				lastInput:  recv,
 				lastOutput: trans,
-				Input:      make([]uint64, 0),
-				Output:     make([]uint64, 0),
+				Input:      h.NewRingBuffer(netHistoryLimit),
+				Output:     h.NewRingBuffer(netHistoryLimit),
 			}
 			netHistory[iface] = &ihist
 		}
 	}
 	if netTotalUsage.lastTS > 0 {
 		tsdelta := ts - netTotalUsage.lastTS
-		if len(netTotalUsage.Input) >= netHistoryLimit {
-			netTotalUsage.Input = netTotalUsage.Input[1:]
-			netTotalUsage.Output = netTotalUsage.Output[1:]
-		}
 		if tsdelta > 0 {
-			netTotalUsage.Input = append(netTotalUsage.Input, (sumRecv-netTotalUsage.lastInput)/uint64(tsdelta))
-			netTotalUsage.Output = append(netTotalUsage.Output, (sumTrans-netTotalUsage.lastOutput)/uint64(tsdelta))
+			netTotalUsage.Input.Put((sumRecv - netTotalUsage.lastInput) / uint64(tsdelta))
+			netTotalUsage.Output.Put((sumTrans - netTotalUsage.lastOutput) / uint64(tsdelta))
 		}
 	}
 	netTotalUsage.lastTS = ts

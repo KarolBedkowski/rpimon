@@ -105,3 +105,25 @@ func (r *RingBuffer) ToStringSlice() []string {
 	}
 	return result
 }
+
+// ToInt64Slice return new slice with all elements in buffer
+func (r *RingBuffer) ToUInt64Slice() []uint64 {
+	r.RLock()
+	defer r.RUnlock()
+	result := make([]uint64, r.size, r.size)
+	if r.size < r.maxSize {
+		for i := 0; i < r.size; i++ {
+			result[i] = r.items[i].(uint64)
+		}
+	} else {
+		for i, j := r.first, 0; i < r.maxSize; i++ {
+			result[j] = r.items[i].(uint64)
+			j++
+		}
+		for i, j := 0, (r.maxSize - r.first); i < r.first; i++ {
+			result[j] = r.items[i].(uint64)
+			j++
+		}
+	}
+	return result
+}
