@@ -151,11 +151,13 @@ func gatherCPUUsageInfo() *CPUUsageInfoStruct {
 	cIoWait, _ := strconv.Atoi(fields[5])
 	cpuLastIoWait, cIoWait = cIoWait, cIoWait-cpuLastIoWait
 	allDiff := cUser + cNice + cSystem + cIdle + cIoWait
-	cpuusage.User = int(100 * (cUser + cNice) / allDiff)
-	cpuusage.Idle = int(100 * cIdle / allDiff)
-	cpuusage.System = int(100 * cSystem / allDiff)
-	cpuusage.IoWait = int(100 * cIoWait / allDiff)
-	cpuusage.Usage = 100 - cpuusage.Idle
+	if allDiff > 0 {
+		cpuusage.User = int(100 * (cUser + cNice) / allDiff)
+		cpuusage.Idle = int(100 * cIdle / allDiff)
+		cpuusage.System = int(100 * cSystem / allDiff)
+		cpuusage.IoWait = int(100 * cIoWait / allDiff)
+		cpuusage.Usage = 100 - cpuusage.Idle
+	}
 
 	lastCPUUsage = cpuusage
 	cpuHistory.Put(strconv.Itoa(cpuusage.Usage))
