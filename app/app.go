@@ -34,6 +34,8 @@ func Init(appConfFile string, debug int) *cfg.AppConfiguration {
 	router.HandleFunc("/", handleHome)
 	http.Handle("/static/", http.StripPrefix("/static",
 		FileServer(http.Dir(conf.StaticDir), !conf.Debug)))
+	http.Handle("/external/", http.StripPrefix("/external",
+		http.FileServer(http.Dir("external"))))
 	http.Handle("/favicon.ico", FileServer(http.Dir(conf.StaticDir), !conf.Debug))
 	//context.ClearHandler()
 	CSRF := csrf.Protect([]byte(conf.CSRFKey), csrf.Secure(false))
