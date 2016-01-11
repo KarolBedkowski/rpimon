@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
 	"k.prv/rpimon/cfg"
 	l "k.prv/rpimon/logging"
 	"net/http"
@@ -30,6 +31,8 @@ func Init(appConfFile string, debug int) *cfg.AppConfiguration {
 	l.Info("Debug=%s", conf.Debug)
 
 	initSessionStore(conf)
+
+	http.Handle("/metrics", prometheus.Handler())
 
 	router.HandleFunc("/", handleHome)
 	http.Handle("/static/", http.StripPrefix("/static",
