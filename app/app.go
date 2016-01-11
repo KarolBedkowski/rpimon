@@ -35,14 +35,14 @@ func Init(appConfFile string, debug int) *cfg.AppConfiguration {
 	http.Handle("/metrics", prometheus.Handler())
 
 	router.HandleFunc("/", handleHome)
-	http.Handle("/static/", http.StripPrefix("/static",
-		FileServer(http.Dir(conf.StaticDir), !conf.Debug)))
-	http.Handle("/external/", http.StripPrefix("/external",
-		http.FileServer(http.Dir("external"))))
+	http.Handle("/static/", prometheus.InstrumentHandler("rpimon-static", http.StripPrefix("/static",
+		FileServer(http.Dir(conf.StaticDir), !conf.Debug))))
+	http.Handle("/external/", prometheus.InstrumentHandler("rpimon-ext", http.StripPrefix("/external",
+		http.FileServer(http.Dir("external")))))
 	http.Handle("/favicon.ico", FileServer(http.Dir(conf.StaticDir), !conf.Debug))
 	//context.ClearHandler()
 	CSRF := csrf.Protect([]byte(conf.CSRFKey), csrf.Secure(false))
-	http.Handle("/", logHandler(CSRF(SessionHandler(router))))
+	http.Handle("/", prometheus.InstrumentHandler("rpimon", logHandler(CSRF(SessionHandler(router)))))
 	return conf
 }
 
