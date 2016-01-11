@@ -206,12 +206,13 @@ func checkHosts() {
 				//_, err := exec.Command("nping", "--tcp-connect", "-H", "-N", "-c", "1", "-v-4", "-p", port, addr).CombinedOutput()
 				conn, err := net.DialTimeout("tcp", chost.Address, time.Duration(1)*time.Second)
 				if err == nil {
-					defer conn.Close()
 					_, err = conn.Write([]byte("\n"))
 				}
+				conn.Close()
 				available = err == nil
 			case "http":
 				res, err := http.Get(chost.Address)
+				res.Body.Close()
 				available = err == nil && res.StatusCode >= 200 && res.StatusCode < 400
 			default:
 				_, err := exec.Command("ping", "-c", "1", "-i", "1", chost.Address).CombinedOutput()
