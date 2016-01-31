@@ -50,9 +50,17 @@ build_static:
 	# minify updated js
 	find static -name *.js -newer build/.stamp -print -exec closure-compiler --language_in ECMASCRIPT5 --js_output_file "build/{}" --js "{}" ';' 
 	# compress updated css
-	find build -iname '*.css' -newer build/.stamp -print -exec gzip -f --best -k {} ';'
+	if [ -x /usr/bin/zopfli ]; then \
+		find build -iname '*.css' -newer build/.stamp -print -exec zopfli -v {} ';' ;  \
+	else \
+		find build -iname '*.css' -newer build/.stamp -print -exec gzip -f --best -k {} ';' ; \
+	fi;
 	# compress updated js
-	find build -iname '*.js' -newer build/.stamp -print -exec gzip -f --best -k {} ';'
+	if [ -x /usr/bin/zopfli ]; then \
+		find build -iname '*.js' -newer build/.stamp -print -exec zopfli -v {} ';' ; \
+	else \
+		find build -iname '*.js' -newer build/.stamp -print -exec gzip -f --best -k {} ';' ; \
+	fi;
 	touch build/.stamp
 
 resources: build_static
