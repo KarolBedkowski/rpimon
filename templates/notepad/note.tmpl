@@ -18,7 +18,7 @@
 			<a href="{{namedurl "notepad-delete" "note" .Note.Filename}}" type="button" class="btn btn-warning" id="btn-delete" onclick="return confirm('Delete?');">Delete</a>
 			{{end}}
 			<button type="submit" class="btn btn-primary">Save</button>
-			<input type="hidden" name="BasePageContext.CsrfToken" id="" value="{{.CsrfToken}}" />
+			{{ .CSRFField }}
 		</form>
 	</div>
 </div>
