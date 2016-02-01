@@ -212,7 +212,9 @@ func checkHosts() {
 				available = err == nil
 			case "http":
 				res, err := http.Get(chost.Address)
-				res.Body.Close()
+				if res != nil && res.Body != nil {
+					res.Body.Close()
+				}
 				available = err == nil && res.StatusCode >= 200 && res.StatusCode < 400
 			default:
 				_, err := exec.Command("ping", "-c", "1", "-i", "1", chost.Address).CombinedOutput()
