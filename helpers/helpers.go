@@ -6,6 +6,8 @@ import (
 	nurl "net/url"
 	"os"
 	"strconv"
+	"strings"
+	"unicode"
 )
 
 // CheckErr - when err != nil log message
@@ -87,4 +89,31 @@ func CheckValueInDictOfList(dict map[string][]string, value string) (inlist bool
 		}
 	}
 	return
+}
+
+// StringToArgs convert given string to command and arguments
+func StringToArgs(inp string) (cmd string, args []string) {
+	// https://groups.google.com/d/msg/golang-nuts/pNwqLyfl2co/APaZSSvQUAAJ
+	lastQuote := rune(0)
+	f := func(c rune) bool {
+		switch {
+		case c == lastQuote:
+			lastQuote = rune(0)
+			return false
+		case lastQuote != rune(0):
+			return false
+		case unicode.In(c, unicode.Quotation_Mark):
+			lastQuote = c
+			return false
+		default:
+			return unicode.IsSpace(c)
+
+		}
+	}
+
+	fields := strings.FieldsFunc(inp, f)
+	if len(fields) < 0 {
+		return "", nil
+	}
+	return fields[0], fields[1:]
 }
