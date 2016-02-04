@@ -168,7 +168,8 @@ func getLog(log logsDef, file string, lines int) (result string, err error) {
 	}
 
 	if log.Command != "" {
-		result = h.ReadCommand(log.Command)
+		cmd, args := h.StringToArgs(log.Command)
+		result = h.ReadCommand(cmd, args...)
 	} else {
 		var logpath string
 		if log.Dir == "" {

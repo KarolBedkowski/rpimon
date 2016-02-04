@@ -43,6 +43,19 @@
           "filename": "./app.log"
         }
       ]
+    },
+    {
+      "name": "systemd",
+      "logs": [
+        {
+          "name": "systemctl",
+          "command": "sudo systemctl"
+        },
+        {
+          "name": "journalctl",
+          "command": "sudo journalctl"
+        }
+      ]
     }
   ]
 }
