@@ -18,9 +18,9 @@ clean:
 	git checkout resources/resources.go
 
 install_pi: build_pi
-	ssh k@pi sudo service k_rpimon stop
+	ssh k@pi sudo service rpimon stop
 	scp rpimon k@pi:rpimon/
-	ssh k@pi sudo service k_rpimon start
+	ssh k@pi sudo service rpimon start
 
 run:
 	# mkdir temp || true
