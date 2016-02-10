@@ -2,7 +2,7 @@
  rpimon 0.x.x
 ++++++++++++++
 
-:Credits: Copyright (c) Karol Będkowski, 2013-2015
+:Credits: Copyright (c) Karol Będkowski, 2013-2016
 :Licence: GPLv2+
 :Status: beta
 :Tags: webapp, monitoring, rpi
@@ -25,7 +25,7 @@ Requirements:
  * Libraries (go get):
 
    * gorilla {context,mux,sessions,securecookie,schema} (http://gihub.com/gorilla)
-   * bcrypt (http://code.google.com/p/go.crypto/bcrypt)
+   * bcrypt (http://golang.org/x/crypto/bcrypt)
    * gompd (http://github.com/fhs/gompd/mpd)
    * kv (http://github.com/cznic/kv)
    * lock (http://github.com/camlistore/lock)

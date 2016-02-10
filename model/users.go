@@ -2,9 +2,9 @@ package model
 
 import (
 	"bytes"
-	"code.google.com/p/go.crypto/bcrypt"
 	"encoding/gob"
 	"errors"
+	"golang.org/x/crypto/bcrypt"
 	"io"
 	l "k.prv/rpimon/logging"
 )
