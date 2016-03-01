@@ -62,9 +62,12 @@ func GetTask(id int) (u *Task) {
 }
 
 func taskID2key(id int) []byte {
-	key := make([]byte, 8)
-	binary.PutVarint(key, int64(id))
-	return append(taskPrefix, key...)
+	key := new(bytes.Buffer)
+	if err := binary.Write(key, binary.LittleEndian, id); err != nil {
+		l.Error("model.taskID2key error: %s", err)
+		return nil
+	}
+	return append(taskPrefix, key.Bytes()...)
 }
 
 func decodeTask(buff []byte) (t *Task) {

@@ -34,10 +34,14 @@ func (s *Song) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func getKey(id int64) []byte {
-	key := make([]byte, 8)
-	binary.PutVarint(key, id)
-	return append(mpdSongPrefix, key...)
+func makeSongKey(id int64) []byte {
+	key := new(bytes.Buffer)
+	if err := binary.Write(key, binary.LittleEndian, id); err != nil {
+		l.Error("model.makeSongKey error: %s", err)
+		return nil
+	}
+	l.Debug("makeSongKey: %x", key.Bytes())
+	return append(mpdSongPrefix, key.Bytes()...)
 }
 
 func decodeSong(buff []byte) (s *Song) {
@@ -67,7 +71,7 @@ func (s *Song) Save() (err error) {
 		l.Warn("model.Song.Save encode error: %s - %s", s, err)
 		return
 	}
-	if err = db.db.Set(getKey(s.ID), r.Bytes()); err != nil {
+	if err = db.db.Set(makeSongKey(s.ID), r.Bytes()); err != nil {
 		l.Warn("model.Song.Save set error %s: %s", s, err)
 	}
 	return
@@ -106,7 +110,7 @@ func GetSongsRange(offset, end int) (songs []*Song, total int) {
 			if total >= offset && total < end {
 				songs = append(songs, decodeSong(value))
 			}
-			total += 1
+			total++
 		} else {
 			l.Error("model.GetSongs next error: %s", err)
 		}
@@ -115,9 +119,9 @@ func GetSongsRange(offset, end int) (songs []*Song, total int) {
 
 }
 
-// DeleteUser from database by login
+// DeleteSong from database by login
 func DeleteSong(id int64) error {
-	return db.db.Delete(getKey(id))
+	return db.db.Delete(makeSongKey(id))
 }
 
 func DeleteOldSongs(maxAge time.Time) {
@@ -197,7 +201,7 @@ func DumpOldSongsToFile(maxAge time.Time, filename string, delete bool) {
 			return
 		}
 		for _, song := range songs {
-			if err := db.db.Delete(getKey(song.ID)); err != nil {
+			if err := db.db.Delete(makeSongKey(song.ID)); err != nil {
 				l.Error("model.DumpOldSongsToFile delete error: %s", err)
 				db.db.Rollback()
 				return
