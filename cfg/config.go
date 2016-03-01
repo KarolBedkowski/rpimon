@@ -111,6 +111,13 @@ func SaveConfiguration() error {
 	return ioutil.WriteFile(configFilename, data, 0600)
 }
 
+// Reload app configuration
+func (ac *AppConfiguration) Reload() error {
+	l.Info("AppConfiguration.Reload")
+	loadConfiguration(configFilename)
+	return nil
+}
+
 func (ac *AppConfiguration) loadDefaults() {
 	ac.StaticDir = "./static"
 	ac.TemplatesDir = "./templates"

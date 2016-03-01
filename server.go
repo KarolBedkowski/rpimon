@@ -63,6 +63,15 @@ func main() {
 	}()
 
 	// cleanup
+	reloadChannel := make(chan os.Signal, 1)
+	signal.Notify(reloadChannel, syscall.SIGHUP)
+	go func() {
+		for range reloadChannel {
+			conf.Reload()
+		}
+	}()
+
+	// cleanup
 	cleanChannel := make(chan os.Signal, 1)
 	signal.Notify(cleanChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGKILL)
 	go func() {
