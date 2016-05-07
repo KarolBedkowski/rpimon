@@ -32,10 +32,15 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/Merovius/systemd"
 )
 
 func main() {
 	log.Printf("Starting... ver %s", app.AppVersion)
+	systemd.NotifyStatus("starting")
+	systemd.AutoWatchdog()
+
 	configFilename := flag.String("conf", "./config.json", "Configuration filename")
 	debug := flag.Int("debug", -1, "Run in debug mode (1) or normal (0)")
 	forceLocalFiles := flag.Bool("forceLocalFiles", false, "Force use local files instead of embended assets")
@@ -67,6 +72,7 @@ func main() {
 	signal.Notify(reloadChannel, syscall.SIGHUP)
 	go func() {
 		for range reloadChannel {
+			systemd.NotifyStatus("reloading")
 			conf.Reload()
 		}
 	}()
@@ -76,9 +82,11 @@ func main() {
 	signal.Notify(cleanChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGKILL)
 	go func() {
 		<-cleanChannel
+		systemd.Notify("STOPPING=1\r\nSTATUS=stopping")
 		app.Close()
 		model.Close()
 		app.ShutdownModules()
+		systemd.NotifyStatus("stopped")
 		os.Exit(0)
 	}()
 
@@ -140,6 +148,10 @@ func main() {
 			}
 		}()
 	}
+
+	systemd.NotifyReady()
+	systemd.NotifyStatus("running")
+
 	done := make(chan bool)
 	<-done
 }
