@@ -7,6 +7,7 @@ import (
 	l "k.prv/rpimon/logging"
 	"k.prv/rpimon/model"
 	n "k.prv/rpimon/modules/notepad"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -483,6 +484,7 @@ func logSong() {
 	for key, val := range song {
 		data = append(data, key+": "+val+"\n")
 	}
+	sort.Strings(data)
 	strData := strings.Join(data, "")
 	if lastSong == strData {
 		return
