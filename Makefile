@@ -1,6 +1,7 @@
 VERSION=`git describe --always`
 DATE=`date`
 LDFLAGS="-X k.prv/rpimon/app.AppVersion '$(VERSION) - $(DATE)'"
+LDFLAGS_PI="-w -s -X k.prv/rpimon/app.AppVersion '$(VERSION) - $(DATE)'"
 
 .PHONY: resources build
 
@@ -8,8 +9,13 @@ build: resources
 	GOGCCFLAGS="-s -fPIC -O4 -Ofast -march=native" go build -v -ldflags $(LDFLAGS)
 
 build_pi: resources
-	CGO_ENABLED="0" GOGCCFLAGS="-fPIC -O4 -Ofast -march=native -s" GOARCH=arm GOARM=5 go build -v -o rpimon -ldflags $(LDFLAGS)
-	#CGO_ENABLED="0" GOGCCFLAGS="-g -O2 -fPIC" GOARCH=arm GOARM=5 go build server.go 
+#	CGO_ENABLED="0" GOGCCFLAGS="-fPIC -O4 -Ofast -march=native -s" GOARCH=arm GOARM=5 go build -v -o rpimon -ldflags $(LDFLAGS_PI)
+	GOGCCFLAGS="-fPIC -O4 -Ofast -march=native -pipe -mcpu=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard -s" \
+		CHOST="armv6j-hardfloat-linux-gnueabi" \
+		CXX=arm-linux-gnueabihf-g++ CC=arm-linux-gnueabihf-gcc \
+		GOOS=linux GOARCH=arm GOARM=6 CGO_ENABLED=0 \
+		go build -v --ldflags '-extldflags "-static"' --ldflags $(LDFLAGS) -o rpimon
+#
 
 clean:
 	go clean
