@@ -31,7 +31,9 @@ RPI.net = (function(self, $) {
 			for (name in msg.netusage) {
 				var usage = msg.netusage[name],
 					inp = usage.Input,
-					out = usage.Output;
+					out = usage.Output,
+					inpTotal = usage.TotalInput,
+					outTotal = usage.TotalOutput;
 				$('#chart-in-'+name).text(inp || '0').change();
 				$('#chart-out-'+name).text(out || '0').change();
 				if (inp) {
@@ -40,6 +42,8 @@ RPI.net = (function(self, $) {
 				if (out) {
 					$("#net-up-"+name).text(Math.round(out[out.length-1] / 1024) + " kB/s");
 				}
+				$("#net-down-" + name + "-total").text(Math.round(inpTotal / 1048576) + " MB");
+				$("#net-up-" + name + "-total").text(Math.round(outTotal / 1048576) + " MB");
 			}
 			window.setTimeout(getHistory, 5000);
 		}).fail(function(jqXHR, textStatus) {

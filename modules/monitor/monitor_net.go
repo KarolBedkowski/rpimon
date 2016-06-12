@@ -28,8 +28,10 @@ type (
 
 	// IfaceHistory holds last Input/Output values
 	IfaceHistory struct {
-		Input  []uint64
-		Output []uint64
+		Input       []uint64
+		Output      []uint64
+		TotalInput  uint64
+		TotalOutput uint64
 	}
 
 	// IfacesHistory keep information for all interfaces
@@ -50,10 +52,12 @@ func GetNetHistory() IfacesHistory {
 	netHistoryMutex.RLock()
 	defer netHistoryMutex.RUnlock()
 	result := make(map[string]IfaceHistory)
-	for key, val := range netHistory {
-		result[key] = IfaceHistory{
-			Input:  val.Input.ToUInt64Slice(),
-			Output: val.Output.ToUInt64Slice(),
+	for iface, val := range netHistory {
+		result[iface] = IfaceHistory{
+			Input:       val.Input.ToUInt64Slice(),
+			Output:      val.Output.ToUInt64Slice(),
+			TotalOutput: val.lastOutput,
+			TotalInput:  val.lastInput,
 		}
 	}
 	return result
