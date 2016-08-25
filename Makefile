@@ -10,12 +10,15 @@ build: resources
 
 build_pi: resources
 #	CGO_ENABLED="0" GOGCCFLAGS="-fPIC -O4 -Ofast -march=native -s" GOARCH=arm GOARM=5 go build -v -o rpimon -ldflags $(LDFLAGS_PI)
-	GOGCCFLAGS="-fPIC -O4 -Ofast -march=native -pipe -mcpu=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard -s" \
-		CHOST="armv6j-hardfloat-linux-gnueabi" \
-		CXX=arm-linux-gnueabihf-g++ CC=arm-linux-gnueabihf-gcc \
-		GOOS=linux GOARCH=arm GOARM=6 CGO_ENABLED=0 \
-		go build -v --ldflags '-extldflags "-static"' --ldflags $(LDFLAGS) -o rpimon
+##	GOGCCFLAGS="-fPIC -O4 -Ofast -march=native -pipe -mcpu=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard -s" \
+##		CHOST="armv6j-hardfloat-linux-gnueabi" \
+##		CXX=arm-linux-gnueabihf-g++ CC=arm-linux-gnueabihf-gcc \
+##		GOOS=linux GOARCH=arm GOARM=6 CGO_ENABLED=0 \
+##		go build -v --ldflags '-extldflags "-static"' --ldflags $(LDFLAGS_PI) -o rpimon
 #
+	GOGCCFLAGS="-fPIC -O4 -Ofast -pipe -march=native -mcpu=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard -s" \
+			   GOARCH=arm GOARM=6 \
+			   go build -v -o rpimon --ldflags $(LDFLAGS_PI)
 
 clean:
 	go clean
