@@ -36,7 +36,7 @@ func (s *Song) MarshalJSON() ([]byte, error) {
 
 func makeSongKey(id int64) []byte {
 	key := new(bytes.Buffer)
-	if err := binary.Write(key, binary.LittleEndian, id); err != nil {
+	if err := binary.Write(key, binary.BigEndian, id); err != nil {
 		l.Error("model.makeSongKey error: %s", err)
 		return nil
 	}

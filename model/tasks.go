@@ -63,7 +63,7 @@ func GetTask(id int) (u *Task) {
 
 func taskID2key(id int) []byte {
 	key := new(bytes.Buffer)
-	if err := binary.Write(key, binary.LittleEndian, id); err != nil {
+	if err := binary.Write(key, binary.BigEndian, id); err != nil {
 		l.Error("model.taskID2key error: %s", err)
 		return nil
 	}
