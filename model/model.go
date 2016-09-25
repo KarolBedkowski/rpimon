@@ -39,10 +39,10 @@ func Open(filename string) (err error) {
 	db.dbFilename = filename
 
 	dbOpts := &kv.Options{
-		VerifyDbBeforeOpen:  true,
-		VerifyDbAfterOpen:   true,
-		VerifyDbBeforeClose: true,
-		VerifyDbAfterClose:  true,
+		VerifyDbBeforeOpen: true,
+		//	VerifyDbAfterOpen:   true,
+		//	VerifyDbBeforeClose: true,
+		VerifyDbAfterClose: true,
 		Locker: func(name string) (io.Closer, error) {
 			return lock.Lock(name + ".lock")
 		},
