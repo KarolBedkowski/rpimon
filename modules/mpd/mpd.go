@@ -138,14 +138,19 @@ func initModule(parentRoute *mux.Route) bool {
 		Name("mpd-hist-serv")
 
 	if val, ok := conf["delete older than [days]"]; ok && val != "0" && val != "" {
-		if off, err := strconv.Atoi(val); err == nil {
-			maxage := time.Now().Add(time.Duration(off*-24) * time.Hour)
-			if filename, ok := conf["dump deleted to file"]; ok && filename != "" {
-				model.DumpOldSongsToFile(maxage, filename, true)
-			} else {
-				model.DeleteOldSongs(maxage)
+		go func() {
+			for {
+				if off, err := strconv.Atoi(val); err == nil {
+					maxage := time.Now().Add(time.Duration(off*-24) * time.Hour)
+					if filename, ok := conf["dump deleted to file"]; ok && filename != "" {
+						model.DumpOldSongsToFile(maxage, filename, true)
+					} else {
+						model.DeleteOldSongs(maxage)
+					}
+				}
+				time.Sleep(time.Duration(12) * time.Hour)
 			}
-		}
+		}()
 	}
 
 	return true

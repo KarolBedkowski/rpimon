@@ -195,7 +195,7 @@ func DumpOldSongsToFile(maxAge time.Time, filename string, delete bool) {
 		return
 	}
 	if delete {
-		l.Info("model.DumpOldSongsToFile delete: %i", len(songs))
+		l.Info("model.DumpOldSongsToFile delete: %d", len(songs))
 		if err := db.db.BeginTransaction(); err != nil {
 			l.Error("model.DumpOldSongsToFile begin transaction error: %s", err)
 			return
